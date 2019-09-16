@@ -49,7 +49,7 @@ intellij {
     ]
     patchPluginXml {
         sinceBuild '191'
-        untilBuild '191.*'
+        untilBuild '192.*'
     }
 //    publishPlugin {
 //        channels System.getenv('IJ_PLUGIN_REPO_CHANNEL')
