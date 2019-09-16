@@ -1,0 +1,41 @@
+buildscript {
+    repositories {
+        maven {
+            url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'
+        }
+    }
+}
+
+plugins {
+    id "org.jetbrains.intellij" version "0.4.10"
+}
+
+dependencies {
+    compile project(':midpoint-client')
+
+    compile("com.evolveum.midpoint.model:model-common:$midpointVersion") {
+        transitive = false
+    }
+    compile("com.evolveum.midpoint.model:model-api:$midpointVersion") {
+        transitive = false
+    }
+    compile("com.evolveum.midpoint.model:notifications-api:$midpointVersion") {
+        transitive = false
+    }
+
+    compile 'de.slackspace:openkeepass:0.8.1'
+    compile "net.mikehardy:google-analytics-java7:$analyticsVersion"
+    compile 'org.apache.commons:commons-lang3:3.7'
+}
+
+intellij {
+    version 'IC-2019.1'
+    downloadSources true
+    pluginName 'MidPoint Studio'
+    updateSinceUntilBuild false
+    plugins = [
+            'PsiViewer:191.4212',
+            'Groovy',
+            'Maven'
+    ]
+}

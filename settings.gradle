@@ -1,0 +1,4 @@
+include 'midpoint-client'
+include 'midpoint-client-prism'
+include 'studio-idea-plugin'
+

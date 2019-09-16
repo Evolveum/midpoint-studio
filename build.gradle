@@ -1,0 +1,33 @@
+allprojects {
+    group 'com.evolveum.midpoint.studio'
+    version '1.0-SNAPSHOT'
+
+    ext {
+        midpointVersion = '4.0.1-SNAPSHOT'
+        analyticsVersion = '2.0.7'
+        antlrVersion = '4.7.2'
+        testngVersion = '6.14.3'
+        cxfVersion = '3.3.1'
+        springVersion = '5.0.7.RELEASE'
+        staxVersion = '1.2.0'
+        velocityVersion = '2.0'
+        flexmarkVersion = '0.34.58'
+        xchartVersion= '3.5.4'
+    }
+}
+
+subprojects {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven {
+            url 'http://nexus.evolveum.com/nexus/content/repositories/releases/'
+        }
+        maven {
+            url 'https://nexus.evolveum.com/nexus/content/groups/public/'
+        }
+        maven {
+            url 'https://nexus.evolveum.com/nexus/content/repositories/snapshots/'
+        }
+    }
+}
