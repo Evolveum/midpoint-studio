@@ -48,8 +48,8 @@ intellij {
             'Maven'
     ]
     patchPluginXml {
-        sinceBuild '2019.1'
-        untilBuild '2019.1.4'
+        sinceBuild '191'
+        untilBuild '191.*'
     }
 //    publishPlugin {
 //        channels System.getenv('IJ_PLUGIN_REPO_CHANNEL')
