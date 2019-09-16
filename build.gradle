@@ -1,6 +1,6 @@
 allprojects {
     group 'com.evolveum.midpoint.studio'
-    version '1.0-SNAPSHOT'
+    version '4.1-SNAPSHOT'
 
     ext {
         midpointVersion = '4.0.1-SNAPSHOT'

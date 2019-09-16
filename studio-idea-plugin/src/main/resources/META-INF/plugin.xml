@@ -1,0 +1,137 @@
+<idea-plugin>
+    <id>com.evolveum.midpoint.studio</id>
+    <name>MidPoint Studio</name>
+    <vendor email="midpoint.studio@evolveum.com.com" url="https://evolveum.com.com">evolveum, s.r.o.</vendor>
+
+    <description><![CDATA[
+        Plugin which enables support for MidPoint configuration files.
+    ]]></description>
+
+    <change-notes><![CDATA[
+        TODO change notes asd asddsf sdfgsdf asdfasdfasdf a sf asdf asd fasdf asd
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.lang</depends>
+    <depends>org.intellij.groovy</depends>
+    <depends>org.jetbrains.idea.maven</depends>
+
+    <application-components>
+        <component>
+            <implementation-class>com.evolveum.midpoint.studio.impl.analytics.AnalyticsManager</implementation-class>
+        </component>
+    </application-components>
+
+    <project-components>
+        <component>
+            <implementation-class>com.evolveum.midpoint.studio.impl.MidPointManager</implementation-class>
+        </component>
+        <component>
+            <interface-class>com.evolveum.midpoint.studio.impl.CredentialsManager</interface-class>
+            <implementation-class>com.evolveum.midpoint.studio.impl.CredentialsManagerImpl</implementation-class>
+        </component>
+        <component>
+            <interface-class>com.evolveum.midpoint.studio.impl.EnvironmentManager</interface-class>
+            <implementation-class>com.evolveum.midpoint.studio.impl.EnvironmentManagerImpl</implementation-class>
+        </component>
+        <component>
+            <interface-class>com.evolveum.midpoint.studio.impl.FileObjectManager</interface-class>
+            <implementation-class>com.evolveum.midpoint.studio.impl.FileObjectManagerImpl</implementation-class>
+        </component>
+        <component>
+            <interface-class>com.evolveum.midpoint.studio.impl.RestObjectManager</interface-class>
+            <implementation-class>com.evolveum.midpoint.studio.impl.RestObjectManagerImpl</implementation-class>
+        </component>
+        <component>
+            <implementation-class>com.evolveum.midpoint.studio.impl.PropertyManager</implementation-class>
+        </component>
+    </project-components>
+
+    <extensions defaultExtensionNs="com.intellij">
+
+        <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
+
+        <xmlStructureViewBuilderProvider
+                implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>
+
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.MidPointMultiHostInjector"/>
+
+        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.MidPointReferenceContributor"/>
+
+        <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
+        <moduleBuilder builderClass="com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder"/>
+
+        <toolWindow id="MidPoint"
+                    anchor="bottom"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
+
+        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
+
+        <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
+
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.RefOidAnnotator"/>
+
+        <completion.contributor language="XML"
+                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
+
+        <codeInsight.parameterNameHints language="XML"
+                                        implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
+
+    </extensions>
+
+    <extensions defaultExtensionNs="org.intellij.groovy">
+        <membersContributor implementation="com.evolveum.midpoint.studio.impl.lang.ScriptNonCodeMembersContributor"/>
+    </extensions>
+
+    <actions>
+
+        <action id="MidPoint.Action.EditEnvironments"
+                class="com.evolveum.midpoint.studio.action.environment.EditEnvironments"
+                text="Edit Environments..."
+                description="Edit Environments..."
+                icon="AllIcons.Actions.EditSource"/>
+
+        <group id="MidPoint.Toolbar.Main">
+
+            <!-- TODO REMOVE -->
+            <action id="MidPoint.Action.TestAction"
+                    class="com.evolveum.midpoint.studio.action.TestAction"
+                    text="Test Action"
+                    description="Test Action"
+                    icon="AllIcons.Actions.EditSource"/>
+
+            <separator/>
+
+            <action id="MidPointPlugin.Menu.GenerateRandomOid"
+                    class="com.evolveum.midpoint.studio.action.GenerateRandomOid"
+                    icon="/icons/random_oid.png"
+                    text="Generate Random OID"
+                    description="Generate Random OID"/>
+
+            <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.UploadExecute"
+                    text="Upload/Execute"
+                    icon="/icons/upload.png"/>
+
+            <action id="MidPoint.Action.UploadRaw" class="com.evolveum.midpoint.studio.action.UploadRaw"
+                    text="Upload Raw"
+                    icon="/icons/upload-raw.png"/>
+
+            <action id="MidPoint.Action.UploadTestResource" class="com.evolveum.midpoint.studio.action.UploadTestResource"
+                    text="Upload/Test Resource"
+                    icon="/icons/upload-test.png"/>
+
+            <separator/>
+
+            <action id="MidPoint.Action.EnvironmentColor"
+                    class="com.evolveum.midpoint.studio.action.environment.EnvironmentColor"/>
+
+            <action id="MidPoint.Action.ComboEnvironmentAction"
+                    class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
+
+            <separator/>
+
+            <add-to-group group-id="NavBarToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
+            <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
+        </group>
+    </actions>
+</idea-plugin>

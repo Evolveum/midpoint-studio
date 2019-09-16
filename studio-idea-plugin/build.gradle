@@ -29,7 +29,8 @@ dependencies {
 }
 
 intellij {
-    version 'IC-2019.1'
+    version '2019.1'
+    type 'IC'
     downloadSources true
     pluginName 'MidPoint Studio'
     updateSinceUntilBuild false
@@ -38,4 +39,8 @@ intellij {
             'Groovy',
             'Maven'
     ]
+    patchPluginXml {
+        sinceBuild '2019.1'
+        untilBuild '2019.1.4'
+    }
 }

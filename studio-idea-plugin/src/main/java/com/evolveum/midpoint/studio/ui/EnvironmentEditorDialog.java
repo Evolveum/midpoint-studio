@@ -1,0 +1,128 @@
+package com.evolveum.midpoint.studio.ui;
+
+import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.ValidationInfo;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.Selectable;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Created by Viliam Repan (lazyman).
+ */
+public class EnvironmentEditorDialog extends DialogWrapper {
+
+    private JPanel root;
+    private JTextField name;
+    private JTextField url;
+    private JTextField username;
+    private JPasswordField password;
+    private JCheckBox ignoreSslErrors;
+    private JCheckBox selected;
+    private JButton chooseButton;
+    private JLabel colorLabel;
+    private JTextField properties;
+
+    private Selectable<Environment> selectable;
+
+    public EnvironmentEditorDialog(@Nullable Selectable<Environment> environment) {
+        super(false);
+        setTitle(environment == null ? "Add environment" : "Edit environment");
+
+        if (environment == null) {
+            environment = new Selectable<>(new Environment());
+            environment.getObject().setAwtColor(MidPointUtils.generateAwtColor());
+        }
+        this.selectable = environment;
+
+        fillInFields();
+
+        init();
+        chooseButton.addActionListener(e -> {
+
+            Color newColor = JColorChooser.showDialog(null, "Choose a color", colorLabel.getBackground());
+            colorLabel.setBackground(newColor);
+        });
+    }
+
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+        return root;
+    }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return name;
+    }
+
+    public Selectable<Environment> getEnvironment() {
+        return selectable;
+    }
+
+    @NotNull
+    @Override
+    protected List<ValidationInfo> doValidateAll() {
+        List<ValidationInfo> infos = new ArrayList<>();
+
+        if (StringUtils.isEmpty(name.getText())) {
+            infos.add(new ValidationInfo("Name must not be empty"));
+        }
+
+        if (StringUtils.isEmpty(url.getText())) {
+            infos.add(new ValidationInfo("Url must not be empty"));
+        }
+
+        if (StringUtils.isEmpty(username.getText())) {
+            infos.add(new ValidationInfo("Username must not be empty"));
+        }
+
+        return infos;
+    }
+
+    @Override
+    protected void doOKAction() {
+        fillEnvironment();
+
+        super.doOKAction();
+    }
+
+    private void fillEnvironment() {
+        selectable.setSelected(selected.isSelected());
+
+        Environment environment = selectable.getObject();
+
+        environment.setName(name.getText());
+        environment.setUrl(url.getText());
+        environment.setUsername(username.getText());
+        environment.setPassword(String.copyValueOf(password.getPassword()));
+        environment.setIgnoreSslErrors(ignoreSslErrors.isSelected());
+        environment.setPropertiesFilePath(properties.getText());
+        environment.setAwtColor(colorLabel.getBackground());
+        if (environment.getColor() == null) {
+            environment.setAwtColor(MidPointUtils.generateAwtColor());
+        }
+    }
+
+    private void fillInFields() {
+        selected.setSelected(selectable.isSelected());
+
+        Environment environment = selectable.getObject();
+
+        name.setText(environment.getName());
+        url.setText(environment.getUrl());
+        username.setText(environment.getUsername());
+        password.setText(environment.getPassword());
+        ignoreSslErrors.setSelected(environment.isIgnoreSslErrors());
+        properties.setText(environment.getPropertiesFilePath());
+        colorLabel.setBackground(environment.getAwtColor());
+    }
+}
