@@ -10,6 +10,14 @@ plugins {
     id "org.jetbrains.intellij" version "0.4.10"
 }
 
+group 'com.evolveum.midpoint.studio'
+version '4.1-SNAPSHOT'
+
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
+
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
 dependencies {
     compile project(':midpoint-client')
 
@@ -23,9 +31,9 @@ dependencies {
         transitive = false
     }
 
-    compile 'de.slackspace:openkeepass:0.8.1'
+    compile "de.slackspace:openkeepass:$openkeepass"
     compile "net.mikehardy:google-analytics-java7:$analyticsVersion"
-    compile 'org.apache.commons:commons-lang3:3.7'
+    compile "org.apache.commons:commons-lang3:$commonsLang"
 }
 
 intellij {
@@ -43,4 +51,8 @@ intellij {
         sinceBuild '2019.1'
         untilBuild '2019.1.4'
     }
+//    publishPlugin {
+//        channels System.getenv('IJ_PLUGIN_REPO_CHANNEL')
+//        token System.getenv('IJ_REPO_TOKEN')
+//    }
 }
