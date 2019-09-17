@@ -110,7 +110,7 @@
 
             <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.UploadExecute"
                     text="Upload/Execute"
-                    icon="/icons/upload.png"/>
+                    icon="AllIcons.Actions.Upload"/>
 
             <action id="MidPoint.Action.UploadRaw" class="com.evolveum.midpoint.studio.action.UploadRaw"
                     text="Upload Raw"
@@ -128,7 +128,9 @@
             <action id="MidPoint.Action.ComboEnvironmentAction"
                     class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
 
-            <separator/>
+            <action id="MidPoint.Action.ProfileAction" class="com.evolveum.midpoint.studio.action.ProfileEnvironment"
+                    text="Profile Environment"
+                    icon="AllIcons.Actions.Profile"/>
 
             <add-to-group group-id="NavBarToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>

@@ -72,7 +72,7 @@ public class ComboQueryType extends ComboBoxAction implements DumbAware {
         return group;
     }
 
-    private static class TypeAction extends AnAction {
+    private static class TypeAction extends AnAction implements DumbAware {
 
         private Type type;
 

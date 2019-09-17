@@ -164,7 +164,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         DefaultActionGroup group = new DefaultActionGroup();
 
         // todo create external actions, they should be able to show progress
-        downloadAction = new AnAction("Download", "Download", MidPointIcons.ACTION_DOWNLOAD) {
+        downloadAction = new AnAction("Download", "Download", AllIcons.Actions.Download) {
 
             @Override
             public void update(AnActionEvent e) {
@@ -178,7 +178,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         };
         group.add(downloadAction);
 
-        showAction = new AnAction("Show", "Show", MidPointIcons.ACTION_SHOW) {
+        showAction = new AnAction("Show", "Show", AllIcons.Actions.Show) {
 
             @Override
             public void update(AnActionEvent e) {
@@ -214,7 +214,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         group.add(new Separator());
 
-        processAction = new AnAction("Process", "Process", MidPointIcons.ACTION_PROCESS) {
+        processAction = new AnAction("Process", "Process", AllIcons.Actions.RealIntentionBulb) {
 
             @Override
             public void update(AnActionEvent e) {
