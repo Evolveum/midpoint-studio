@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -20,11 +21,11 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.DisposeAwareRunnable;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.Color;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -165,5 +166,18 @@ public class MidPointUtils {
     private static CredentialAttributes createCredentialAttributes(String key) {
         return new CredentialAttributes(CredentialAttributesKt
                 .generateServiceName(MidPointSettings.class.getSimpleName(), key));
+    }
+
+    public static void publishNotification(String key, String title, String content, NotificationType type) {
+        publishNotification(key, title, content, type, null);
+    }
+
+    public static void publishNotification(String key, String title, String content, NotificationType type,
+                                           List<NotificationAction> actions) {
+        Notification notification = new Notification(key, title, content, type);
+        if (actions != null) {
+            actions.forEach(a -> notification.addAction(a));
+        }
+        Notifications.Bus.notify(notification);
     }
 }

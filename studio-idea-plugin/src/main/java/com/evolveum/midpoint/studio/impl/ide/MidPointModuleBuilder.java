@@ -71,7 +71,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
     @Override
     public String getDescription() {
-        return "MidPoint module based on Maven.";
+        return "MidPoint module based on Maven build system.";
     }
 
     @Override

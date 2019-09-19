@@ -99,7 +99,7 @@
                     class="com.evolveum.midpoint.studio.action.TestAction"
                     text="Test Action"
                     description="Test Action"
-                    icon="AllIcons.Actions.EditSource"/>
+                    icon="AllIcons.Actions.IntentionBulb"/>
 
             <separator/>
 

@@ -1,5 +1,9 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.client.api.AddOptions;
+import com.evolveum.midpoint.client.api.MessageListener;
+import com.evolveum.midpoint.client.api.Service;
+import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
@@ -9,18 +13,16 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
-import com.evolveum.midpoint.client.api.AddOptions;
-import com.evolveum.midpoint.client.api.MessageListener;
-import com.evolveum.midpoint.client.api.Service;
-import com.evolveum.midpoint.client.impl.ServiceFactory;
 import org.apache.commons.beanutils.BeanUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,6 +40,8 @@ import java.util.Objects;
 public class RestObjectManagerImpl implements RestObjectManager {
 
     private static final Logger LOG = Logger.getInstance(RestObjectManagerImpl.class);
+
+    private static final String NOTIFICATION_KEY = "MidPoint Rest";
 
     private MidPointManager midPointManager;
     private FileObjectManager fileObjectManager;
@@ -147,10 +151,12 @@ public class RestObjectManagerImpl implements RestObjectManager {
         return getClient().prismContext();
     }
 
+    @Deprecated
     private void printToConsole(String message) {
         printToConsole(message, ConsoleViewContentType.LOG_INFO_OUTPUT);
     }
 
+    @Deprecated
     private void printToConsole(String message, ConsoleViewContentType type) {
         if (consoleView == null) {
             consoleView = midPointManager.getConsole();
@@ -163,7 +169,7 @@ public class RestObjectManagerImpl implements RestObjectManager {
 
     @Override
     public <O extends ObjectType> void download(Class<O> type, ObjectQuery query, DownloadOptions options) {
-        //todo implement
+        midPointManager.printToConsole(RestObjectManagerImpl.class, "Starting objects download for " + type.getSimpleName() + ", " + options);
 
         SearchResultList<ObjectType> result = null;
         try {
@@ -175,10 +181,12 @@ public class RestObjectManagerImpl implements RestObjectManager {
 
             result = (SearchResultList) client.search(ObjectTypes.getObjectType(type).getClassDefinition())
                     .list(query, opts);
-//                printInfoMessage("Search in progress");
+
+            midPointManager.printToConsole(RestObjectManagerImpl.class, "Search done");
         } catch (Exception ex) {
-            ex.printStackTrace(); // todo implement
-//                printErrorMessage("Couldn't list objects, reason: " + ex.getMessage());
+            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error",
+                    "Error occurred while searching objects: " + ex.getMessage(), NotificationType.ERROR);
+            midPointManager.printToConsole(RestObjectManagerImpl.class, "Error while searching objects", ex);
         }
 
         if (result == null) {
@@ -218,12 +226,15 @@ public class RestObjectManagerImpl implements RestObjectManager {
 
     @Override
     public OperationResult testResource(String oid) {
+        midPointManager.printToConsole(RestObjectManagerImpl.class, "Starting test resource for " + oid);
+
         try {
             Service client = getClient();
             return client.oid(ResourceType.class, oid).testConnection();
-
         } catch (Exception ex) {
-            ex.printStackTrace(); // todo implement
+            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error",
+                    "Error occurred while testing resource: " + ex.getMessage(), NotificationType.ERROR);
+            midPointManager.printToConsole(RestObjectManagerImpl.class, "Error while testing resource", ex);
         }
 
         return null;
