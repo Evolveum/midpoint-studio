@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.analytics;
+package com.evolveum.midpoint.studio.impl;
 
 import java.io.BufferedReader;
 import java.io.IOException;

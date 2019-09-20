@@ -1,7 +1,5 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.brsanthu.googleanalytics.GoogleAnalytics;
-import com.evolveum.midpoint.studio.impl.analytics.AnalyticsManager;
 import com.evolveum.midpoint.studio.ui.MidPointConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.components.ProjectComponent;
@@ -40,16 +38,12 @@ public class MidPointManager extends ManagerBase<MidPointSettings> implements Pr
 
     @Override
     public void projectOpened() {
-        GoogleAnalytics analytics = AnalyticsManager.getAnalytics();
-        analytics.pageView()
-                .documentPath("/project")
-                .send();
+        AnalyticsManager.getInstance().projectOpened(getSettings().getProjectId());
     }
 
     @Override
     public void projectClosed() {
-        GoogleAnalytics analytics = AnalyticsManager.getAnalytics();
-        analytics.flush();
+        AnalyticsManager.getInstance().projectClosed(getSettings().getProjectId());
     }
 
     public static MidPointManager getInstance(@NotNull Project project) {

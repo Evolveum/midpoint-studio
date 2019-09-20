@@ -24,10 +24,8 @@ import com.intellij.util.DisposeAwareRunnable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.Color;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -179,5 +177,19 @@ public class MidPointUtils {
             actions.forEach(a -> notification.addAction(a));
         }
         Notifications.Bus.notify(notification);
+    }
+
+    public static Map<String, Object> mapOf(Entry<String, Object>... entries) {
+        Map<String, Object> map = new HashMap<>();
+
+        if (entries == null) {
+            return map;
+        }
+
+        for (Entry<String, Object> entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+
+        return map;
     }
 }

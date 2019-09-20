@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.ModificationTracker;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
@@ -30,7 +29,7 @@ public abstract class ManagerBase<T extends Serializable>
 
     private List<Listener> listeners = new ArrayList<>();
 
-    public ManagerBase(@NotNull Project project, Class<T> settingsClass) {
+    public ManagerBase(Project project, Class<T> settingsClass) {
         this.project = project;
         this.settingsClass = settingsClass;
         this.settings = createDefaultSettings();

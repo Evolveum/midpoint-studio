@@ -17,7 +17,8 @@
 
     <application-components>
         <component>
-            <implementation-class>com.evolveum.midpoint.studio.impl.analytics.AnalyticsManager</implementation-class>
+            <interface-class>com.evolveum.midpoint.studio.impl.AnalyticsManager</interface-class>
+            <implementation-class>com.evolveum.midpoint.studio.impl.AnalyticsManagerImpl</implementation-class>
         </component>
     </application-components>
 
@@ -117,7 +118,8 @@
                     text="Upload Raw"
                     icon="/icons/upload-raw.png"/>
 
-            <action id="MidPoint.Action.UploadTestResource" class="com.evolveum.midpoint.studio.action.UploadTestResource"
+            <action id="MidPoint.Action.UploadTestResource"
+                    class="com.evolveum.midpoint.studio.action.UploadTestResource"
                     text="Upload/Test Resource"
                     icon="/icons/upload-test.png"/>
 

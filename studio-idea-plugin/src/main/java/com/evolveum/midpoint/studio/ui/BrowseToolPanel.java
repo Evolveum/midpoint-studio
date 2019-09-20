@@ -5,6 +5,13 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
+import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
+import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
+import com.evolveum.midpoint.studio.impl.AnalyticsManager;
+import com.evolveum.midpoint.studio.impl.RestObjectManager;
+import com.evolveum.midpoint.studio.util.Entry;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -13,16 +20,11 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.OnePixelSplitter;
-import com.evolveum.midpoint.studio.MidPointIcons;
-import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
-import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
-import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
-import com.evolveum.midpoint.studio.impl.RestObjectManager;
-import com.evolveum.midpoint.studio.impl.analytics.AnalyticsManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -242,7 +244,9 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void searchPerformed(AnActionEvent evt) {
-        AnalyticsManager.sendPageView("raw", rawSearch);
+        AnalyticsManager.getInstance().action("searchObjects", MidPointUtils.mapOf(
+                new Entry<>("raw", rawSearch)
+        ));
 
         state = State.SEARCHING;
 
@@ -269,7 +273,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly) {
-        AnalyticsManager.sendPageView("showOnly", showOnly, "raw", rawDownload);
+        AnalyticsManager.getInstance().action("downloadObjects", MidPointUtils.mapOf(
+                new Entry<>("raw", rawSearch),
+                new Entry<>("showOnly", showOnly)
+        ));
 
         ApplicationManager.getApplication().runWriteAction(() -> {
 
@@ -306,7 +313,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void cancelPerformed(AnActionEvent evt) {
-        AnalyticsManager.sendPageView();
+        AnalyticsManager.getInstance().action("cancelSearch", Collections.emptyMap());
 
         state = State.CANCELING;
 
