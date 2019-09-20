@@ -46,7 +46,7 @@ intellij {
             'PsiViewer:192-SNAPSHOT',
             'java',
             'Groovy',
-            'Maven'
+            'maven'
     ]
     patchPluginXml {
         sinceBuild '191'
