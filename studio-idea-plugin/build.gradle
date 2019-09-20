@@ -37,13 +37,14 @@ dependencies {
 }
 
 intellij {
-    version '2019.1'
+    version '2019.2'
     type 'IC'
     downloadSources true
     pluginName 'MidPoint Studio'
     updateSinceUntilBuild false
     plugins = [
-            'PsiViewer:191.4212',
+            'PsiViewer:192-SNAPSHOT',
+            'java',
             'Groovy',
             'Maven'
     ]

@@ -12,6 +12,7 @@
     ]]></change-notes>
 
     <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.java</depends>
     <depends>org.intellij.groovy</depends>
     <depends>org.jetbrains.idea.maven</depends>
 
