@@ -1,20 +1,16 @@
 package com.evolveum.midpoint.studio.action;
 
-import com.intellij.execution.ui.ConsoleViewContentType;
+import com.evolveum.midpoint.studio.impl.RestObjectManager;
+import com.evolveum.midpoint.studio.impl.UploadOptions;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
-import com.evolveum.midpoint.studio.impl.RestObjectManager;
-import com.evolveum.midpoint.studio.impl.UploadOptions;
-import com.evolveum.midpoint.studio.ui.MidPointConsoleView;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -93,15 +89,5 @@ public abstract class UploadBaseAction extends AnAction {
                 ex.printStackTrace(); // todo implement
             }
         });
-    }
-
-    protected void printToConsole(Project project, String msg) {
-        MidPointManager mm = MidPointManager.getInstance(project);
-        MidPointConsoleView console = mm.getConsole();
-        if (console == null) {
-            return;
-        }
-
-        console.print("Upload action: " + msg, ConsoleViewContentType.LOG_INFO_OUTPUT);
     }
 }

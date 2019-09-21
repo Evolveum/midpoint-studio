@@ -23,7 +23,7 @@ public interface AnalyticsManager {
 
     void projectClosed(String id);
 
-    void action(String id, Map<String, Object> params);
+    void action(ActionCategory category, String id, String label, Integer value);
 
     void screen(String id, Map<String, Object> params);
 }

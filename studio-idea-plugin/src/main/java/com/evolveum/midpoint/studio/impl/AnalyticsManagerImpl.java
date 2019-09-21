@@ -219,13 +219,20 @@ public class AnalyticsManagerImpl extends ManagerBase<AnalyticsSettings> impleme
         analytics.flush();
     }
 
+    /**
+     * https://developers.google.com/analytics/devguides/collection/analyticsjs/events
+     */
     @Override
-    public void action(String id, Map<String, Object> params) {
+    public void action(ActionCategory category, String id, String label, Integer value) {
+        if (category == null) {
+            category = ActionCategory.OTHER;
+        }
+
         analytics.event()
-                .eventAction("")
-                .eventCategory("")
-                .eventLabel("")
-                .eventValue(0)
+                .eventCategory(category.name())
+                .eventAction(id)
+                .eventLabel(label)
+                .eventValue(value)
                 .send();
     }
 

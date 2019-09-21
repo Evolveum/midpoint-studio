@@ -8,10 +8,9 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
+import com.evolveum.midpoint.studio.impl.ActionCategory;
 import com.evolveum.midpoint.studio.impl.AnalyticsManager;
 import com.evolveum.midpoint.studio.impl.RestObjectManager;
-import com.evolveum.midpoint.studio.util.Entry;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -24,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -244,9 +242,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void searchPerformed(AnActionEvent evt) {
-        AnalyticsManager.getInstance().action("searchObjects", MidPointUtils.mapOf(
-                new Entry<>("raw", rawSearch)
-        ));
+        AnalyticsManager.getInstance().action(ActionCategory.AN_ACTION, "searchObjects", "raw", rawSearch ? 1 : 0);
 
         state = State.SEARCHING;
 
@@ -273,10 +269,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly) {
-        AnalyticsManager.getInstance().action("downloadObjects", MidPointUtils.mapOf(
-                new Entry<>("raw", rawSearch),
-                new Entry<>("showOnly", showOnly)
-        ));
+        String id = showOnly ? "showObjects" : "downloadObjects";
+        AnalyticsManager.getInstance().action(ActionCategory.AN_ACTION, id, "raw", rawSearch ? 1 : 0);
 
         ApplicationManager.getApplication().runWriteAction(() -> {
 
@@ -313,7 +307,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void cancelPerformed(AnActionEvent evt) {
-        AnalyticsManager.getInstance().action("cancelSearch", Collections.emptyMap());
+        AnalyticsManager.getInstance().action(ActionCategory.AN_ACTION, "cancelSearch", null, null);
 
         state = State.CANCELING;
 
