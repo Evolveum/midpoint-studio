@@ -43,4 +43,13 @@ public class UploadOptions {
     public AddOptions buildAddOptions() {
         return new AddOptions().overwrite(overwrite).raw(raw);
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "overwrite=" + overwrite +
+                ", raw=" + raw +
+                ", testConnection=" + testConnection +
+                '}';
+    }
 }

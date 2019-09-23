@@ -26,4 +26,6 @@ public interface AnalyticsManager {
     void action(ActionCategory category, String id, String label, Integer value);
 
     void screen(String id, Map<String, Object> params);
+
+    void time(ActionCategory category, String id, String label, Integer value);
 }

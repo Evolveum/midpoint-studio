@@ -18,10 +18,12 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginDescriptor;
 import com.intellij.openapi.extensions.PluginId;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -238,31 +240,18 @@ public class AnalyticsManagerImpl extends ManagerBase<AnalyticsSettings> impleme
 
     @Override
     public void screen(String id, Map<String, Object> params) {
-
+        analytics.screenView()
+                .screenName(id)
+                .send();
     }
 
-    @Deprecated
-    private void sendPageView(Object... params) {
-        StackTraceElement element = Thread.currentThread().getStackTrace()[2];
-        String[] type = element.getClassName().split("\\.");
-
-        sendPageView("/" + type[type.length - 1] + "/" + element.getMethodName(), params);
-    }
-
-    @Deprecated
-    private void sendPageView(String documentPath, Object[] params) {
-        List<String> list = new ArrayList<>();
-
-        for (int i = 0; i < params.length; i++) {
-            if (i + 1 >= params.length) {
-                break;
-            }
-            list.add(params[i] + "=" + params[++i]);
-        }
-
-        if (!list.isEmpty()) {
-            documentPath += "?" + StringUtils.join(list, "&");
-        }
-        analytics.pageView().documentPath(documentPath).send();
+    @Override
+    public void time(ActionCategory category, String id, String label, Integer value) {
+        analytics.timing()
+                .userTimingCategory(category.name())
+                .userTimingVariableName(id)
+                .userTimingTime(value)
+                .userTimingLabel(label)
+                .send();
     }
 }

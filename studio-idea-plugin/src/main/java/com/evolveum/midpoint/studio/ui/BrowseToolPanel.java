@@ -18,6 +18,7 @@ import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.OnePixelSplitter;
 import org.jetbrains.annotations.NotNull;
 
@@ -301,8 +302,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             }
 
             ObjectTypes objectTypes = objectType.getSelected();
-            rest.download(objectTypes.getClassDefinition(), objectQuery,
+            VirtualFile[] files = rest.download(objectTypes.getClassDefinition(), objectQuery,
                     new DownloadOptions().showOnly(showOnly).raw(rawDownload));
+
+            // todo if files is null show error/warning
         });
     }
 
