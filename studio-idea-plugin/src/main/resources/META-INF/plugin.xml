@@ -76,6 +76,8 @@
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>
+
+        <diff.lang.DiffIgnoredRangeProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
