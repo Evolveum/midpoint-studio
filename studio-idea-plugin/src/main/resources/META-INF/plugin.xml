@@ -19,7 +19,8 @@
     <application-components>
         <component>
             <interface-class>com.evolveum.midpoint.studio.impl.AnalyticsManager</interface-class>
-            <implementation-class>com.evolveum.midpoint.studio.impl.AnalyticsManagerImpl</implementation-class>
+            <implementation-class>com.evolveum.midpoint.studio.impl.EmptyAnalyticsManager</implementation-class>
+            <!--<implementation-class>com.evolveum.midpoint.studio.impl.AnalyticsManagerImpl</implementation-class>-->
         </component>
     </application-components>
 
@@ -67,6 +68,9 @@
                     icon="/icons/midpoint.png"
                     factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
 
+<!--        <toolWindow id="NodesToolWindow"-->
+<!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
+
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
@@ -79,7 +83,7 @@
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
-        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.ProfilingEditorProvider"/>
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">

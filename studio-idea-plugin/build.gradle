@@ -35,7 +35,9 @@ dependencies {
     compile "net.mikehardy:google-analytics-java7:$analyticsVersion"
     compile "org.apache.commons:commons-lang3:$commonsLang"
     compile "org.knowm.xchart:xchart:$xchartVersion"
+    compile "com.h2database:h2:$h2Version"
 //    compile "org.slf4j:slf4j-log4j12:1.7.25"
+//    compile 'com.github.adedayo.intellij.sdk:forms_rt:142.1'
 }
 
 intellij {
