@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui;
+package com.evolveum.midpoint.studio.ui.profiler;
 
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;

@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui;
+package com.evolveum.midpoint.studio.ui.profiler;
 
 import javax.swing.*;
 import java.awt.*;
