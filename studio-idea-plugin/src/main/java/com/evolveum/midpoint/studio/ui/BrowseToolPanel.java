@@ -8,8 +8,6 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
-import com.evolveum.midpoint.studio.impl.ActionCategory;
-import com.evolveum.midpoint.studio.impl.AnalyticsManager;
 import com.evolveum.midpoint.studio.impl.RestObjectManager;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
@@ -243,8 +241,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void searchPerformed(AnActionEvent evt) {
-        AnalyticsManager.getInstance().action(ActionCategory.AN_ACTION, "searchObjects", "raw", rawSearch ? 1 : 0);
-
         state = State.SEARCHING;
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
@@ -270,9 +266,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly) {
-        String id = showOnly ? "showObjects" : "downloadObjects";
-        AnalyticsManager.getInstance().action(ActionCategory.AN_ACTION, id, "raw", rawSearch ? 1 : 0);
-
         ApplicationManager.getApplication().runWriteAction(() -> {
 
             setState(BrowseToolPanel.State.DOWNLOADING);
@@ -310,8 +303,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void cancelPerformed(AnActionEvent evt) {
-        AnalyticsManager.getInstance().action(ActionCategory.AN_ACTION, "cancelSearch", null, null);
-
         state = State.CANCELING;
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {

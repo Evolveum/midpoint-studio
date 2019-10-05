@@ -38,12 +38,12 @@ public class MidPointManager extends ManagerBase<MidPointSettings> implements Pr
 
     @Override
     public void projectOpened() {
-        AnalyticsManager.getInstance().projectOpened(getSettings().getProjectId());
+
     }
 
     @Override
     public void projectClosed() {
-        AnalyticsManager.getInstance().projectClosed(getSettings().getProjectId());
+
     }
 
     public static MidPointManager getInstance(@NotNull Project project) {

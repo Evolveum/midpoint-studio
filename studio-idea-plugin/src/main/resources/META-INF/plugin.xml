@@ -16,14 +16,6 @@
     <depends>org.intellij.groovy</depends>
     <depends>org.jetbrains.idea.maven</depends>
 
-    <application-components>
-        <component>
-            <interface-class>com.evolveum.midpoint.studio.impl.AnalyticsManager</interface-class>
-            <implementation-class>com.evolveum.midpoint.studio.impl.EmptyAnalyticsManager</implementation-class>
-            <!--<implementation-class>com.evolveum.midpoint.studio.impl.AnalyticsManagerImpl</implementation-class>-->
-        </component>
-    </application-components>
-
     <project-components>
         <component>
             <implementation-class>com.evolveum.midpoint.studio.impl.MidPointManager</implementation-class>
