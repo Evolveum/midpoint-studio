@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.ui.result.OperationResultPanel;
 import com.intellij.openapi.ui.DialogWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,6 +21,8 @@ public class OperationResultDialog extends DialogWrapper {
         setTitle(result.getOperation());
 
         this.panel = new OperationResultPanel(result);
+
+        init();
     }
 
     @Nullable
