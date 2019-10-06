@@ -1,9 +1,12 @@
 package com.evolveum.midpoint.studio.ui.result;
 
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.schema.result.OperationResultStatus;
 import com.evolveum.midpoint.studio.ui.UiConstants;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
@@ -23,43 +26,57 @@ public class OperationResultPanel extends JPanel {
     private JLabel count;
     private JLabel countLabel;
     private JPanel subresults;
+    private JLabel parametersLabel;
+    private JLabel contextLabel;
+    private JLabel messageLabel;
 
     public OperationResultPanel(OperationResult result) {
         super(new BorderLayout());
 
         add(root, BorderLayout.CENTER);
 
+//        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        root.setBorder(BorderFactory.createLineBorder(getStatusColor(result.getStatus())));
+
         initLayout(result);
     }
 
-    private void initLayout(OperationResult result) {
-        switch (result.getStatus()) {
+    private Color getStatusColor(OperationResultStatus status) {
+        switch (status) {
             case FATAL_ERROR:
             case PARTIAL_ERROR:
-                operation.setBackground(UiConstants.RED);
-                break;
+                return UiConstants.RED;
             case IN_PROGRESS:
             case NOT_APPLICABLE:
-                operation.setBackground(UiConstants.BLUE);
-                break;
+                return UiConstants.BLUE;
             case SUCCESS:
-                operation.setBackground(UiConstants.GREEN);
-                break;
+                return UiConstants.GREEN;
             case UNKNOWN:
             case WARNING:
             case HANDLED_ERROR:
-                operation.setBackground(UiConstants.ORANGE);
-                break;
+            default:
+                return UiConstants.ORANGE;
         }
+    }
+
+    private void initLayout(OperationResult result) {
+        operation.setBackground(getStatusColor(result.getStatus()));
         operation.setText(result.getOperation());
+        operation.setBorder(new EmptyBorder(5, 5, 5, 5));
         operation2.setText(result.getOperation());
 
-        message.setText(result.getMessage());
+        if (!StringUtils.isEmpty(result.getMessage())) {
+            message.setText(result.getMessage());
+        } else {
+            messageLabel.setVisible(false);
+            message.setVisible(false);
+        }
 
-        initKeyValuePanels(parameters, result.getParams());
-        initKeyValuePanels(context, result.getContext());
+        initKeyValuePanels(parametersLabel, parameters, result.getParams());
+        initKeyValuePanels(contextLabel, context, result.getContext());
 
-        if (result.getCount() != 0) {
+        if (result.getCount() > 1) {
             count.setText(Integer.toString(result.getCount()));
         } else {
             countLabel.setVisible(false);
@@ -75,8 +92,10 @@ public class OperationResultPanel extends JPanel {
         }
     }
 
-    private void initKeyValuePanels(JPanel parent, Map<String, Collection<String>> map) {
-        if (map == null || parent == null) {
+    private void initKeyValuePanels(JLabel label, JPanel parent, Map<String, Collection<String>> map) {
+        if (map == null || map.isEmpty()) {
+            label.setVisible(false);
+            parent.setVisible(false);
             return;
         }
 
