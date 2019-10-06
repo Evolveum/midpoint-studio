@@ -23,12 +23,12 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
     }
 
     @Override
-    public String post() throws AuthenticationException {
-        return post(null);
+    public String add() throws AuthenticationException {
+        return add(null);
     }
 
     @Override
-    public String post(AddOptions opts) throws AuthenticationException {
+    public String add(AddOptions opts) throws AuthenticationException {
         if (opts == null) {
             opts = new AddOptions();
         }
@@ -36,9 +36,13 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
         WebClient client = client();
 
         String path = ObjectTypes.getRestTypeFromClass(type());
+        if (opts.overwrite() && object.getOid() != null) {
+            path += "/" + object.getOid();
+        }
+
         client.replacePath(REST_PREFIX + "/" + path);
 
-        Response response = client.post(object);
+        Response response = opts.overwrite() ? client.put(object) : client.post(object);
         validateResponse(response);
 
         return response.readEntity(String.class);

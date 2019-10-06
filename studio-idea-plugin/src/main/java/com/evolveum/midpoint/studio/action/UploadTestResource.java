@@ -17,7 +17,7 @@ public class UploadTestResource extends UploadBaseAction {
     // todo move to
     protected void executeAction(AnActionEvent evt, PrismObject obj) {
 
-
+//        String status = result.isSuccess() ? "SUCCESS" : result.dump(true);
 //        printToConsole(evt.getProject(), "Resource '" + obj.getName() + "' connection test: " + status);
     }
 }

@@ -84,7 +84,7 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
         String path = ObjectTypes.getRestTypeFromClass(type());
         client.replacePath(REST_PREFIX + "/" + path + "/" + oid + "/test");
 
-        Response response = client.get();
+        Response response = client.post(null);
 
         validateResponseCode(response);
 

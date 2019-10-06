@@ -24,8 +24,10 @@ import com.intellij.util.DisposeAwareRunnable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.Color;
-import java.util.List;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -171,10 +173,10 @@ public class MidPointUtils {
     }
 
     public static void publishNotification(String key, String title, String content, NotificationType type,
-                                           List<NotificationAction> actions) {
+                                           NotificationAction... actions) {
         Notification notification = new Notification(key, title, content, type);
         if (actions != null) {
-            actions.forEach(a -> notification.addAction(a));
+            Arrays.asList(actions).forEach(a -> notification.addAction(a));
         }
         Notifications.Bus.notify(notification);
     }

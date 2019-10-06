@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.client.api.AddOptions;
+import com.evolveum.midpoint.client.api.AuthenticationException;
 import com.evolveum.midpoint.client.api.MessageListener;
 import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
@@ -16,7 +17,6 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.FocusType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
@@ -31,7 +31,10 @@ import org.jetbrains.annotations.NotNull;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -238,8 +241,12 @@ public class RestObjectManagerImpl implements RestObjectManager {
             List<PrismObject<?>> objects = parser.xml().parseObjects();
 
             for (PrismObject obj : objects) {
-                upload(obj, options);
-                midPointManager.printToConsole(RestObjectManagerImpl.class, "Uploaded object " + obj.getName() + "(" + obj.getCompileTimeClass().getSimpleName() + ")");
+                try {
+                    upload(obj, options);
+                    midPointManager.printToConsole(RestObjectManagerImpl.class, "Uploaded object " + obj.getName() + "(" + obj.getCompileTimeClass().getSimpleName() + ")");
+                } catch (Exception ex) {
+                    handleGenericException("Couldn't upload object '" + obj.getName() + "'", ex);
+                }
             }
         } catch (Exception ex) {
             handleGenericException("Error occurred while uploading objects", ex);
@@ -262,9 +269,15 @@ public class RestObjectManagerImpl implements RestObjectManager {
                     PrismParser parser = prismContext.parserFor(expanded);
                     List<PrismObject<?>> objects = parser.xml().parseObjects();
                     for (PrismObject obj : objects) {
-                        upload(obj, options);
-                        midPointManager.printToConsole(RestObjectManagerImpl.class, "Uploaded object " + obj.getName() + "(" + obj.getCompileTimeClass().getSimpleName() + ")");
+                        try {
+                            upload(obj, options);
+                            midPointManager.printToConsole(RestObjectManagerImpl.class, "Uploaded object " + obj.getName() + "(" + obj.getCompileTimeClass().getSimpleName() + ")");
+                        } catch (Exception ex) {
+                            handleGenericException("Couldn't upload object '" + obj.getName() + "'", ex);
+                        }
                     }
+                } catch (Exception ex) {
+                    handleGenericException("Couldn't parse file '" + file.getName() + "'", ex);
                 }
             }
         } catch (Exception ex) {
@@ -278,22 +291,27 @@ public class RestObjectManagerImpl implements RestObjectManager {
         midPointManager.printToConsole(RestObjectManagerImpl.class, message, ex);
     }
 
-    private <O extends ObjectType> void upload(PrismObject<O> obj, UploadOptions options) {
-        Service client;
-        try {
-            AddOptions opts = options.buildAddOptions();
-            client = getClient();
-            client.add((ObjectType) obj.asObjectable()).post(opts);
+    private <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, UploadOptions options) throws AuthenticationException {
+        AddOptions opts = options.buildAddOptions();
+        Service client = getClient();
 
-            if (options.testConnection() && ResourceType.class.equals(obj.getCompileTimeClass())) {
-                OperationResult result = testResource(obj.getOid());
+        UploadResponse response = new UploadResponse();
 
-                // todo add handler to method parameters to handle upload/test connection results after each object
-//                String status = result.isSuccess() ? "SUCCESS" : result.dump(true);
+        String oid = client.add((ObjectType) obj.asObjectable()).add(opts);
+        response.setOid(oid);
+
+        if (options.testConnection() && ResourceType.class.equals(obj.getCompileTimeClass())) {
+            OperationResult result = testResource(obj.getOid());
+
+            response.setResult(result);
+
+            if (!result.isSuccess()) {
+                MidPointUtils.publishNotification(NOTIFICATION_KEY, "Test connection error",
+                        "Test connection error for '" + obj.getName() + "'", NotificationType.ERROR,
+                        new ShowResultNotificationAction(result));
             }
-        } catch (Exception ex) {
-            // todo implement, handle exception
-            ex.printStackTrace();
         }
+
+        return response;
     }
 }

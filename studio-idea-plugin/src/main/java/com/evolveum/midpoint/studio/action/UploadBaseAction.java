@@ -74,6 +74,9 @@ public abstract class UploadBaseAction extends AnAction {
             try {
                 RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
                 rest.upload(files, buildAddOptions());
+
+
+// todo       String status = result.isSuccess() ? "SUCCESS" : result.dump(true);
             } catch (Exception ex) {
                 ex.printStackTrace(); // todo implement
             }
@@ -85,6 +88,9 @@ public abstract class UploadBaseAction extends AnAction {
             try {
                 RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
                 rest.upload(text, buildAddOptions());
+
+
+//  todo      String status = result.isSuccess() ? "SUCCESS" : result.dump(true);
             } catch (Exception ex) {
                 ex.printStackTrace(); // todo implement
             }

@@ -7,7 +7,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
  */
 public interface ObjectAddService<O extends ObjectType> {
 
-    String post() throws AuthenticationException;
+    String add() throws AuthenticationException;
 
-    String post(AddOptions opts) throws AuthenticationException;
+    String add(AddOptions opts) throws AuthenticationException;
 }

@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
+import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.SystemException;
@@ -108,6 +109,7 @@ public class ServiceFactory {
     }
 
     public Service create() throws Exception {
+        DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
         // todo create web client just to obtain extension schemas!
 
         PrismContextFactory factory = new MidPointPrismContextFactory();
