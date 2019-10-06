@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.diff.contents.DiffContent;
 import com.intellij.diff.lang.DiffIgnoredRangeProvider;
 import com.intellij.lang.xml.XMLLanguage;
@@ -8,21 +9,32 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.xml.namespace.QName;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointDiffIgnoreRangeProvider implements DiffIgnoredRangeProvider {
 
+    private static final Set<QName> IGNORED_ELEMENTS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            ObjectType.F_METADATA,
+            ObjectType.F_OPERATION_EXECUTION,
+            ObjectType.F_FETCH_RESULT
+    )));
+
+    private static final Set<String> IGNORED_ATTRIBUTES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "id"
+    )));
+
     @NotNull
     @Override
     public String getDescription() {
-        return "Ignores container ids";
+        return "Ignores container metadata, operation execution, fetch results and ids";
     }
 
     @Override
@@ -56,12 +68,22 @@ public class MidPointDiffIgnoreRangeProvider implements DiffIgnoredRangeProvider
 
     private static boolean isIgnored(@NotNull PsiElement element) {
         if (element instanceof PsiWhiteSpace) return true;
+
         if (element instanceof XmlAttribute) {
             XmlAttribute attr = (XmlAttribute) element;
-            if ("id".equalsIgnoreCase(attr.getLocalName())) {
+            if (IGNORED_ATTRIBUTES.contains(attr.getLocalName())) {
                 return true;
             }
         }
+
+        if (element instanceof XmlTag) {
+            XmlTag em = (XmlTag) element;
+            QName name = new QName(em.getNamespace(), em.getLocalName());
+            if (IGNORED_ELEMENTS.contains(name)) {
+                return true;
+            }
+        }
+
         return false;
     }
 }
