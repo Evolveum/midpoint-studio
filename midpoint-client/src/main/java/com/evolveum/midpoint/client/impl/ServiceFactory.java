@@ -118,9 +118,10 @@ public class ServiceFactory {
 
         List<Provider> providers = (List) Arrays.asList(
                 new com.bea.xml.stream.XMLOutputFactoryBase(),
-                setupProvider(new MidpointXmlProvider<>(), prismContext),
-                setupProvider(new MidpointJsonProvider<>(), prismContext),
-                setupProvider(new MidpointYamlProvider<>(), prismContext));
+                setupProvider(new CompatibilityXmlProvider(prismContext), prismContext));
+//                setupProvider(new MidpointXmlProvider(), prismContext),
+//                setupProvider(new MidpointJsonProvider<>(), prismContext),
+//                setupProvider(new MidpointYamlProvider<>(), prismContext));
 
         WebClient client;
         if (username != null) {

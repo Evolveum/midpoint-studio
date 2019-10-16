@@ -37,6 +37,7 @@ public class PropertyManager implements Listener {
     @Override
     public <T> void onEvent(Event<T> evt) {
         if (!EnvironmentManagerImpl.EVT_SELECTION_CHANGED.equals(evt.getId())) {
+            LOG.debug("onEvent -> envt changed, but environment id is the same, skipping event");
             return;
         }
 
@@ -44,6 +45,8 @@ public class PropertyManager implements Listener {
     }
 
     private void reload(Environment env) {
+        LOG.debug("Reloading properties for new environment", env);
+
         if (Objects.equals(env, environment)) {
             return;
         }
@@ -56,7 +59,7 @@ public class PropertyManager implements Listener {
 
         Properties properties = new Properties();
 
-        if (StringUtils.isEmpty(env.getPropertiesFilePath())) {
+        if (env == null || StringUtils.isEmpty(env.getPropertiesFilePath())) {
             this.properties = properties;
             return;
         }

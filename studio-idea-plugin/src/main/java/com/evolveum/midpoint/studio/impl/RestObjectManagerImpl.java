@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.client.api.*;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
+import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
@@ -14,6 +15,7 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
@@ -26,6 +28,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.beanutils.BeanUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -191,6 +194,28 @@ public class RestObjectManagerImpl implements RestObjectManager {
         return search(type, query, options);
     }
 
+    @Override
+    public <O extends ObjectType> PrismObject<O> get(Class<O> type, String oid, SearchOptions opts) {
+        midPointManager.printToConsole(RestObjectManagerImpl.class, "Getting object "
+                + type.getSimpleName() + " oid= " + oid + ", " + opts);
+
+        PrismObject<O> result = null;
+        try {
+            Service client = getClient();
+
+            Collection<SelectorOptions<GetOperationOptions>> options =
+                    SelectorOptions.createCollection(GetOperationOptions.createRaw());
+            ObjectType o = client.oid(ObjectTypes.getObjectType(type).getClassDefinition(), oid).get(options);
+            result = (PrismObject) o.asPrismObject();
+
+            midPointManager.printToConsole(RestObjectManagerImpl.class, "Get done");
+        } catch (Exception ex) {
+            handleGenericException("Error occurred while searching objects", ex);
+        }
+
+        return result;
+    }
+
     private <O extends ObjectType> SearchResultList<O> search(Class<O> type, ObjectQuery query,
                                                               Collection<SelectorOptions<GetOperationOptions>> options) {
         midPointManager.printToConsole(RestObjectManagerImpl.class, "Starting objects search for "
@@ -235,7 +260,7 @@ public class RestObjectManagerImpl implements RestObjectManager {
             Expander expander = new Expander(credentialsManager, propertyManager);
             String expanded = expander.expand(text);
 
-            PrismParser parser = prismContext.parserFor(expanded);
+            PrismParser parser = createParser(expanded, prismContext);
             List<PrismObject<?>> objects = parser.xml().parseObjects();
 
             for (PrismObject obj : objects) {
@@ -251,6 +276,16 @@ public class RestObjectManagerImpl implements RestObjectManager {
         }
     }
 
+    private PrismParser createParser(String data, PrismContext ctx) {
+        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
+        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
+    private PrismParser createParser(InputStream data, PrismContext ctx) {
+        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
+        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
     @Override
     public void upload(List<VirtualFile> files, UploadOptions options) {
         midPointManager.printToConsole(RestObjectManagerImpl.class, "Uploading files (" + files.size() + ") started, " + options);
@@ -264,7 +299,7 @@ public class RestObjectManagerImpl implements RestObjectManager {
                     Charset charset = file.getCharset();
                     InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
 
-                    PrismParser parser = prismContext.parserFor(expanded);
+                    PrismParser parser = createParser(expanded, prismContext);
                     List<PrismObject<?>> objects = parser.xml().parseObjects();
                     for (PrismObject obj : objects) {
                         try {
@@ -281,6 +316,36 @@ public class RestObjectManagerImpl implements RestObjectManager {
         } catch (Exception ex) {
             handleGenericException("Couldn't upload files", ex);
         }
+    }
+
+    @Override
+    public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
+        Expander expander = new Expander(credentialsManager, propertyManager);
+
+        try (InputStream is = file.getInputStream()) {
+            Charset charset = file.getCharset();
+            InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
+
+            PrismParser parser = createParser(expanded, getPrismContext());
+            return parser.parseObjects();
+        }
+    }
+
+    @Override
+    public <O extends ObjectType> PrismObject<O> parse(VirtualFile file) {
+        Expander expander = new Expander(credentialsManager, propertyManager);
+
+        try (InputStream is = file.getInputStream()) {
+            Charset charset = file.getCharset();
+            InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
+
+            PrismParser parser = createParser(expanded, getPrismContext());
+            return parser.parse();
+        } catch (IOException | SchemaException ex) {
+            ex.printStackTrace(); // todo implement
+        }
+
+        return null;
     }
 
     private void handleGenericException(String message, Exception ex) {

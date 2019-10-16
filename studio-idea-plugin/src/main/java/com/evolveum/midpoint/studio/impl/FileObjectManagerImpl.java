@@ -125,6 +125,7 @@ public class FileObjectManagerImpl extends ManagerBase<FileObjectSettings> imple
         return files.toArray(new VirtualFile[files.size()]);
     }
 
+    // todo this has to be executed inside write-action only
     private <O extends ObjectType> VirtualFile createFile(Map<String, String> params, PrismObject<O> object, String filePattern)
             throws IOException {
 

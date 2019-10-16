@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.diff.contents.DiffContent;
 import com.intellij.diff.lang.DiffIgnoredRangeProvider;
@@ -25,10 +26,12 @@ public class MidPointDiffIgnoreRangeProvider implements DiffIgnoredRangeProvider
             ObjectType.F_METADATA,
             ObjectType.F_OPERATION_EXECUTION,
             ObjectType.F_FETCH_RESULT
+//            SchemaConstants.C_OBJECTS
     )));
 
     private static final Set<String> IGNORED_ATTRIBUTES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "id"
+//            "xmlns"
     )));
 
     @NotNull

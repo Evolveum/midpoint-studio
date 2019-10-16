@@ -137,5 +137,18 @@
             <add-to-group group-id="NavBarToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
         </group>
+
+        <!-- todo create icon diff with server, example AllIcons.Actions.diffWithClipboard -->
+        <action id="MidPoint.Action.CompareFileWithServerAction"
+                class="com.evolveum.midpoint.studio.action.CompareFileWithServerAction"
+                icon="AllIcons.Actions.Diff"/>
+
+        <group id="MidPoint.Group.Compare">
+            <reference id="MidPoint.Action.CompareFileWithServerAction"/>
+
+            <add-to-group group-id="CompareActions" anchor="last"/>
+            <add-to-group group-id="Diff.KeymapGroup" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" relative-to-action="CompareClipboardWithSelection" anchor="after"/>
+        </group>
     </actions>
 </idea-plugin>

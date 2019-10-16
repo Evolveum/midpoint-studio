@@ -15,5 +15,4 @@ public interface UiConstants {
 
     Color ORANGE = new Color(244, 175, 61);
 
-
 }

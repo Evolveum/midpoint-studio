@@ -14,6 +14,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -298,6 +299,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             VirtualFile[] files = rest.download(objectTypes.getClassDefinition(), objectQuery,
                     new DownloadOptions().showOnly(showOnly).raw(rawDownload));
 
+            if (files != null && files.length == 1) {
+                FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
+                fem.openFile(files[0], true, true);
+            }
             // todo if files is null show error/warning
         });
     }
