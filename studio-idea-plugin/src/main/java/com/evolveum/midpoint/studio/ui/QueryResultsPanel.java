@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.ui.table.JBTable;
 
 import javax.swing.*;
@@ -14,8 +16,9 @@ public class QueryResultsPanel extends JPanel {
 
     private JPanel panel;
     private JTable table;
-    private PagingPanel paging;
     private JScrollPane scrollPane;
+
+
 
     public QueryResultsPanel() {
         super(new BorderLayout());
@@ -47,4 +50,6 @@ public class QueryResultsPanel extends JPanel {
 
         return oids;
     }
+
+
 }

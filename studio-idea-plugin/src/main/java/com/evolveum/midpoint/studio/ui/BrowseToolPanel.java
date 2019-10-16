@@ -45,6 +45,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private AnAction searchAction;
     private AnAction cancelAction;
+    private AnAction pagingAction;
 
     private AnAction downloadAction;
     private AnAction showAction;
@@ -52,6 +53,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private boolean rawSearch = true;
     private boolean rawDownload = true;
+
+    private AnAction pagingText;
+    private AnAction previous;
+    private AnAction next;
 
     public BrowseToolPanel() {
         super(false, true);
@@ -89,16 +94,70 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private JComponent initResultsPanel() {
         JPanel results = new JPanel(new BorderLayout());
 
-        DefaultActionGroup group = createResultsActionGroup();
+        DefaultActionGroup resultsActions = createResultsActionGroup();
 
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("BrowseResultsActions",
-                group, true);
-        results.add(toolbar.getComponent(), BorderLayout.NORTH);
+        ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("BrowseResultsActions",
+                resultsActions, true);
+        results.add(resultsActionsToolbar.getComponent(), BorderLayout.NORTH);
 
         queryResultsPanel = new QueryResultsPanel();
         results.add(queryResultsPanel, BorderLayout.CENTER);
 
+        DefaultActionGroup pagingActions = createPagingActionGroup();
+
+        ActionToolbar pagingActionsToolbar = ActionManager.getInstance().createActionToolbar("BrowseResultsPagingActions",
+                pagingActions, true);
+        results.add(pagingActionsToolbar.getComponent(), BorderLayout.SOUTH);
+
         return results;
+    }
+
+    private DefaultActionGroup createPagingActionGroup() {
+        DefaultActionGroup group = new DefaultActionGroup();
+
+        // todo create external actions, they should be able to show progress
+
+
+        previous = new AnAction("Previous", "Previous", AllIcons.General.ArrowLeft) {
+
+            @Override
+            public void update(AnActionEvent e) {
+//                e.getPresentation().setEnabled(isDownloadShowEnabled());
+            }
+
+            @Override
+            public void actionPerformed(AnActionEvent e) {
+//                downloadPerformed(e, false);
+            }
+        };
+        group.add(previous);
+
+        next = new AnAction("Next", "Next", AllIcons.General.ArrowRight) {
+
+            @Override
+            public void update(AnActionEvent e) {
+//                e.getPresentation().setEnabled(isDownloadShowEnabled());
+            }
+
+            @Override
+            public void actionPerformed(AnActionEvent e) {
+//                downloadPerformed(e, false);
+            }
+        };
+        group.add(next);
+
+        group.addSeparator();
+
+        pagingText = new TextAction() {
+
+            @Override
+            public void update(AnActionEvent e) {
+                e.getPresentation().setText("From 1 to 50 of 1234");
+            }
+        };
+        group.add(pagingText);
+
+        return group;
     }
 
     private DefaultActionGroup createQueryActionGroup() {
@@ -156,6 +215,20 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             }
         };
         group.add(cancelAction);
+
+        pagingAction = new AnAction("Paging", "Paging Settings", AllIcons.General.GearPlain) {
+
+            @Override
+            public void update(AnActionEvent e) {
+                e.getPresentation().setEnabled(isSearchEnabled());
+            }
+
+            @Override
+            public void actionPerformed(AnActionEvent e) {
+                pagingSettingsPerformed(e);
+            }
+        };
+        group.add(pagingAction);
 
         return group;
     }
@@ -332,6 +405,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         ApplicationManager.getApplication().invokeLater(() -> tableModel.fireTableDataChanged());
 
 //        printSuccessMessage("");    // todo add paging/count info to message
+    }
+
+    private void pagingSettingsPerformed(AnActionEvent evt) {
+        //
     }
 
     private boolean isDownloadShowEnabled() {
