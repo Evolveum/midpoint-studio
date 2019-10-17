@@ -22,6 +22,8 @@ import com.intellij.ui.OnePixelSplitter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
 
@@ -51,12 +53,15 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private AnAction showAction;
     private AnAction processAction;
 
-    private boolean rawSearch = true;
-    private boolean rawDownload = true;
-
     private AnAction pagingText;
     private AnAction previous;
     private AnAction next;
+
+    private boolean rawSearch = true;
+    private boolean rawDownload = true;
+
+    private Paging paging = new Paging();
+
 
     public BrowseToolPanel() {
         super(false, true);
@@ -154,6 +159,15 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             public void update(AnActionEvent e) {
                 e.getPresentation().setText("From 1 to 50 of 1234");
             }
+
+            @NotNull
+            @Override
+            public JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
+                JComponent comp = super.createCustomComponent(presentation, place);
+                comp.setBorder(new CompoundBorder(comp.getBorder(), new EmptyBorder(0, 5, 0, 5)));
+
+                return comp;
+            }
         };
         group.add(pagingText);
 
@@ -188,6 +202,20 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         };
         group.add(rawSearch);
 
+        pagingAction = new AnAction("Paging", "Paging Settings", AllIcons.General.GearPlain) {
+
+            @Override
+            public void update(AnActionEvent e) {
+                e.getPresentation().setEnabled(isSearchEnabled());
+            }
+
+            @Override
+            public void actionPerformed(AnActionEvent e) {
+                pagingSettingsPerformed(e);
+            }
+        };
+        group.add(pagingAction);
+
         searchAction = new AnAction("Search", "Search", AllIcons.Actions.Find) {
 
             @Override
@@ -215,20 +243,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             }
         };
         group.add(cancelAction);
-
-        pagingAction = new AnAction("Paging", "Paging Settings", AllIcons.General.GearPlain) {
-
-            @Override
-            public void update(AnActionEvent e) {
-                e.getPresentation().setEnabled(isSearchEnabled());
-            }
-
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-                pagingSettingsPerformed(e);
-            }
-        };
-        group.add(pagingAction);
 
         return group;
     }
@@ -408,7 +422,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void pagingSettingsPerformed(AnActionEvent evt) {
-        //
+        PagingDialog dialog = new PagingDialog(paging);
+        if (!dialog.showAndGet()) {
+            return;
+        }
+
+        this.paging = dialog.getPaging();
     }
 
     private boolean isDownloadShowEnabled() {

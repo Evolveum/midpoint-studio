@@ -30,6 +30,7 @@ dependencies {
     compile("com.evolveum.midpoint.model:notifications-api:$midpointVersion") {
         transitive = false
     }
+    compile "com.evolveum.midpoint:midpoint-localization:$midpointVersion"
 
     compile "de.slackspace:openkeepass:$openkeepass"
     compile "net.mikehardy:google-analytics-java7:$analyticsVersion"
