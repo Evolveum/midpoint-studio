@@ -27,6 +27,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
 
+import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -121,34 +123,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         DefaultActionGroup group = new DefaultActionGroup();
 
         // todo create external actions, they should be able to show progress
-
-
-        previous = new AnAction("Previous", "Previous", AllIcons.General.ArrowLeft) {
-
-            @Override
-            public void update(AnActionEvent e) {
-//                e.getPresentation().setEnabled(isDownloadShowEnabled());
-            }
-
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-//                downloadPerformed(e, false);
-            }
-        };
+        previous = createAnAction("Previous", AllIcons.General.ArrowLeft, null, null);
         group.add(previous);
 
-        next = new AnAction("Next", "Next", AllIcons.General.ArrowRight) {
-
-            @Override
-            public void update(AnActionEvent e) {
-//                e.getPresentation().setEnabled(isDownloadShowEnabled());
-            }
-
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-//                downloadPerformed(e, false);
-            }
-        };
+        next = createAnAction("Next", AllIcons.General.ArrowRight, null, null);
         group.add(next);
 
         group.addSeparator();
@@ -202,46 +180,19 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         };
         group.add(rawSearch);
 
-        pagingAction = new AnAction("Paging", "Paging Settings", AllIcons.General.GearPlain) {
-
-            @Override
-            public void update(AnActionEvent e) {
-                e.getPresentation().setEnabled(isSearchEnabled());
-            }
-
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-                pagingSettingsPerformed(e);
-            }
-        };
+        pagingAction = createAnAction("Paging", "Paging Settings", AllIcons.General.GearPlain,
+                e -> pagingSettingsPerformed(e),
+                e -> e.getPresentation().setEnabled(isSearchEnabled()));
         group.add(pagingAction);
 
-        searchAction = new AnAction("Search", "Search", AllIcons.Actions.Find) {
-
-            @Override
-            public void update(AnActionEvent e) {
-                e.getPresentation().setEnabled(isSearchEnabled());
-            }
-
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-                searchPerformed(e);
-            }
-        };
+        searchAction = createAnAction("Search", AllIcons.Actions.Find,
+                e -> searchPerformed(e),
+                e -> e.getPresentation().setEnabled(isSearchEnabled()));
         group.add(searchAction);
 
-        cancelAction = new AnAction("Cancel", "Cancel", AllIcons.Actions.Cancel) {
-
-            @Override
-            public void update(AnActionEvent e) {
-                e.getPresentation().setEnabled(isCancelEnabled());
-            }
-
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-                cancelPerformed(e);
-            }
-        };
+        cancelAction = createAnAction("Cancel", AllIcons.Actions.Cancel,
+                e -> cancelPerformed(e),
+                e -> e.getPresentation().setEnabled(isCancelEnabled()));
         group.add(cancelAction);
 
         return group;
@@ -251,32 +202,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         DefaultActionGroup group = new DefaultActionGroup();
 
         // todo create external actions, they should be able to show progress
-        downloadAction = new AnAction("Download", "Download", AllIcons.Actions.Download) {
-
-            @Override
-            public void update(AnActionEvent e) {
-                e.getPresentation().setEnabled(isDownloadShowEnabled());
-            }
-
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-                downloadPerformed(e, false);
-            }
-        };
+        downloadAction = createAnAction("Download", AllIcons.Actions.Download,
+                e -> downloadPerformed(e, false),
+                e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
         group.add(downloadAction);
 
-        showAction = new AnAction("Show", "Show", AllIcons.Actions.Show) {
-
-            @Override
-            public void update(AnActionEvent e) {
-                e.getPresentation().setEnabled(isDownloadShowEnabled());
-            }
-
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-                downloadPerformed(e, true);
-            }
-        };
+        showAction = createAnAction("Show", AllIcons.Actions.Show,
+                e -> downloadPerformed(e, true),
+                e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
         group.add(showAction);
 
         CheckboxAction rawSearch = new CheckboxAction("Raw") {
@@ -301,18 +234,9 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         group.add(new Separator());
 
-        processAction = new AnAction("Process", "Process", AllIcons.Actions.RealIntentionBulb) {
-
-            @Override
-            public void update(AnActionEvent e) {
-                e.getPresentation().setEnabled(isDownloadShowEnabled());
-            }
-
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-                processPerformed(e);
-            }
-        };
+        processAction = createAnAction("Process", AllIcons.Actions.RealIntentionBulb,
+                e -> processPerformed(e),
+                e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
         group.add(processAction);
 
         return group;

@@ -16,6 +16,12 @@
     <depends>org.intellij.groovy</depends>
     <depends>org.jetbrains.idea.maven</depends>
 
+    <application-components>
+        <component>
+            <implementation-class>com.evolveum.midpoint.studio.impl.MidPointLocalizationService</implementation-class>
+        </component>
+    </application-components>
+
     <project-components>
         <component>
             <implementation-class>com.evolveum.midpoint.studio.impl.MidPointManager</implementation-class>

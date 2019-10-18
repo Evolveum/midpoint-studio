@@ -14,6 +14,8 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
@@ -22,12 +24,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.DisposeAwareRunnable;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -198,5 +203,30 @@ public class MidPointUtils {
         }
 
         return map;
+    }
+
+    public static AnAction createAnAction(String text, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
+        return createAnAction(text, text, icon, actionPerformed, update);
+    }
+
+    public static AnAction createAnAction(String text, String description, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
+        return new AnAction(text, description, icon) {
+
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                if (actionPerformed != null) {
+                    actionPerformed.accept(e);
+                }
+            }
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                if (update != null) {
+                    update.accept(e);
+                    return;
+                }
+                super.update(e);
+            }
+        };
     }
 }

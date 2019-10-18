@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.action.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -26,8 +27,10 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
         super.update(e);
 
         String text = selected.getTypeQName().getLocalPart();
-        getTemplatePresentation().setText(text);
-        e.getPresentation().setText(text);
+
+        String value = MidPointLocalizationService.getInstance().translate("ObjectType." + text, text);
+        getTemplatePresentation().setText(value);
+        e.getPresentation().setText(value);
     }
 
     public void setSelected(ObjectTypes selected) {
@@ -58,7 +61,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
         return group;
     }
 
-    private static class TypeAction extends AnAction implements DumbAware{
+    private static class TypeAction extends AnAction implements DumbAware {
 
         private ObjectTypes type;
 
@@ -79,6 +82,17 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
         public void actionPerformed(AnActionEvent e) {
             combo.setSelected(type);
             combo.update(e);
+        }
+
+        @Override
+        public void update(AnActionEvent e) {
+            super.update(e);
+
+            String text = type.getTypeQName().getLocalPart();
+
+            String value = MidPointLocalizationService.getInstance().translate("ObjectType." + text, text);
+            getTemplatePresentation().setText(value);
+            e.getPresentation().setText(value);
         }
     }
 }
