@@ -4,11 +4,9 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -86,14 +84,7 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
     }
 
     private Environment buildFullEnvironment(Environment env) {
-        Environment copy = new Environment();
-        try {
-            BeanUtils.copyProperties(copy, env);
-        } catch (InvocationTargetException | IllegalAccessException ex) {
-            //todo handle exception
-            throw new RuntimeException(ex);
-        }
-
+        Environment copy = new Environment(env);
 
         Credentials credentials = credentialsManager.get(copy.getId());
         if (credentials != null) {

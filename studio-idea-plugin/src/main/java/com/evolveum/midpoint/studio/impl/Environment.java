@@ -61,6 +61,23 @@ public class Environment implements Serializable, Comparable<Environment> {
         this.id = id;
     }
 
+    public Environment(Environment other) {
+        this.id = other.id;
+        this.name = other.name;
+        this.shortName = other.shortName;
+        this.url = other.url;
+        this.username = other.username;
+        this.password = other.password;
+        this.ignoreSslErrors = other.ignoreSslErrors;
+        this.color = other.color;
+        this.proxyServerHost = other.proxyServerHost;
+        this.proxyServerPort = other.proxyServerPort;
+        this.proxyServerType = other.proxyServerType;
+        this.proxyUsername = other.proxyUsername;
+        this.proxyPassword = other.proxyPassword;
+        this.propertiesFilePath = other.propertiesFilePath;
+    }
+
     public String getId() {
         return id;
     }

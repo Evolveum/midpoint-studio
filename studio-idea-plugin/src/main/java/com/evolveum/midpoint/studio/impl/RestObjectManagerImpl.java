@@ -25,7 +25,6 @@ import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.apache.commons.beanutils.BeanUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -92,12 +91,7 @@ public class RestObjectManagerImpl implements RestObjectManager {
             return;
         }
 
-        try {
-            this.environment = env != null ? (Environment) BeanUtils.cloneBean(env) : null;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-
+        environment = env != null ? new Environment(env) : null;
         if (environment == null) {
             client = null;
             printToConsole("Client was destroyed");

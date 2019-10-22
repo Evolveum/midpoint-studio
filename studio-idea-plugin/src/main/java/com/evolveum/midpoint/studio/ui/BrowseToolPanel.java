@@ -201,7 +201,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private DefaultActionGroup createResultsActionGroup() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        // todo create external actions, they should be able to show progress
+        // todo create external xactions, they should be able to show progress
         downloadAction = createAnAction("Download", AllIcons.Actions.Download,
                 e -> downloadPerformed(e, false),
                 e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
@@ -259,7 +259,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
             ObjectTypes type = objectType.getSelected();
             ObjectQuery query = queryPanel.buildQuery(evt.getProject());
-            System.out.println("query created");
 
             RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
 

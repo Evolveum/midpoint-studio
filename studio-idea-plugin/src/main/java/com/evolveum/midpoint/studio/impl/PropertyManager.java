@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -51,11 +50,7 @@ public class PropertyManager implements Listener {
             return;
         }
 
-        try {
-            this.environment = env != null ? (Environment) BeanUtils.cloneBean(env) : null;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        environment = env != null ? new Environment(env) : null;
 
         Properties properties = new Properties();
 
