@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.studio.impl.MidPointFacet;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
@@ -8,6 +9,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
+import com.intellij.facet.FacetManager;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
@@ -19,6 +21,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
@@ -228,5 +232,15 @@ public class MidPointUtils {
                 super.update(e);
             }
         };
+    }
+
+    public static boolean isMidPointFacetPresent(Project project) {
+        Module[] modules = ModuleManager.getInstance(project).getModules();
+        if (modules == null || modules.length == 0) {
+            return false;
+        }
+
+        FacetManager facetManager = FacetManager.getInstance(modules[0]);
+        return facetManager.getFacetByType(MidPointFacet.ID) != null;
     }
 }

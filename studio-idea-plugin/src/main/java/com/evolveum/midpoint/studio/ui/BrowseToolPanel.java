@@ -1,6 +1,8 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
@@ -19,12 +21,16 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.OnePixelSplitter;
+import com.intellij.ui.components.JBScrollPane;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.xml.namespace.QName;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
@@ -41,7 +47,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private State state = State.DONE;
 
-    private QueryPanel queryPanel;
+    private JTextArea query;
     private QueryResultsPanel queryResultsPanel;
 
     private ComboObjectTypes objectType;
@@ -92,8 +98,9 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 group, true);
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
-        queryPanel = new QueryPanel(queryType);
-        root.add(queryPanel, BorderLayout.CENTER);
+        query = new JTextArea();
+        JBScrollPane pane = new JBScrollPane(query);
+        root.add(pane, BorderLayout.CENTER);
 
         return root;
     }
@@ -258,7 +265,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
 
             ObjectTypes type = objectType.getSelected();
-            ObjectQuery query = queryPanel.buildQuery(evt.getProject());
+            ObjectQuery query = buildQuery(evt.getProject());
 
             RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
 
@@ -288,7 +295,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             ObjectQuery objectQuery;
             if (table.getRowCount() == table.getSelectedRowCount() || table.getSelectedRowCount() == 0) {
                 // return all
-                objectQuery = queryPanel.buildQuery(evt.getProject());
+                objectQuery = buildQuery(evt.getProject());
             } else {
                 // return only selected objects
                 List<String> oids = queryResultsPanel.getSelectedRowsOids();
@@ -299,7 +306,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 InOidFilter inOidFilter = qf.createInOid(oids);
 
                 ItemPath path = ctx.path(ObjectType.F_NAME);
-                ObjectPaging paging = qf.createPaging(queryPanel.getOffset(), queryPanel.getMaxSize(),
+                ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
                         path, OrderDirection.ASCENDING);
 
                 objectQuery = qf.createQuery(inOidFilter, paging);
@@ -375,10 +382,114 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     public ObjectQuery getObjectQuery(Project project) {
-        return queryPanel.buildQuery(project);
+        return buildQuery(project);
     }
 
     public void setState(State state) {
         this.state = state;
+    }
+
+    public ObjectQuery buildQuery(Project project) {
+        RestObjectManager em = RestObjectManager.getInstance(project);
+        PrismContext ctx = em.getPrismContext();
+        QueryFactory qf = ctx.queryFactory();
+
+        ObjectFilter filter = null;
+        ComboQueryType.Type queryType = this.queryType.getSelected();
+        switch (queryType) {
+            case OID:
+                filter = createFilter(ctx, true, false);
+                break;
+            case NAME:
+                filter = createFilter(ctx, false, true);
+                break;
+            case NAME_OR_OID:
+                filter = createFilter(ctx, true, true);
+                break;
+            case QUERY_XML:
+                filter = parseFilter(ctx);
+                break;
+            case QUERY_SIMPLE:
+                filter = parseSimpleFilter(ctx);
+        }
+
+        ItemPath path = ctx.path(ObjectType.F_NAME);
+        ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(), path, OrderDirection.ASCENDING);
+
+        return qf.createQuery(filter, paging);
+    }
+
+    private ObjectFilter parseSimpleFilter(PrismContext ctx) {
+        return null;
+    }
+
+    private ObjectFilter parseFilter(PrismContext ctx) {
+        String text = query.getText();
+        if (StringUtils.isEmpty(text)) {
+            return null;
+        }
+
+//        try {
+//            Unmarshaller unmarshaller = MidPointClientUtils.createUnmarshaller();
+//            Object obj = unmarshaller.unmarshal(new ByteArrayInputStream(text.getBytes()));
+//            if (obj instanceof JAXBElement) {
+//                obj = ((JAXBElement) obj).getValue();
+//            }
+//
+//            if (obj instanceof SearchFilterType) {
+//                return (SearchFilterType) obj;
+//            }
+//
+//            throw new IllegalStateException("Unknown type '" + obj.getClass().getName() + "'");
+//        } catch (Exception ex) {
+//            // todo error handling
+//            throw new RuntimeException(ex);
+//        }
+
+        return null;
+    }
+
+    private ObjectFilter createFilter(PrismContext ctx, boolean oid, boolean name) {
+        String text = query.getText();
+        if (StringUtils.isEmpty(text)) {
+            return null;
+        }
+
+        List<String> filtered = new ArrayList<>();
+
+        String[] items = text.split("\n");
+        for (String item : items) {
+            item = item.trim();
+            if (StringUtils.isEmpty(item)) {
+                continue;
+            }
+
+            filtered.add(item);
+        }
+
+        if (filtered.isEmpty()) {
+            return null;
+        }
+
+        QueryFactory qf = ctx.queryFactory();
+        OrFilter or = qf.createOr();
+
+        if (oid) {
+            InOidFilter inOid = qf.createInOid(filtered);
+            or.addCondition(inOid);
+        }
+
+        if (name) {
+            PrismPropertyDefinition def = ctx.getSchemaRegistry().findPropertyDefinitionByElementName(ObjectType.F_NAME);
+            QName matchingRule = PrismConstants.POLY_STRING_ORIG_MATCHING_RULE_NAME;
+            List<ObjectFilter> equals = new ArrayList<>();
+            for (String s : filtered) {
+                equals.add(qf.createEqual(ctx.path(ObjectType.F_NAME), def, matchingRule, ctx, s));
+            }
+            OrFilter nameOr = qf.createOr(equals);
+            or.addCondition(nameOr);
+        }
+
+        return or;
     }
 }

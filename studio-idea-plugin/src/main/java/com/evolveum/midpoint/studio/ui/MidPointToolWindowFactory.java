@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -11,7 +13,6 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -83,7 +84,7 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public boolean shouldBeAvailable(@NotNull Project project) {
-        return true;
+        return true; // todo improve with MidPointUtils.isMidPointFacetPresent(project); also other actions, figure out how to listen to adding midpoitn facet to existing project
     }
 
     @Override

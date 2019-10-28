@@ -49,6 +49,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
+        <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType" />
+
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
         <xmlStructureViewBuilderProvider
