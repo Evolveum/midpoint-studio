@@ -1,7 +1,12 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.util.PrismContextFactory;
+import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
+import com.evolveum.midpoint.studio.impl.MidPointException;
 import com.evolveum.midpoint.studio.impl.MidPointFacet;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -45,11 +50,27 @@ import java.util.regex.Pattern;
  */
 public class MidPointUtils {
 
+    public static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+
+    public static final PrismContext DEFAULT_PRISM_CONTEXT;
+
     private static final Random RANDOM = new Random();
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
 
-    public static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+    static {
+        DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
+
+        try {
+            PrismContextFactory factory = new MidPointPrismContextFactory();
+            PrismContext prismContext = factory.createPrismContext();
+            prismContext.initialize();
+
+            DEFAULT_PRISM_CONTEXT = prismContext;
+        } catch (Exception ex) {
+            throw new MidPointException("Couldn't initialize default prism context", ex);
+        }
+    }
 
     @Deprecated
     public static Project getCurrentProject() {
@@ -178,7 +199,7 @@ public class MidPointUtils {
     }
 
     public static void publishNotification(String key, String title, String content, NotificationType type) {
-        publishNotification(key, title, content, type, null);
+        publishNotification(key, title, content, type, (NotificationAction[]) null);
     }
 
     public static void publishNotification(String key, String title, String content, NotificationType type,
