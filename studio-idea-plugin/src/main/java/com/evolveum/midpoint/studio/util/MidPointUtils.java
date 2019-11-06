@@ -6,6 +6,7 @@ import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.studio.impl.MidPointException;
 import com.evolveum.midpoint.studio.impl.MidPointFacet;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.ui.trace.TreeTableColumnDefinition;
 import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
@@ -33,14 +34,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.DisposeAwareRunnable;
 import org.apache.commons.lang3.StringUtils;
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.table.TableColumn;
 import java.awt.Color;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -263,5 +265,32 @@ public class MidPointUtils {
 
         FacetManager facetManager = FacetManager.getInstance(modules[0]);
         return facetManager.getFacetByType(MidPointFacet.ID) != null;
+    }
+
+    public static JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition> columns) {
+        JXTreeTable table = new JXTreeTable(model);
+        table.setRootVisible(false);
+        table.setEditable(false);
+        table.setDragEnabled(false);
+        table.setHorizontalScrollEnabled(true);
+        table.setLeafIcon(null);
+        table.setClosedIcon(null);
+        table.setOpenIcon(null);
+
+        if (columns != null) {
+            for (int i = 0; i < columns.size(); i++) {
+                TreeTableColumnDefinition def = columns.get(i);
+
+                TableColumn column = table.getColumnModel().getColumn(i);
+                column.setPreferredWidth(def.getSize());
+                if (def.getTableCellRenderer() != null) {
+                    column.setCellRenderer(def.getTableCellRenderer());
+                }
+            }
+        }
+
+        table.packAll();
+
+        return table;
     }
 }

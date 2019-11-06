@@ -49,7 +49,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType" />
+        <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
@@ -68,8 +68,21 @@
                     icon="/icons/midpoint.png"
                     factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
 
-<!--        <toolWindow id="NodesToolWindow"-->
-<!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
+        <!--         todo add conditionClass -->
+        <toolWindow id="MidPointTrace"
+                    anchor="bottom"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
+
+        <toolWindow id="TraceLensContext"
+                    anchor="left"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceLensContextToolWindowFactory"/>
+
+        <!--        <toolWindow id="NodesToolWindow"-->
+        <!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
@@ -95,7 +108,8 @@
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
         <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.trace.MPTraceFileTypeFactory"/>
 
-        <diff.lang.DiffIgnoredRangeProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
+        <diff.lang.DiffIgnoredRangeProvider
+                implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">

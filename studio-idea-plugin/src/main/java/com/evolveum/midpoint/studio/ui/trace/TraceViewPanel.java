@@ -1,24 +1,17 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
-import com.evolveum.midpoint.studio.impl.trace.Format;
 import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
-import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
-import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.CheckboxAction;
-import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.components.JBTextArea;
-import com.intellij.util.ui.components.BorderLayoutPanel;
+import com.intellij.util.ui.JBUI;
 import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,14 +24,7 @@ public class TraceViewPanel extends JPanel {
 
     private JXTreeTable main;
 
-    private JBTextArea logs;
-    private CheckboxAction logsWrapText;
-    private CheckboxAction logsShowSegmentSeparators;
-
-    private JXTreeTable variables;
-    private FormatComboboxAction variablesDisplayAs;
-    private CheckboxAction variablesWrapText;
-    private JBTextArea variablesValue;
+    private JXTreeTable traceStructure;
 
     public TraceViewPanel(List<OpNode> data) {
         super(new BorderLayout());
@@ -53,15 +39,8 @@ public class TraceViewPanel extends JPanel {
         JComponent main = initMain(data);
         horizontal.setFirstComponent(main);
 
-        JBSplitter vertical = new OnePixelSplitter(false);
-
-        JComponent logs = initLogs();
-        vertical.setFirstComponent(logs);
-
-        JComponent variables = initVariables();
-        vertical.setSecondComponent(variables);
-
-        horizontal.setSecondComponent(vertical);
+        JComponent traceStructure = initTraceStructure(data);
+        horizontal.setSecondComponent(traceStructure);
     }
 
     private JComponent initMain(List<OpNode> data) {
@@ -92,80 +71,49 @@ public class TraceViewPanel extends JPanel {
 
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Log", 50, o -> Integer.toString(o.getLogEntriesCount())));
 
-        main = new JXTreeTable(new TraceTreeTableModel(columns, data));
-        main.setRootVisible(false);
-
-        for (int i = 0; i < columns.size(); i++) {
-            TreeTableColumnDefinition def = columns.get(i);
-            main.getColumnModel().getColumn(i).setPreferredWidth(def.getSize());
-        }
-
-        main.packAll();
-
+        main = MidPointUtils.createTable(new TraceTreeTableModel(columns, data), columns);
         return new JBScrollPane(main);
     }
 
-    private JComponent initVariables() {
-        JBSplitter variables = new OnePixelSplitter(true);
+    private JComponent initTraceStructure(List<OpNode> data) {
+        List<TreeTableColumnDefinition> columns = new ArrayList<>();
 
-        this.variables = new JXTreeTable(new DefaultTreeTableModel(new DefaultMutableTreeTableNode("aaa")));
-        variables.setFirstComponent(new JBScrollPane(this.variables));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Operation", 500, o -> o.getOperationNameFormatted()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("State", 60, o -> o.getClockworkState()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("EW", 35, o -> o.getExecutionWave()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("PW", 35, o -> o.getProjectionWave()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Status", 100, o -> o.getResult().getStatus().toString()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("W", 20, o -> o.getImportanceSymbol()));
 
-        JPanel root = new BorderLayoutPanel();
+        long start = System.currentTimeMillis();    // todo fix
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Start", 60, o -> Long.toString(o.getStart(start))));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Time", 80, o -> formatTime(o.getResult().getMicroseconds())));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Type", 100, o -> o.getType().toString()));
 
-        DefaultActionGroup group = new DefaultActionGroup();
-        variablesDisplayAs = new FormatComboboxAction();
-        group.add(variablesDisplayAs);
-        variablesWrapText = new SimpleCheckboxAction("Wrap text");
-        group.add(variablesWrapText);
+        // todo add columns
 
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceViewVariablesToolbar", group, true);
-        root.add(toolbar.getComponent(), BorderLayout.NORTH);
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Log", 50, o -> Integer.toString(o.getLogEntriesCount())));
 
-        variablesValue = new JBTextArea();
-        root.add(new JBScrollPane(variablesValue), BorderLayout.CENTER);
+        traceStructure = MidPointUtils.createTable(new TraceStructureTreeTableModel(columns, data), columns);
+        JBScrollPane pane = new JBScrollPane(traceStructure);
 
-        variables.setSecondComponent(root);
-
-        return new HeaderDecorator("Variables", variables);
-    }
-
-    private JComponent initLogs() {
-        JPanel root = new BorderLayoutPanel();
-
-        DefaultActionGroup group = new DefaultActionGroup();
-        logsWrapText = new SimpleCheckboxAction("Wrap text");
-        group.add(logsWrapText);
-        logsShowSegmentSeparators = new SimpleCheckboxAction("Show segment separators");
-        group.add(logsShowSegmentSeparators);
-
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceViewLogsToolbar", group, true);
-        root.add(toolbar.getComponent(), BorderLayout.NORTH);
-
-        logs = new JBTextArea();
-        root.add(new JBScrollPane(logs));
-
-        return new HeaderDecorator("Logs", root);
+        return new HeaderDecorator("Trace Structure", pane);
     }
 
     private void addPerformanceColumn(List<TreeTableColumnDefinition> columns, PerformanceCategory category, boolean hidable, boolean readWrite) {
-        columns.add(new TreeTableColumnDefinition<OpNode, String>(category.getShortLabel() + " #", 70, o -> Integer.toString(o.getPerformanceByCategory().get(category).getTotalCount())));
+        TreeTableColumnDefinition def = new TreeTableColumnDefinition<OpNode, Integer>(category.getShortLabel() + " #", 70, o -> o.getPerformanceByCategory().get(category).getTotalCount());
+        def.tableCellRenderer(new DefaultTableCellRenderer() {
 
-//        countColumn.setLabelProvider(new ColumnLabelProvider() {
-//            @Override
-//            public String getText(Object element) {
-//                return String.valueOf(getCount(element));
-//            }
-//
-//            private int getCount(Object element) {
-//                return ((OpNode) element).getPerformanceByCategory().get(category).getTotalCount();
-//            }
-//
-//            @Override
-//            public Color getForeground(Object element) {
-//                return TracePerformanceView.getColor(getCount(element));
-//            }
-//        });
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                c.setForeground(getColor((int) value));
+
+                return c;
+            }
+        });
+        columns.add(def);
+
 //        if (readWrite) {
 //            readWriteOpColumns.add(countColumn);
 //        } else if (hidable) {
@@ -213,43 +161,11 @@ public class TraceViewPanel extends JPanel {
         }
     }
 
-    private static class FormatComboboxAction extends ComboBoxAction {
-
-        private Format format = Format.AUTO;
-
-        @NotNull
-        @Override
-        protected DefaultActionGroup createPopupActionGroup(JComponent button) {
-            DefaultActionGroup group = new DefaultActionGroup();
-
-            for (Format f : Format.values()) {
-                group.add(new AnAction() {
-
-                    @Override
-                    public void actionPerformed(@NotNull AnActionEvent e) {
-                        setFormat(f);
-                    }
-                });
-            }
-
-            return group;
-        }
-
-        @Override
-        public void update(AnActionEvent e) {
-            super.update(e);
-
-            String text = format.getDisplayName();
-            getTemplatePresentation().setText(text);
-            e.getPresentation().setText(text);
-        }
-
-        public void setFormat(Format format) {
-            this.format = format;
-        }
-
-        public Format getFormat() {
-            return format != null ? format : Format.AUTO;
+    private static Color getColor(int value) {
+        if (value != 0) {
+            return JBUI.CurrentTheme.Label.foreground();
+        } else {
+            return JBUI.CurrentTheme.Label.disabledForeground();
         }
     }
 }
