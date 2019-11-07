@@ -12,9 +12,9 @@ import java.util.List;
  */
 public class TraceTreeTableModel extends DefaultTreeTableModel {
 
-    private List<TreeTableColumnDefinition> columns;
+    private List<TableColumnDefinition> columns;
 
-    public TraceTreeTableModel(List<TreeTableColumnDefinition> columns, List<OpNode> nodes) {
+    public TraceTreeTableModel(List<TableColumnDefinition> columns, List<OpNode> nodes) {
         if (columns == null) {
             columns = new ArrayList<>();
         }

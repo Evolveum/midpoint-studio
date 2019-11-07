@@ -40,10 +40,10 @@ public class TraceVariablesPanel extends BorderLayoutPanel {
         JBSplitter variables = new OnePixelSplitter(false);
         add(variables, BorderLayout.CENTER);
 
-        List<TreeTableColumnDefinition> columns = new ArrayList<>();
+        List<TableColumnDefinition> columns = new ArrayList<>();
 
-        columns.add(new TreeTableColumnDefinition<String, String>("Item", 500, o -> null));
-        columns.add(new TreeTableColumnDefinition<String, String>("Variable", 500, o -> null));
+        columns.add(new TableColumnDefinition<String, String>("Item", 500, o -> null));
+        columns.add(new TableColumnDefinition<String, String>("Variable", 500, o -> null));
 
         this.variables = MidPointUtils.createTable(new DefaultTreeTableModel(new DefaultMutableTreeTableNode("")), null);
         variables.setFirstComponent(new JBScrollPane(this.variables));

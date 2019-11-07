@@ -6,7 +6,7 @@ import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.studio.impl.MidPointException;
 import com.evolveum.midpoint.studio.impl.MidPointFacet;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
-import com.evolveum.midpoint.studio.ui.trace.TreeTableColumnDefinition;
+import com.evolveum.midpoint.studio.ui.trace.TableColumnDefinition;
 import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
@@ -267,7 +267,7 @@ public class MidPointUtils {
         return facetManager.getFacetByType(MidPointFacet.ID) != null;
     }
 
-    public static JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition> columns) {
+    public static JXTreeTable createTable(TreeTableModel model, List<TableColumnDefinition> columns) {
         JXTreeTable table = new JXTreeTable(model);
         table.setRootVisible(false);
         table.setEditable(false);
@@ -279,7 +279,7 @@ public class MidPointUtils {
 
         if (columns != null) {
             for (int i = 0; i < columns.size(); i++) {
-                TreeTableColumnDefinition def = columns.get(i);
+                TableColumnDefinition def = columns.get(i);
 
                 TableColumn column = table.getColumnModel().getColumn(i);
                 column.setPreferredWidth(def.getSize());
@@ -292,5 +292,21 @@ public class MidPointUtils {
         table.packAll();
 
         return table;
+    }
+
+    public static String formatTime(Long time) {
+        if (time == null) {
+            return "";
+        } else {
+            return String.format(Locale.US, "%.1f", time / 1000.0);
+        }
+    }
+
+    public static String formatPercent(Double value) {
+        if (value == null) {
+            return "";
+        } else {
+            return String.format(Locale.US, "%.1f%%", value * 100);
+        }
     }
 }

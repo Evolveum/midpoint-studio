@@ -6,7 +6,7 @@ import java.util.function.Function;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TreeTableColumnDefinition<R, V> {
+public class TableColumnDefinition<R, V> {
 
     private String header;
 
@@ -16,13 +16,13 @@ public class TreeTableColumnDefinition<R, V> {
 
     private TableCellRenderer tableCellRenderer;
 
-    public TreeTableColumnDefinition(String header, int size, Function<R, V> value) {
+    public TableColumnDefinition(String header, int size, Function<R, V> value) {
         this.header = header;
         this.size = size;
         this.value = value;
     }
 
-    public TreeTableColumnDefinition tableCellRenderer(TableCellRenderer tableCellRenderer) {
+    public TableColumnDefinition tableCellRenderer(TableCellRenderer tableCellRenderer) {
         this.tableCellRenderer = tableCellRenderer;
         return this;
     }

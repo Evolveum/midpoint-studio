@@ -81,6 +81,12 @@
                     icon="/icons/midpoint.png"
                     factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceLensContextToolWindowFactory"/>
 
+        <toolWindow id="TraceOptions"
+                    anchor="right"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceOptionsWindowFactory"/>
+
         <!--        <toolWindow id="NodesToolWindow"-->
         <!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
 
