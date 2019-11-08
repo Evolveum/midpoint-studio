@@ -1,12 +1,13 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.studio.impl.Credentials;
+import com.evolveum.midpoint.studio.impl.CredentialsManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AddEditRemovePanel;
-import com.evolveum.midpoint.studio.impl.Credentials;
-import com.evolveum.midpoint.studio.impl.CredentialsManager;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,11 +20,13 @@ import java.util.ArrayList;
 public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
 
     private Project project;
+    private EnvironmentManager environmentManager;
 
-    public CredentialsPanel(@NotNull Project project) {
+    public CredentialsPanel(@NotNull Project project, @NotNull EnvironmentManager environmentManager) {
         super(new CredentialsModel(), new ArrayList<>(), null);
 
         this.project = project;
+        this.environmentManager = environmentManager;
 
         initData();
 
@@ -56,7 +59,7 @@ public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
 
     @Nullable
     private Credentials doAddOrEdit(Credentials credentials) {
-        CredentialsEditorDialog dialog = new CredentialsEditorDialog(credentials);
+        CredentialsEditorDialog dialog = new CredentialsEditorDialog(credentials, environmentManager.getEnvironments());
         if (!dialog.showAndGet()) {
             return null;
         }

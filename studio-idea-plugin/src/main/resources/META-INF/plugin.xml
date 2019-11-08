@@ -31,19 +31,19 @@
             <implementation-class>com.evolveum.midpoint.studio.impl.CredentialsManagerImpl</implementation-class>
         </component>
         <component>
-            <interface-class>com.evolveum.midpoint.studio.impl.EnvironmentManager</interface-class>
-            <implementation-class>com.evolveum.midpoint.studio.impl.EnvironmentManagerImpl</implementation-class>
-        </component>
-        <component>
             <interface-class>com.evolveum.midpoint.studio.impl.FileObjectManager</interface-class>
             <implementation-class>com.evolveum.midpoint.studio.impl.FileObjectManagerImpl</implementation-class>
+        </component>
+        <component>
+            <implementation-class>com.evolveum.midpoint.studio.impl.PropertyManager</implementation-class>
         </component>
         <component>
             <interface-class>com.evolveum.midpoint.studio.impl.RestObjectManager</interface-class>
             <implementation-class>com.evolveum.midpoint.studio.impl.RestObjectManagerImpl</implementation-class>
         </component>
         <component>
-            <implementation-class>com.evolveum.midpoint.studio.impl.PropertyManager</implementation-class>
+            <interface-class>com.evolveum.midpoint.studio.impl.EnvironmentManager</interface-class>
+            <implementation-class>com.evolveum.midpoint.studio.impl.EnvironmentManagerImpl</implementation-class>
         </component>
     </project-components>
 

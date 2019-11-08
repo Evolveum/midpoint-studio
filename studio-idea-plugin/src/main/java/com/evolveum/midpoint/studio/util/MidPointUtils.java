@@ -178,7 +178,7 @@ public class MidPointUtils {
     }
 
     public static void publishNotification(String key, String title, String content, NotificationType type) {
-        publishNotification(key, title, content, type, null);
+        publishNotification(key, title, content, type, (NotificationAction[]) null);
     }
 
     public static void publishNotification(String key, String title, String content, NotificationType type,

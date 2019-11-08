@@ -13,34 +13,28 @@ import java.util.Properties;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class PropertyManager implements Listener {
+public class PropertyManager {
 
     private static final Logger LOG = Logger.getInstance(PropertyManager.class);
 
     private Project project;
 
-    private EnvironmentManager environmentManager;
-
     private Environment environment;
 
     private Properties properties;
 
-    public PropertyManager(@NotNull Project project, @NotNull EnvironmentManagerImpl environmentManager) {
+    public PropertyManager(@NotNull Project project) {
         this.project = project;
-        this.environmentManager = environmentManager;
 
-        environmentManager.addListener(this);
-        reload(environmentManager.getSelected());
-    }
+        LOG.info("Initializing " + getClass().getSimpleName());
 
-    @Override
-    public <T> void onEvent(Event<T> evt) {
-        if (!EnvironmentManagerImpl.EVT_SELECTION_CHANGED.equals(evt.getId())) {
-            LOG.debug("onEvent -> envt changed, but environment id is the same, skipping event");
-            return;
-        }
+        project.getMessageBus().connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
-        reload((Environment) evt.getObject());
+            @Override
+            public void environmentChanged(Environment oldEnv, Environment newEnv) {
+                reload(newEnv);
+            }
+        });
     }
 
     private void reload(Environment env) {

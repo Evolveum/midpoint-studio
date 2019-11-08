@@ -24,6 +24,7 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,7 +57,8 @@ public class RestObjectManagerImpl implements RestObjectManager {
     private Environment environment;
     private Service client;
 
-    public RestObjectManagerImpl(@NotNull MidPointManager midPointManager,
+    public RestObjectManagerImpl(@NotNull Project project,
+                                 @NotNull MidPointManager midPointManager,
                                  @NotNull EnvironmentManagerImpl environmentManager,
                                  @NotNull FileObjectManager fileObjectManager,
                                  @NotNull CredentialsManager credentialsManager,
@@ -66,18 +68,20 @@ public class RestObjectManagerImpl implements RestObjectManager {
         this.credentialsManager = credentialsManager;
         this.propertyManager = propertyManager;
 
-        environmentManager.addListener(this);
+        LOG.info("Initializing");
 
-        reload(environmentManager.getSelected());
+        project.getMessageBus().connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
+
+            @Override
+            public void environmentChanged(Environment oldEnv, Environment newEnv) {
+                reload(newEnv);
+            }
+        });
     }
 
     @Override
-    public <T> void onEvent(Event<T> evt) {
-        if (!EnvironmentManagerImpl.EVT_SELECTION_CHANGED.equals(evt.getId())) {
-            return;
-        }
-
-        reload((Environment) evt.getObject());
+    public boolean isReady() {
+        return environment != null & client != null;
     }
 
     @Override

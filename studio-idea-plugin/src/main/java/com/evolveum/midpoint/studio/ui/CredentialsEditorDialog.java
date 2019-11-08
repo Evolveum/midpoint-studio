@@ -1,15 +1,20 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.studio.impl.Credentials;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.evolveum.midpoint.studio.impl.Credentials;
 import org.apache.commons.lang.StringUtils;
+import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -17,14 +22,16 @@ import java.util.List;
 public class CredentialsEditorDialog extends DialogWrapper {
 
     private Credentials credentials;
+    private List<Environment> environments = new ArrayList<>();
 
     private JTextField key;
     private JTextField username;
     private JPasswordField password;
     private JTextArea description;
     private JPanel root;
+    private JComboBox environment;
 
-    public CredentialsEditorDialog(@Nullable Credentials credentials) {
+    public CredentialsEditorDialog(@Nullable Credentials credentials, List<Environment> environments) {
         super(false);
         setTitle(credentials == null ? "Add credentials" : "Edit credentials");
 
@@ -32,6 +39,9 @@ public class CredentialsEditorDialog extends DialogWrapper {
             credentials = new Credentials();
         }
         this.credentials = credentials;
+        if (environments != null) {
+            this.environments.addAll(environments);
+        }
 
         fillInFields();
 
@@ -75,6 +85,17 @@ public class CredentialsEditorDialog extends DialogWrapper {
 
     private void fillInFields() {
         key.setText(credentials.getKey());
+
+        if (credentials.getEnvironment() != null) {
+            Environment env = null;
+            for (Environment e : environments) {
+                if (Objects.equals(e.getId(), credentials.getEnvironment())) {
+                    env = e;
+                }
+            }
+            environment.setSelectedItem(env);
+        }
+
         username.setText(credentials.getUsername());
         password.setText(credentials.getPassword());
         description.setText(credentials.getDescription());
@@ -82,8 +103,30 @@ public class CredentialsEditorDialog extends DialogWrapper {
 
     private void fillCredentials() {
         credentials.setKey(key.getText());
+
+        Environment env = (Environment) environment.getSelectedItem();
+        credentials.setEnvironment(env != null ? env.getId() : null);
+
         credentials.setUsername(username.getText());
         credentials.setPassword(new String(password.getPassword()));
         credentials.setDescription(description.getText());
+    }
+
+    private void createUIComponents() {
+        ComboBoxModel model = new ListComboBoxModel(environments);
+        environment = new ComboBox(model);
+        environment.setRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof Environment) {
+                    value = ((Environment) value).getName();
+                } else if (value == null) {
+                    value = "All Environments";
+                }
+
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
     }
 }

@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -68,7 +68,9 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
     private Content buildCredentials(Project project) {
         JPanel root = new JPanel(new BorderLayout());
 
-        CredentialsPanel credentialsPanel = new CredentialsPanel(project);
+        EnvironmentManager environmentManager = EnvironmentManager.getInstance(project);
+
+        CredentialsPanel credentialsPanel = new CredentialsPanel(project, environmentManager);
         root.add(credentialsPanel, BorderLayout.CENTER);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("CredentialsActions",

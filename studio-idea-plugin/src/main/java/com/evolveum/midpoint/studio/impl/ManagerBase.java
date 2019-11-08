@@ -9,8 +9,6 @@ import com.intellij.util.xmlb.annotations.Transient;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -27,9 +25,8 @@ public abstract class ManagerBase<T extends Serializable>
 
     private long modificationCount;
 
-    private List<Listener> listeners = new ArrayList<>();
-
     public ManagerBase(Project project, Class<T> settingsClass) {
+        LOG.info("Initializing " + getClass().getSimpleName());
         this.project = project;
         this.settingsClass = settingsClass;
         this.settings = createDefaultSettings();
@@ -90,18 +87,4 @@ public abstract class ManagerBase<T extends Serializable>
     }
 
     protected abstract T createDefaultSettings();
-
-    public void addListener(Listener listener) {
-        listeners.add(listener);
-    }
-
-    public void removeListener(Listener listener) {
-        listeners.remove(listener);
-    }
-
-    protected <T> void fireOnEvent(Event<T> evt) {
-        LOG.debug("Firing event " + evt);
-
-        listeners.forEach(l -> l.onEvent(evt));
-    }
 }

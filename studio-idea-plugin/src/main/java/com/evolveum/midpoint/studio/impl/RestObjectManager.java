@@ -17,14 +17,16 @@ import java.util.List;
 
 /**
  * TODO cleanup this interface !!!
- *
+ * <p>
  * Created by Viliam Repan (lazyman).
  */
-public interface RestObjectManager extends Listener {
+public interface RestObjectManager {
 
     static RestObjectManager getInstance(@NotNull Project project) {
         return project.getComponent(RestObjectManager.class);
     }
+
+    boolean isReady();
 
     Environment getEnvironment();
 

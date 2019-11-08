@@ -170,6 +170,7 @@ public class CredentialsManagerImpl implements CredentialsManager {
 
     private Credentials createCredentials(Entry entry) {
         return new Credentials(entry.getTitle(),
+                entry.getUrl(),
                 entry.getUsername(),
                 entry.getPassword(),
                 entry.getNotes());
