@@ -59,7 +59,6 @@ public class RestObjectManagerImpl implements RestObjectManager {
 
     public RestObjectManagerImpl(@NotNull Project project,
                                  @NotNull MidPointManager midPointManager,
-                                 @NotNull EnvironmentManagerImpl environmentManager,
                                  @NotNull FileObjectManager fileObjectManager,
                                  @NotNull CredentialsManager credentialsManager,
                                  @NotNull PropertyManager propertyManager) {
@@ -68,7 +67,7 @@ public class RestObjectManagerImpl implements RestObjectManager {
         this.credentialsManager = credentialsManager;
         this.propertyManager = propertyManager;
 
-        LOG.info("Initializing");
+        LOG.info("Initializing " + getClass().getSimpleName());
 
         project.getMessageBus().connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 

@@ -33,8 +33,6 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
 
         this.messageBus = project.getMessageBus();
         this.credentialsManager = credentialsManager;
-
-        LOG.info("Initializing");
     }
 
     @Override

@@ -33,6 +33,8 @@ public class CredentialsManagerImpl implements CredentialsManager {
     public CredentialsManagerImpl(@NotNull Project project) {
         this.project = project;
 
+        LOG.info("Initializing " + getClass().getSimpleName());
+
         reinit();
     }
 

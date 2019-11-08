@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,14 +14,18 @@ import java.util.Properties;
 
 /**
  * Service that simplifies localization of MidPoint related keys.
- *
+ * <p>
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointLocalizationService {
 
+    private static final Logger LOG = Logger.getInstance(MidPointLocalizationService.class);
+
     private List<Properties> properties = new ArrayList<>();
 
     public MidPointLocalizationService() {
+        LOG.info("Initializing " + getClass().getSimpleName());
+
         init();
     }
 
