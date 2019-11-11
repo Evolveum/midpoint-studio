@@ -42,7 +42,7 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     private Content buildBrowser(Project project) {
-        BrowseToolPanel browsePanel = new BrowseToolPanel();
+        BrowseToolPanel browsePanel = new BrowseToolPanel(project);
         return ContentFactory.SERVICE.getInstance()
                 .createContent(browsePanel, "Browse Objects", false);
     }

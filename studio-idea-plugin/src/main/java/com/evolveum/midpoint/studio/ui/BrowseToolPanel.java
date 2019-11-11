@@ -11,6 +11,8 @@ import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
 import com.evolveum.midpoint.studio.impl.RestObjectManager;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -22,7 +24,9 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.components.JBTextArea;
 import org.apache.commons.lang3.StringUtils;
+import org.jdesktop.swingx.JXTreeTable;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -45,10 +49,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         DONE, SEARCHING, DOWNLOADING, CANCELING
     }
 
+    private static final String NOTIFICATION_KEY = "MidPoint Browser";
+
+    private Project project;
+
     private State state = State.DONE;
 
-    private JTextArea query;
-    private QueryResultsPanel queryResultsPanel;
+    private JBTextArea query;
+    private JXTreeTable results;
 
     private ComboObjectTypes objectType;
     private ComboQueryType queryType;
@@ -70,9 +78,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private Paging paging = new Paging();
 
-
-    public BrowseToolPanel() {
+    public BrowseToolPanel(Project project) {
         super(false, true);
+
+        this.project = project;
 
         initLayout();
     }
@@ -98,7 +107,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 group, true);
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
-        query = new JTextArea();
+        query = new JBTextArea();
         JBScrollPane pane = new JBScrollPane(query);
         root.add(pane, BorderLayout.CENTER);
 
@@ -114,8 +123,22 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 resultsActions, true);
         results.add(resultsActionsToolbar.getComponent(), BorderLayout.NORTH);
 
-        queryResultsPanel = new QueryResultsPanel();
-        results.add(queryResultsPanel, BorderLayout.CENTER);
+        List<TreeTableColumnDefinition<ObjectType, ?>> columns = new ArrayList<>();
+        columns.add(new TreeTableColumnDefinition<>("Name", 500, o -> MidPointUtils.getOrigFromPolyString(o.getName())));
+        columns.add(new TreeTableColumnDefinition<>("Display name", 500, o -> {
+
+            if (!(o instanceof AbstractRoleType)) {
+                return null;
+            }
+
+            return MidPointUtils.getOrigFromPolyString(((AbstractRoleType) o).getDisplayName());
+        }));
+        columns.add(new TreeTableColumnDefinition<>("Subtype", 100, o -> StringUtils.join(o.getSubtype(), ", ")));
+        columns.add(new TreeTableColumnDefinition<>("Oid", 100, o -> o.getOid()));
+
+        this.results = MidPointUtils.createTable(new BrowseTableModel(columns), (List) columns);
+        this.results.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        results.add(new JBScrollPane(this.results), BorderLayout.CENTER);
 
         DefaultActionGroup pagingActions = createPagingActionGroup();
 
@@ -273,8 +296,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             try {
                 result = rest.search(type.getClassDefinition(), query, rawSearch);
             } catch (Exception ex) {
-                ex.printStackTrace(); // todo implement
-//                printErrorMessage("Couldn't list objects, reason: " + ex.getMessage());
+                handleGenericException("Couldn't search objects", ex);
             }
 
             updateTableModel(result);
@@ -283,34 +305,44 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         });
     }
 
+    private void handleGenericException(String message, Exception ex) {
+        MidPointUtils.handleGenericException(project, NOTIFICATION_KEY, message, ex);
+    }
+
+    private List<String> getSelectedRowsOids() {
+//        results.getSelectionModel().ge
+
+        //todo fix
+        return null;
+    }
+
     private void downloadPerformed(AnActionEvent evt, boolean showOnly) {
         ApplicationManager.getApplication().runWriteAction(() -> {
 
             setState(BrowseToolPanel.State.DOWNLOADING);
 
-            JTable table = queryResultsPanel.getTable();
-
             RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
 
             ObjectQuery objectQuery;
-            if (table.getRowCount() == table.getSelectedRowCount() || table.getSelectedRowCount() == 0) {
-                // return all
-                objectQuery = buildQuery(evt.getProject());
-            } else {
-                // return only selected objects
-                List<String> oids = queryResultsPanel.getSelectedRowsOids();
+//            todo fix
+//            if (table.getRowCount() == table.getSelectedRowCount() || table.getSelectedRowCount() == 0) {
+            // return all
+//                objectQuery = buildQuery(evt.getProject());
+//            } else {
+            // return only selected objects
+            List<String> oids = getSelectedRowsOids();
 
-                PrismContext ctx = rest.getPrismContext();
-                QueryFactory qf = ctx.queryFactory();
+            PrismContext ctx = rest.getPrismContext();
+            QueryFactory qf = ctx.queryFactory();
 
-                InOidFilter inOidFilter = qf.createInOid(oids);
+            InOidFilter inOidFilter = qf.createInOid(oids);
 
-                ItemPath path = ctx.path(ObjectType.F_NAME);
-                ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
-                        path, OrderDirection.ASCENDING);
+            ItemPath path = ctx.path(ObjectType.F_NAME);
+            ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
+                    path, OrderDirection.ASCENDING);
 
-                objectQuery = qf.createQuery(inOidFilter, paging);
-            }
+            objectQuery = qf.createQuery(inOidFilter, paging);
+//            }
 
             ObjectTypes objectTypes = objectType.getSelected();
             VirtualFile[] files = rest.download(objectTypes.getClassDefinition(), objectQuery,
@@ -336,17 +368,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void updateTableModel(SearchResultList result) {
-        BrowseTableModel tableModel = queryResultsPanel.getTableModel();
-        List<ObjectType> data = tableModel.getData();
-        data.clear();
+        BrowseTableModel tableModel = (BrowseTableModel) results.getTreeTableModel();
+        tableModel.setData(result.getList());
 
-        if (result == null || result.isEmpty()) {
-            return;
-        }
+        ApplicationManager.getApplication().invokeLater(() -> {
 
-        data.addAll(result);
-
-        ApplicationManager.getApplication().invokeLater(() -> tableModel.fireTableDataChanged());
+            tableModel.fireTableDataChanged();
+            results.expandAll();
+        });
 
 //        printSuccessMessage("");    // todo add paging/count info to message
     }
@@ -362,7 +391,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private boolean isDownloadShowEnabled() {
         // todo remove "true" part
-        return true || state == State.DONE && !queryResultsPanel.getTable().getSelectionModel().isSelectionEmpty();
+        return true || state == State.DONE && results.getSelectedRowCount() != 0;
     }
 
     private boolean isSearchEnabled() {
@@ -371,10 +400,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private boolean isCancelEnabled() {
         return state == State.SEARCHING;
-    }
-
-    public QueryResultsPanel getQueryResultsPanel() {
-        return queryResultsPanel;
     }
 
     public ObjectTypes getObjectType() {

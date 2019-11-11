@@ -1,73 +1,119 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import org.apache.commons.lang3.StringUtils;
+import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jetbrains.annotations.NotNull;
 
-import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class BrowseTableModel extends AbstractTableModel {
+public class BrowseTableModel extends AbstractTreeTableModel {
 
-    private static final String[] COLUMN_NAMES = {"Name", "Display Name", "Subtype", "Oid"};
+    private List<TreeTableColumnDefinition<ObjectType, ?>> columns;
 
-    private List<ObjectType> data = new ArrayList<>();
+    private DefaultMutableTreeTableNode root;
 
-    public List<ObjectType> getData() {
-        return data;
+    public BrowseTableModel(@NotNull List<TreeTableColumnDefinition<ObjectType, ?>> columns) {
+        this.columns = columns;
+    }
+
+    public void fireTableDataChanged() {
+        modelSupport.fireNewRoot();
     }
 
     @Override
-    public String getColumnName(int column) {
-        return COLUMN_NAMES[column];
+    public Object getRoot() {
+        return root;
     }
 
-    @Override
-    public int getRowCount() {
-        return data.size();
-    }
+    public void setData(List<ObjectType> data) {
+        root = new DefaultMutableTreeTableNode();
 
-    @Override
-    public int getColumnCount() {
-        return COLUMN_NAMES.length;
-    }
-
-    @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        ObjectType obj = data.get(rowIndex);
-
-        if (obj == null) {
-            return null;
+        if (data == null || data.isEmpty()) {
+            return;
         }
 
-        PrismObject object = obj.asPrismObject();
+        Map<ObjectTypes, List<ObjectType>> map = new HashMap<>();
+        for (ObjectType o : data) {
+            ObjectTypes type = ObjectTypes.getObjectType(o.getClass());
+            List<ObjectType> list = map.get(type);
+            if (list == null) {
+                list = new ArrayList<>();
+                map.put(type, list);
+            }
+            list.add(o);
+        }
 
-        switch (columnIndex) {
-            case 0:
-                return getOrigFromPolyString(object.getName());
-            case 1:
-                if (obj instanceof AbstractRoleType) {
-                    PolyString name = (PolyString) object.getPropertyRealValue(AbstractRoleType.F_DISPLAY_NAME, PolyString.class);
-                    return getOrigFromPolyString(name);
-                }
-                break;
-            case 2:
-                return StringUtils.join(obj.getSubtype(), ", ");
-            case 3:
-                return obj.getOid();
-            default:
+        List<ObjectTypes> types = new ArrayList<>();
+        types.addAll(map.keySet());
+        Collections.sort(types, MidPointUtils.OBJECT_TYPES_COMPARATOR);
+
+        for (ObjectTypes t : types) {
+            DefaultMutableTreeTableNode type = new DefaultMutableTreeTableNode(t);
+            root.add(type);
+
+            List<ObjectType> list = map.get(t);
+            Collections.sort(list, MidPointUtils.OBJECT_TYPE_COMPARATOR);
+
+            for (ObjectType o : list) {
+                DefaultMutableTreeTableNode n = new DefaultMutableTreeTableNode(o);
+                type.add(n);
+            }
+        }
+    }
+
+    @Override
+    public Object getValueAt(Object o, int i) {
+        DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) o;
+        Object obj = node.getUserObject();
+
+        if (obj instanceof ObjectType) {
+            return columns.get(i).getValue().apply((ObjectType) obj);
+        } else if (obj instanceof ObjectTypes) {
+            if (i != 0) {
+                return null;
+            }
+
+            ObjectTypes type = (ObjectTypes) obj;
+            String text = type.getTypeQName().getLocalPart();
+
+            return MidPointLocalizationService.getInstance().translate("ObjectType." + text, text);
         }
 
         return null;
     }
 
-    private String getOrigFromPolyString(PolyString poly) {
-        return poly != null ? poly.getOrig() : null;
+    @Override
+    public Object getChild(Object parent, int index) {
+        DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) parent;
+        return node.getChildAt(index);
+    }
+
+    @Override
+    public int getChildCount(Object parent) {
+        DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) parent;
+        return node.getChildCount();
+    }
+
+    @Override
+    public int getIndexOfChild(Object parent, Object child) {
+        DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) parent;
+        return node.getIndex((DefaultMutableTreeTableNode) child);
+    }
+
+    @Override
+    public int getColumnCount() {
+        return columns.size();
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        return columns.get(column).getHeader();
     }
 }

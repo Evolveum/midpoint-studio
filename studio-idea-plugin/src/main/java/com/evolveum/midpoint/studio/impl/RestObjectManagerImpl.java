@@ -1,6 +1,9 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.client.api.*;
+import com.evolveum.midpoint.client.api.AddOptions;
+import com.evolveum.midpoint.client.api.AuthenticationException;
+import com.evolveum.midpoint.client.api.MessageListener;
+import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
@@ -21,7 +24,6 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -346,17 +348,7 @@ public class RestObjectManagerImpl implements RestObjectManager {
     }
 
     private void handleGenericException(String message, Exception ex) {
-        NotificationAction action = null;
-        if (ex instanceof ClientException) {
-            OperationResult result = ((ClientException) ex).getResult();
-            if (result != null) {
-                action = new ShowResultNotificationAction(result);
-            }
-        }
-
-        MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error",
-                message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
-        midPointManager.printToConsole(RestObjectManagerImpl.class, message, ex);
+        MidPointUtils.handleGenericException(midPointManager.getProject(), NOTIFICATION_KEY, message, ex);
     }
 
     private <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, UploadOptions options) throws AuthenticationException {

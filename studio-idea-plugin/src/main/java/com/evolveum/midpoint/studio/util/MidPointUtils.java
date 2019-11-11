@@ -1,7 +1,13 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.studio.impl.MidPointFacet;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.client.api.ClientException;
+import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -28,14 +34,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.DisposeAwareRunnable;
 import org.apache.commons.lang3.StringUtils;
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.table.TableColumn;
 import java.awt.Color;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,11 +52,15 @@ import java.util.regex.Pattern;
  */
 public class MidPointUtils {
 
+    public static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+
+    public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart());
+
+    public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
+
     private static final Random RANDOM = new Random();
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
-
-    public static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
     @Deprecated
     public static Project getCurrentProject() {
@@ -195,6 +206,24 @@ public class MidPointUtils {
         Notifications.Bus.notify(notification);
     }
 
+    public static  void handleGenericException(Project project, String key, String message, Exception ex) {
+        NotificationAction action = null;
+        if (ex instanceof ClientException) {
+            OperationResult result = ((ClientException) ex).getResult();
+            if (result != null) {
+                action = new ShowResultNotificationAction(result);
+            }
+        }
+
+        MidPointUtils.publishNotification(key, "Error",
+                message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
+
+        if (project != null) {
+            MidPointManager manager = MidPointManager.getInstance(project);
+            manager.printToConsole(RestObjectManagerImpl.class, message, ex);
+        }
+    }
+
     public static Map<String, Object> mapOf(Entry<String, Object>... entries) {
         Map<String, Object> map = new HashMap<>();
 
@@ -242,5 +271,40 @@ public class MidPointUtils {
 
         FacetManager facetManager = FacetManager.getInstance(modules[0]);
         return facetManager.getFacetByType(MidPointFacet.ID) != null;
+    }
+
+    public static JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition> columns) {
+        JXTreeTable table = new JXTreeTable(model);
+        table.setRootVisible(false);
+        table.setEditable(false);
+        table.setDragEnabled(false);
+        table.setHorizontalScrollEnabled(true);
+        table.setLeafIcon(null);
+        table.setClosedIcon(null);
+        table.setOpenIcon(null);
+
+        if (columns != null) {
+            for (int i = 0; i < columns.size(); i++) {
+                TreeTableColumnDefinition def = columns.get(i);
+
+                TableColumn column = table.getColumnModel().getColumn(i);
+                column.setPreferredWidth(def.getSize());
+                if (def.getTableCellRenderer() != null) {
+                    column.setCellRenderer(def.getTableCellRenderer());
+                }
+            }
+        }
+
+        table.packAll();
+
+        return table;
+    }
+
+    public static String getOrigFromPolyString(PolyString poly) {
+        return poly != null ? poly.getOrig() : null;
+    }
+
+    public static String getOrigFromPolyString(PolyStringType poly) {
+        return poly != null ? poly.getOrig() : null;
     }
 }
