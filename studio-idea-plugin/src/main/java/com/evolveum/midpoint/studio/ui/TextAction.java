@@ -14,9 +14,26 @@ import javax.swing.*;
  */
 public class TextAction extends AnAction implements CustomComponentAction {
 
+    private JLabel label;
+    private String text;
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         // intentionally left empty
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+        super.update(e);
+
+        e.getPresentation().setText(text);
+        if (label != null) {
+            label.setText(text);
+        }
     }
 
     @Override
@@ -33,6 +50,7 @@ public class TextAction extends AnAction implements CustomComponentAction {
     @NotNull
     @Override
     public JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
-        return new JLabel(presentation.getText());
+        label = new JLabel(presentation.getText());
+        return label;
     }
 }

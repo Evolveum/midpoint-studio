@@ -42,20 +42,20 @@ dependencies {
 }
 
 intellij {
-    version '2019.2'
+    version '2019.3'
     type 'IC'
     downloadSources true
     pluginName 'MidPoint Studio'
     updateSinceUntilBuild false
     plugins = [
-            'PsiViewer:192-SNAPSHOT',
+            'PsiViewer:193-SNAPSHOT',
             'java',
             'Groovy',
             'maven'
     ]
     patchPluginXml {
         sinceBuild '191'
-        untilBuild '192.*'
+        untilBuild '193.*'
     }
 //    publishPlugin {
 //        channels System.getenv('IJ_PLUGIN_REPO_CHANNEL')
