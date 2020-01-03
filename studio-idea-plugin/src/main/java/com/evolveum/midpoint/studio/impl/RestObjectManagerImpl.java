@@ -2,9 +2,7 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.client.api.AddOptions;
 import com.evolveum.midpoint.client.api.AuthenticationException;
-import com.evolveum.midpoint.client.api.MessageListener;
 import com.evolveum.midpoint.client.api.Service;
-import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
@@ -106,29 +104,7 @@ public class RestObjectManagerImpl implements RestObjectManager {
         printToConsole("Creating new client for " + env.getName());
 
         try {
-            ServiceFactory factory = new ServiceFactory();
-            factory
-                    .url(environment.getUrl())
-                    .username(environment.getUsername())
-                    .password(environment.getPassword())
-                    .proxyServer(environment.getProxyServerHost())
-                    .proxyServerPort(environment.getProxyServerPort())
-                    .proxyServerType(environment.getProxyServerType())
-                    .proxyUsername(environment.getProxyUsername())
-                    .proxyPassword(environment.getProxyPassword())
-                    .ignoreSSLErrors(environment.isIgnoreSslErrors());
-
-            factory.messageListener((messageId, type, message) -> {
-
-                ConsoleViewContentType contentType = ConsoleViewContentType.LOG_INFO_OUTPUT;
-                if (MessageListener.MessageType.FAULT == type) {
-                    contentType = ConsoleViewContentType.LOG_ERROR_OUTPUT;
-                }
-
-                printToConsole(message, contentType);
-            });
-
-            client = factory.create();
+            client = MidPointUtils.buildRestClient(environment, midPointManager);
 
             printToConsole("Client created");
         } catch (Exception ex) {

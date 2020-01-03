@@ -1,7 +1,12 @@
 package com.evolveum.midpoint.studio.impl.metrics;
 
+import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.ui.metrics.MetricsEditorProvider;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -17,16 +22,28 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
     private Environment environment;
 
+    private Project project;
+
     private List<Node> nodes = new ArrayList<>();
 
     private Map<MetricsKey, List<DataPoint>> dataPoints = new HashMap<>();
 
-    public InMemoryMetricsSession(@NotNull UUID id, @NotNull Environment environment) {
+    public InMemoryMetricsSession(@NotNull UUID id, @NotNull Environment environment, @NotNull Project project) {
         this.id = id;
         this.environment = environment;
+        this.project = project;
     }
 
     public void init() {
+        try {
+            MidPointManager mm = MidPointManager.getInstance(project);
+            Service client = MidPointUtils.buildRestClient(environment, mm);
+
+            List<NodeType> nodes = client.search(NodeType.class).list();
+            System.out.println(nodes);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
         // todo
         // 1/ setup rest client
         // 2/ fetch all node objects
