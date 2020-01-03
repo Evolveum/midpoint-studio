@@ -88,7 +88,7 @@
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
-        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.metrics.MetricsEditorProvider"/>
 
         <diff.lang.DiffIgnoredRangeProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
     </extensions>
@@ -143,8 +143,8 @@
             <action id="MidPoint.Action.ComboEnvironmentAction"
                     class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
 
-            <action id="MidPoint.Action.ProfileAction" class="com.evolveum.midpoint.studio.action.ProfileEnvironment"
-                    text="Profile Environment"
+            <action id="MidPoint.Action.MetricsAction" class="com.evolveum.midpoint.studio.action.EnvironmentMetrics"
+                    text="Environment Metrics"
                     icon="AllIcons.Actions.Profile"/>
 
             <add-to-group group-id="NavBarToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>

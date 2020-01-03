@@ -7,7 +7,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -16,7 +18,7 @@ public class MetricsManagerImpl implements MetricsManager, BaseComponent {
 
     private Project project;
 
-    private List<MetricsSession> sessions;
+    private Map<UUID, MetricsSession> sessions = new HashMap<>();
 
     public MetricsManagerImpl(@NotNull Project project) {
         this.project = project;
@@ -29,7 +31,7 @@ public class MetricsManagerImpl implements MetricsManager, BaseComponent {
 
     @Override
     public void disposeComponent() {
-        for (MetricsSession session : sessions) {
+        for (MetricsSession session : sessions.values()) {
             if (session instanceof Disposable) {
                 ((Disposable) session).dispose();
             }
@@ -37,11 +39,16 @@ public class MetricsManagerImpl implements MetricsManager, BaseComponent {
     }
 
     @Override
+    public MetricsSession getSession(@NotNull UUID id) {
+        return sessions.get(id);
+    }
+
+    @Override
     public MetricsSession createSession() {
         EnvironmentManager envManager = EnvironmentManager.getInstance(project);
         Environment env = envManager.getSelected();
 
-        InMemoryMetricsSession session = new InMemoryMetricsSession(env);
+        InMemoryMetricsSession session = new InMemoryMetricsSession(UUID.randomUUID(), env);
         session.init();
 
         return session;

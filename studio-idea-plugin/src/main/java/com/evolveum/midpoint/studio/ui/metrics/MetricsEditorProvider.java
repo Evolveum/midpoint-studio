@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.profiler;
+package com.evolveum.midpoint.studio.ui.metrics;
 
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;
@@ -11,19 +11,21 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ProfilingEditorProvider implements FileEditorProvider, DumbAware {
+public class MetricsEditorProvider implements FileEditorProvider, DumbAware {
 
-    private static final String EDITOR_TYPE_ID="profiling-ui";
+    public static final String METRICS_FILE_EXTENSION = "mpmetrics";
+
+    private static final String EDITOR_TYPE_ID = "profiling-ui";
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile file) {
-        return file.getExtension().equalsIgnoreCase("aaa");
+        return file.getExtension().equalsIgnoreCase(METRICS_FILE_EXTENSION);
     }
 
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
-        return new ProfilingEditor(project);
+        return new MetricsEditor(project, file);
     }
 
     @NotNull

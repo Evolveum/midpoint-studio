@@ -1,14 +1,12 @@
-package com.evolveum.midpoint.studio.ui.profiler;
+package com.evolveum.midpoint.studio.ui.metrics;
 
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 
-import java.io.Serializable;
-
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ProfilingEditorState implements FileEditorState {
+public class MetricsEditorState implements FileEditorState {
 
     @Override
     public boolean canBeMergedWith(FileEditorState otherState, FileEditorStateLevel level) {

@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.profiler;
+package com.evolveum.midpoint.studio.ui.metrics;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -7,6 +7,7 @@ import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.project.PossiblyDumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,13 +17,19 @@ import java.beans.PropertyChangeListener;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ProfilingEditor implements FileEditor, PossiblyDumbAware {
+public class MetricsEditor implements FileEditor, PossiblyDumbAware {
 
     private Project project;
-    private ProfilingPanel panel = new ProfilingPanel();
 
-    public ProfilingEditor(@NotNull Project project) {
+    private VirtualFile file;
+
+    private MetricsPanel panel;
+
+    public MetricsEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.project = project;
+        this.file = file;
+
+        panel = new MetricsPanel(project, file);
     }
 
     @NotNull
@@ -40,7 +47,7 @@ public class ProfilingEditor implements FileEditor, PossiblyDumbAware {
     @NotNull
     @Override
     public String getName() {
-        return "Profiling";
+        return "Metrics";
     }
 
     @Override
