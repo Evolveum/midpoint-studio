@@ -20,14 +20,18 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
 
     private Task.Backgroundable task;
 
-    public BackgroundAction(String text, Icon icon, String taskTitle) {
-        this(text, text, icon);
-
+    public BackgroundAction(String taskTitle) {
         this.taskTitle = taskTitle;
     }
 
-    public BackgroundAction(String text, String description, Icon icon) {
+    public BackgroundAction(String text, Icon icon, String taskTitle) {
+        this(text, text, icon, taskTitle);
+    }
+
+    public BackgroundAction(String text, String description, Icon icon, String taskTitle) {
         super(text, description, icon);
+
+        this.taskTitle = taskTitle;
     }
 
     @Override

@@ -11,7 +11,7 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
-import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
+import com.evolveum.midpoint.studio.action.browse.DownloadAction;
 import com.evolveum.midpoint.studio.impl.RestObjectManager;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
@@ -386,43 +386,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly, ProgressIndicator indicator) {
-        ApplicationManager.getApplication().runWriteAction(() -> {
+        setState(BrowseToolPanel.State.DOWNLOADING);
 
-            setState(BrowseToolPanel.State.DOWNLOADING);
+        DownloadAction da = new DownloadAction(null, false) {
 
-            RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
-
-            ObjectQuery objectQuery = null;
-//            todo fix
-//            if (table.getRowCount() == table.getSelectedRowCount() || table.getSelectedRowCount() == 0) {
-//                // return all
-//                objectQuery = buildQuery(evt.getProject());
-//            } else {
-//                // return only selected objects
-//                List<String> oids = getSelectedRowsOids();
-//
-//                PrismContext ctx = rest.getPrismContext();
-//                QueryFactory qf = ctx.queryFactory();
-//
-//                InOidFilter inOidFilter = qf.createInOid(oids);
-//
-//                ItemPath path = ctx.path(ObjectType.F_NAME);
-//                ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
-//                        path, OrderDirection.ASCENDING);
-//
-//                objectQuery = qf.createQuery(inOidFilter, paging);
-//            }
-
-            ObjectTypes objectTypes = objectType.getSelected();
-            VirtualFile[] files = rest.download(objectTypes.getClassDefinition(), objectQuery,
-                    new DownloadOptions().showOnly(showOnly).raw(rawDownload));
-
-            if (files != null && files.length == 1) {
+            @Override
+            protected void onFinished() {
+                VirtualFile file = null;// todo getDownloadedFile();
+                if (file == null) {
+                    return;
+                }
                 FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
-                fem.openFile(files[0], true, true);
+                fem.openFile(file, true, true);
             }
-            // todo if files is null show error/warning
-        });
+        };
+        ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
 
     private void cancelPerformed(AnActionEvent evt) {
