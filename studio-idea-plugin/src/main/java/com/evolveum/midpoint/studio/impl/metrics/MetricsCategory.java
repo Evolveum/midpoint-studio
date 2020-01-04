@@ -7,6 +7,8 @@ public enum MetricsCategory {
 
     SYSTEM("System"),
 
+    PROCESS("Process"),
+
     JVM("JVM");
 
     private String displayName;

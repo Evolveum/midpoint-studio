@@ -48,10 +48,7 @@ public class MetricsManagerImpl implements MetricsManager, BaseComponent {
         EnvironmentManager envManager = EnvironmentManager.getInstance(project);
         Environment env = envManager.getSelected();
 
-        InMemoryMetricsSession session = new InMemoryMetricsSession(UUID.randomUUID(), env, project);
-        session.init();
-
-        return session;
+        return new InMemoryMetricsSession(UUID.randomUUID(), env, project);
     }
 
     @Override

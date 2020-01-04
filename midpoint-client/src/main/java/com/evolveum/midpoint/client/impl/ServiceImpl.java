@@ -6,16 +6,22 @@ import com.evolveum.midpoint.client.api.SearchService;
 import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import org.apache.cxf.jaxrs.client.WebClient;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ServiceImpl implements Service {
+public class ServiceImpl implements Service<WebClient> {
 
     private ServiceContext context;
 
     public ServiceImpl(ServiceContext context) {
         this.context = context;
+    }
+
+    @Override
+    public WebClient getClient() {
+        return context.getClient();
     }
 
     @Override

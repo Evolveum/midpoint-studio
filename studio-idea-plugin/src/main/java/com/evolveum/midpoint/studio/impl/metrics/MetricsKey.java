@@ -5,17 +5,32 @@ package com.evolveum.midpoint.studio.impl.metrics;
  */
 public enum MetricsKey {
 
-    CPU("Cpu", MetricsCategory.SYSTEM),
+    SYSTEM_CPU_USAGE("system.cpu.usage", "CPU Usage", MetricsCategory.SYSTEM),
 
-    MEMORY("Memory", MetricsCategory.SYSTEM);
+    PROCESS_CPU_USAGE("process.cpu.usage", "CPU Usage", MetricsCategory.PROCESS),
+
+    JVM_GC_PAUSE("jvm.gc.pause", "GC Pause", MetricsCategory.JVM),
+
+    JVM_MEMORY_COMMITED("jvm.memory.committed", "Memory Commited", MetricsCategory.JVM),
+
+    JVM_MEMORY_USED("jvm.memory.used", "Memory Used", MetricsCategory.JVM),
+
+    JVM_THREADS_LIVE("jvm.threads.live", "Threads Live", MetricsCategory.JVM);
+
+    private String key;
 
     private String displayName;
 
     private MetricsCategory category;
 
-    MetricsKey(String displayName, MetricsCategory category) {
+    MetricsKey(String key, String displayName, MetricsCategory category) {
+        this.key = key;
         this.displayName = displayName;
         this.category = category;
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public String getDisplayName() {

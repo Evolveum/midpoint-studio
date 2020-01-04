@@ -6,12 +6,14 @@ import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.ui.metrics.MetricsEditorProvider;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.Future;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -28,27 +30,12 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
     private Map<MetricsKey, List<DataPoint>> dataPoints = new HashMap<>();
 
+    private Map<MetricsWorker, Future> workers = new HashMap();
+
     public InMemoryMetricsSession(@NotNull UUID id, @NotNull Environment environment, @NotNull Project project) {
         this.id = id;
         this.environment = environment;
         this.project = project;
-    }
-
-    public void init() {
-        try {
-            MidPointManager mm = MidPointManager.getInstance(project);
-            Service client = MidPointUtils.buildRestClient(environment, mm);
-
-            List<NodeType> nodes = client.search(NodeType.class).list();
-            System.out.println(nodes);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-        // todo
-        // 1/ setup rest client
-        // 2/ fetch all node objects
-        // 3/ setup rest clients for all nodes
-        // 4/ setup workers, prepare them for scheduling
     }
 
     public void dispose() {
@@ -67,12 +54,44 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
     @Override
     public void start() {
+        try {
+            MidPointManager mm = MidPointManager.getInstance(project);
+            Service client = MidPointUtils.buildRestClient(environment, mm);
 
+            List<NodeType> nodes = client.search(NodeType.class).list();
+
+            List<MetricsWorker> workers = new ArrayList<>();
+
+            int i = 0;
+            for (NodeType node : nodes) {
+                Node n = new Node(i, node.getOid(), node.getName().getOrig());
+                this.nodes.add(n);
+
+                workers.add(new MetricsWorker(this, project, node));
+            }
+
+            for (MetricsWorker worker : workers) {
+                Future future = ApplicationManager.getApplication().executeOnPooledThread(worker);
+                this.workers.put(worker, future);
+            }
+        } catch (Exception ex) {
+            // todo proper error handling
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
     public void stop() {
+        for (MetricsWorker worker : workers.keySet()) {
+            worker.setStop(true);
+        }
 
+        try {
+            workers.values().forEach(f -> f.cancel(true));
+        } catch (Exception ex) {
+            // todo proper error handling
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
