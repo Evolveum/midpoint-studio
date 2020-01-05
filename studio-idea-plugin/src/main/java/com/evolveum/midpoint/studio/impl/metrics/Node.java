@@ -11,10 +11,13 @@ public class Node {
 
     private String name;
 
-    public Node(int id, String oid, String name) {
+    private String url;
+
+    public Node(int id, String oid, String name, String url) {
         this.id = id;
         this.oid = oid;
         this.name = name;
+        this.url = url;
     }
 
     public int getId() {
@@ -39,5 +42,13 @@ public class Node {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

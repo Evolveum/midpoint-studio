@@ -64,10 +64,10 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
             int i = 0;
             for (NodeType node : nodes) {
-                Node n = new Node(i, node.getOid(), node.getName().getOrig());
+                Node n = new Node(i, node.getOid(), node.getName().getOrig(), node.getUrl());
                 this.nodes.add(n);
 
-                workers.add(new MetricsWorker(this, project, node));
+                workers.add(new MetricsWorker(this, project, n));
             }
 
             for (MetricsWorker worker : workers) {

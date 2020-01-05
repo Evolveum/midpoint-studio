@@ -4,9 +4,10 @@ import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
 import com.intellij.openapi.project.Project;
 import org.apache.cxf.jaxrs.client.WebClient;
+
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -17,13 +18,13 @@ public class MetricsWorker implements Runnable {
 
     private Project project;
 
-    private NodeType node;
+    private Node node;
 
     private boolean stop;
 
     private Service<WebClient> service;
 
-    public MetricsWorker(MetricsSession session, Project project, NodeType node) {
+    public MetricsWorker(MetricsSession session, Project project, Node node) {
         this.session = session;
         this.project = project;
         this.node = node;
@@ -57,8 +58,16 @@ public class MetricsWorker implements Runnable {
                 }
 
                 WebClient client = service.getClient();
+                for (MetricsKey key : MetricsKey.values()) {
+                    WebClient c = client.path("/actuator/metrics/" + key.getKey());
+                    Map data = c.get(Map.class);
+
+                    System.out.println(data);
+                }
 // todo continue :)
 //                client = client.path("/")
+
+                Thread.sleep(5000L);
             } catch (Exception ex) {
                 // todo handle exception
                 throw new RuntimeException(ex);
