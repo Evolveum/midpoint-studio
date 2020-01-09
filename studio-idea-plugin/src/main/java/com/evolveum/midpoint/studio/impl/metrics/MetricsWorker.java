@@ -69,6 +69,10 @@ public class MetricsWorker implements Runnable {
 
                 Thread.sleep(5000L);
             } catch (Exception ex) {
+                try {
+                    Thread.sleep(5000L);
+                } catch (InterruptedException e) {
+                }
                 // todo handle exception
                 throw new RuntimeException(ex);
             }
