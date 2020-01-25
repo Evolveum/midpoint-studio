@@ -1,0 +1,13 @@
+## RESOURCES
+
+#set($resources=$processor.loadResources())
+
+#if(!$resources.isEmpty())
+
+= Resources
+
+    #foreach($object in $resources)
+        #parse("/template/resource.vm")
+    #end
+
+#end

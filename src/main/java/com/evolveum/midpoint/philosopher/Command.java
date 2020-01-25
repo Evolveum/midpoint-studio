@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.philosopher;
 
+import com.evolveum.midpoint.philosopher.generator.GenerateAction;
+import com.evolveum.midpoint.philosopher.generator.GenerateOptions;
+
 /**
  * @author Viliam Repan (lazyman)
  */

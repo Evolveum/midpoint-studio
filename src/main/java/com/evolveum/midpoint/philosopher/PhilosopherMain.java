@@ -109,6 +109,7 @@ public class PhilosopherMain {
         BaseOptions base = new BaseOptions();
 
         JCommander.Builder builder = JCommander.newBuilder()
+                .expandAtSign(false)
                 .addObject(base);
 
         for (Command cmd : Command.values()) {

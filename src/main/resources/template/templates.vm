@@ -1,0 +1,13 @@
+## OBJECT TEMPLATES
+
+#set($templates=$processor.loadTemplates())
+
+#if(!$templates.isEmpty())
+
+= Object Templates
+
+    #foreach($object in $templates)
+        #parse("/template/template.vm")
+    #end
+
+#end

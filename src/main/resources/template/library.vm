@@ -1,0 +1,7 @@
+#[[##]]# $!utils.getOrig($object.getName())
+
+$!object.getDescription()
+
+#[[###]]# Functions
+
+## todo describe functions

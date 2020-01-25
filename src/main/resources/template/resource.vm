@@ -1,0 +1,61 @@
+#[[##]]# $!utils.getOrig($object.getName())
+
+#[[###]]# Connector
+
+#set($connector=$utils.loadObject($client, $object.getConnectorRef()))
+
+Resource uses $!utils.getOrig($connector.getDisplayName()) connector. Artifact details:
+* **Connector type:** $!connector.getConnectorType()
+* **Connector version:** $!connector.getConnectorVersion()
+* **Connector bundle:** $!connector.getConnectorBundle()
+* **Namespace:** $!connector.getNamespace()
+
+#[[####]]# Connector Configuration
+
+Parameter|Value|Description
+:---|:---|--:
+#foreach($attribute in $utils.getConnectorConfiguration($object))
+|$!attribute.getName() | $!attribute.getValue() |$!attribute.getDescription() |
+#end
+
+#set($handlersConfig=$utils.getResultsHandlerConfiguration($object))
+
+#if(!$handlersConfig.isEmpty())
+
+#[[#####]]# Results Handlers Configuration
+
+Parameter|Value
+:---|:---|--:
+#foreach($attribute in $handlersConfig)
+|$!attribute.getName() | $!attribute.getValue() |
+#end
+
+#end
+
+#[[###]]# Available Object Types
+
+* table OC / Kind / Intent / Description from somewhere
+
+#foreach($type in $object.getSchemaHandling().getObjectType())
+#[[####]]# $!type.getDisplayName() $!type.getKind()/$!type.getIntent()
+#end
+
+#[[###]]# Attributes Description
+
+#foreach($type in $object.getSchemaHandling().getObjectType())
+#[[####]]# $!type.getDisplayName() $!type.getKind()/$!type.getIntent()
+
+Attribute|Type|Description
+:---|:---|--:
+#foreach($attribute in $type.getAttribute())
+|$!attribute.getRef().getValue() | |$!attribute.getDescription() |
+#end
+#end
+
+#[[###]]# Synchronization Configuration
+
+* Table
+
+#[[###]]# Capabilities
+
+* Table
