@@ -14,7 +14,9 @@ public class CmdTest {
                 "-s",
                 "/Users/lazyman/Work/monoted/projects/ek/git/midpoint-project/objects",
                 "-o",
-                "./target/local.adoc"
+                "./local.html",
+                "-ef",
+                "HTML"
         };
 
         PhilosopherMain.main(args);

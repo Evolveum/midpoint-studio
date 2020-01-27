@@ -49,18 +49,12 @@ Resource uses $!utils.getOrig($connector.getDisplayName()) connector. Artifact d
 
 #end
 
-==== Available Object Types
-
-* table OC / Kind / Intent / Description from somewhere
+==== Object Types
 
 #foreach($type in $object.getSchemaHandling().getObjectType())
 ===== $!type.getDisplayName() $!type.getKind()/$!type.getIntent()
-#end
 
-==== Attributes Description
-
-#foreach($type in $object.getSchemaHandling().getObjectType())
-===== $!type.getDisplayName() $!type.getKind()/$!type.getIntent()
+$!type.getDescription()
 
 [cols=3,options=header]
 |===
