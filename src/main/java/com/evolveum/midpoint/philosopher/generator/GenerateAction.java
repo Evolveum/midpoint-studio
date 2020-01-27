@@ -19,18 +19,21 @@ public class GenerateAction implements Action<GenerateOptions> {
 
     @Override
     public void execute() throws Exception {
-        ConnectionOptions con = options.getConnection();
+//        if (options.isUseRemote()) {
+//
+//        }
+//        RemoteOptions con = options.getRemote();
+//
+//        String pwd = con.getPassword() != null ? con.getPassword() : con.getAskPassword();
+//
+//        Service client = new RestJaxbServiceBuilder()
+//                .url(con.getUrl())
+//                .username(con.getUsername())
+//                .password(pwd)
+//                .authentication(AuthenticationType.BASIC)
+//                .build();
 
-        String pwd = con.getPassword() != null ? con.getPassword() : con.getAskPassword();
-
-        Service client = new RestJaxbServiceBuilder()
-                .url(con.getUrl())
-                .username(con.getUsername())
-                .password(pwd)
-                .authentication(AuthenticationType.BASIC)
-                .build();
-
-        Generator generator = new Generator(options, client);
+        Generator generator = new Generator(options);
         generator.generate();
     }
 }

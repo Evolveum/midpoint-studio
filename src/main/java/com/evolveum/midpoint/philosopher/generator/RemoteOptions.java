@@ -8,7 +8,7 @@ import com.evolveum.midpoint.philosopher.util.URIConverter;
  * Created by Viliam Repan (lazyman).
  */
 @Parameters(resourceBundle = "messages")
-public class ConnectionOptions {
+public class RemoteOptions {
 
     public static final String P_URL = "-U";
     public static final String P_URL_LONG = "--url";

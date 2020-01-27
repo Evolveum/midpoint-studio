@@ -21,8 +21,17 @@ public class GenerateOptions {
     public static final String P_OUTPUT = "-o";
     public static final String P_OUTPUT_LONG = "--output";
 
+    public static final String P_USE_REMOTE = "-r";
+    public static final String P_USE_REMOTE_LONG = "--remote";
+
+    @Parameter(names = {P_USE_REMOTE, P_USE_REMOTE_LONG}, descriptionKey = "generate.useRemote")
+    private boolean useRemote;
+
     @ParametersDelegate
-    private ConnectionOptions connection;
+    private RemoteOptions remote;
+
+    @ParametersDelegate
+    private LocalOptions local;
 
     @Parameter(names = {P_EXPORT_FORMAT, P_EXPORT_FORMAT_LONG}, descriptionKey = "generate.exportFormat")
     private ExportFormat exportFormat;
@@ -33,8 +42,12 @@ public class GenerateOptions {
     @Parameter(names = {P_OUTPUT, P_OUTPUT_LONG}, descriptionKey = "generate.output")
     private File output;
 
-    public ConnectionOptions getConnection() {
-        return connection;
+    public RemoteOptions getRemote() {
+        return remote;
+    }
+
+    public LocalOptions getLocal() {
+        return local;
     }
 
     public File getTemplate() {
@@ -49,12 +62,16 @@ public class GenerateOptions {
         return exportFormat;
     }
 
+    public void setLocal(LocalOptions local) {
+        this.local = local;
+    }
+
     public void setExportFormat(ExportFormat exportFormat) {
         this.exportFormat = exportFormat;
     }
 
-    public void setConnection(ConnectionOptions connection) {
-        this.connection = connection;
+    public void setRemote(RemoteOptions remote) {
+        this.remote = remote;
     }
 
     public void setTemplate(File template) {
@@ -63,5 +80,13 @@ public class GenerateOptions {
 
     public void setOutput(File output) {
         this.output = output;
+    }
+
+    public boolean isUseRemote() {
+        return useRemote;
+    }
+
+    public void setUseRemote(boolean useRemote) {
+        this.useRemote = useRemote;
     }
 }

@@ -1,12 +1,6 @@
 package com.evolveum.midpoint.philosopher.generator;
 
-import com.evolveum.midpoint.client.api.SearchResult;
-import com.evolveum.midpoint.client.api.Service;
-import com.evolveum.midpoint.client.api.exception.ObjectNotFoundException;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.FunctionLibraryType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectTemplateType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +27,28 @@ public class ProcessorUtils {
     }
 
     public List<ResourceType> loadResources() throws Exception {
-        return loadObjects(ResourceType.class);
+        List<ResourceType> resources = loadObjects(ResourceType.class);
+
+        for (ResourceType resource : resources) {
+            if (resource.getSchemaHandling() == null) {
+                continue;
+            }
+
+            SchemaHandlingType schemaHandling = resource.getSchemaHandling();
+            // todo sort
+//            Collections.sort(schemaHandling.getObjectType(), (o1, o2) -> {
+//
+//                o1.getDisplayName();
+//                o1.getKind();
+//                o1.getIntent();
+//
+//                o1.getDisplayName();
+//                o1.getKind();
+//                o1.getIntent();
+//            });
+        }
+
+        return resources;
     }
 
     public List<FunctionLibraryType> loadFunctionLibraries() throws Exception {
@@ -41,22 +56,13 @@ public class ProcessorUtils {
     }
 
     private <T extends ObjectType> List<T> loadObjects(Class<T> type) throws Exception {
-//        Map<T, Set<String>> types = context.getConfiguration().includedObjectTypes();
-//        Set<String> oids = types.get(type);
-
-        // todo filter by oids
-
         List<T> objects = new ArrayList<>();
 
-        Service service = context.getClient();
-        try {
-            SearchResult result = service.collection(type).search().queryFor(type).build().get();
-            if (result != null) {
-                objects.addAll(result);
-                Collections.sort(objects, new ObjectTypeComparator());
-            }
-        } catch (ObjectNotFoundException ex) {
-            LOG.warn("Couldn't find objects of type {}", type);
+        MidPointClient client = context.getClient();
+        List<T> result = client.list(type);
+        if (result != null) {
+            objects.addAll(result);
+            Collections.sort(objects, new ObjectTypeComparator());
         }
 
         return objects;

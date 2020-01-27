@@ -4,10 +4,10 @@
 
 #if(!$resources.isEmpty())
 
-= Resources
+== Resources
 
-    #foreach($object in $resources)
-        #parse("/template/resource.vm")
-    #end
+#foreach($object in $resources)
+#parse("/template/resource.vm")
+#end
 
 #end

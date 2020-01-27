@@ -39,9 +39,7 @@ public class HtmlExporter implements Exporter {
 
         Map<String, Object> options = builder.asMap();
 
-        File adoc = new File("./src/test/resources/test.adoc");
-
         Asciidoctor doctor = Asciidoctor.Factory.create();
-        doctor.convertFile(adoc, options);
+        doctor.convertFile(adocFile, options);
     }
 }

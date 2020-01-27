@@ -1,13 +1,13 @@
 package com.evolveum.midpoint.philosopher.generator;
 
-import com.evolveum.midpoint.client.api.Service;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -30,15 +30,13 @@ public class Generator {
 
     private GenerateOptions configuration;
 
-    private Service client;
-
-    public Generator(GenerateOptions configuration, Service client) {
+    public Generator(GenerateOptions configuration) {
         this.configuration = configuration;
-        this.client = client;
     }
 
     public void generate() throws Exception {
-        Map<Class<? extends ObjectType>, Set<String>> types = createDefaultTypes();
+        MidPointClient client = new LocalClient(configuration.getLocal());
+        client.init();
 
         File adocFile = createAsciidocFile();
         if (adocFile.exists()) {
@@ -93,17 +91,5 @@ public class Generator {
         }
 
         return new File(output.getParent(), output.getName() + ADOC_EXTENSION);
-    }
-
-    private Map<Class<? extends ObjectType>, Set<String>> createDefaultTypes() {
-        Map<Class<? extends ObjectType>, Set<String>> map = new HashMap<>();
-        map.put(ResourceType.class, new HashSet<>());
-        map.put(ObjectTemplateType.class, new HashSet<>());
-        map.put(FunctionLibraryType.class, new HashSet<>());
-        map.put(ConnectorType.class, new HashSet<>());
-
-        // todo figure out which types should be used by default
-
-        return map;
     }
 }

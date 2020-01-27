@@ -4,10 +4,10 @@
 
 #if(!$libraries.isEmpty())
 
-= Function Libraries
+== Function Libraries
 
-    #foreach($object in $libraries)
-        #parse("/template/library.vm")
-    #end
+#foreach($object in $libraries)
+#parse("/template/library.vm")
+#end
 
 #end

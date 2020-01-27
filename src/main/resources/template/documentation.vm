@@ -1,4 +1,17 @@
-:toc:
+= MidPoint Project Documentation
+Evolveum, s.r.o. (c) 2020
+Version 0.1, 27. 1. 2020
+:sectnums:
+:toc: left
+:toclevels: 4
+:toc-title: Table of Contents
+
+:description: Example AsciiDoc document
+:keywords: AsciiDoc
+:imagesdir: ./img
+
+This is the optional preamble (an untitled section body). Useful for
+writing simple sectionless documents consisting only of a preamble.
 
 #parse("/template/templates.vm")
 

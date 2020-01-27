@@ -1,16 +1,14 @@
 package com.evolveum.midpoint.philosopher.generator;
 
-import com.evolveum.midpoint.client.api.Service;
-
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class GeneratorContext {
 
-    private Service client;
+    private MidPointClient client;
     private GenerateOptions configuration;
 
-    public GeneratorContext(GenerateOptions configuration, Service client) {
+    public GeneratorContext(GenerateOptions configuration, MidPointClient client) {
         this.configuration = configuration;
         this.client = client;
     }
@@ -19,7 +17,7 @@ public class GeneratorContext {
         return configuration;
     }
 
-    public Service getClient() {
+    public MidPointClient getClient() {
         return client;
     }
 }

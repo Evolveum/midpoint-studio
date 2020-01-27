@@ -1,7 +1,29 @@
-#[[##]]# $!utils.getOrig($object.getName())
+=== $!utils.getOrig($object.getName())
 
 $!object.getDescription()
 
-#[[###]]# Functions
+#foreach($expression in $object.getFunction())
+==== $expression.getName()
 
+$!expression.getDescription()
+
+===== Parameters
+
+[cols=2,options=header]
+|===
+|Parameter
+|Value
+
+#foreach($parameter in $expression.getParameter())
+|$!parameter.getName()
+| $!parameter.getType()
+
+#end
+|===
+
+===== Return Type
+
+$expression.getReturnType()
+
+#end
 ## todo describe functions
