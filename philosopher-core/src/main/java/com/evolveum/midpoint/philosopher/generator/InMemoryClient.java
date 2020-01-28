@@ -1,16 +1,15 @@
 package com.evolveum.midpoint.philosopher.generator;
 
-import com.evolveum.midpoint.philosopher.util.PhilosopherUtils;
-import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectListType;
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.util.PrismContextFactory;
+import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
+import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.util.*;
 
@@ -33,49 +32,39 @@ public class InMemoryClient implements MidPointClient {
 
     @Override
     public void init() throws Exception {
-        JAXBContext ctx = PhilosopherUtils.createJAXBContext();
-        Unmarshaller unmarshaller = ctx.createUnmarshaller();
+        DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
+        // todo create web client just to obtain extension schemas!
+
+        PrismContextFactory factory = new MidPointPrismContextFactory();
+        PrismContext prismContext = factory.createPrismContext();
+        prismContext.initialize();
+
+        ParsingContext parsingContext = prismContext.createParsingContextForCompatibilityMode();
+
 
         Iterator<File> files = FileUtils.iterateFiles(options.getSourceDirectory(), new String[]{"xml"}, true);
         while (files.hasNext()) {
             File file = files.next();
 
             try {
-                Object obj = unmarshaller.unmarshal(file);
-                List<ObjectType> objects = getObjectType(obj);
-                for (ObjectType object : objects) {
-                    List<ObjectType> list = this.objects.get(object.getClass());
+                PrismParser parser = prismContext.parserFor(file).language(PrismContext.LANG_XML).context(parsingContext);
+                List<PrismObject<? extends Objectable>> objects = parser.parseObjects();
+
+                for (PrismObject<? extends Objectable> object : objects) {
+                    ObjectType obj = (ObjectType) object.asObjectable();
+
+                    List<ObjectType> list = this.objects.get(obj.getClass());
                     if (list == null) {
                         list = new ArrayList<>();
-                        this.objects.put(object.getClass(), list);
+                        this.objects.put(obj.getClass(), list);
                     }
-                    list.add(object);
+                    list.add(obj);
                 }
             } catch (Exception ex) {
                 LOG.warn("Couldn't load file {}, reason: {}", file.getPath(), ex.getMessage());
             }
         }
         LOG.debug("Initialization done");
-    }
-
-    private List<ObjectType> getObjectType(Object obj) {
-        List<ObjectType> result = new ArrayList<>();
-
-        if (obj instanceof JAXBElement) {
-            obj = ((JAXBElement) obj).getValue();
-        }
-
-        if (obj instanceof ObjectListType) {
-            ObjectListType list = (ObjectListType) obj;
-            result.addAll(list.getObject());
-            return result;
-        }
-
-        if (obj instanceof ObjectType) {
-            result.add((ObjectType) obj);
-        }
-
-        return result;
     }
 
     @Override

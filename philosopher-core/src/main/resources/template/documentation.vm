@@ -18,3 +18,9 @@ writing simple sectionless documents consisting only of a preamble.
 #parse("/template/resources.vm")
 
 #parse("/template/libraries.vm")
+
+#parse("/template/orgs.vm")
+
+#parse("/template/roles.vm")
+
+#parse("/template/tasks.vm")

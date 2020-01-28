@@ -29,7 +29,7 @@
         <asciidoctorj.version>2.1.0</asciidoctorj.version>
         <commons.io.version>2.6</commons.io.version>
         <velocity.version>2.1</velocity.version>
-        <midpoint.client.version>4.0.1</midpoint.client.version>
+        <midpoint.version>4.1-SNAPSHOT</midpoint.version>
         <testng.version>7.1.0</testng.version>
     </properties>
 
@@ -132,9 +132,19 @@
             </dependency>
 
             <dependency>
-                <groupId>com.evolveum.midpoint.client</groupId>
-                <artifactId>midpoint-client-impl-rest-jaxb</artifactId>
-                <version>${midpoint.client.version}</version>
+                <groupId>com.evolveum.midpoint.infra</groupId>
+                <artifactId>schema</artifactId>
+                <version>${midpoint.version}</version>
+                <exclusions>
+<!--                    <exclusion>-->
+<!--                        <groupId>org.apache.cxf</groupId>-->
+<!--                        <artifactId>cxf-rt-wsdl</artifactId>-->
+<!--                    </exclusion>-->
+                    <exclusion>
+                        <groupId>net.sf.jasperreports</groupId>
+                        <artifactId>jasperreports</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

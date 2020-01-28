@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.philosopher.generator;
 
-import com.evolveum.midpoint.client.api.Service;
+import com.evolveum.midpoint.philosopher.generator.data.Attribute;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorConfigurationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -23,16 +23,7 @@ import java.util.Map;
 public class TemplateUtils {
 
     public static String getOrig(PolyStringType poly) {
-        if (poly == null) {
-            return null;
-        }
-        for (Object content : poly.getContent()) {
-            if (content instanceof String) {
-                return (String) content;
-            }
-            // TODO: DOM elements and JAXB elements
-        }
-        return null;
+        return poly != null ? poly.getOrig() : null;
     }
 
     public static List<Attribute> getResultsHandlerConfiguration(ResourceType resource) {
@@ -111,7 +102,7 @@ public class TemplateUtils {
         return null;
     }
 
-    private static Map<String, String> getConnectorConfigurationDescription(Service client, ResourceType resource) {
+    private static Map<String, String> getConnectorConfigurationDescription(ResourceType resource) {
         ObjectReferenceType connectorRef = resource.getConnectorRef();
         if (connectorRef == null || connectorRef.getOid() == null) {
             return new HashMap<>();
@@ -124,10 +115,10 @@ public class TemplateUtils {
         return result;
     }
 
-    public static ObjectType loadObject(Service client, ObjectReferenceType ref) throws Exception {
-        if (client == null || ref == null) {
-            return null;
-        }
+    public static ObjectType loadObject(ObjectReferenceType ref) throws Exception {
+//        if (client == null || ref == null) {
+//            return null;
+//        }
 
 
 //        ObjectTypes type = ObjectTypes.getObjectTypeFromTypeQName(ref.getType());
@@ -137,35 +128,5 @@ public class TemplateUtils {
 //
 //        return client.oid(type.getClassDefinition(), ref.getOid()).get();
         return null;
-    }
-
-    public static class Attribute {
-
-        private String name;
-        private String description;
-        private Object value;
-
-        public Attribute(String name, Object value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        public Attribute(String name, String description, Object value) {
-            this.name = name;
-            this.description = description;
-            this.value = value;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public Object getValue() {
-            return value;
-        }
     }
 }
