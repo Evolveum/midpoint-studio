@@ -182,7 +182,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
         EnvironmentManager.getInstance(project).setSettings(settings.getEnvironmentSettings());
         FileObjectManager.getInstance(project).setSettings(settings.getFileObjectSettings());
 
-        CredentialsManager.getInstance(project).reinit();
+        CredentialsManager.getInstance(project).refresh();
 
         return super.commitModule(project, model);
     }

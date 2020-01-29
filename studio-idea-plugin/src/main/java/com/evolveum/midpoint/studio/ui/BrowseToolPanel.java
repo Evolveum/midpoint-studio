@@ -12,8 +12,11 @@ import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
-import com.evolveum.midpoint.studio.impl.RestObjectManager;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
@@ -31,6 +34,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -48,16 +52,9 @@ import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
  */
 public class BrowseToolPanel extends SimpleToolWindowPanel {
 
-    public enum State {
-
-        DONE, SEARCHING, DOWNLOADING, CANCELING
-    }
-
     private static final String NOTIFICATION_KEY = "MidPoint Browser";
 
     private Project project;
-
-    private State state = State.DONE;
 
     private JBTextArea query;
     private JXTreeTable results;
@@ -65,7 +62,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private ComboObjectTypes objectType;
     private ComboQueryType queryType;
 
-    private AnAction searchAction;
+    private BackgroundAction searchAction;
     private AnAction cancelAction;
     private AnAction pagingAction;
 
@@ -229,16 +226,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             protected boolean isEnabled() {
                 return isSearchEnabled();
             }
-
-            @Override
-            protected void onThrowable(@NotNull Throwable error) {
-                super.onThrowable(error);
-            }
-
-            @Override
-            protected void onFinished() {
-                state = State.DONE;
-            }
         };
         group.add(searchAction);
 
@@ -253,52 +240,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private DefaultActionGroup createResultsActionGroup() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        downloadAction = new BackgroundAction("Download", AllIcons.Actions.Download, "Downloading objects") {
-
-            @Override
-            protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
-                downloadPerformed(evt, false, indicator);
-            }
-
-            @Override
-            protected boolean isEnabled() {
-                return isDownloadShowEnabled();
-            }
-
-            @Override
-            protected void onThrowable(@NotNull Throwable error) {
-                // todo
-            }
-
-            @Override
-            protected void onFinished() {
-                state = State.DONE;
-            }
-        };
+        downloadAction = createAnAction("Download", AllIcons.Actions.Download,
+                e -> downloadPerformed(e, false, rawDownload),
+                e -> isDownloadShowEnabled());
         group.add(downloadAction);
 
-        showAction = new BackgroundAction("Show", AllIcons.Actions.Show, "Downloading objects") {
-
-            @Override
-            protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
-                downloadPerformed(evt, true, indicator);
-            }
-
-            @Override
-            protected boolean isEnabled() {
-                return isDownloadShowEnabled();
-            }
-
-            @Override
-            protected void onThrowable(@NotNull Throwable error) {
-                // todo
-            }
-
-            @Override
-            protected void onFinished() {
-                state = State.DONE;
-            }
-        };
+        showAction = createAnAction("Show", AllIcons.Actions.Show,
+                e -> downloadPerformed(e, true, rawDownload),
+                e -> isDownloadShowEnabled());
         group.add(showAction);
 
         CheckboxAction rawSearch = new CheckboxAction("Raw") {
@@ -342,25 +291,30 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void searchPerformed(AnActionEvent evt, ProgressIndicator indicator) {
-        state = State.SEARCHING;
+        // clear result table
+        updateTableModel(null);
 
-        RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
+        // load data
+        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        Environment env = em.getSelected();
 
-        String envName = rest.getEnvironment().getName();
-
-        indicator.setText("Searching objects in " + envName + " MidPoint");
-
-        ObjectTypes type = objectType.getSelected();
-        ObjectQuery query = buildQuery(evt.getProject());
+        indicator.setText("Searching objects in " + env.getName() + " MidPoint");
 
         SearchResultList result = null;
         try {
-            result = rest.search(type.getClassDefinition(), query, rawSearch);
+            MidPointClient client = new MidPointClient(evt.getProject(), env);
+
+            ObjectTypes type = objectType.getSelected();
+            ObjectQuery query = buildQuery(client);
+
+            result = client.search(type.getClassDefinition(), query, rawSearch);
         } catch (Exception ex) {
             handleGenericException("Couldn't search objects", ex);
         }
 
+        // update result table
         updateTableModel(result);
+
         // todo finish nice paging
         // updatePagingAction(result, query.getOffset());
     }
@@ -369,15 +323,30 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         MidPointUtils.handleGenericException(project, NOTIFICATION_KEY, message, ex);
     }
 
-    private List<String> getSelectedRowsOids() {
-        List<String> selected = new ArrayList<>();
+    private List<Pair<String, ObjectTypes>> getSelectedOids() {
+        List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
+
+        BrowseTableModel model = getResultsModel();
+        List<ObjectType> data = model.getObjects();
 
         ListSelectionModel selectionModel = results.getSelectionModel();
         int[] indices = selectionModel.getSelectedIndices();
+        for (int i : indices) {
+            DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) results.getPathForRow(i).getLastPathComponent();
+            Object obj = node.getUserObject();
+            if (obj instanceof ObjectTypes) {
+                ObjectTypes type = (ObjectTypes) obj;
+                data.forEach(o -> {
+                    if (type.getClassDefinition().equals(o.getClass())) {
+                        selected.add(new Pair<>(o.getOid(), type));
+                    }
+                });
+            } else if (obj instanceof ObjectType) {
+                ObjectType o = (ObjectType) obj;
+                selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass())));
+            }
+        }
 
-//        results.getSelectionModel().ge
-
-        //todo fix
         return selected;
     }
 
@@ -385,10 +354,11 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         return results.getSelectionModel().getSelectedItemsCount() != 0;
     }
 
-    private void downloadPerformed(AnActionEvent evt, boolean showOnly, ProgressIndicator indicator) {
-        setState(BrowseToolPanel.State.DOWNLOADING);
+    private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
+        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        Environment env = em.getSelected();
 
-        DownloadAction da = new DownloadAction(null, false) {
+        DownloadAction da = new DownloadAction(env, getResultsModel().getSelectedOids(results), showOnly, rawDownload) {
 
             @Override
             protected void onFinished() {
@@ -404,13 +374,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void cancelPerformed(AnActionEvent evt) {
-        state = State.CANCELING;
-
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
 
             // todo implement
 
-            state = State.DONE;
         });
     }
 
@@ -423,16 +390,20 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             of = metadata.getApproxNumberOfAllResults();
         }
 
-        int selected = getSelectedRowsOids().size();
+        int selected = getResultsModel().getSelectedOids(results).size();
 
         String ofStr = of == null ? "unknown" : Integer.toString(of);
 
         pagingText.setText("From " + from + " to " + to + " of " + ofStr + ". Selected " + selected + " objects");
     }
 
+    private BrowseTableModel getResultsModel() {
+        return (BrowseTableModel) results.getTreeTableModel();
+    }
+
     private void updateTableModel(SearchResultList result) {
-        BrowseTableModel tableModel = (BrowseTableModel) results.getTreeTableModel();
-        tableModel.setData(result.getList());
+        BrowseTableModel tableModel = getResultsModel();
+        tableModel.setData(result != null ? result.getList() : null);
 
         ApplicationManager.getApplication().invokeLater(() -> {
 
@@ -453,32 +424,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private boolean isDownloadShowEnabled() {
-        return state == State.DONE && isResultSelected();
+        return isResultSelected();
     }
 
     private boolean isSearchEnabled() {
-        return state == State.DONE;
+        // todo add condition that we're not currently searching
+        return EnvironmentManager.getInstance(project).isEnvironmentSelected();
     }
 
     private boolean isCancelEnabled() {
-        return state == State.SEARCHING;
+        // todo enable when search is in progress
+        return false;
     }
 
-    public ObjectTypes getObjectType() {
-        return objectType.getSelected();
-    }
-
-    public ObjectQuery getObjectQuery(Project project) {
-        return buildQuery(project);
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public ObjectQuery buildQuery(Project project) {
-        RestObjectManager em = RestObjectManager.getInstance(project);
-        PrismContext ctx = em.getPrismContext();
+    public ObjectQuery buildQuery(MidPointClient client) {
+        PrismContext ctx = client.getPrismContext();
         QueryFactory qf = ctx.queryFactory();
 
         ObjectFilter filter = null;

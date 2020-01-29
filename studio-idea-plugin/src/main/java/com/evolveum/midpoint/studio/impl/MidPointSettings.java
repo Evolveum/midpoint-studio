@@ -12,6 +12,10 @@ public class MidPointSettings implements Serializable {
 
     private String midPointVersion;
 
+    private String dowloadFilePattern;
+
+    private String generatedFilePattern;
+
     public MidPointSettings() {
     }
 
@@ -31,21 +35,43 @@ public class MidPointSettings implements Serializable {
         this.projectId = projectId;
     }
 
+    public String getDowloadFilePattern() {
+        return dowloadFilePattern;
+    }
+
+    public void setDowloadFilePattern(String dowloadFilePattern) {
+        this.dowloadFilePattern = dowloadFilePattern;
+    }
+
+    public String getGeneratedFilePattern() {
+        return generatedFilePattern;
+    }
+
+    public void setGeneratedFilePattern(String generatedFilePattern) {
+        this.generatedFilePattern = generatedFilePattern;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MidPointSettings settings = (MidPointSettings) o;
+        MidPointSettings that = (MidPointSettings) o;
 
-        if (projectId != null ? !projectId.equals(settings.projectId) : settings.projectId != null) return false;
-        return midPointVersion != null ? midPointVersion.equals(settings.midPointVersion) : settings.midPointVersion == null;
+        if (projectId != null ? !projectId.equals(that.projectId) : that.projectId != null) return false;
+        if (midPointVersion != null ? !midPointVersion.equals(that.midPointVersion) : that.midPointVersion != null)
+            return false;
+        if (dowloadFilePattern != null ? !dowloadFilePattern.equals(that.dowloadFilePattern) : that.dowloadFilePattern != null)
+            return false;
+        return generatedFilePattern != null ? generatedFilePattern.equals(that.generatedFilePattern) : that.generatedFilePattern == null;
     }
 
     @Override
     public int hashCode() {
         int result = projectId != null ? projectId.hashCode() : 0;
         result = 31 * result + (midPointVersion != null ? midPointVersion.hashCode() : 0);
+        result = 31 * result + (dowloadFilePattern != null ? dowloadFilePattern.hashCode() : 0);
+        result = 31 * result + (generatedFilePattern != null ? generatedFilePattern.hashCode() : 0);
         return result;
     }
 
@@ -61,6 +87,9 @@ public class MidPointSettings implements Serializable {
         MidPointSettings settings = new MidPointSettings();
         settings.setProjectId(UUID.randomUUID().toString());
         settings.setMidPointVersion("4.0-SNAPSHOT");
+
+        settings.setDowloadFilePattern("objects/$T/$n.xml");
+        settings.setGeneratedFilePattern("scratches/gen/$n.xml");
 
         return settings;
     }

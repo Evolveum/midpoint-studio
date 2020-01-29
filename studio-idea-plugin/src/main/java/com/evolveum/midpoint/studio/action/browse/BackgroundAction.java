@@ -20,6 +20,8 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
 
     private Task.Backgroundable task;
 
+    private boolean running;
+
     public BackgroundAction(String taskTitle) {
         this.taskTitle = taskTitle;
     }
@@ -42,6 +44,8 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
 
             @Override
             public void run(ProgressIndicator indicator) {
+                running = true;
+
                 executeOnBackground(evt, indicator);
             }
 
@@ -71,6 +75,8 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
                 super.onFinished();
 
                 BackgroundAction.this.onFinished();
+
+                running = false;
             }
         };
 
@@ -89,7 +95,7 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
     }
 
     protected boolean isEnabled() {
-        return true;
+        return !running;
     }
 
     protected void onThrowable(@NotNull Throwable error) {
@@ -106,5 +112,9 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
 
     protected void onSuccess() {
 
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 }

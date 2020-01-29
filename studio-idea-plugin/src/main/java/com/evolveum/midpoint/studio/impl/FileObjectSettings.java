@@ -5,6 +5,7 @@ import java.io.Serializable;
 /**
  * Created by Viliam Repan (lazyman).
  */
+@Deprecated
 public class FileObjectSettings implements Serializable {
 
     private String dowloadFilePattern;

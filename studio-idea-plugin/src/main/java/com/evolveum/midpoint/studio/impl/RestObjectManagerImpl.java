@@ -42,6 +42,7 @@ import java.util.Objects;
 /**
  * Created by Viliam Repan (lazyman).
  */
+@Deprecated
 public class RestObjectManagerImpl implements RestObjectManager {
 
     private static final Logger LOG = Logger.getInstance(RestObjectManagerImpl.class);

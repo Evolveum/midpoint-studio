@@ -206,7 +206,7 @@ public class MidPointUtils {
         Notifications.Bus.notify(notification);
     }
 
-    public static  void handleGenericException(Project project, String key, String message, Exception ex) {
+    public static void handleGenericException(Project project, String key, String message, Exception ex) {
         NotificationAction action = null;
         if (ex instanceof ClientException) {
             OperationResult result = ((ClientException) ex).getResult();

@@ -11,6 +11,7 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
+@Deprecated
 public interface FileObjectManager extends Stateful<FileObjectSettings> {
 
     static FileObjectManager getInstance(@NotNull Project project) {

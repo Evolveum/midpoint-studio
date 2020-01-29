@@ -20,6 +20,7 @@ import java.util.List;
  * <p>
  * Created by Viliam Repan (lazyman).
  */
+@Deprecated
 public interface RestObjectManager {
 
     static RestObjectManager getInstance(@NotNull Project project) {

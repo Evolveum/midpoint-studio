@@ -28,6 +28,7 @@ import java.util.*;
 @State(
         name = "FileObjectManager", storages = @Storage(value = "midpoint.xml")
 )
+@Deprecated
 public class FileObjectManagerImpl extends ManagerBase<FileObjectSettings> implements FileObjectManager {
 
     private static final Logger LOG = Logger.getInstance(FileObjectManagerImpl.class);
@@ -47,11 +48,13 @@ public class FileObjectManagerImpl extends ManagerBase<FileObjectSettings> imple
         return FileObjectSettings.createDefaultSettings();
     }
 
+    @Deprecated
     @Override
     public <O extends ObjectType> VirtualFile saveObject(PrismObject<O> object, boolean asScratch) {
         return saveObjects(Arrays.asList(object), asScratch)[0];
     }
 
+    @Deprecated
     @Override
     public <O extends ObjectType> VirtualFile[] saveObjects(List<PrismObject<O>> objects, boolean asScratch) {
         RestObjectManager restObjectManager = RestObjectManager.getInstance(getProject());

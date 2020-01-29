@@ -1,14 +1,16 @@
 package com.evolveum.midpoint.studio.action;
 
+import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.RestObjectManager;
 import com.evolveum.midpoint.studio.impl.UploadOptions;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang3.StringUtils;
@@ -19,18 +21,22 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public abstract class UploadBaseAction extends AnAction {
+public abstract class UploadBaseAction extends BackgroundAction {
+
+    public UploadBaseAction() {
+        super("Uploading objects");
+    }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    protected void executeOnBackground(AnActionEvent e, ProgressIndicator indicator) {
         Editor editor = e.getData(PlatformDataKeys.EDITOR);
         if (editor != null) {
             String selected = editor.getSelectionModel().getSelectedText();
             if (StringUtils.isNotEmpty(selected)) {
-                execute(e, selected);
+                execute(e, indicator, selected);
                 return;
             } else {
-                execute(e, editor.getDocument().getText());
+                execute(e, indicator, editor.getDocument().getText());
             }
         }
 
@@ -62,14 +68,20 @@ public abstract class UploadBaseAction extends AnAction {
             return;
         }
 
-        execute(e, toUpload);
+        execute(e, indicator, toUpload);
     }
 
     protected UploadOptions buildAddOptions() {
         return new UploadOptions().overwrite(true);
     }
 
-    protected void execute(AnActionEvent evt, List<VirtualFile> files) {
+    private void execute(AnActionEvent evt, ProgressIndicator indicator, List<VirtualFile> files) {
+
+
+        for (VirtualFile file : files) {
+
+        }
+
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             try {
                 RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
@@ -83,7 +95,13 @@ public abstract class UploadBaseAction extends AnAction {
         });
     }
 
-    protected void execute(AnActionEvent evt, String text) {
+    private void execute(AnActionEvent evt, ProgressIndicator indicator, String text) {
+        Environment env = null;
+        if (indicator != null) {
+            indicator.setText("Uploading text to environment " + env);
+        }
+
+
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             try {
                 RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
@@ -95,5 +113,9 @@ public abstract class UploadBaseAction extends AnAction {
                 ex.printStackTrace(); // todo implement
             }
         });
+    }
+
+    protected void execute(AnActionEvent evt, String text) {
+
     }
 }
