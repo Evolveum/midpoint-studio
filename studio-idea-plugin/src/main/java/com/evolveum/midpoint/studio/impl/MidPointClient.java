@@ -1,26 +1,40 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.client.api.AddOptions;
+import com.evolveum.midpoint.client.api.AuthenticationException;
 import com.evolveum.midpoint.client.api.MessageListener;
 import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
+import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.RetrieveOption;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -130,7 +144,7 @@ public class MidPointClient {
     }
 
     private void handleGenericException(String message, Exception ex) {
-        MidPointUtils.handleGenericException(project, NOTIFICATION_KEY, message, ex);
+        MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
     }
 
     public <O extends ObjectType> PrismObject<O> get(Class<O> type, String oid, SearchOptions opts) {
@@ -150,5 +164,71 @@ public class MidPointClient {
         }
 
         return result;
+    }
+
+    public OperationResult testResource(String oid) {
+        midPointManager.printToConsole(MidPointClient.class, "Starting test resource for " + oid);
+
+        try {
+            return client.oid(ResourceType.class, oid).testConnection();
+        } catch (Exception ex) {
+            handleGenericException("Error occurred while testing resource", ex);
+        }
+
+        return null;
+    }
+
+    private <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, UploadOptions options) throws AuthenticationException {
+        AddOptions opts = options.buildAddOptions();
+
+        UploadResponse response = new UploadResponse();
+
+        String oid = client.add((ObjectType) obj.asObjectable()).add(opts);
+        response.setOid(oid);
+
+        if (options.testConnection() && ResourceType.class.equals(obj.getCompileTimeClass())) {
+            OperationResult result = testResource(obj.getOid());
+
+            response.setResult(result);
+
+            if (!result.isSuccess()) {
+                MidPointUtils.publishNotification(NOTIFICATION_KEY, "Test connection error",
+                        "Test connection error for '" + obj.getName() + "'", NotificationType.ERROR,
+                        new ShowResultNotificationAction(result));
+            }
+        }
+
+        return response;
+    }
+
+    public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
+        CredentialsManager cm = CredentialsManager.getInstance(project);
+        Expander expander = new Expander(cm, new EnvironmentProperties(environment));
+
+        try (InputStream is = file.getInputStream()) {
+            Charset charset = file.getCharset();
+            InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
+
+            PrismParser parser = createParser(expanded, getPrismContext());
+            return parser.parseObjects();
+        }
+    }
+
+    public <O extends ObjectType> PrismObject<O> parseObject(VirtualFile file) throws IOException, SchemaException {
+        CredentialsManager cm = CredentialsManager.getInstance(project);
+        Expander expander = new Expander(cm, new EnvironmentProperties(environment));
+
+        try (InputStream is = file.getInputStream()) {
+            Charset charset = file.getCharset();
+            InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
+
+            PrismParser parser = createParser(expanded, getPrismContext());
+            return parser.parse();
+        }
+    }
+
+    private PrismParser createParser(InputStream data, PrismContext ctx) {
+        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
+        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
     }
 }

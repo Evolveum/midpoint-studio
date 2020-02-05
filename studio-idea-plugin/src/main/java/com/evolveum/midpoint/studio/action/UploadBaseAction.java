@@ -2,19 +2,26 @@ package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.RestObjectManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.UploadOptions;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +29,10 @@ import java.util.List;
  * Created by Viliam Repan (lazyman).
  */
 public abstract class UploadBaseAction extends BackgroundAction {
+
+    public static final String NOTIFICATION_KEY = "Upload Action";
+
+    private static final Logger LOG = Logger.getInstance(UploadBaseAction.class);
 
     public UploadBaseAction() {
         super("Uploading objects");
@@ -42,7 +53,7 @@ public abstract class UploadBaseAction extends BackgroundAction {
 
         VirtualFile[] selectedFiles = e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY);
         if (selectedFiles == null || selectedFiles.length == 0) {
-            MidPointUtils.createAndPushNotification("Upload", "Upload",
+            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Upload",
                     "No files selected for upload", NotificationType.WARNING);
             return;
         }
@@ -63,7 +74,7 @@ public abstract class UploadBaseAction extends BackgroundAction {
         }
 
         if (toUpload.isEmpty()) {
-            MidPointUtils.createAndPushNotification("Upload", "Upload",
+            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Upload",
                     "No files matched for upload (xml)", NotificationType.WARNING);
             return;
         }
@@ -76,46 +87,36 @@ public abstract class UploadBaseAction extends BackgroundAction {
     }
 
     private void execute(AnActionEvent evt, ProgressIndicator indicator, List<VirtualFile> files) {
-
+        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        Environment env = em.getSelected();
+        MidPointClient client = new MidPointClient(evt.getProject(), env);
 
         for (VirtualFile file : files) {
+            ApplicationManager.getApplication().invokeAndWait(() ->
+                    ApplicationManager.getApplication().runWriteAction(() -> {
+                        try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
+                            String xml = IOUtils.toString(in);
 
+                            execute(indicator, client, xml);
+                        } catch (IOException ex) {
+                            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error",
+                                    "Couldn't read file " + file.getName() + ", reason: " + ex.getMessage(), NotificationType.ERROR);
+
+                            LOG.debug("Exception occurred when loading file {}, reason: {}", file.getName(), ex.getMessage());
+                        }
+                    }));
         }
-
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            try {
-                RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
-                rest.upload(files, buildAddOptions());
-
-
-// todo       String status = result.isSuccess() ? "SUCCESS" : result.dump(true);
-            } catch (Exception ex) {
-                ex.printStackTrace(); // todo implement
-            }
-        });
     }
 
     private void execute(AnActionEvent evt, ProgressIndicator indicator, String text) {
-        Environment env = null;
-        if (indicator != null) {
-            indicator.setText("Uploading text to environment " + env);
-        }
+        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        Environment env = em.getSelected();
+        MidPointClient client = new MidPointClient(evt.getProject(), env);
 
-
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            try {
-                RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
-                rest.upload(text, buildAddOptions());
-
-
-//  todo      String status = result.isSuccess() ? "SUCCESS" : result.dump(true);
-            } catch (Exception ex) {
-                ex.printStackTrace(); // todo implement
-            }
-        });
+        execute(indicator, client, text);
     }
 
-    protected void execute(AnActionEvent evt, String text) {
+    private void execute(ProgressIndicator indicator, MidPointClient client, String text) {
 
     }
 }

@@ -1,7 +1,10 @@
 package com.evolveum.midpoint.studio.impl.ide;
 
 import com.evolveum.midpoint.studio.MidPointIcons;
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.CredentialsManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.ModuleSettings;
 import com.evolveum.midpoint.studio.ui.MidPointWizardStep;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.actions.ReformatCodeProcessor;
@@ -180,7 +183,6 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
         MidPointManager.getInstance(project).setSettings(settings.getMidPointSettings());
         EnvironmentManager.getInstance(project).setSettings(settings.getEnvironmentSettings());
-        FileObjectManager.getInstance(project).setSettings(settings.getFileObjectSettings());
 
         CredentialsManager.getInstance(project).refresh();
 

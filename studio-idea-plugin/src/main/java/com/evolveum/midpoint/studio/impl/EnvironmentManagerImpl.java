@@ -189,4 +189,11 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
 
         return null;
     }
+
+    @Override
+    public EnvironmentProperties getSelectedEnvironmentProperties() {
+        Environment env = getSelected();
+
+        return new EnvironmentProperties(env);
+    }
 }

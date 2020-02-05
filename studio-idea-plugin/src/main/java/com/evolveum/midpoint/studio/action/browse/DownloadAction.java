@@ -176,7 +176,7 @@ public class DownloadAction extends BackgroundAction {
                                         obj.getCompileTimeClass(), obj.getOid(), MidPointUtils.getOrigFromPolyString(obj.getName()));
 
                                 out = new BufferedWriter(
-                                        new OutputStreamWriter(file.getOutputStream(DownloadAction.this), StandardCharsets.UTF_8));
+                                        new OutputStreamWriter(file.getOutputStream(DownloadAction.this), file.getCharset()));
 
                                 IOUtils.write(xml, out);
 

@@ -1,27 +1,15 @@
 package com.evolveum.midpoint.studio.action;
 
-import com.evolveum.midpoint.studio.impl.RestObjectManager;
-import com.intellij.codeInsight.hint.HintManager;
-import com.intellij.ide.IdeBundle;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationAction;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -38,11 +26,13 @@ public class TestAction extends AnAction {
                 indicator.setText("This is how you update the indicator");
                 try {
                     Thread.sleep(2000);
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
+                }
                 indicator.setFraction(0.5);  // halfway done
                 try {
                     Thread.sleep(2000);
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
+                }
             }
         });
         Messages.showMessageDialog(project, "Hello world!", "Greeting", Messages.getInformationIcon());
@@ -66,7 +56,6 @@ public class TestAction extends AnAction {
 //            HintManager hintManager = HintManager.getInstance();
 //            hintManager.showErrorHint(editor, "John Doe made a mistake!");
 //        }
-
 
 
 ////        ToolWindow window = ToolWindowManager.getInstance(e.getProject()).getToolWindow("MidPoint");

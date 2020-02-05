@@ -320,7 +320,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void handleGenericException(String message, Exception ex) {
-        MidPointUtils.handleGenericException(project, NOTIFICATION_KEY, message, ex);
+        MidPointUtils.handleGenericException(project, BrowseToolPanel.class, NOTIFICATION_KEY, message, ex);
     }
 
     private List<Pair<String, ObjectTypes>> getSelectedOids() {

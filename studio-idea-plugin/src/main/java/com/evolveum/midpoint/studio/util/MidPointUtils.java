@@ -4,7 +4,10 @@ import com.evolveum.midpoint.client.api.ClientException;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.MidPointFacet;
+import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -66,15 +69,6 @@ public class MidPointUtils {
     public static Project getCurrentProject() {
         DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
         return DataKeys.PROJECT.getData(dataContext);
-    }
-
-    public static void createAndPushNotification(String group, String title, String content, NotificationType type,
-                                                 NotificationAction... actions) {
-
-        Notification notification = new Notification(group, title, content, type);
-        Arrays.stream(actions).forEach(a -> notification.addAction(a));
-
-        Notifications.Bus.notify(notification);
     }
 
     public static Color generateAwtColor() {
@@ -196,17 +190,13 @@ public class MidPointUtils {
                                            NotificationAction... actions) {
         Notification notification = new Notification(key, title, content, type);
         if (actions != null) {
-            Arrays.asList(actions).forEach(a -> {
-
-                if (a != null) {
-                    notification.addAction(a);
-                }
-            });
+            Arrays.stream(actions).forEach(a -> notification.addAction(a));
         }
+
         Notifications.Bus.notify(notification);
     }
 
-    public static void handleGenericException(Project project, String key, String message, Exception ex) {
+    public static void handleGenericException(Project project, Class clazz, String key, String message, Exception ex) {
         NotificationAction action = null;
         if (ex instanceof ClientException) {
             OperationResult result = ((ClientException) ex).getResult();
@@ -220,7 +210,7 @@ public class MidPointUtils {
 
         if (project != null) {
             MidPointManager manager = MidPointManager.getInstance(project);
-            manager.printToConsole(RestObjectManagerImpl.class, message, ex);
+            manager.printToConsole(clazz, message, ex);
         }
     }
 

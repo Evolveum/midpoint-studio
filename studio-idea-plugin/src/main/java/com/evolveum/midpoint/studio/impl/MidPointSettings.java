@@ -86,7 +86,7 @@ public class MidPointSettings implements Serializable {
     public static MidPointSettings createDefaultSettings() {
         MidPointSettings settings = new MidPointSettings();
         settings.setProjectId(UUID.randomUUID().toString());
-        settings.setMidPointVersion("4.0-SNAPSHOT");
+        settings.setMidPointVersion("4.1-SNAPSHOT");
 
         settings.setDowloadFilePattern("objects/$T/$n.xml");
         settings.setGeneratedFilePattern("scratches/gen/$n.xml");

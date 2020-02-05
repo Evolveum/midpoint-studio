@@ -29,4 +29,6 @@ public interface EnvironmentManager extends Stateful<EnvironmentSettings> {
     boolean delete(String id);
 
     Environment get(String id);
+
+    EnvironmentProperties getSelectedEnvironmentProperties();
 }

@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.FileObjectSettings;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;

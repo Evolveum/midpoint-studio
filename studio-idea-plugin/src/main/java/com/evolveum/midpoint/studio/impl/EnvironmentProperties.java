@@ -1,50 +1,32 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import java.util.Properties;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class PropertyManager {
+public class EnvironmentProperties {
 
-    private static final Logger LOG = Logger.getInstance(PropertyManager.class);
-
-    private Project project;
+    private static final Logger LOG = Logger.getInstance(EnvironmentProperties.class);
 
     private Environment environment;
 
     private Properties properties;
 
-    public PropertyManager(@NotNull Project project) {
-        this.project = project;
+    public EnvironmentProperties(@NotNull Environment environment) {
+        this.environment = environment != null ? new Environment(environment) : null;
 
-        LOG.info("Initializing " + getClass().getSimpleName());
-
-        project.getMessageBus().connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
-
-            @Override
-            public void environmentChanged(Environment oldEnv, Environment newEnv) {
-                reload(newEnv);
-            }
-        });
+        load(environment);
     }
 
-    private void reload(Environment env) {
+    private void load(Environment env) {
         LOG.debug("Reloading properties for new environment", env);
-
-        if (Objects.equals(env, environment)) {
-            return;
-        }
-
-        environment = env != null ? new Environment(env) : null;
 
         Properties properties = new Properties();
 
