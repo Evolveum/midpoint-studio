@@ -14,4 +14,8 @@
         <appender-ref ref="console" />
     </root>
 
+    <logger name="com.evolveum.midpoint">
+        <level value="DEBUG"/>
+    </logger>
+
 </log4j:configuration>

@@ -28,6 +28,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -178,7 +179,7 @@ public class MidPointClient {
         return null;
     }
 
-    private <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, UploadOptions options) throws AuthenticationException {
+    public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, UploadOptions options) throws AuthenticationException {
         AddOptions opts = options.buildAddOptions();
 
         UploadResponse response = new UploadResponse();
@@ -199,6 +200,26 @@ public class MidPointClient {
         }
 
         return response;
+    }
+
+    public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
+        CredentialsManager cm = CredentialsManager.getInstance(project);
+        Expander expander = new Expander(cm, new EnvironmentProperties(environment));
+
+        String expanded = expander.expand(xml);
+
+        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()), getPrismContext());
+        return parser.parse();
+    }
+
+    public List<PrismObject<?>> parseObjects(String xml) throws IOException, SchemaException {
+        CredentialsManager cm = CredentialsManager.getInstance(project);
+        Expander expander = new Expander(cm, new EnvironmentProperties(environment));
+
+        String expanded = expander.expand(xml);
+
+        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()), getPrismContext());
+        return parser.parseObjects();
     }
 
     public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {

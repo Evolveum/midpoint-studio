@@ -22,6 +22,8 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
 
     private boolean running;
 
+    private boolean canceled;
+
     public BackgroundAction(String taskTitle) {
         this.taskTitle = taskTitle;
     }
@@ -107,7 +109,7 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
     }
 
     protected void onCancel() {
-
+        canceled = true;
     }
 
     protected void onSuccess() {
@@ -116,5 +118,9 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
 
     public boolean isRunning() {
         return running;
+    }
+
+    public boolean isCanceled() {
+        return canceled;
     }
 }
