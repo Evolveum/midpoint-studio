@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -79,20 +78,15 @@ public class BrowseTableModel extends AbstractTreeTableModel {
         DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) o;
         Object obj = node.getUserObject();
 
-        if (obj instanceof ObjectType) {
-            return columns.get(i).getValue().apply((ObjectType) obj);
-        } else if (obj instanceof ObjectTypes) {
-            if (i != 0) {
-                return null;
-            }
-
-            ObjectTypes type = (ObjectTypes) obj;
-            String text = type.getTypeQName().getLocalPart();
-
-            return MidPointLocalizationService.getInstance().translate("ObjectType." + text, text);
+        if (!(obj instanceof ObjectType)) {
+            return null;
         }
 
-        return null;
+        if (columns.get(i).getValue() == null) {
+            return null;
+        }
+
+        return columns.get(i).getValue().apply((ObjectType) obj);
     }
 
     @Override

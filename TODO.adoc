@@ -4,4 +4,3 @@
 * MidPointXmlStructureViewBuilderProvider not finished
 * MidPoint Facet (existence) should show/hide MidPoint plugin UI panels/toolbars
 * Logo
-* Browser results zobrazuje prvy stlpec divne (nie name) ale asi toString

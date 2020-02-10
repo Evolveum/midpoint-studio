@@ -190,7 +190,7 @@ public class MidPointUtils {
                                            NotificationAction... actions) {
         Notification notification = new Notification(key, title, content, type);
         if (actions != null) {
-            Arrays.stream(actions).forEach(a -> notification.addAction(a));
+            Arrays.stream(actions).filter(a -> a != null).forEach(a -> notification.addAction(a));
         }
 
         Notifications.Bus.notify(notification);

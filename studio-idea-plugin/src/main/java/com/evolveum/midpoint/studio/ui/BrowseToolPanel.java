@@ -15,6 +15,7 @@ import com.evolveum.midpoint.studio.action.browse.DownloadAction;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
@@ -32,6 +33,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
@@ -125,7 +127,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         results.add(resultsActionsToolbar.getComponent(), BorderLayout.NORTH);
 
         List<TreeTableColumnDefinition<ObjectType, ?>> columns = new ArrayList<>();
-        columns.add(new TreeTableColumnDefinition<>("Name", 500, o -> MidPointUtils.getOrigFromPolyString(o.getName())));
+        columns.add(new TreeTableColumnDefinition<>("Name", 500, null));
         columns.add(new TreeTableColumnDefinition<>("Display name", 500, o -> {
 
             if (!(o instanceof AbstractRoleType)) {
@@ -138,7 +140,28 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         columns.add(new TreeTableColumnDefinition<>("Oid", 100, o -> o.getOid()));
 
         this.results = MidPointUtils.createTable(new BrowseTableModel(columns), (List) columns);
-        this.results.setTreeCellRenderer(new NodeRenderer());
+        this.results.setTreeCellRenderer(new NodeRenderer() {
+
+            @Override
+            public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected, boolean expanded,
+                                              boolean leaf, int row, boolean hasFocus) {
+                Object node = TreeUtil.getUserObject(value);
+                DefaultMutableTreeTableNode treeNode = (DefaultMutableTreeTableNode) node;
+
+                Object userObject = treeNode.getUserObject();
+                if (userObject instanceof ObjectTypes) {
+                    ObjectTypes type = (ObjectTypes) userObject;
+                    String text = type.getTypeQName().getLocalPart();
+
+                    value = MidPointLocalizationService.getInstance().translate("ObjectType." + text, text);
+                } else if (userObject instanceof ObjectType) {
+                    ObjectType ot = (ObjectType) userObject;
+                    value = MidPointUtils.getOrigFromPolyString(ot.getName());
+                }
+
+                super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
+            }
+        });
         this.results.setOpaque(false);
 
         this.results.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
