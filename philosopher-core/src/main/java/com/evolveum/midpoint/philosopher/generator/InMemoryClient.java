@@ -1,11 +1,13 @@
 package com.evolveum.midpoint.philosopher.generator;
 
+import com.evolveum.midpoint.philosopher.util.InMemoryFileFilter;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +44,12 @@ public class InMemoryClient implements MidPointClient {
         ParsingContext parsingContext = prismContext.createParsingContextForCompatibilityMode();
 
 
-        Iterator<File> files = FileUtils.iterateFiles(options.getSourceDirectory(), new String[]{"xml"}, true);
+        Iterator<File> files = FileUtils.iterateFiles(options.getSourceDirectory(),
+                new InMemoryFileFilter(options.getInclude(), options.getExclude()), TrueFileFilter.INSTANCE);
         while (files.hasNext()) {
             File file = files.next();
+
+            LOG.debug("Loading {}", file);
 
             try {
                 PrismParser parser = prismContext.parserFor(file).language(PrismContext.LANG_XML).context(parsingContext);

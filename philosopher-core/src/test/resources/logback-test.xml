@@ -20,6 +20,4 @@
 	</root>
 
 	<logger name="com.evolveum.midpoint.philosopher" level="TRACE"/>
-
-	<logger name="org.apache.cxf.message" level="TRACE"/>
 </configuration>
