@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.evolveum.midpoint.studio</id>
     <name>MidPoint Studio</name>
-    <vendor email="midpoint.studio@evolveum.com.com" url="https://evolveum.com.com">evolveum, s.r.o.</vendor>
+    <vendor email="midpoint.studio@evolveum.com" url="https://evolveum.com">evolveum, s.r.o.</vendor>
 
     <description><![CDATA[
         Plugin which enables support for MidPoint configuration files.
@@ -42,8 +42,9 @@
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
-        <xmlStructureViewBuilderProvider
-                implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>
+        <!-- TODO finish implementation -->
+        <!--<xmlStructureViewBuilderProvider
+                implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>-->
 
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.MidPointMultiHostInjector"/>
 
