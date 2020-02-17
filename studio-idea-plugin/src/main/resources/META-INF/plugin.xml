@@ -5,10 +5,41 @@
 
     <description><![CDATA[
         Plugin which enables support for MidPoint configuration files.
+
+        <b>Features</b>
+        <ul>
+            <li>Browse/Upload with raw options for both operations</li>
+            <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
+            <li>XML tags autocompletion, links to documentation</li>
+            <li>XML script/code
+                <ul>
+                    <li>groovy syntax highlighting and groovy code completion</li>
+                    <li>groovy code common variables injection</li>
+                </ul>
+            </li>
+            <li>Object comparation with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
+            <li>Simple OID generator</li>
+        </ul>
     ]]></description>
 
     <change-notes><![CDATA[
-        TODO change notes asd asddsf sdfgsdf asdfasdfasdf a sf asdf asd fasdf asd
+
+        <i>Release 4.1</i>
+        <ul>
+            <li>Initial release of plugin</li>
+            <li>Browse/Upload with raw options for both operations</li>
+            <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
+            <li>XML tags autocompletion, links to documentation</li>
+            <li>XML script/code
+                <ul>
+                    <li>groovy syntax highlighting and groovy code completion</li>
+                    <li>groovy code common variables injection</li>
+                </ul>
+            </li>
+            <li>Object comparation with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
+            <li>Simple OID generator</li>
+        </ul>
+
     ]]></change-notes>
 
     <depends>com.intellij.modules.lang</depends>
