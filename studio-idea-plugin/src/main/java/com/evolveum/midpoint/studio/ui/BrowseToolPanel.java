@@ -25,6 +25,7 @@ import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -53,6 +54,8 @@ import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
  * Created by Viliam Repan (lazyman).
  */
 public class BrowseToolPanel extends SimpleToolWindowPanel {
+
+    private static final Logger LOG = Logger.getInstance(BrowseToolPanel.class);
 
     private static final String NOTIFICATION_KEY = "MidPoint Browser";
 
@@ -314,6 +317,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void searchPerformed(AnActionEvent evt, ProgressIndicator indicator) {
+        LOG.debug("Clearing table");
         // clear result table
         updateTableModel(null);
 
@@ -325,15 +329,19 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         SearchResultList result = null;
         try {
+            LOG.debug("Setting up midpoint client");
             MidPointClient client = new MidPointClient(evt.getProject(), env);
 
             ObjectTypes type = objectType.getSelected();
             ObjectQuery query = buildQuery(client);
 
+            LOG.debug("Starting search");
             result = client.search(type.getClassDefinition(), query, rawSearch);
         } catch (Exception ex) {
             handleGenericException("Couldn't search objects", ex);
         }
+
+        LOG.debug("Updating table");
 
         // update result table
         updateTableModel(result);

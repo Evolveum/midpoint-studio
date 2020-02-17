@@ -74,9 +74,11 @@
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
-        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>
+<!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
 
         <diff.lang.DiffIgnoredRangeProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
+
+<!--        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.MidPointObjectNameIndex"/>-->
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">

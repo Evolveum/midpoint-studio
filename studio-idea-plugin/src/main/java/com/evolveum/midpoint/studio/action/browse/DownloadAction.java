@@ -7,12 +7,14 @@ import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -31,6 +33,8 @@ import java.util.List;
  * Created by Viliam Repan (lazyman).
  */
 public class DownloadAction extends BackgroundAction {
+
+    private static final Logger LOG = Logger.getInstance(DownloadAction.class);
 
     private static final String TASK_TITLE = "Downloading objects";
 
@@ -81,6 +85,7 @@ public class DownloadAction extends BackgroundAction {
     }
 
     private void showOnly(AnActionEvent evt, ProgressIndicator indicator) {
+        LOG.debug("Setting up midpoint client");
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
 
         PrismContext ctx = client.getPrismContext();
@@ -132,6 +137,7 @@ public class DownloadAction extends BackgroundAction {
     }
 
     private void download(AnActionEvent evt, ProgressIndicator indicator) {
+        LOG.debug("Setting up midpoint client");
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
 
         PrismContext ctx = client.getPrismContext();
@@ -160,12 +166,17 @@ public class DownloadAction extends BackgroundAction {
         // todo implement later
         for (Pair<String, ObjectTypes> pair : oids) {
             try {
+                LOG.debug("Downloading {}", pair);
+
                 PrismObject obj = client.get(pair.getSecond().getClassDefinition(), pair.getFirst(), new SearchOptions().raw(raw));
                 if (obj == null) {
                     continue;
                 }
 
+                LOG.debug("Serializing object {}", obj);
                 String xml = serializer.serialize(obj);
+
+                LOG.debug("Storing file");
 
                 ApplicationManager.getApplication().invokeAndWait(() ->
                         ApplicationManager.getApplication().runWriteAction(() -> {
@@ -188,6 +199,8 @@ public class DownloadAction extends BackgroundAction {
                                 IOUtils.closeQuietly(out);
                             }
                         }));
+
+                LOG.debug("File saved");
             } catch (Exception ex) {
                 // todo handle exception properly
                 ex.printStackTrace();
