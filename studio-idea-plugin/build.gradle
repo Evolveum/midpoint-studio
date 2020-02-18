@@ -53,7 +53,7 @@ intellij {
         version project.version + '.' + versionDetails().commitDistance
     }
     publishPlugin {
-        channels System.getenv('studio_channel')
+        channels project.channels
         token System.getenv('studio_intellijPublishToken')
     }
 }
