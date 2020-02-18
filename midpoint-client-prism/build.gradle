@@ -2,14 +2,6 @@ plugins {
     id 'java'
 }
 
-group 'com.evolveum.midpoint.client.prism'
-version '1.0-SNAPSHOT'
-
-sourceCompatibility = javaVersion
-targetCompatibility = javaVersion
-
-tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-
 dependencies {
     compile "com.evolveum.midpoint.client:midpoint-client-api:$midpointClientApiVersion"
 }

@@ -17,7 +17,7 @@
                     <li>groovy code common variables injection</li>
                 </ul>
             </li>
-            <li>Object comparation with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
+            <li>Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
             <li>Simple OID generator</li>
         </ul>
     ]]></description>
@@ -36,7 +36,7 @@
                     <li>groovy code common variables injection</li>
                 </ul>
             </li>
-            <li>Object comparation with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
+            <li>Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
             <li>Simple OID generator</li>
         </ul>
 

@@ -8,15 +8,8 @@ buildscript {
 
 plugins {
     id "org.jetbrains.intellij" version "0.4.16"
+    id "com.palantir.git-version" version "0.12.2"
 }
-
-group 'com.evolveum.midpoint.studio'
-version '4.1-SNAPSHOT'
-
-sourceCompatibility = javaVersion
-targetCompatibility = javaVersion
-
-tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
 dependencies {
     compile project(':midpoint-client')
@@ -57,9 +50,16 @@ intellij {
     patchPluginXml {
         sinceBuild '191'
         untilBuild '193.*'
+        version project.version + '.' + versionDetails().commitDistance
     }
     publishPlugin {
         channels System.getenv('studio_channel')
         token System.getenv('studio_intellijPublishToken')
+    }
+}
+
+buildPlugin.configure {
+    doFirst {
+        println "Git describe: " + versionDetails().commitDistance
     }
 }
