@@ -21,7 +21,6 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                                         XmlPatterns.xmlAttribute("oid"))), // todo improve
                 new OidCompletionProvider());
 
-        ;
         extend(CompletionType.BASIC,
                 psiElement().inside(
                         XmlPatterns
@@ -31,6 +30,16 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                                                 .withParent(
                                                         XmlPatterns.xmlTag().withName("authorization")))),
                 new AuthorizationActionCompletionProvider());
+
+        extend(CompletionType.BASIC,
+                psiElement().inside(
+                        XmlPatterns
+                                .xmlText()
+                                .withParent(
+                                        XmlPatterns.xmlTag().withName("handlerUri")
+                                                .withParent(
+                                                        XmlPatterns.xmlTag().withName("action")))),
+                new SyncActionCompletionProvider());
 
 //        extend(CompletionType.BASIC,
 //                psiElement().inside(

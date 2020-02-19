@@ -64,7 +64,8 @@ public class AuthorizationActionCompletionProvider extends CompletionProvider<Co
     }
 
     @Override
-    protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
+    protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
+                                  @NotNull CompletionResultSet result) {
         result.addAllElements(AUTHORIZATIONS);
     }
 }
