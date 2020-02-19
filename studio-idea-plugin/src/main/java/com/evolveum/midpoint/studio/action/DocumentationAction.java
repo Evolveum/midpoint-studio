@@ -11,6 +11,6 @@ public class DocumentationAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        // todo implement
+        // todo implement using midpoint-philosopher library
     }
 }
