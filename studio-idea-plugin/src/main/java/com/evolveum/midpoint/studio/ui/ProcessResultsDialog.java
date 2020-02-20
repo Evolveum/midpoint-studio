@@ -1,5 +1,14 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
+import com.evolveum.midpoint.studio.impl.browse.Generator;
+import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
+import com.evolveum.midpoint.studio.impl.browse.TaskGenerator;
+import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
+import com.evolveum.midpoint.studio.util.GeneratorRenderer;
+import com.evolveum.midpoint.studio.util.LocalizedRenderer;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.ide.actions.ActionsCollector;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogEarthquakeShaker;
@@ -7,8 +16,8 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.IdeFocusManager;
-import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
-import com.evolveum.midpoint.studio.util.LocalizedRenderer;
+import org.apache.commons.lang3.StringUtils;
+import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,6 +25,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -23,8 +33,15 @@ import java.util.List;
  */
 public class ProcessResultsDialog extends DialogWrapper {
 
-    private JComboBox generate;
-    private JComboBox execution;
+    private static final List<Generator> GENERATORS = Arrays.asList(
+            new TaskGenerator(TaskGenerator.Action.RECOMPUTE),
+            new TaskGenerator(TaskGenerator.Action.DELETE),
+            new TaskGenerator(TaskGenerator.Action.MODIFY),
+            new TaskGenerator(TaskGenerator.Action.SHADOW_CHECK)
+    );
+
+    private JComboBox<Generator> generate;
+    private JComboBox<Execution> execution;
     private JTextField n;
     private JCheckBox wrapCreatedBulkActionCheckBox;
     private JCheckBox createTasksInSuspendedCheckBox;
@@ -34,12 +51,22 @@ public class ProcessResultsDialog extends DialogWrapper {
     private JCheckBox useSymbolicReferencesCheckBox;
     private JPanel root;
 
-    public ProcessResultsDialog() {
+    private String query;
+    private ComboQueryType.Type queryType;
+    private ObjectTypes type;
+    private List<ObjectType> selected;
+
+    public ProcessResultsDialog(String query, ComboQueryType.Type queryType, ObjectTypes type, List<ObjectType> selected) {
         super(false);
         setTitle("Process results");
 
         setOKButtonText("Execute");
         setOKButtonTooltip("Process results");
+
+        this.query = query;
+        this.queryType = queryType;
+        this.type = type;
+        this.selected = selected;
 
         init();
 
@@ -54,10 +81,9 @@ public class ProcessResultsDialog extends DialogWrapper {
 
         execution.addItemListener(e -> n.setEnabled(Execution.OID_BATCHES_BY_N.equals(execution.getSelectedItem())));
 
-        EnumComboBoxModel gm = new EnumComboBoxModel(Generate.class, true);
-        generate.setModel(gm);
-        generate.getModel().setSelectedItem(gm.getElementAt(0));
-        generate.setRenderer(new LocalizedRenderer());
+        generate.setModel(new ListComboBoxModel<Generator>(GENERATORS));
+        generate.getModel().setSelectedItem(GENERATORS.get(0));
+        generate.setRenderer(new GeneratorRenderer());
 
         n.setEnabled(false);
     }
@@ -83,7 +109,57 @@ public class ProcessResultsDialog extends DialogWrapper {
     }
 
     private void doGenerateAction() {
-        // todo implement
+        GeneratorOptions opts = buildOptions();
+
+        if (opts.isBatchByOids() && selected.isEmpty()) {
+            return;
+        }
+
+        if (opts.isBatchUsingOriginalQuery() && StringUtils.isEmpty(query)) {
+            return;
+        }
+
+        // todo implement, should run in background
+        Generator generator = (Generator) generate.getSelectedItem();
+//        generator.generate(selected, opts);
+
+    }
+
+    private GeneratorOptions buildOptions() {
+        GeneratorOptions opts = new GeneratorOptions();
+        opts.setBatchSize(Integer.parseInt(n.getText()));
+        opts.setCreateSuspended(createTasksInSuspendedCheckBox.isSelected());
+        opts.setDryRun(executeInDryRunCheckBox.isSelected());
+        opts.setRaw(executeInRawModeCheckBox.isSelected());
+        opts.setSymbolicReferences(useSymbolicReferencesCheckBox.isSelected());
+        opts.setSymbolicReferencesRuntime(runtimeResolutionCheckBox.isSelected());
+        opts.setWrapActions(wrapCreatedBulkActionCheckBox.isSelected());
+
+        Execution exec = (Execution) execution.getSelectedItem();
+        if (exec == null) {
+            exec = Execution.OID_ONE_BATCH;
+        }
+        switch (exec) {
+            case OID_ONE_BATCH:
+                opts.setBatchByOids(true);
+                opts.setBatchSize(selected.size());
+                break;
+            case OID_ONE_BY_ONE:
+                opts.setBatchByOids(true);
+                opts.setBatchSize(1);
+                break;
+            case OID_BATCHES_BY_N:
+                opts.setBatchByOids(true);
+                opts.setBatchSize(Integer.parseInt(n.getText()));
+                break;
+            case ORIGINAL_QUERY:
+                opts.setBatchUsingOriginalQuery(true);
+                opts.setOriginalQuery(query);
+                opts.setOriginalQueryTypes(Arrays.asList(type));
+                break;
+        }
+
+        return opts;
     }
 
     @Override

@@ -297,4 +297,32 @@ public class MidPointUtils {
     public static String getOrigFromPolyString(PolyStringType poly) {
         return poly != null ? poly.getOrig() : null;
     }
+
+    public static String generateTaskIdentifier() {
+        return System.currentTimeMillis() + ":" + Math.round(Math.random() * 1000000000.0);
+    }
+
+    public static ObjectTypes commonSuperType(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return null;
+        }
+
+        Class<? extends ObjectType> c1 = o1.getClassDefinition();
+        Class<? extends ObjectType> c2 = o2.getClassDefinition();
+
+        Class<? extends ObjectType> s = c1;
+        while (!s.isAssignableFrom(c2)) {
+            s = (Class<? extends ObjectType>) s.getSuperclass();
+        }
+
+        return ObjectTypes.getObjectType(s);
+    }
+
+    public static boolean isAssignableFrom(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return false;
+        }
+
+        return o1.getClassDefinition().isAssignableFrom(o2.getClassDefinition());
+    }
 }
