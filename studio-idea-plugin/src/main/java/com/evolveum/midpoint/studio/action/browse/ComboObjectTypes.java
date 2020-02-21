@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.action.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -52,7 +53,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
         List<ObjectTypes> types = new ArrayList<>();
         types.addAll(Arrays.asList(ObjectTypes.values()));
-        Collections.sort(types, (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart()));
+        Collections.sort(types, MidPointUtils.OBJECT_TYPES_COMPARATOR);
 
         for (ObjectTypes type : types) {
             group.add(new TypeAction(type, this));

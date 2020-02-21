@@ -4,10 +4,19 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.studio.impl.MidPointException;
+import com.evolveum.midpoint.client.api.ClientException;
+import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.MidPointFacet;
+import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.ui.trace.TableColumnDefinition;
 import com.evolveum.midpoint.util.DOMUtilSettings;
+import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
+import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -54,9 +63,13 @@ public class MidPointUtils {
 
     public static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
-    public static final PrismContext DEFAULT_PRISM_CONTEXT;
+    public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart());
+
+    public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
 
     private static final Random RANDOM = new Random();
+
+    public static final PrismContext DEFAULT_PRISM_CONTEXT;
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
 
@@ -78,15 +91,6 @@ public class MidPointUtils {
     public static Project getCurrentProject() {
         DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
         return DataKeys.PROJECT.getData(dataContext);
-    }
-
-    public static void createAndPushNotification(String group, String title, String content, NotificationType type,
-                                                 NotificationAction... actions) {
-
-        Notification notification = new Notification(group, title, content, type);
-        Arrays.stream(actions).forEach(a -> notification.addAction(a));
-
-        Notifications.Bus.notify(notification);
     }
 
     public static Color generateAwtColor() {
@@ -208,14 +212,28 @@ public class MidPointUtils {
                                            NotificationAction... actions) {
         Notification notification = new Notification(key, title, content, type);
         if (actions != null) {
-            Arrays.asList(actions).forEach(a -> {
-
-                if (a != null) {
-                    notification.addAction(a);
-                }
-            });
+            Arrays.stream(actions).filter(a -> a != null).forEach(a -> notification.addAction(a));
         }
+
         Notifications.Bus.notify(notification);
+    }
+
+    public static void handleGenericException(Project project, Class clazz, String key, String message, Exception ex) {
+        NotificationAction action = null;
+        if (ex instanceof ClientException) {
+            OperationResult result = ((ClientException) ex).getResult();
+            if (result != null) {
+                action = new ShowResultNotificationAction(result);
+            }
+        }
+
+        MidPointUtils.publishNotification(key, "Error",
+                message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
+
+        if (project != null) {
+            MidPointManager manager = MidPointManager.getInstance(project);
+            manager.printToConsole(clazz, message, ex);
+        }
     }
 
     public static Map<String, Object> mapOf(Entry<String, Object>... entries) {
@@ -292,6 +310,14 @@ public class MidPointUtils {
         table.packAll();
 
         return table;
+    }
+
+    public static String getOrigFromPolyString(PolyString poly) {
+        return poly != null ? poly.getOrig() : null;
+    }
+
+    public static String getOrigFromPolyString(PolyStringType poly) {
+        return poly != null ? poly.getOrig() : null;
     }
 
     public static String formatTime(Long time) {

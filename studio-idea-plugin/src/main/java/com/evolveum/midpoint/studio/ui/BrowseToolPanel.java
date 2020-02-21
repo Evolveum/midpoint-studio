@@ -6,23 +6,38 @@ import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
+import com.evolveum.midpoint.schema.SearchResultMetadata;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
-import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
-import com.evolveum.midpoint.studio.impl.RestObjectManager;
+import com.evolveum.midpoint.studio.action.browse.DownloadAction;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.Pair;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.components.JBTextArea;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -40,20 +55,19 @@ import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
  */
 public class BrowseToolPanel extends SimpleToolWindowPanel {
 
-    public enum State {
+    private static final Logger LOG = Logger.getInstance(BrowseToolPanel.class);
 
-        DONE, SEARCHING, DOWNLOADING, CANCELING
-    }
+    private static final String NOTIFICATION_KEY = "MidPoint Browser";
 
-    private State state = State.DONE;
+    private Project project;
 
-    private JTextArea query;
-    private QueryResultsPanel queryResultsPanel;
+    private JBTextArea query;
+    private JXTreeTable results;
 
     private ComboObjectTypes objectType;
     private ComboQueryType queryType;
 
-    private AnAction searchAction;
+    private BackgroundAction searchAction;
     private AnAction cancelAction;
     private AnAction pagingAction;
 
@@ -61,7 +75,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private AnAction showAction;
     private AnAction processAction;
 
-    private AnAction pagingText;
+    private TextAction pagingText;
     private AnAction previous;
     private AnAction next;
 
@@ -70,9 +84,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private Paging paging = new Paging();
 
-
-    public BrowseToolPanel() {
+    public BrowseToolPanel(Project project) {
         super(false, true);
+
+        this.project = project;
 
         initLayout();
     }
@@ -98,7 +113,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 group, true);
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
-        query = new JTextArea();
+        query = new JBTextArea();
         JBScrollPane pane = new JBScrollPane(query);
         root.add(pane, BorderLayout.CENTER);
 
@@ -114,14 +129,53 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 resultsActions, true);
         results.add(resultsActionsToolbar.getComponent(), BorderLayout.NORTH);
 
-        queryResultsPanel = new QueryResultsPanel();
-        results.add(queryResultsPanel, BorderLayout.CENTER);
+        List<TreeTableColumnDefinition<ObjectType, ?>> columns = new ArrayList<>();
+        columns.add(new TreeTableColumnDefinition<>("Name", 500, null));
+        columns.add(new TreeTableColumnDefinition<>("Display name", 500, o -> {
 
-        DefaultActionGroup pagingActions = createPagingActionGroup();
+            if (!(o instanceof AbstractRoleType)) {
+                return null;
+            }
 
-        ActionToolbar pagingActionsToolbar = ActionManager.getInstance().createActionToolbar("BrowseResultsPagingActions",
-                pagingActions, true);
-        results.add(pagingActionsToolbar.getComponent(), BorderLayout.SOUTH);
+            return MidPointUtils.getOrigFromPolyString(((AbstractRoleType) o).getDisplayName());
+        }));
+        columns.add(new TreeTableColumnDefinition<>("Subtype", 100, o -> StringUtils.join(o.getSubtype(), ", ")));
+        columns.add(new TreeTableColumnDefinition<>("Oid", 100, o -> o.getOid()));
+
+        this.results = MidPointUtils.createTable(new BrowseTableModel(columns), (List) columns);
+        this.results.setTreeCellRenderer(new NodeRenderer() {
+
+            @Override
+            public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected, boolean expanded,
+                                              boolean leaf, int row, boolean hasFocus) {
+                Object node = TreeUtil.getUserObject(value);
+                DefaultMutableTreeTableNode treeNode = (DefaultMutableTreeTableNode) node;
+
+                Object userObject = treeNode.getUserObject();
+                if (userObject instanceof ObjectTypes) {
+                    ObjectTypes type = (ObjectTypes) userObject;
+                    String text = type.getTypeQName().getLocalPart();
+
+                    value = MidPointLocalizationService.getInstance().translate("ObjectType." + text, text);
+                } else if (userObject instanceof ObjectType) {
+                    ObjectType ot = (ObjectType) userObject;
+                    value = MidPointUtils.getOrigFromPolyString(ot.getName());
+                }
+
+                super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
+            }
+        });
+        this.results.setOpaque(false);
+
+        this.results.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        results.add(new JBScrollPane(this.results), BorderLayout.CENTER);
+
+        // todo finish nice paging
+//        DefaultActionGroup pagingActions = createPagingActionGroup();
+//
+//        ActionToolbar pagingActionsToolbar = ActionManager.getInstance().createActionToolbar("BrowseResultsPagingActions",
+//                pagingActions, true);
+//        results.add(pagingActionsToolbar.getComponent(), BorderLayout.SOUTH);
 
         return results;
     }
@@ -139,11 +193,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         group.addSeparator();
 
         pagingText = new TextAction() {
-
-            @Override
-            public void update(AnActionEvent e) {
-                e.getPresentation().setText("From 1 to 50 of 1234");
-            }
 
             @NotNull
             @Override
@@ -192,9 +241,18 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 e -> e.getPresentation().setEnabled(isSearchEnabled()));
         group.add(pagingAction);
 
-        searchAction = createAnAction("Search", AllIcons.Actions.Find,
-                e -> searchPerformed(e),
-                e -> e.getPresentation().setEnabled(isSearchEnabled()));
+        searchAction = new BackgroundAction("Search", AllIcons.Actions.Find, "Searching objects") {
+
+            @Override
+            protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
+                searchPerformed(evt, indicator);
+            }
+
+            @Override
+            protected boolean isEnabled() {
+                return isSearchEnabled();
+            }
+        };
         group.add(searchAction);
 
         cancelAction = createAnAction("Cancel", AllIcons.Actions.Cancel,
@@ -208,15 +266,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private DefaultActionGroup createResultsActionGroup() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        // todo create external xactions, they should be able to show progress
         downloadAction = createAnAction("Download", AllIcons.Actions.Download,
-                e -> downloadPerformed(e, false),
-                e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
+                e -> downloadPerformed(e, false, rawDownload),
+                e -> isDownloadShowEnabled());
         group.add(downloadAction);
 
         showAction = createAnAction("Show", AllIcons.Actions.Show,
-                e -> downloadPerformed(e, true),
-                e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
+                e -> downloadPerformed(e, true, rawDownload),
+                e -> isDownloadShowEnabled());
         group.add(showAction);
 
         CheckboxAction rawSearch = new CheckboxAction("Raw") {
@@ -259,94 +316,131 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         // todo implement
     }
 
-    private void searchPerformed(AnActionEvent evt) {
-        state = State.SEARCHING;
+    private void searchPerformed(AnActionEvent evt, ProgressIndicator indicator) {
+        LOG.debug("Clearing table");
+        // clear result table
+        updateTableModel(null);
 
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        // load data
+        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        Environment env = em.getSelected();
+
+        indicator.setText("Searching objects in " + env.getName() + " MidPoint");
+
+        SearchResultList result = null;
+        try {
+            LOG.debug("Setting up midpoint client");
+            MidPointClient client = new MidPointClient(evt.getProject(), env);
 
             ObjectTypes type = objectType.getSelected();
-            ObjectQuery query = buildQuery(evt.getProject());
+            ObjectQuery query = buildQuery(client);
 
-            RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
+            LOG.debug("Starting search");
+            result = client.search(type.getClassDefinition(), query, rawSearch);
+        } catch (Exception ex) {
+            handleGenericException("Couldn't search objects", ex);
+        }
 
-            SearchResultList result = null;
-            try {
-                result = rest.search(type.getClassDefinition(), query, rawSearch);
-            } catch (Exception ex) {
-                ex.printStackTrace(); // todo implement
-//                printErrorMessage("Couldn't list objects, reason: " + ex.getMessage());
-            }
+        LOG.debug("Updating table");
 
-            updateTableModel(result);
+        // update result table
+        updateTableModel(result);
 
-            state = State.DONE;
-        });
+        // todo finish nice paging
+        // updatePagingAction(result, query.getOffset());
     }
 
-    private void downloadPerformed(AnActionEvent evt, boolean showOnly) {
-        ApplicationManager.getApplication().runWriteAction(() -> {
+    private void handleGenericException(String message, Exception ex) {
+        MidPointUtils.handleGenericException(project, BrowseToolPanel.class, NOTIFICATION_KEY, message, ex);
+    }
 
-            setState(BrowseToolPanel.State.DOWNLOADING);
+    private List<Pair<String, ObjectTypes>> getSelectedOids() {
+        List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
 
-            JTable table = queryResultsPanel.getTable();
+        BrowseTableModel model = getResultsModel();
+        List<ObjectType> data = model.getObjects();
 
-            RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
-
-            ObjectQuery objectQuery;
-            if (table.getRowCount() == table.getSelectedRowCount() || table.getSelectedRowCount() == 0) {
-                // return all
-                objectQuery = buildQuery(evt.getProject());
-            } else {
-                // return only selected objects
-                List<String> oids = queryResultsPanel.getSelectedRowsOids();
-
-                PrismContext ctx = rest.getPrismContext();
-                QueryFactory qf = ctx.queryFactory();
-
-                InOidFilter inOidFilter = qf.createInOid(oids);
-
-                ItemPath path = ctx.path(ObjectType.F_NAME);
-                ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
-                        path, OrderDirection.ASCENDING);
-
-                objectQuery = qf.createQuery(inOidFilter, paging);
+        ListSelectionModel selectionModel = results.getSelectionModel();
+        int[] indices = selectionModel.getSelectedIndices();
+        for (int i : indices) {
+            DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) results.getPathForRow(i).getLastPathComponent();
+            Object obj = node.getUserObject();
+            if (obj instanceof ObjectTypes) {
+                ObjectTypes type = (ObjectTypes) obj;
+                data.forEach(o -> {
+                    if (type.getClassDefinition().equals(o.getClass())) {
+                        selected.add(new Pair<>(o.getOid(), type));
+                    }
+                });
+            } else if (obj instanceof ObjectType) {
+                ObjectType o = (ObjectType) obj;
+                selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass())));
             }
+        }
 
-            ObjectTypes objectTypes = objectType.getSelected();
-            VirtualFile[] files = rest.download(objectTypes.getClassDefinition(), objectQuery,
-                    new DownloadOptions().showOnly(showOnly).raw(rawDownload));
+        return selected;
+    }
 
-            if (files != null && files.length == 1) {
+    private boolean isResultSelected() {
+        return results.getSelectionModel().getSelectedItemsCount() != 0;
+    }
+
+    private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
+        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        Environment env = em.getSelected();
+
+        DownloadAction da = new DownloadAction(env, getResultsModel().getSelectedOids(results), showOnly, rawDownload) {
+
+            @Override
+            protected void onFinished() {
+                VirtualFile file = null;// todo getDownloadedFile();
+                if (file == null) {
+                    return;
+                }
                 FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
-                fem.openFile(files[0], true, true);
+                fem.openFile(file, true, true);
             }
-            // todo if files is null show error/warning
-        });
+        };
+        ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
 
     private void cancelPerformed(AnActionEvent evt) {
-        state = State.CANCELING;
-
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
 
             // todo implement
 
-            state = State.DONE;
         });
     }
 
-    private void updateTableModel(SearchResultList result) {
-        BrowseTableModel tableModel = queryResultsPanel.getTableModel();
-        List<ObjectType> data = tableModel.getData();
-        data.clear();
+    private void updatePagingAction(SearchResultList result, int from) {
+        SearchResultMetadata metadata = result.getMetadata();
 
-        if (result == null || result.isEmpty()) {
-            return;
+        int to = from + result.getList().size();
+        Integer of = 0;
+        if (metadata != null) {
+            of = metadata.getApproxNumberOfAllResults();
         }
 
-        data.addAll(result);
+        int selected = getResultsModel().getSelectedOids(results).size();
 
-        ApplicationManager.getApplication().invokeLater(() -> tableModel.fireTableDataChanged());
+        String ofStr = of == null ? "unknown" : Integer.toString(of);
+
+        pagingText.setText("From " + from + " to " + to + " of " + ofStr + ". Selected " + selected + " objects");
+    }
+
+    private BrowseTableModel getResultsModel() {
+        return (BrowseTableModel) results.getTreeTableModel();
+    }
+
+    private void updateTableModel(SearchResultList result) {
+        BrowseTableModel tableModel = getResultsModel();
+        tableModel.setData(result != null ? result.getList() : null);
+
+        ApplicationManager.getApplication().invokeLater(() -> {
+
+            tableModel.fireTableDataChanged();
+            results.expandAll();
+        });
 
 //        printSuccessMessage("");    // todo add paging/count info to message
     }
@@ -361,37 +455,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private boolean isDownloadShowEnabled() {
-        // todo remove "true" part
-        return true || state == State.DONE && !queryResultsPanel.getTable().getSelectionModel().isSelectionEmpty();
+        return isResultSelected();
     }
 
     private boolean isSearchEnabled() {
-        return state == State.DONE;
+        // todo add condition that we're not currently searching
+        return EnvironmentManager.getInstance(project).isEnvironmentSelected();
     }
 
     private boolean isCancelEnabled() {
-        return state == State.SEARCHING;
+        // todo enable when search is in progress
+        return false;
     }
 
-    public QueryResultsPanel getQueryResultsPanel() {
-        return queryResultsPanel;
-    }
-
-    public ObjectTypes getObjectType() {
-        return objectType.getSelected();
-    }
-
-    public ObjectQuery getObjectQuery(Project project) {
-        return buildQuery(project);
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public ObjectQuery buildQuery(Project project) {
-        RestObjectManager em = RestObjectManager.getInstance(project);
-        PrismContext ctx = em.getPrismContext();
+    public ObjectQuery buildQuery(MidPointClient client) {
+        PrismContext ctx = client.getPrismContext();
         QueryFactory qf = ctx.queryFactory();
 
         ObjectFilter filter = null;

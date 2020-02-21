@@ -8,6 +8,7 @@ import java.io.Serializable;
 public class Credentials implements Serializable {
 
     private String key;
+    private String environment;
 
     private String username;
     private String password;
@@ -17,8 +18,9 @@ public class Credentials implements Serializable {
     public Credentials() {
     }
 
-    public Credentials(String key, String username, String password, String description) {
+    public Credentials(String key, String environment, String username, String password, String description) {
         this.key = key;
+        this.environment = environment;
         this.username = username;
         this.password = password;
         this.description = description;
@@ -30,6 +32,14 @@ public class Credentials implements Serializable {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
     }
 
     public String getUsername() {
@@ -64,6 +74,7 @@ public class Credentials implements Serializable {
         Credentials that = (Credentials) o;
 
         if (key != null ? !key.equals(that.key) : that.key != null) return false;
+        if (environment != null ? !environment.equals(that.environment) : that.environment != null) return false;
         if (username != null ? !username.equals(that.username) : that.username != null) return false;
         if (password != null ? !password.equals(that.password) : that.password != null) return false;
         return description != null ? description.equals(that.description) : that.description == null;
@@ -72,6 +83,7 @@ public class Credentials implements Serializable {
     @Override
     public int hashCode() {
         int result = key != null ? key.hashCode() : 0;
+        result = 31 * result + (environment != null ? environment.hashCode() : 0);
         result = 31 * result + (username != null ? username.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
@@ -82,6 +94,7 @@ public class Credentials implements Serializable {
     public String toString() {
         return "Credentials{" +
                 "key='" + key + '\'' +
+                ", env='" + environment + '\'' +
                 ", username='" + username + '\'' +
                 '}';
     }

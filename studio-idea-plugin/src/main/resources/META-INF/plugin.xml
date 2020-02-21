@@ -1,14 +1,45 @@
 <idea-plugin>
     <id>com.evolveum.midpoint.studio</id>
     <name>MidPoint Studio</name>
-    <vendor email="midpoint.studio@evolveum.com.com" url="https://evolveum.com.com">evolveum, s.r.o.</vendor>
+    <vendor email="midpoint.studio@evolveum.com" url="https://evolveum.com">evolveum, s.r.o.</vendor>
 
     <description><![CDATA[
         Plugin which enables support for MidPoint configuration files.
+
+        <b>Features</b>
+        <ul>
+            <li>Browse/Upload with raw options for both operations</li>
+            <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
+            <li>XML tags autocompletion, links to documentation</li>
+            <li>XML script/code
+                <ul>
+                    <li>groovy syntax highlighting and groovy code completion</li>
+                    <li>groovy code common variables injection</li>
+                </ul>
+            </li>
+            <li>Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
+            <li>Simple OID generator</li>
+        </ul>
     ]]></description>
 
     <change-notes><![CDATA[
-        TODO change notes asd asddsf sdfgsdf asdfasdfasdf a sf asdf asd fasdf asd
+
+        <i>Release 4.1</i>
+        <ul>
+            <li>Initial release of plugin</li>
+            <li>Browse/Upload with raw options for both operations</li>
+            <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
+            <li>XML tags autocompletion, links to documentation</li>
+            <li>XML script/code
+                <ul>
+                    <li>groovy syntax highlighting and groovy code completion</li>
+                    <li>groovy code common variables injection</li>
+                </ul>
+            </li>
+            <li>Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
+            <li>Simple OID generator</li>
+        </ul>
+
     ]]></change-notes>
 
     <depends>com.intellij.modules.lang</depends>
@@ -34,17 +65,6 @@
             <interface-class>com.evolveum.midpoint.studio.impl.EnvironmentManager</interface-class>
             <implementation-class>com.evolveum.midpoint.studio.impl.EnvironmentManagerImpl</implementation-class>
         </component>
-        <component>
-            <interface-class>com.evolveum.midpoint.studio.impl.FileObjectManager</interface-class>
-            <implementation-class>com.evolveum.midpoint.studio.impl.FileObjectManagerImpl</implementation-class>
-        </component>
-        <component>
-            <interface-class>com.evolveum.midpoint.studio.impl.RestObjectManager</interface-class>
-            <implementation-class>com.evolveum.midpoint.studio.impl.RestObjectManagerImpl</implementation-class>
-        </component>
-        <component>
-            <implementation-class>com.evolveum.midpoint.studio.impl.PropertyManager</implementation-class>
-        </component>
     </project-components>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -53,8 +73,9 @@
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
-        <xmlStructureViewBuilderProvider
-                implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>
+        <!-- TODO finish implementation -->
+        <!--<xmlStructureViewBuilderProvider
+                implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>-->
 
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.MidPointMultiHostInjector"/>
 
@@ -95,6 +116,7 @@
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
 
         <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.RefOidAnnotator"/>
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.ResourceTypeAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
@@ -102,7 +124,7 @@
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
-        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>
+<!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
 
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
 
@@ -116,6 +138,8 @@
 
         <diff.lang.DiffIgnoredRangeProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
+
+<!--        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.MidPointObjectNameIndex"/>-->
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
@@ -171,6 +195,10 @@
             <action id="MidPoint.Action.ProfileAction" class="com.evolveum.midpoint.studio.action.ProfileEnvironment"
                     text="Profile Environment"
                     icon="AllIcons.Actions.Profile"/>
+
+            <action id="MidPoint.Action.DocumentationAction" class="com.evolveum.midpoint.studio.action.DocumentationAction"
+                    text="Generate Documentation"
+                    icon="AllIcons.Actions.Annotate"/>
 
             <add-to-group group-id="NavBarToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>

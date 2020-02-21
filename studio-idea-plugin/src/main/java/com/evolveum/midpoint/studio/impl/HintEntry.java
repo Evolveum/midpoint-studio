@@ -6,7 +6,10 @@ import java.util.Objects;
 
 /**
  * Created by Viliam Repan (lazyman).
+ *
+ * todo review and delete if necessary
  */
+@Deprecated
 public class HintEntry implements Serializable {
 
     private String oid;

@@ -10,7 +10,10 @@ import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
+ *
+ * todo review and delete if necessary
  */
+@Deprecated
 public class HintManager {
 
     private Map<String, HintEntry> hints = new HashMap<>();

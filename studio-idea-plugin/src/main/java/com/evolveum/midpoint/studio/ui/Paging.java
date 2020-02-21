@@ -7,8 +7,6 @@ public class Paging {
 
     private int from = 0;
 
-    private int to = 500;
-
     private int pageSize = 500;
 
     public int getFrom() {
@@ -17,14 +15,6 @@ public class Paging {
 
     public void setFrom(int from) {
         this.from = from;
-    }
-
-    public int getTo() {
-        return to;
-    }
-
-    public void setTo(int to) {
-        this.to = to;
     }
 
     public int getPageSize() {
@@ -38,7 +28,6 @@ public class Paging {
     public Paging copy() {
         Paging p = new Paging();
         p.setFrom(from);
-        p.setTo(to);
         p.setPageSize(pageSize);
 
         return p;

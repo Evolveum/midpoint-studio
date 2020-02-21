@@ -24,11 +24,11 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <java.version>9</java.version>
 
         <connid.version>1.5.0.0</connid.version>
-        <scripted.sql.version>2.0</scripted.sql.version>
-        <midpoint.version>4.0.1-SNAPSHOT</midpoint.version>
+        <scripted.sql.version>2.1</scripted.sql.version>
+        <midpoint.version>4.1-SNAPSHOT</midpoint.version>
         <groovy.version>2.4.14</groovy.version>
         <testng.version>6.14.3</testng.version>
     </properties>

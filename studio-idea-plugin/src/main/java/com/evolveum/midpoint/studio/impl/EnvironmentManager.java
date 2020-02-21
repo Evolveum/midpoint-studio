@@ -18,6 +18,8 @@ public interface EnvironmentManager extends Stateful<EnvironmentSettings> {
 
     List<Environment> getEnvironments();
 
+    boolean isEnvironmentSelected();
+
     Environment getSelected();
 
     void select(String id);
@@ -27,4 +29,6 @@ public interface EnvironmentManager extends Stateful<EnvironmentSettings> {
     boolean delete(String id);
 
     Environment get(String id);
+
+    EnvironmentProperties getSelectedEnvironmentProperties();
 }

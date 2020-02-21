@@ -16,7 +16,6 @@ public class PagingDialog extends DialogWrapper {
 
     private JPanel root;
     private JTextField from;
-    private JTextField to;
     private JTextField pageSize;
 
     private Paging paging;
@@ -50,10 +49,6 @@ public class PagingDialog extends DialogWrapper {
         List<ValidationInfo> infos = new ArrayList<>();
 
         ValidationInfo vi = validateInput(from, "From");
-        if (vi != null) {
-            infos.add(vi);
-        }
-        vi = validateInput(to, "To");
         if (vi != null) {
             infos.add(vi);
         }
@@ -95,13 +90,11 @@ public class PagingDialog extends DialogWrapper {
 
     private void updateData() {
         paging.setFrom(Integer.parseInt(from.getText()));
-        paging.setTo(Integer.parseInt(to.getText()));
         paging.setPageSize(Integer.parseInt(pageSize.getText()));
     }
 
     private void populateFields() {
         from.setText(Integer.toString(paging.getFrom()));
-        to.setText(Integer.toString(paging.getTo()));
         pageSize.setText(Integer.toString(paging.getPageSize()));
     }
 }

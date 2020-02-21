@@ -11,8 +11,6 @@ public class ModuleSettings {
 
     private EnvironmentSettings environmentSettings = EnvironmentSettings.createDefaultSettings();
 
-    private FileObjectSettings fileObjectSettings = FileObjectSettings.createDefaultSettings();
-
     private String masterPassword;
 
     public MidPointSettings getMidPointSettings() {
@@ -29,14 +27,6 @@ public class ModuleSettings {
 
     public void setEnvironmentSettings(EnvironmentSettings environmentSettings) {
         this.environmentSettings = environmentSettings;
-    }
-
-    public FileObjectSettings getFileObjectSettings() {
-        return fileObjectSettings;
-    }
-
-    public void setFileObjectSettings(FileObjectSettings fileObjectSettings) {
-        this.fileObjectSettings = fileObjectSettings;
     }
 
     public String getMasterPassword() {
@@ -58,8 +48,6 @@ public class ModuleSettings {
             return false;
         if (environmentSettings != null ? !environmentSettings.equals(that.environmentSettings) : that.environmentSettings != null)
             return false;
-        if (fileObjectSettings != null ? !fileObjectSettings.equals(that.fileObjectSettings) : that.fileObjectSettings != null)
-            return false;
         return masterPassword != null ? masterPassword.equals(that.masterPassword) : that.masterPassword == null;
     }
 
@@ -67,7 +55,6 @@ public class ModuleSettings {
     public int hashCode() {
         int result = midPointSettings != null ? midPointSettings.hashCode() : 0;
         result = 31 * result + (environmentSettings != null ? environmentSettings.hashCode() : 0);
-        result = 31 * result + (fileObjectSettings != null ? fileObjectSettings.hashCode() : 0);
         result = 31 * result + (masterPassword != null ? masterPassword.hashCode() : 0);
         return result;
     }
@@ -77,7 +64,6 @@ public class ModuleSettings {
         return "ModuleSettings{" +
                 "midPointSettings=" + midPointSettings +
                 ", environmentSettings=" + environmentSettings +
-                ", fileObjectSettings=" + fileObjectSettings +
                 ", masterPassword='" + (masterPassword != null ? StringUtils.repeat('*', masterPassword.length()) : "NULL") + '\'' +
                 '}';
     }

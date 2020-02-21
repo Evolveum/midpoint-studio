@@ -4,6 +4,7 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.messages.MessageBus;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,19 +18,20 @@ import java.util.*;
 )
 public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> implements EnvironmentManager {
 
-    public static final String EVT_SELECTION_CHANGED = "selection_changed";
-
-    private static final String KEY_PROXY_SUFFIX = "/proxy";
+    private static final String KEY_PROXY_SUFFIX = "proxy";
 
     private static final String DESCRIPTION_PROXY_SUFFIX = " (proxy)";
 
     private static final Logger LOG = Logger.getInstance(EnvironmentManagerImpl.class);
+
+    private MessageBus messageBus;
 
     private CredentialsManager credentialsManager;
 
     public EnvironmentManagerImpl(@NotNull Project project, @NotNull CredentialsManager credentialsManager) {
         super(project, EnvironmentSettings.class);
 
+        this.messageBus = project.getMessageBus();
         this.credentialsManager = credentialsManager;
     }
 
@@ -102,6 +104,11 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
     }
 
     @Override
+    public boolean isEnvironmentSelected() {
+        return getSettings().getSelected() != null;
+    }
+
+    @Override
     public Environment getSelected() {
         Environment env = getSettings().getSelected();
         return env != null ? buildFullEnvironment(env) : null;
@@ -120,20 +127,21 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
 
         getSettings().setSelectedId(id);
 
-        fireOnEvent(new Event(EVT_SELECTION_CHANGED, newSelected));
+        messageBus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentChanged(selected, newSelected);
     }
 
     @Override
     public String add(Environment env) {
         LOG.debug("Adding environment " + env);
 
-        if (!StringUtils.isAllEmpty(env.getUsername(), env.getPassword())) {
-            Credentials credentials = new Credentials(env.getId(), env.getUsername(), env.getPassword(), env.getName());
+        if (StringUtils.isNotEmpty(env.getUsername()) || StringUtils.isNotEmpty(env.getPassword())) {
+            Credentials credentials = new Credentials(
+                    env.getId(), env.getId(), env.getUsername(), env.getPassword(), env.getName());
             credentialsManager.add(credentials);
         }
 
-        if (!StringUtils.isAllEmpty(env.getProxyUsername(), env.getProxyPassword())) {
-            Credentials credentials = new Credentials(env.getId() + KEY_PROXY_SUFFIX, env.getProxyUsername(),
+        if (StringUtils.isNotEmpty(env.getProxyUsername()) || StringUtils.isNotEmpty(env.getProxyPassword())) {
+            Credentials credentials = new Credentials(KEY_PROXY_SUFFIX, env.getId(), env.getProxyUsername(),
                     env.getProxyPassword(), env.getName() + DESCRIPTION_PROXY_SUFFIX);
             credentialsManager.add(credentials);
         }
@@ -152,11 +160,11 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
             return false;
         }
 
-        if (!StringUtils.isAllEmpty(env.getUsername(), env.getPassword())) {
+        if (StringUtils.isNotEmpty(env.getUsername()) || StringUtils.isNotEmpty(env.getPassword())) {
             credentialsManager.delete(env.getId());
         }
 
-        if (!StringUtils.isAllEmpty(env.getProxyUsername(), env.getProxyPassword())) {
+        if (StringUtils.isNotEmpty(env.getProxyUsername()) || StringUtils.isNotEmpty(env.getProxyPassword())) {
             credentialsManager.delete(env.getId() + KEY_PROXY_SUFFIX);
         }
 
@@ -180,5 +188,12 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
         }
 
         return null;
+    }
+
+    @Override
+    public EnvironmentProperties getSelectedEnvironmentProperties() {
+        Environment env = getSelected();
+
+        return new EnvironmentProperties(env);
     }
 }

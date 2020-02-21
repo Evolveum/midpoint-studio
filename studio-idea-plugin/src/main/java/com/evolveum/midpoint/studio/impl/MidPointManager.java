@@ -54,11 +54,6 @@ public class MidPointManager extends ManagerBase<MidPointSettings> implements Pr
         this.console = console;
     }
 
-    @Deprecated
-    public MidPointConsoleView getConsole() {
-        return console;
-    }
-
     public void printToConsole(Class clazz, String message) {
         printToConsole(clazz, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
     }

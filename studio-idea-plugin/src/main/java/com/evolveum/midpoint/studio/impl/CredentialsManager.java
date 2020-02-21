@@ -14,7 +14,7 @@ public interface CredentialsManager {
         return project.getComponent(CredentialsManager.class);
     }
 
-    void reinit();
+    void refresh();
 
     List<Credentials> list();
 

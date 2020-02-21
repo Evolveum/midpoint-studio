@@ -5,9 +5,6 @@ import com.evolveum.midpoint.client.api.ProxyType;
 import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.common.rest.MidpointAbstractProvider;
-import com.evolveum.midpoint.common.rest.MidpointJsonProvider;
-import com.evolveum.midpoint.common.rest.MidpointXmlProvider;
-import com.evolveum.midpoint.common.rest.MidpointYamlProvider;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
@@ -37,6 +34,23 @@ import java.util.Locale;
  * Created by Viliam Repan (lazyman).
  */
 public class ServiceFactory {
+
+    private static final PrismContext DEFAULT_PRISM_CONTEXT;
+
+    static {
+        try {
+            DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
+            // todo create web client just to obtain extension schemas!
+
+            PrismContextFactory factory = new MidPointPrismContextFactory();
+            PrismContext prismContext = factory.createPrismContext();
+            prismContext.initialize();
+
+            DEFAULT_PRISM_CONTEXT = prismContext;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Couldn't initialize prism context", ex);
+        }
+    }
 
     private String url;
 
@@ -109,16 +123,9 @@ public class ServiceFactory {
     }
 
     public Service create() throws Exception {
-        DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
-        // todo create web client just to obtain extension schemas!
-
-        PrismContextFactory factory = new MidPointPrismContextFactory();
-        PrismContext prismContext = factory.createPrismContext();
-        prismContext.initialize();
-
         List<Provider> providers = (List) Arrays.asList(
                 new com.bea.xml.stream.XMLOutputFactoryBase(),
-                setupProvider(new CompatibilityXmlProvider(prismContext), prismContext));
+                setupProvider(new CompatibilityXmlProvider(DEFAULT_PRISM_CONTEXT), DEFAULT_PRISM_CONTEXT));
 //                setupProvider(new MidpointXmlProvider(), prismContext),
 //                setupProvider(new MidpointJsonProvider<>(), prismContext),
 //                setupProvider(new MidpointYamlProvider<>(), prismContext));
@@ -200,7 +207,7 @@ public class ServiceFactory {
         }
         logging.initialize(config.getEndpoint(), config.getBus());
 
-        ServiceContext context = new ServiceContext(prismContext, client);
+        ServiceContext context = new ServiceContext(DEFAULT_PRISM_CONTEXT, client);
 
         return new ServiceImpl(context);
     }

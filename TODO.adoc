@@ -1,0 +1,7 @@
+= TODO
+
+* EnvironmentManagerImpl.getSelected() always reads credentials keepass file (full environment), multiple times pre second only to get color
+* MidPointXmlStructureViewBuilderProvider not finished
+* MidPoint Facet (existence) should show/hide MidPoint plugin UI panels/toolbars
+* Description + change notes in plugin.xml
+* Infer variables/types for source elements in mappings

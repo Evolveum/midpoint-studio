@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import de.slackspace.openkeepass.KeePassDatabase;
 import de.slackspace.openkeepass.domain.*;
 import org.apache.commons.lang3.StringUtils;
@@ -33,27 +33,35 @@ public class CredentialsManagerImpl implements CredentialsManager {
     public CredentialsManagerImpl(@NotNull Project project) {
         this.project = project;
 
-        reinit();
+        LOG.info("Initializing " + getClass().getSimpleName());
+
+        refresh();
     }
 
     @Override
-    public void reinit() {
+    public synchronized void refresh() {
+        refresh(true);
+    }
+
+    private void refresh(boolean create) {
         String masterPassword = getMasterPassword();
         if (StringUtils.isEmpty(masterPassword)) {
             return;
         }
 
         File dbFile = getDatabaseFile();
-        if (!dbFile.exists()) {
+        if (!dbFile.exists() && create) {
             this.database = createKeePassBuilder(null).build();
-            writeDatabase(database);
+            writeDatabase();
         }
 
-        database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
+        if (dbFile.exists()) {
+            database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
+        }
     }
 
     @Override
-    public List<Credentials> list() {
+    public synchronized List<Credentials> list() {
         Group group = getTopGroup();
         if (group == null) {
             return new ArrayList<>();
@@ -68,7 +76,7 @@ public class CredentialsManagerImpl implements CredentialsManager {
     }
 
     @Override
-    public String add(Credentials credentials) {
+    public synchronized String add(Credentials credentials) {
         Group group = getTopGroup();
         if (group == null) {
             return null;
@@ -88,13 +96,13 @@ public class CredentialsManagerImpl implements CredentialsManager {
 
         group.getEntries().add(entry);
 
-        writeDatabase(database);
+        writeDatabase();
 
         return entry.getTitle();
     }
 
     @Override
-    public boolean delete(String key) {
+    public synchronized boolean delete(String key) {
         Group group = getTopGroup();
         if (group == null) {
             return false;
@@ -106,13 +114,13 @@ public class CredentialsManagerImpl implements CredentialsManager {
         }
 
         boolean deleted = group.getEntries().remove(entry);
-        writeDatabase(database);
+        writeDatabase();
 
         return deleted;
     }
 
     @Override
-    public Credentials get(String key) {
+    public synchronized Credentials get(String key) {
         Group group = getTopGroup();
         if (group == null) {
             return null;
@@ -147,16 +155,18 @@ public class CredentialsManagerImpl implements CredentialsManager {
         return new File(basePath, CREDENTIALS_FILE_NAME);
     }
 
-    private synchronized void writeDatabase(KeePassFile kpFile) {
+    private synchronized void writeDatabase() {
         File file = getDatabaseFile();
 
         String masterPassword = getMasterPassword();
 
         try (OutputStream os = new FileOutputStream(file)) {
-            KeePassDatabase.write(kpFile, masterPassword, os);
+            KeePassDatabase.write(database, masterPassword, os);
         } catch (IOException ex) {
             // todo handle exception correctly
         }
+
+        refresh(false);
     }
 
     private String getMasterPassword() {
@@ -170,6 +180,7 @@ public class CredentialsManagerImpl implements CredentialsManager {
 
     private Credentials createCredentials(Entry entry) {
         return new Credentials(entry.getTitle(),
+                entry.getUrl(),
                 entry.getUsername(),
                 entry.getPassword(),
                 entry.getNotes());
