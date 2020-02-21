@@ -81,7 +81,7 @@ public abstract class Generator {
     }
 
     protected List<Batch> createBatches(List<MidPointObject> objects, GeneratorOptions options, ObjectTypes applicableTo) {
-        List<Batch> rv = new ArrayList<Batch>();
+        List<Batch> rv = new ArrayList<>();
 
         if (options.isBatchByOids()) {
             Batch current = null;

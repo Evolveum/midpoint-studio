@@ -2,9 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
-import com.evolveum.midpoint.studio.impl.browse.Generator;
-import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
-import com.evolveum.midpoint.studio.impl.browse.TaskGenerator;
+import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
 import com.evolveum.midpoint.studio.util.GeneratorRenderer;
 import com.evolveum.midpoint.studio.util.LocalizedRenderer;
@@ -34,10 +32,30 @@ import java.util.List;
 public class ProcessResultsDialog extends DialogWrapper {
 
     private static final List<Generator> GENERATORS = Arrays.asList(
-            new TaskGenerator(TaskGenerator.Action.RECOMPUTE),
-            new TaskGenerator(TaskGenerator.Action.DELETE),
-            new TaskGenerator(TaskGenerator.Action.MODIFY),
-            new TaskGenerator(TaskGenerator.Action.SHADOW_CHECK)
+            new BulkActionGenerator(BulkActionGenerator.Action.RECOMPUTE),
+			new BulkActionGenerator(BulkActionGenerator.Action.ENABLE),
+			new BulkActionGenerator(BulkActionGenerator.Action.DISABLE),
+			new BulkActionGenerator(BulkActionGenerator.Action.DELETE),
+			new BulkActionGenerator(BulkActionGenerator.Action.MODIFY),
+			new BulkActionGenerator(BulkActionGenerator.Action.ASSIGN_TO_THIS),
+			new BulkActionGenerator(BulkActionGenerator.Action.ASSIGN_THIS),
+			new BulkActionGenerator(BulkActionGenerator.Action.EXECUTE_SCRIPT),
+			new BulkActionGenerator(BulkActionGenerator.Action.NOTIFY),
+			new BulkActionGenerator(BulkActionGenerator.Action.LOG),
+			new BulkActionGenerator(BulkActionGenerator.Action.TEST_RESOURCE),
+			new BulkActionGenerator(BulkActionGenerator.Action.VALIDATE),
+			new TaskGenerator(TaskGenerator.Action.RECOMPUTE),
+			new TaskGenerator(TaskGenerator.Action.DELETE),
+			new TaskGenerator(TaskGenerator.Action.MODIFY),
+			new TaskGenerator(TaskGenerator.Action.SHADOW_CHECK),
+			new QueryGenerator(),
+			new AssignmentGenerator(),
+			new RefGenerator("targetRef", ObjectTypes.OBJECT),
+			new RefGenerator("resourceRef", ObjectTypes.RESOURCE),
+			new RefGenerator("linkRef", ObjectTypes.SHADOW),
+			new ConnectorRefGenerator(),
+			new RefGenerator("parentOrgRef", ObjectTypes.ORG),
+			new RefGenerator("ownerRef", ObjectTypes.ORG)
     );
 
     private JComboBox<Generator> generate;
