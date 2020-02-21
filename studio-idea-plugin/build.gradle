@@ -20,6 +20,9 @@ dependencies {
     compile("com.evolveum.midpoint.model:model-api:$midpointVersion") {
         transitive = false
     }
+    compile("com.evolveum.midpoint.repo:security-api:$midpointVersion") {
+        transitive = false
+    }
     compile("com.evolveum.midpoint.model:notifications-api:$midpointVersion") {
         transitive = false
     }

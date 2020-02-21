@@ -156,15 +156,6 @@
 
         <group id="MidPoint.Toolbar.Main">
 
-            <!-- TODO REMOVE -->
-            <action id="MidPoint.Action.TestAction"
-                    class="com.evolveum.midpoint.studio.action.TestAction"
-                    text="Test Action"
-                    description="Test Action"
-                    icon="AllIcons.Actions.IntentionBulb"/>
-
-            <separator/>
-
             <action id="MidPointPlugin.Menu.GenerateRandomOid"
                     class="com.evolveum.midpoint.studio.action.GenerateRandomOid"
                     icon="/icons/random_oid.png"
@@ -196,9 +187,9 @@
                     text="Profile Environment"
                     icon="AllIcons.Actions.Profile"/>
 
-            <action id="MidPoint.Action.DocumentationAction" class="com.evolveum.midpoint.studio.action.DocumentationAction"
+            <!--<action id="MidPoint.Action.DocumentationAction" class="com.evolveum.midpoint.studio.action.DocumentationAction"
                     text="Generate Documentation"
-                    icon="AllIcons.Actions.Annotate"/>
+                    icon="AllIcons.Actions.Annotate"/>-->
 
             <add-to-group group-id="NavBarToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
