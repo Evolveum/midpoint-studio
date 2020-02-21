@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.browse;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -53,7 +54,7 @@ public class TaskGenerator extends Generator {
     }
 
     @Override
-    public String generate(List<MidPointObject> objects, GeneratorOptions options) {
+    public String generate(List<ObjectType> objects, GeneratorOptions options) {
         Document doc = DOMUtil.getDocument(new QName(Constants.COMMON_NS, "objects", "c"));
         Element root = doc.getDocumentElement();
 
@@ -80,7 +81,7 @@ public class TaskGenerator extends Generator {
             if (options.isBatchByOids()) {
                 Element filter = DOMUtil.createSubElement(objectQuery, Constants.Q_FILTER_Q);
                 Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
-                for (MidPointObject o : batch.getObjects()) {
+                for (ObjectType o : batch.getObjects()) {
                     DOMUtil.createSubElement(inOid, Constants.Q_VALUE_Q).setTextContent(o.getOid());
                     DOMUtil.createComment(inOid, " " + o.getName() + " ");
                 }
@@ -101,8 +102,8 @@ public class TaskGenerator extends Generator {
 
             ObjectTypes superType = null;
             if (options.isBatchByOids()) {
-                for (MidPointObject o : batch.getObjects()) {
-                    superType = MidPointUtils.commonSuperType(superType, o.getType());
+                for (ObjectType o : batch.getObjects()) {
+                    superType = MidPointUtils.commonSuperType(superType, ObjectTypes.getObjectType(o.getClass()));
                 }
             } else {
                 for (ObjectTypes t : options.getOriginalQueryTypes()) {

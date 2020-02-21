@@ -43,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.util.List;
 import java.util.*;
@@ -324,5 +325,13 @@ public class MidPointUtils {
         }
 
         return o1.getClassDefinition().isAssignableFrom(o2.getClassDefinition());
+    }
+
+    public static QName getTypeQName(ObjectType obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        return ObjectTypes.getObjectType(obj.getClass()).getTypeQName();
     }
 }

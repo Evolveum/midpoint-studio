@@ -1,15 +1,17 @@
 package com.evolveum.midpoint.studio.impl.browse;
 
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Batch {
 
-    private List<MidPointObject> objects = new ArrayList<>();
+    private List<ObjectType> objects = new ArrayList<>();
 
     private int first;
 
-    public List<MidPointObject> getObjects() {
+    public List<ObjectType> getObjects() {
         return objects;
     }
 

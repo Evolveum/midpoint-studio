@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.browse;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
@@ -15,7 +16,7 @@ public abstract class Generator {
 
     public abstract String getLabel();
 
-    public abstract String generate(List<MidPointObject> objects, GeneratorOptions options);
+    public abstract String generate(List<ObjectType> objects, GeneratorOptions options);
 
     public boolean supportsRawOption() {
         return false;
@@ -37,12 +38,12 @@ public abstract class Generator {
         return false;
     }
 
-    public void createRefContent(Element refRoot, MidPointObject object, GeneratorOptions options) {
+    public void createRefContent(Element refRoot, ObjectType object, GeneratorOptions options) {
         createRefContent(refRoot, object, options, getSymbolicRefItemName(object), getSymbolicRefItemValue(object));
     }
 
-    public static void createRefContent(Element refRoot, MidPointObject object, GeneratorOptions options, String symbolicRefItemName, String symbolicRefItemValue) {
-        DOMUtil.setQNameAttribute(refRoot, "type", object.getType().getTypeQName());
+    public static void createRefContent(Element refRoot, ObjectType object, GeneratorOptions options, String symbolicRefItemName, String symbolicRefItemValue) {
+        DOMUtil.setQNameAttribute(refRoot, "type", MidPointUtils.getTypeQName(object));
         if (options.isSymbolicReferences()) {
             Element filter = DOMUtil.createSubElement(refRoot, new QName(Constants.COMMON_NS, "filter", "c"));
             Element equal = DOMUtil.createSubElement(filter, new QName(Constants.QUERY_NS, "equal", "q"));
@@ -57,17 +58,17 @@ public abstract class Generator {
         }
     }
 
-    protected String getSymbolicRefItemValue(MidPointObject object) {
-        return object.getName();
+    protected String getSymbolicRefItemValue(ObjectType object) {
+        return object.getName().getOrig();
     }
 
-    protected String getSymbolicRefItemName(MidPointObject object) {
+    protected String getSymbolicRefItemName(ObjectType object) {
         return "name";
     }
 
-    protected void createInOidQueryFilter(Element filter, List<MidPointObject> objects) {
+    protected void createInOidQueryFilter(Element filter, List<ObjectType> objects) {
         Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID);
-        for (MidPointObject o : objects) {
+        for (ObjectType o : objects) {
             DOMUtil.createSubElement(inOid, Constants.Q_VALUE).setTextContent(o.getOid());
         }
     }
@@ -80,14 +81,14 @@ public abstract class Generator {
         return false;
     }
 
-    protected List<Batch> createBatches(List<MidPointObject> objects, GeneratorOptions options, ObjectTypes applicableTo) {
+    protected List<Batch> createBatches(List<ObjectType> objects, GeneratorOptions options, ObjectTypes applicableTo) {
         List<Batch> rv = new ArrayList<>();
 
         if (options.isBatchByOids()) {
             Batch current = null;
             int index = 0;
-            for (MidPointObject object : objects) {
-                if (!MidPointUtils.isAssignableFrom(applicableTo, object.getType())) {
+            for (ObjectType object : objects) {
+                if (!MidPointUtils.isAssignableFrom(applicableTo, ObjectTypes.getObjectType(object.getClass()))) {
                     continue;
                 }
                 if (current == null || current.getObjects().size() == options.getBatchSize()) {

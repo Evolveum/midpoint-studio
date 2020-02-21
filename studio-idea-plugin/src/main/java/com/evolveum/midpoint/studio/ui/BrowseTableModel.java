@@ -121,17 +121,14 @@ public class BrowseTableModel extends AbstractTreeTableModel {
         return objects;
     }
 
-    public List<Pair<String, ObjectTypes>> getSelectedOids(JXTreeTable table) {
-        List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
-
+    public List<ObjectType> getSelectedObjects(JXTreeTable table) {
         if (!this.equals(table.getTreeTableModel())) {
             throw new IllegalArgumentException("Table doesn't match with current object model (this).");
         }
 
+        List<ObjectType> selected = new ArrayList<>();
+
         List<ObjectType> data = this.objects;
-        if (data == null) {
-            return selected;
-        }
 
         ListSelectionModel selectionModel = table.getSelectionModel();
         int[] indices = selectionModel.getSelectedIndices();
@@ -142,14 +139,27 @@ public class BrowseTableModel extends AbstractTreeTableModel {
                 ObjectTypes type = (ObjectTypes) obj;
                 data.forEach(o -> {
                     if (type.getClassDefinition().equals(o.getClass())) {
-                        selected.add(new Pair<>(o.getOid(), type));
+                        selected.add(o);
                     }
                 });
             } else if (obj instanceof ObjectType) {
                 ObjectType o = (ObjectType) obj;
-                selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass())));
+                selected.add(o);
             }
         }
+
+        return selected;
+    }
+
+    public List<Pair<String, ObjectTypes>> getSelectedOids(JXTreeTable table) {
+        List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
+
+        List<ObjectType> objects = getSelectedObjects(table);
+        if (objects == null) {
+            return selected;
+        }
+
+        objects.forEach(o -> selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass()))));
 
         return selected;
     }

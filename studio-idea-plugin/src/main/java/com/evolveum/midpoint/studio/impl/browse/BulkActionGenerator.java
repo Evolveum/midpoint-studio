@@ -3,6 +3,8 @@ package com.evolveum.midpoint.studio.impl.browse;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.UserType;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
@@ -52,7 +54,7 @@ public class BulkActionGenerator extends Generator {
     }
 
     @Override
-    public String generate(List<MidPointObject> objects, GeneratorOptions options) {
+    public String generate(List<ObjectType> objects, GeneratorOptions options) {
         Element top = null;
 
         List<Batch> batches;
@@ -66,7 +68,7 @@ public class BulkActionGenerator extends Generator {
                 return null;
             }
             Batch batch = new Batch();
-            batch.getObjects().add(new MidPointObject("TODO: oid", "TODO: name", ObjectTypes.FOCUS_TYPE, Collections.emptyList(), "", ""));
+            batch.getObjects().add(new UserType());
             batches = Collections.singletonList(batch);
         }
         Element root;
@@ -143,7 +145,7 @@ public class BulkActionGenerator extends Generator {
         if (options.isBatchByOids()) {
             Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "searchFilter", "s"));
             Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
-            for (MidPointObject o : batch.getObjects()) {
+            for (ObjectType o : batch.getObjects()) {
                 DOMUtil.createSubElement(inOid, Constants.Q_VALUE_Q).setTextContent(o.getOid());
                 DOMUtil.createComment(inOid, " " + o.getName() + " ");
             }
@@ -188,7 +190,7 @@ public class BulkActionGenerator extends Generator {
     }
 
     // objects should be non-null for ASSIGN_THIS action
-    public void createAction(Element root, GeneratorOptions options, List<MidPointObject> objects) {
+    public void createAction(Element root, GeneratorOptions options, List<ObjectType> objects) {
         Element actionE = DOMUtil.createSubElement(root, new QName(Constants.SCRIPT_NS, "expression", "s"));
         DOMUtil.setXsiType(actionE, new QName(Constants.SCRIPT_NS, "ActionExpressionType", "s"));
         DOMUtil.createSubElement(actionE, new QName(Constants.SCRIPT_NS, "type", "s")).setTextContent(action.actionName);
@@ -261,7 +263,7 @@ public class BulkActionGenerator extends Generator {
             Element itemDelta = DOMUtil.createSubElement(objectDelta, new QName(Constants.TYPES_NS, "itemDelta", "t"));
             DOMUtil.createSubElement(itemDelta, new QName(Constants.TYPES_NS, "modificationType", "t")).setTextContent("add");
             DOMUtil.createSubElement(itemDelta, new QName(Constants.TYPES_NS, "path", "t")).setTextContent("assignment");
-            for (MidPointObject object : objects) {
+            for (ObjectType object : objects) {
                 Element assignment = DOMUtil.createSubElement(itemDelta, new QName(Constants.TYPES_NS, "value", "t"));
                 DOMUtil.setXsiType(assignment, new QName(Constants.COMMON_NS, "AssignmentType"));
                 Element targetRef = DOMUtil.createSubElement(assignment, new QName(Constants.COMMON_NS, "targetRef", "c"));

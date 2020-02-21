@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
@@ -311,7 +310,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         String query = this.query.getText();
         ComboQueryType.Type queryType = this.queryType.getSelected();
         ObjectTypes type = this.objectType.getSelected();
-        List<ObjectType> selected = getSelectedObjects();
+        List<ObjectType> selected = getResultsModel().getSelectedObjects(results);
 
         ProcessResultsDialog dialog = new ProcessResultsDialog(query, queryType, type, selected);
         if (!dialog.showAndGet()) {
@@ -360,37 +359,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         MidPointUtils.handleGenericException(project, BrowseToolPanel.class, NOTIFICATION_KEY, message, ex);
     }
 
-    private List<ObjectType> getSelectedObjects() {
-        List<ObjectType> selected = new ArrayList<>();
-
-        BrowseTableModel model = getResultsModel();
-        List<ObjectType> data = model.getObjects();
-
-        ListSelectionModel selectionModel = results.getSelectionModel();
-        int[] indices = selectionModel.getSelectedIndices();
-        for (int i : indices) {
-            DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) results.getPathForRow(i).getLastPathComponent();
-            Object obj = node.getUserObject();
-            if (obj instanceof ObjectTypes) {
-                ObjectTypes type = (ObjectTypes) obj;
-                data.forEach(o -> {
-                    if (type.getClassDefinition().equals(o.getClass())) {
-                        selected.add(o);
-                    }
-                });
-            } else if (obj instanceof ObjectType) {
-                ObjectType o = (ObjectType) obj;
-                selected.add(o);
-            }
-        }
-
-        return selected;
-    }
-
     private List<Pair<String, ObjectTypes>> getSelectedOids() {
         List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
 
-        List<ObjectType> objects = getSelectedObjects();
+        List<ObjectType> objects = getResultsModel().getSelectedObjects(results);
         objects.forEach(o -> selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass()))));
 
         return selected;
