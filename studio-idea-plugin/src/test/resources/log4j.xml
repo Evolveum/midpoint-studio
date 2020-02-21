@@ -15,7 +15,7 @@
     </root>
 
     <logger name="com.evolveum.midpoint">
-        <level value="DEBUG"/>
+        <level value="TRACE"/>
     </logger>
 
 </log4j:configuration>
