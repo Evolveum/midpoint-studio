@@ -270,6 +270,7 @@ public class MidPointUtils {
         table.setEditable(false);
         table.setDragEnabled(false);
         table.setHorizontalScrollEnabled(true);
+        table.setSelectionModel(new ExtendedListSelectionModel());
         table.setLeafIcon(null);
         table.setClosedIcon(null);
         table.setOpenIcon(null);

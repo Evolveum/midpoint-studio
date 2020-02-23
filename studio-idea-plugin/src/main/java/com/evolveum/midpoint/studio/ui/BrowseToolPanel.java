@@ -16,6 +16,7 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.util.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
@@ -369,7 +370,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private boolean isResultSelected() {
-        return results.getSelectionModel().getSelectedItemsCount() != 0;
+        ExtendedListSelectionModel model = (ExtendedListSelectionModel) results.getSelectionModel();
+        return model.getSelectedItemsCount() != 0;
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {

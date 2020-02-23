@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.util.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -130,7 +131,7 @@ public class BrowseTableModel extends AbstractTreeTableModel {
 
         List<ObjectType> data = this.objects;
 
-        ListSelectionModel selectionModel = table.getSelectionModel();
+        ExtendedListSelectionModel selectionModel = (ExtendedListSelectionModel) table.getSelectionModel();
         int[] indices = selectionModel.getSelectedIndices();
         for (int i : indices) {
             DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) table.getPathForRow(i).getLastPathComponent();
