@@ -66,3 +66,7 @@ buildPlugin.configure {
         println "Git describe: " + versionDetails().commitDistance
     }
 }
+
+runIde {
+    jvmArgs "-Didea.log.config.file=$project.projectDir/src/test/resources/log4j.xml"
+}
