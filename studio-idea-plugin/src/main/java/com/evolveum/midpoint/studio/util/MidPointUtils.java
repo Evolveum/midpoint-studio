@@ -30,6 +30,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
@@ -61,6 +62,8 @@ public class MidPointUtils {
     public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart());
 
     public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
+
+    private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
 
     private static final Random RANDOM = new Random();
 
@@ -181,6 +184,18 @@ public class MidPointUtils {
     private static CredentialAttributes createCredentialAttributes(String key) {
         return new CredentialAttributes(CredentialAttributesKt
                 .generateServiceName(MidPointSettings.class.getSimpleName(), key));
+    }
+
+    public static void publishExceptionNotification(String key, String message, Exception ex) {
+        String msg = message + ", reason: " + ex.getMessage();
+        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR);
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(msg);
+            LOG.trace(ex);
+        } else {
+            LOG.debug(msg);
+        }
     }
 
     public static void publishNotification(String key, String title, String content, NotificationType type) {

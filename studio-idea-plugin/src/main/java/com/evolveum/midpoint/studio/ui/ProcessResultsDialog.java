@@ -8,6 +8,8 @@ import com.evolveum.midpoint.studio.util.GeneratorRenderer;
 import com.evolveum.midpoint.studio.util.LocalizedRenderer;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.ide.actions.ActionsCollector;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogEarthquakeShaker;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -22,7 +24,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,29 +37,29 @@ public class ProcessResultsDialog extends DialogWrapper {
 
     private static final List<Generator> GENERATORS = Arrays.asList(
             new BulkActionGenerator(BulkActionGenerator.Action.RECOMPUTE),
-			new BulkActionGenerator(BulkActionGenerator.Action.ENABLE),
-			new BulkActionGenerator(BulkActionGenerator.Action.DISABLE),
-			new BulkActionGenerator(BulkActionGenerator.Action.DELETE),
-			new BulkActionGenerator(BulkActionGenerator.Action.MODIFY),
-			new BulkActionGenerator(BulkActionGenerator.Action.ASSIGN_TO_THIS),
-			new BulkActionGenerator(BulkActionGenerator.Action.ASSIGN_THIS),
-			new BulkActionGenerator(BulkActionGenerator.Action.EXECUTE_SCRIPT),
-			new BulkActionGenerator(BulkActionGenerator.Action.NOTIFY),
-			new BulkActionGenerator(BulkActionGenerator.Action.LOG),
-			new BulkActionGenerator(BulkActionGenerator.Action.TEST_RESOURCE),
-			new BulkActionGenerator(BulkActionGenerator.Action.VALIDATE),
-			new TaskGenerator(TaskGenerator.Action.RECOMPUTE),
-			new TaskGenerator(TaskGenerator.Action.DELETE),
-			new TaskGenerator(TaskGenerator.Action.MODIFY),
-			new TaskGenerator(TaskGenerator.Action.SHADOW_CHECK),
-			new QueryGenerator(),
-			new AssignmentGenerator(),
-			new RefGenerator("targetRef", ObjectTypes.OBJECT),
-			new RefGenerator("resourceRef", ObjectTypes.RESOURCE),
-			new RefGenerator("linkRef", ObjectTypes.SHADOW),
-			new ConnectorRefGenerator(),
-			new RefGenerator("parentOrgRef", ObjectTypes.ORG),
-			new RefGenerator("ownerRef", ObjectTypes.ORG)
+            new BulkActionGenerator(BulkActionGenerator.Action.ENABLE),
+            new BulkActionGenerator(BulkActionGenerator.Action.DISABLE),
+            new BulkActionGenerator(BulkActionGenerator.Action.DELETE),
+            new BulkActionGenerator(BulkActionGenerator.Action.MODIFY),
+            new BulkActionGenerator(BulkActionGenerator.Action.ASSIGN_TO_THIS),
+            new BulkActionGenerator(BulkActionGenerator.Action.ASSIGN_THIS),
+            new BulkActionGenerator(BulkActionGenerator.Action.EXECUTE_SCRIPT),
+            new BulkActionGenerator(BulkActionGenerator.Action.NOTIFY),
+            new BulkActionGenerator(BulkActionGenerator.Action.LOG),
+            new BulkActionGenerator(BulkActionGenerator.Action.TEST_RESOURCE),
+            new BulkActionGenerator(BulkActionGenerator.Action.VALIDATE),
+            new TaskGenerator(TaskGenerator.Action.RECOMPUTE),
+            new TaskGenerator(TaskGenerator.Action.DELETE),
+            new TaskGenerator(TaskGenerator.Action.MODIFY),
+            new TaskGenerator(TaskGenerator.Action.SHADOW_CHECK),
+            new QueryGenerator(),
+            new AssignmentGenerator(),
+            new RefGenerator("targetRef", ObjectTypes.OBJECT),
+            new RefGenerator("resourceRef", ObjectTypes.RESOURCE),
+            new RefGenerator("linkRef", ObjectTypes.SHADOW),
+            new ConnectorRefGenerator(),
+            new RefGenerator("parentOrgRef", ObjectTypes.ORG),
+            new RefGenerator("ownerRef", ObjectTypes.ORG)
     );
 
     private JComboBox<Generator> generate;
@@ -126,7 +130,11 @@ public class ProcessResultsDialog extends DialogWrapper {
         return new GenerateAction();
     }
 
-    private void doGenerateAction() {
+    private void doGenerateAction(ActionEvent evt) {
+        performGenerate(false);
+    }
+
+    private void performGenerate(boolean execute) {
         GeneratorOptions opts = buildOptions();
 
         if (opts.isBatchByOids() && selected.isEmpty()) {
@@ -137,10 +145,16 @@ public class ProcessResultsDialog extends DialogWrapper {
             return;
         }
 
-        // todo implement, should run in background
         Generator generator = (Generator) generate.getSelectedItem();
-//        generator.generate(selected, opts);
+        GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);
 
+        InputEvent ie = createMouseEventWrapper(getContentPanel());
+
+        ActionManager.getInstance().tryToExecute(ga, ie, getContentPane(), ActionPlaces.UNKNOWN, false);
+    }
+
+    private MouseEvent createMouseEventWrapper(JComponent comp) {
+        return new MouseEvent(comp, ActionEvent.ACTION_PERFORMED, System.currentTimeMillis(), 0, 0, 0, 0, false, 0);
     }
 
     private GeneratorOptions buildOptions() {
@@ -184,7 +198,7 @@ public class ProcessResultsDialog extends DialogWrapper {
     protected void doOKAction() {
         super.doOKAction();
 
-        // todo implement
+        performGenerate(true);
     }
 
     private class GenerateAction extends DialogWrapperAction {
@@ -210,7 +224,7 @@ public class ProcessResultsDialog extends DialogWrapper {
                 startTrackingValidation();
                 if (infoList.stream().anyMatch(info1 -> !info1.okEnabled)) return;
             }
-            doGenerateAction();
+            doGenerateAction(e);
         }
 
         private void recordAction(String name) {

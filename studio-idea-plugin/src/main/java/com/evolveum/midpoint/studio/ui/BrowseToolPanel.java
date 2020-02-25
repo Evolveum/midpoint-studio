@@ -331,7 +331,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
-        indicator.setText("Searching objects in " + env.getName() + " MidPoint");
+        indicator.setText("Searching objects in environment: " + env.getName());
 
         SearchResultList result = null;
         try {

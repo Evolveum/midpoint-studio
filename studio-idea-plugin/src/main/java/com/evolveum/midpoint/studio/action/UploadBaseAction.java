@@ -126,12 +126,9 @@ public abstract class UploadBaseAction extends BackgroundAction {
 
                             execute(indicator, client, xml);
                         } catch (IOException ex) {
-                            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error",
-                                    "Couldn't read file " + file.getName() + ", reason: " + ex.getMessage(), NotificationType.ERROR);
-
-                            LOG.debug("Exception occurred when loading file {}, reason: {}", file.getName(), ex.getMessage());
+                            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Exception occurred when loading file " + file.getName(), ex);
                         } catch (SchemaException ex) {
-                            // todo
+                            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Exception occurred when parsing file " + file.getName(), ex);
                         }
                     }));
         }
