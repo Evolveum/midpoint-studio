@@ -5,6 +5,7 @@ import com.intellij.ide.fileTemplates.FileTemplateGroupDescriptor;
 import com.intellij.ide.fileTemplates.FileTemplateGroupDescriptorFactory;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import icons.MavenIcons;
+import icons.OpenapiIcons;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -19,7 +20,7 @@ public class MidPointFileTemplateGroupFactory implements FileTemplateGroupDescri
     public FileTemplateGroupDescriptor getFileTemplatesDescriptor() {
         FileTemplateGroupDescriptor group = new FileTemplateGroupDescriptor("MidPoint", MidPointIcons.ACTION_MIDPOINT);
 
-        group.addTemplate(new FileTemplateDescriptor(MIDPOINT_MAVEN_POM_TEMPLATE, MavenIcons.MavenLogo));
+        group.addTemplate(new FileTemplateDescriptor(MIDPOINT_MAVEN_POM_TEMPLATE, OpenapiIcons.RepositoryLibraryLogo));
         group.addTemplate(new FileTemplateDescriptor(MIDPOINT_GIT_IGNORE_TEMPLATE, MidPointIcons.ACTION_MIDPOINT));
 
         return group;

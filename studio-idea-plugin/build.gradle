@@ -38,7 +38,7 @@ dependencies {
 }
 
 intellij {
-    version '2019.3'
+    version '2019.3'    // 'LATEST-EAP-SNAPSHOT'
     type 'IC'
     downloadSources true
     pluginName 'MidPoint Studio'
