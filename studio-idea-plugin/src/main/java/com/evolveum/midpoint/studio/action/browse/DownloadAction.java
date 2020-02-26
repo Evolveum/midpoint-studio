@@ -166,14 +166,14 @@ public class DownloadAction extends BackgroundAction {
         // todo implement later
         for (Pair<String, ObjectTypes> pair : oids) {
             try {
-                LOG.debug("Downloading {}", pair);
+                LOG.debug("Downloading " + pair);
 
                 PrismObject obj = client.get(pair.getSecond().getClassDefinition(), pair.getFirst(), new SearchOptions().raw(raw));
                 if (obj == null) {
                     continue;
                 }
 
-                LOG.debug("Serializing object {}", obj);
+                LOG.debug("Serializing object " + obj);
                 String xml = serializer.serialize(obj);
 
                 LOG.debug("Storing file");

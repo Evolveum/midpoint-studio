@@ -314,6 +314,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         List<ObjectType> selected = getResultsModel().getSelectedObjects(results);
 
         ProcessResultsDialog dialog = new ProcessResultsDialog(query, queryType, type, selected);
+
         if (!dialog.showAndGet()) {
             return;
         }

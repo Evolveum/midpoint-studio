@@ -148,13 +148,15 @@ public class ProcessResultsDialog extends DialogWrapper {
         Generator generator = (Generator) generate.getSelectedItem();
         GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);
 
-        InputEvent ie = createMouseEventWrapper(getContentPanel());
+        AWTEvent evt = EventQueue.getCurrentEvent();
+        InputEvent ie;
+        if (evt instanceof InputEvent) {
+            ie = (InputEvent) evt;
+        } else {
+            ie = new MouseEvent(getWindow(), ActionEvent.ACTION_PERFORMED, System.currentTimeMillis(), 0, 0, 0, 0, false, 0);
+        }
 
         ActionManager.getInstance().tryToExecute(ga, ie, getContentPane(), ActionPlaces.UNKNOWN, false);
-    }
-
-    private MouseEvent createMouseEventWrapper(JComponent comp) {
-        return new MouseEvent(comp, ActionEvent.ACTION_PERFORMED, System.currentTimeMillis(), 0, 0, 0, 0, false, 0);
     }
 
     private GeneratorOptions buildOptions() {
