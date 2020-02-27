@@ -7,7 +7,6 @@ import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -90,32 +89,33 @@ public class DownloadAction extends BackgroundAction {
 
         PrismContext ctx = client.getPrismContext();
         PrismSerializer<String> serializer = ctx.serializerFor(PrismContext.LANG_XML);
-// todo run as write action somehow
-//        ApplicationManager.getApplication().invokeAndWait(() ->
-//                ApplicationManager.getApplication().runWriteAction(() -> {
-        BufferedWriter out = null;
-        try {
-            indicator.setFraction(0d);
 
-            VirtualFile file = FileUtils.createScratchFile(evt.getProject(), environment);
-            createdFiles.add(file);
+        ApplicationManager.getApplication().invokeAndWait(() ->
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                    BufferedWriter out = null;
+                    try {
+                        indicator.setFraction(0d);
 
-            out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
-            out.write(OBJECTS_XML_PREFIX);
+                        VirtualFile file = FileUtils.createScratchFile(evt.getProject(), environment);
+                        createdFiles.add(file);
 
-            if (oids != null) {
-                showByOid(client, serializer, out);
-            } else {
-                showByQuery(client, serializer, out);
-            }
+                        out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
+                        out.write(OBJECTS_XML_PREFIX);
 
-            out.write(OBJECTS_XML_SUFFIX);
-        } catch (Exception ex) {
-            // todo handle better
-            throw new RuntimeException(ex);
-        } finally {
-            IOUtils.closeQuietly(out);
-        }
+                        if (oids != null) {
+                            showByOid(client, serializer, out);
+                        } else {
+                            showByQuery(client, serializer, out);
+                        }
+
+                        out.write(OBJECTS_XML_SUFFIX);
+                    } catch (Exception ex) {
+                        // todo handle better
+                        throw new RuntimeException(ex);
+                    } finally {
+                        IOUtils.closeQuietly(out);
+                    }
+                }));
     }
 
     private void showByOid(MidPointClient client, PrismSerializer<String> serializer, Writer out) {
