@@ -17,7 +17,7 @@ public class GeneratorTest {
     @Test
     public void generateLocalAdoc() throws Exception {
         GenerateOptions opts = new GenerateOptions();
-        opts.setSourceDirectory(new File("/Users/lazyman/Work/monoted/projects/ek/git/midpoint-project/objects"));
+        opts.setSourceDirectory(new File("./src/test/resources/objects"));
         opts.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
         File adoc = new File("./target/local.adoc");
         opts.setOutput(adoc);

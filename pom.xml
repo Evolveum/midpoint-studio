@@ -33,6 +33,19 @@
         <testng.version>7.1.0</testng.version>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>evolveum-nexus</id>
+            <name>Internal Releases</name>
+            <url>https://nexus.evolveum.com/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>evolveum-nexus</id>
+            <name>Internal Snapshots</name>
+            <url>https://nexus.evolveum.com/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <repositories>
         <repository>
             <id>evolveum</id>
