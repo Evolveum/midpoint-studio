@@ -1,12 +1,12 @@
 ## FUNCTION LIBRARIES
 
-#set($libraries=$processor.loadFunctionLibraries())
+#set($orgs=$processor.loadOrgs())
 
-#if(!$libraries.isEmpty())
+#if(!$orgs.isEmpty())
 
 == Organization Units
 
-    #foreach($object in $libraries)
+    #foreach($object in $orgs)
         #parse("/template/org.vm")
     #end
 

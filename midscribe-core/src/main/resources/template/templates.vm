@@ -1,6 +1,6 @@
 ## OBJECT TEMPLATES
 
-#set($templates=$processor.loadTemplates())
+#set($templates=$processor.loadObjectTemplates())
 
 #if(!$templates.isEmpty())
 

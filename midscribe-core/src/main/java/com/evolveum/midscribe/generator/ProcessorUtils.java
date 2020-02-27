@@ -22,7 +22,23 @@ public class ProcessorUtils {
         this.context = context;
     }
 
-    public List<ObjectTemplateType> loadTemplates() throws Exception {
+    public List<UserType> loadUsers() throws Exception {
+        return loadObjects(UserType.class);
+    }
+
+    public List<LookupTableType> loadLookupTables() throws Exception {
+        return loadObjects(LookupTableType.class);
+    }
+
+    public List<RoleType> loadRoles() throws Exception {
+        return loadObjects(RoleType.class);
+    }
+
+    public List<OrgType> loadOrgs() throws Exception {
+        return loadObjects(OrgType.class);
+    }
+
+    public List<ObjectTemplateType> loadObjectTemplates() throws Exception {
         return loadObjects(ObjectTemplateType.class);
     }
 

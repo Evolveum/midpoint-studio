@@ -1,13 +1,13 @@
 ## FUNCTION LIBRARIES
 
-#set($libraries=$processor.loadFunctionLibraries())
+#set($roles=$processor.loadRoles())
 
-#if(!$libraries.isEmpty())
+#if(!$roles.isEmpty())
 
 == Roles
 
-    #foreach($object in $libraries)
-        #parse("/template/library.vm")
+    #foreach($object in $roles)
+        #parse("/template/role.vm")
     #end
 
 #end

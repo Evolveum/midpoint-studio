@@ -51,7 +51,7 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <mainClass>com.evolveum.midscribe.cmd.MidscribeMain</mainClass>
+                            <mainClass>com.evolveum.midscribe.cmd.MidScribeMain</mainClass>
                             <classifier>executable</classifier>
                         </configuration>
                     </execution>

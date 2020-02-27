@@ -1,13 +1,13 @@
 ## FUNCTION LIBRARIES
 
-#set($libraries=$processor.loadFunctionLibraries())
+#set($tasks=$processor.loadTasks())
 
-#if(!$libraries.isEmpty())
+#if(!$tasks.isEmpty())
 
 == Tasks
 
-    #foreach($object in $libraries)
-        #parse("/template/library.vm")
+    #foreach($object in $tasks)
+        #parse("/template/task.vm")
     #end
 
 #end

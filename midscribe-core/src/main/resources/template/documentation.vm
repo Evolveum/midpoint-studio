@@ -6,8 +6,6 @@ Version 0.1, 27. 1. 2020
 :toclevels: 4
 :toc-title: Table of Contents
 
-:description: Example AsciiDoc document
-:keywords: midpoint documentation
 :imagesdir: ./img
 
 This is the optional preamble (an untitled section body). Useful for
@@ -24,3 +22,5 @@ writing simple sectionless documents consisting only of a preamble.
 #parse("/template/roles.vm")
 
 #parse("/template/tasks.vm")
+
+#parse("/template/users.vm")
