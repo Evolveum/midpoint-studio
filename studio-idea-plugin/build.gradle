@@ -27,6 +27,7 @@ dependencies {
         transitive = false
     }
     compile "com.evolveum.midpoint:midpoint-localization:$midpointVersion"
+    compile "com.evolveum.midpoint:midscribe-core:$midpointVersion" // todo fix, this creates class cast issue with Documentbuilder factory
 
     compile "de.slackspace:openkeepass:$openkeepass"
     compile "net.mikehardy:google-analytics-java7:$analyticsVersion"
