@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
+import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
@@ -549,12 +550,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         if (name) {
             PrismPropertyDefinition def = ctx.getSchemaRegistry().findPropertyDefinitionByElementName(ObjectType.F_NAME);
-            QName matchingRule = PrismConstants.POLY_STRING_ORIG_MATCHING_RULE_NAME;
-            List<ObjectFilter> equals = new ArrayList<>();
+            QName matchingRule = PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME;
+            List<ObjectFilter> substrings = new ArrayList<>();
             for (String s : filtered) {
-                equals.add(qf.createEqual(ctx.path(ObjectType.F_NAME), def, matchingRule, ctx, s));
+                substrings.add(SubstringFilterImpl.createSubstring(ctx.path(ObjectType.F_NAME), def, ctx, matchingRule, s, false, false));
             }
-            OrFilter nameOr = qf.createOr(equals);
+            OrFilter nameOr = qf.createOr(substrings);
             or.addCondition(nameOr);
         }
 
