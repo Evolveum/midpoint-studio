@@ -4,7 +4,6 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
-import com.evolveum.midpoint.studio.util.GeneratorRenderer;
 import com.evolveum.midpoint.studio.util.LocalizedRenderer;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.ide.actions.ActionsCollector;
@@ -105,7 +104,16 @@ public class ProcessResultsDialog extends DialogWrapper {
 
         generate.setModel(new ListComboBoxModel<Generator>(GENERATORS));
         generate.getModel().setSelectedItem(GENERATORS.get(0));
-        generate.setRenderer(new GeneratorRenderer());
+        generate.setRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Generator g = (Generator) value;
+                value = g != null ? g.getLabel() : value;
+
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
 
         n.setEnabled(false);
     }
