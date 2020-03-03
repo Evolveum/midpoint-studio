@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# IDE versions that needs to be validated with plugin
+IDE_VERSIONS=(2019.1.4 2019.2.4 2019.3.3)
+
+# Verifier library version, see https://github.com/JetBrains/intellij-plugin-verifier
+VERIFIER_VERSION=1.223
+
+# OpenJDK 11 home directory
+JAVA_RUNTIME_DIR=/Library/Java/JavaVirtualMachines/openjdk-11.0.2.jdk/Contents/Home
+
+# MidPoint Studio plugin version
+STUDIO_PLUGIN_VERSION=4.0.0
+
+################################################################################################
+
 CURRENT_DIR=$(pwd)
 
 echo "Building plugin"
@@ -12,12 +26,10 @@ cd $CURRENT_DIR
 
 echo "Downloading IDEs"
 
-IDE_VERSION=(2019.1.4 2019.2.4 2019.3.3)
-
 IDE_DIRECTORY=$CURRENT_DIR/ide
 mkdir -p $IDE_DIRECTORY
 
-for i in "${IDE_VERSION[@]}"
+for i in "${IDE_VERSIONS[@]}"
 do
   mkdir -p $IDE_DIRECTORY/$i
 
@@ -38,8 +50,6 @@ done
 
 echo "Preparing verifier"
 
-VERIFIER_VERSION=1.223
-
 VERIFIER_FILE=$CURRENT_DIR/verifier-all.jar
 if [ -f "$VERIFIER_FILE" ]; then
     echo "$VERIFIER_FILE exist"
@@ -48,12 +58,10 @@ else
     wget -O $VERIFIER_FILE https://dl.bintray.com/jetbrains/intellij-plugin-service/org/jetbrains/intellij/plugins/verifier-cli/$VERIFIER_VERSION/verifier-cli-$VERIFIER_VERSION-all.jar
 fi
 
-JAVA_RUNTIME_DIR=/Library/Java/JavaVirtualMachines/openjdk-11.0.2.jdk/Contents/Home
-
 echo "Executing verifier"
 
 IDE_PATHS=""
-for i in "${IDE_VERSION[@]}"
+for i in "${IDE_VERSIONS[@]}"
 do
   IDE_PATHS="$IDE_PATHS $IDE_DIRECTORY/$i/ideaIC"
 done
@@ -61,6 +69,6 @@ done
 echo "Validating against $IDE_PATHS"
 
 java -jar $VERIFIER_FILE check-plugin \
-$CURRENT_DIR/../build/distributions/studio-idea-plugin-4.0.0.zip \
+$CURRENT_DIR/../build/distributions/studio-idea-plugin-$STUDIO_PLUGIN_VERSION.zip \
 $IDE_PATHS \
 -runtime-dir $JAVA_RUNTIME_DIR
