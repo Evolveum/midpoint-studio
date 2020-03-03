@@ -1,10 +1,9 @@
 package com.evolveum.midpoint.studio.impl.ide;
 
+import com.evolveum.midpoint.studio.MidPointIcons;
 import com.intellij.ide.fileTemplates.FileTemplateDescriptor;
 import com.intellij.ide.fileTemplates.FileTemplateGroupDescriptor;
 import com.intellij.ide.fileTemplates.FileTemplateGroupDescriptorFactory;
-import com.evolveum.midpoint.studio.MidPointIcons;
-import icons.MavenIcons;
 import icons.OpenapiIcons;
 
 /**
