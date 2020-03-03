@@ -69,6 +69,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
+        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
+
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType" />
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>

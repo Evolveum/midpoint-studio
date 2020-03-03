@@ -14,6 +14,7 @@ import com.evolveum.midpoint.studio.util.Pair;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -50,8 +51,6 @@ public class DownloadAction extends BackgroundAction {
 
     private List<Pair<String, ObjectTypes>> oids;
 
-    private List<VirtualFile> createdFiles = new ArrayList<>();
-
     public DownloadAction(@NotNull Environment environment, @NotNull ObjectTypes type, ObjectQuery query,
                           boolean showOnly, boolean raw) {
         super(TASK_TITLE);
@@ -87,6 +86,8 @@ public class DownloadAction extends BackgroundAction {
         LOG.debug("Setting up midpoint client");
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
 
+        Project project = evt.getProject();
+
         PrismContext ctx = client.getPrismContext();
         PrismSerializer<String> serializer = ctx.serializerFor(PrismContext.LANG_XML);
 
@@ -96,8 +97,7 @@ public class DownloadAction extends BackgroundAction {
                     try {
                         indicator.setFraction(0d);
 
-                        VirtualFile file = FileUtils.createScratchFile(evt.getProject(), environment);
-                        createdFiles.add(file);
+                        VirtualFile file = FileUtils.createScratchFile(project, environment);
 
                         out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
                         out.write(OBJECTS_XML_PREFIX);
@@ -109,6 +109,8 @@ public class DownloadAction extends BackgroundAction {
                         }
 
                         out.write(OBJECTS_XML_SUFFIX);
+
+                        openFile(project, file);
                     } catch (Exception ex) {
                         // todo handle better
                         throw new RuntimeException(ex);
@@ -163,6 +165,8 @@ public class DownloadAction extends BackgroundAction {
     private void downloadByOid(MidPointClient client, PrismSerializer<String> serializer) {
         Project project = client.getProject();
 
+        List<VirtualFile> files = new ArrayList<>();
+
         // todo implement later
         for (Pair<String, ObjectTypes> pair : oids) {
             try {
@@ -191,7 +195,7 @@ public class DownloadAction extends BackgroundAction {
 
                                 IOUtils.write(xml, out);
 
-                                createdFiles.add(file);
+                                files.add(file);
                             } catch (IOException ex) {
                                 // todo handle exception properly
                                 ex.printStackTrace();
@@ -206,47 +210,22 @@ public class DownloadAction extends BackgroundAction {
                 ex.printStackTrace();
             }
         }
+
+        if (!files.isEmpty()) {
+            ApplicationManager.getApplication().invokeAndWait(() -> openFile(project, files.get(0)));
+        }
     }
 
     private void downloadByQuery(MidPointClient client, PrismSerializer<String> serializer) {
         // todo implement later
     }
 
-    private void mess() {
-//        RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
-//
-//        ObjectQuery objectQuery = null;
-//            todo fix
-//            if (table.getRowCount() == table.getSelectedRowCount() || table.getSelectedRowCount() == 0) {
-//                // return all
-//                objectQuery = buildQuery(evt.getProject());
-//            } else {
-//                // return only selected objects
-//                List<String> oids = getSelectedRowsOids();
-//
-//                PrismContext ctx = rest.getPrismContext();
-//                QueryFactory qf = ctx.queryFactory();
-//
-//                InOidFilter inOidFilter = qf.createInOid(oids);
-//
-//                ItemPath path = ctx.path(ObjectType.F_NAME);
-//                ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
-//                        path, OrderDirection.ASCENDING);
-//
-//                objectQuery = qf.createQuery(inOidFilter, paging);
-//            }
-//
-//        ObjectTypes objectTypes = objectType.getSelected();
-//        VirtualFile[] files = rest.download(objectTypes.getClassDefinition(), objectQuery,
-//                new DownloadOptions().showOnly(showOnly).raw(rawDownload));
-//
-//        if (files != null && files.length == 1) {
-//            FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
-//            fem.openFile(files[0], true, true);
-//        }
-    }
+    private void openFile(Project project, VirtualFile file) {
+        if (file == null) {
+            return;
+        }
 
-    public List<VirtualFile> getCreatedFiles() {
-        return createdFiles;
+        FileEditorManager fem = FileEditorManager.getInstance(project);
+        fem.openFile(file, true, true);
     }
 }
