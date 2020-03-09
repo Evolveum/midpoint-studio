@@ -10,6 +10,8 @@ import java.util.List;
  */
 public interface CredentialsManager {
 
+    String NOTIFICATION_KEY = "Credentials";
+
     static CredentialsManager getInstance(@NotNull Project project) {
         return project.getComponent(CredentialsManager.class);
     }

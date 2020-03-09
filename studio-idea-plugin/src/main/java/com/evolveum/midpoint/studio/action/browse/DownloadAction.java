@@ -36,6 +36,8 @@ public class DownloadAction extends BackgroundAction {
 
     private static final Logger LOG = Logger.getInstance(DownloadAction.class);
 
+    public static final String NOTIFICATION_KEY = "Upload Action";
+
     private static final String TASK_TITLE = "Downloading objects";
 
     private static final String OBJECTS_XML_PREFIX = "<objects xmlns=\"http://midpoint.evolveum.com/xml/ns/public/common/common-3\">\n";
@@ -94,10 +96,11 @@ public class DownloadAction extends BackgroundAction {
         ApplicationManager.getApplication().invokeAndWait(() ->
                 ApplicationManager.getApplication().runWriteAction(() -> {
                     BufferedWriter out = null;
+                    VirtualFile file = null;
                     try {
                         indicator.setFraction(0d);
 
-                        VirtualFile file = FileUtils.createScratchFile(project, environment);
+                        file = FileUtils.createScratchFile(project, environment);
 
                         out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
                         out.write(OBJECTS_XML_PREFIX);
@@ -112,8 +115,8 @@ public class DownloadAction extends BackgroundAction {
 
                         openFile(project, file);
                     } catch (Exception ex) {
-                        // todo handle better
-                        throw new RuntimeException(ex);
+                        MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                                "Exception occurred when preparing show only file " + (file != null ? file.getName() : null), ex);
                     } finally {
                         IOUtils.closeQuietly(out);
                     }
@@ -128,8 +131,9 @@ public class DownloadAction extends BackgroundAction {
 
                 IOUtils.write(xml, out);
             } catch (Exception ex) {
-                // todo handle better
-                throw new RuntimeException(ex);
+                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                        "Exception occurred when getting object " + oid.getFirst() + " ("
+                                + oid.getSecond().getTypeQName().getLocalPart() + ")", ex);
             }
         }
     }
@@ -155,8 +159,7 @@ public class DownloadAction extends BackgroundAction {
                 downloadByQuery(client, serializer);
             }
         } catch (Exception ex) {
-            // todo handle better
-            throw new RuntimeException(ex);
+            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Exception occurred during download", ex);
         } finally {
             IOUtils.closeQuietly(out);
         }
@@ -167,7 +170,6 @@ public class DownloadAction extends BackgroundAction {
 
         List<VirtualFile> files = new ArrayList<>();
 
-        // todo implement later
         for (Pair<String, ObjectTypes> pair : oids) {
             try {
                 LOG.debug("Downloading " + pair);
@@ -185,9 +187,10 @@ public class DownloadAction extends BackgroundAction {
                 ApplicationManager.getApplication().invokeAndWait(() ->
                         ApplicationManager.getApplication().runWriteAction(() -> {
 
+                            VirtualFile file = null;
                             Writer out = null;
                             try {
-                                VirtualFile file = FileUtils.createFile(project, environment,
+                                file = FileUtils.createFile(project, environment,
                                         obj.getCompileTimeClass(), obj.getOid(), MidPointUtils.getOrigFromPolyString(obj.getName()));
 
                                 out = new BufferedWriter(
@@ -197,8 +200,8 @@ public class DownloadAction extends BackgroundAction {
 
                                 files.add(file);
                             } catch (IOException ex) {
-                                // todo handle exception properly
-                                ex.printStackTrace();
+                                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                                        "Exception occurred when serializing object to file " + (file != null ? file.getName() : null), ex);
                             } finally {
                                 IOUtils.closeQuietly(out);
                             }
@@ -206,8 +209,9 @@ public class DownloadAction extends BackgroundAction {
 
                 LOG.debug("File saved");
             } catch (Exception ex) {
-                // todo handle exception properly
-                ex.printStackTrace();
+                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                        "Exception occurred when getting object " + pair.getFirst() + " ("
+                                + pair.getSecond().getTypeQName().getLocalPart() + ")", ex);
             }
         }
 

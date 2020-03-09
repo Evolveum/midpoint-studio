@@ -13,6 +13,7 @@ import java.util.List;
 public class RefGenerator extends Generator {
 
     private String refName;
+
     private ObjectTypes applicableFor;
 
     public RefGenerator(String refName, ObjectTypes applicableFor) {

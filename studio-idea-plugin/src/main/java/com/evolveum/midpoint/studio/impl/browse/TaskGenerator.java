@@ -94,8 +94,7 @@ public class TaskGenerator extends Generator {
                         objectQuery.appendChild(doc.adoptNode(child));
                     }
                 } catch (RuntimeException e) {
-                    // todo handle error correctly
-                    // Util.showAndLogError("Couldn't parse XML query", "Error parsing query: " + e.getMessage(), e);
+                    MidPointUtils.publishExceptionNotification(GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
                     throw e;
                 }
             }

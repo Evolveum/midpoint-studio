@@ -1,13 +1,10 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.UploadOptions;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -64,11 +61,9 @@ public abstract class UploadBaseAction extends BackgroundAction {
             });
 
             if (!StringUtils.isEmpty(text)) {
-                try {
-                    execute(indicator, client, text);
-                } catch (Exception ex) {
-                    // todo
-                }
+                execute(indicator, client, text);
+            } else {
+                MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error", "Text is empty", NotificationType.ERROR);
             }
 
             return;
@@ -127,23 +122,35 @@ public abstract class UploadBaseAction extends BackgroundAction {
                             execute(indicator, client, xml);
                         } catch (IOException ex) {
                             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Exception occurred when loading file " + file.getName(), ex);
-                        } catch (SchemaException ex) {
-                            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Exception occurred when parsing file " + file.getName(), ex);
                         }
                     }));
         }
     }
 
-    private void execute(ProgressIndicator indicator, MidPointClient client, String text) throws IOException, SchemaException {
-        List<PrismObject<?>> objects = client.parseObjects(text);
+    private void execute(ProgressIndicator indicator, MidPointClient client, String text) {
+        try {
+            List<PrismObject<?>> objects = client.parseObjects(text);
 
-        for (PrismObject obj : objects) {
-            try {
-                client.upload(obj, buildAddOptions());
-            } catch (Exception ex) {
-                // todo error handling
-                ex.printStackTrace();
+            int i = 0;
+            for (PrismObject obj : objects) {
+                i++;
+
+                indicator.setFraction(i / objects.size());
+                try {
+                    UploadResponse resp = client.upload(obj, buildAddOptions());
+                    OperationResult result = resp.getResult();
+                    if (result != null && !result.isSuccess()) {
+                        MidPointUtils.publishNotification(NOTIFICATION_KEY, "Warning",
+                                "Upload status of " + obj.getName() + "(" + obj.getOid() + ") was " + result.getStatus(),
+                                NotificationType.WARNING, new ShowResultNotificationAction(result));
+                    }
+                } catch (Exception ex) {
+                    MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                            "Exception occurred during upload of " + obj.getName() + "(" + obj.getOid() + ")", ex);
+                }
             }
+        } catch (Exception ex) {
+            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Exception occurred during upload", ex);
         }
     }
 }

@@ -10,6 +10,8 @@ import java.util.List;
  */
 public interface EnvironmentManager extends Stateful<EnvironmentSettings> {
 
+    String NOTIFICATION_KEY = "Environment";
+
     static EnvironmentManager getInstance(@NotNull Project project) {
         return project.getComponent(EnvironmentManager.class);
     }

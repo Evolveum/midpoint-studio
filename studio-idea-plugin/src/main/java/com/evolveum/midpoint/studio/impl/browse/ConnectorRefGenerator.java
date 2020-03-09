@@ -14,7 +14,7 @@ public class ConnectorRefGenerator extends RefGenerator {
     protected String getSymbolicRefItemValue(ObjectType object) {
         // todo fix
 //        return object.getSubtypes().size() == 1 ? object.getSubtypes().get(0) : "FILL IN CONNECTORTYPE HERE";
-        return "FILL IN CONNECTORTYPE HERE";
+        return "FILL IN CONNECTOR TYPE HERE";
     }
 
     @Override

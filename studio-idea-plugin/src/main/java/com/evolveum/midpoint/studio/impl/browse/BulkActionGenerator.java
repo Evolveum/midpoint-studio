@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.UserType;
+import com.intellij.notification.NotificationType;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
@@ -16,23 +17,34 @@ public class BulkActionGenerator extends Generator {
     public enum Action {
 
         RECOMPUTE("recompute", "recompute", ObjectTypes.FOCUS_TYPE, false, true, false),
+
         ENABLE("enable", "enable", ObjectTypes.FOCUS_TYPE, false, true, false),
+
         DISABLE("disable", "disable", ObjectTypes.FOCUS_TYPE, false, true, false),
+
         DELETE("delete", "delete", ObjectTypes.OBJECT, true, true, true),
+
         MODIFY("modify", "modify", ObjectTypes.OBJECT, true, true, false),
+
         ASSIGN_THIS("assign selected objects (to something)", "modify", ObjectTypes.ABSTRACT_ROLE, true, true, false),
+
         ASSIGN_TO_THIS("assign (something) to selected objects", "modify", ObjectTypes.FOCUS_TYPE, true, true, false),
+
         LOG("log", "log", ObjectTypes.OBJECT, false, false, false),
+
         TEST_RESOURCE("test resource", "test-resource", ObjectTypes.RESOURCE, false, false, false),
+
         VALIDATE("validate resource", "validate", ObjectTypes.RESOURCE, false, false, false),
+
         EXECUTE_SCRIPT("execute script", "execute-script", ObjectTypes.OBJECT, false, false, false),
+
         NOTIFY("send notifications", "notify", ObjectTypes.OBJECT, false, false, false);
 
         private final String displayName, actionName;
         private final ObjectTypes applicableTo;
         private final boolean supportsRaw, supportsDryRun, requiresConfirmation;
 
-        private Action(String displayName, String actionName, ObjectTypes applicableTo, boolean supportsRaw, boolean supportsDryRun, boolean requiresConfirmation) {
+        Action(String displayName, String actionName, ObjectTypes applicableTo, boolean supportsRaw, boolean supportsDryRun, boolean requiresConfirmation) {
             this.displayName = displayName;
             this.actionName = actionName;
             this.applicableTo = applicableTo;
@@ -63,8 +75,8 @@ public class BulkActionGenerator extends Generator {
         } else {
             // very special case: we assign to (yet) unspecified single object
             if (!options.isBatchByOids()) {
-                // todo log to console or somewhere
-//                Util.showAndLogInformation("Not supported", "Using original query is not supported for this action.");
+                MidPointUtils.publishNotification(GeneratorAction.NOTIFICATION_KEY, "Not supported",
+                        "Using original query is not supported for this action.", NotificationType.ERROR);
                 return null;
             }
             Batch batch = new Batch();
@@ -162,8 +174,7 @@ public class BulkActionGenerator extends Generator {
                     }
                 }
             } catch (RuntimeException e) {
-//                 todo log error
-//                Util.showAndLogError("Couldn't parse XML query", "Error parsing query: " + e.getMessage(), e);
+                MidPointUtils.publishExceptionNotification(GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
             }
         }
     }
@@ -182,8 +193,9 @@ public class BulkActionGenerator extends Generator {
             DOMUtil.createSubElement(equal, Constants.Q_PATH_Q).setTextContent("name");
             DOMUtil.createSubElement(equal, Constants.Q_VALUE_Q).setTextContent(object.getName());
         } else {
-            // todo log warning
-//            Console.logWarning("No OID nor name provided; action on this object cannot be executed.");
+            MidPointUtils.publishNotification(GeneratorAction.NOTIFICATION_KEY, "Warning",
+                    "No OID nor name provided; action on this object cannot be executed.", NotificationType.WARNING);
+
             Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
             DOMUtil.createSubElement(inOid, Constants.Q_VALUE_Q).setTextContent("no such object 919432948jkas");
         }
