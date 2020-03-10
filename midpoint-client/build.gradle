@@ -14,7 +14,6 @@ dependencies {
         exclude group: "xerces"
         exclude group: "xml-apis"
         exclude group: "org.apache.cxf", module: "cxf-rt-wsdl"
-//        exclude group: "ch.qos.logback", module: "logback-classic"
     }
     compile ("org.springframework:spring-core:$springVersion") {
         transitive = false

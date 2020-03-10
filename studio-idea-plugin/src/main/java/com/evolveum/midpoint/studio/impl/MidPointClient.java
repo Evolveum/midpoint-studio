@@ -97,7 +97,7 @@ public class MidPointClient {
             handleGenericException("Couldn't create rest client", ex);
         }
 
-        LOG.debug("Rest client initialized in {}ms", (System.currentTimeMillis() - time));
+        LOG.debug("Rest client initialized in " + (System.currentTimeMillis() - time) + "ms");
     }
 
     public Project getProject() {

@@ -163,7 +163,7 @@ public class CredentialsManagerImpl implements CredentialsManager {
         try (OutputStream os = new FileOutputStream(file)) {
             KeePassDatabase.write(database, masterPassword, os);
         } catch (IOException ex) {
-            // todo handle exception correctly
+            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't write credentials", ex);
         }
 
         refresh(false);

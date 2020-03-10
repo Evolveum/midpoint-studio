@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
+import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
@@ -16,6 +17,7 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.util.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
@@ -307,7 +309,13 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void processPerformed(AnActionEvent evt) {
-        ProcessResultsDialog dialog = new ProcessResultsDialog();
+        String query = this.query.getText();
+        ComboQueryType.Type queryType = this.queryType.getSelected();
+        ObjectTypes type = this.objectType.getSelected();
+        List<ObjectType> selected = getResultsModel().getSelectedObjects(results);
+
+        ProcessResultsDialog dialog = new ProcessResultsDialog(query, queryType, type, selected);
+
         if (!dialog.showAndGet()) {
             return;
         }
@@ -325,7 +333,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
-        indicator.setText("Searching objects in " + env.getName() + " MidPoint");
+        indicator.setText("Searching objects in environment: " + env.getName());
 
         SearchResultList result = null;
         try {
@@ -357,32 +365,15 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private List<Pair<String, ObjectTypes>> getSelectedOids() {
         List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
 
-        BrowseTableModel model = getResultsModel();
-        List<ObjectType> data = model.getObjects();
-
-        ListSelectionModel selectionModel = results.getSelectionModel();
-        int[] indices = selectionModel.getSelectedIndices();
-        for (int i : indices) {
-            DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) results.getPathForRow(i).getLastPathComponent();
-            Object obj = node.getUserObject();
-            if (obj instanceof ObjectTypes) {
-                ObjectTypes type = (ObjectTypes) obj;
-                data.forEach(o -> {
-                    if (type.getClassDefinition().equals(o.getClass())) {
-                        selected.add(new Pair<>(o.getOid(), type));
-                    }
-                });
-            } else if (obj instanceof ObjectType) {
-                ObjectType o = (ObjectType) obj;
-                selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass())));
-            }
-        }
+        List<ObjectType> objects = getResultsModel().getSelectedObjects(results);
+        objects.forEach(o -> selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass()))));
 
         return selected;
     }
 
     private boolean isResultSelected() {
-        return results.getSelectionModel().getSelectedItemsCount() != 0;
+        ExtendedListSelectionModel model = (ExtendedListSelectionModel) results.getSelectionModel();
+        return model.getSelectedItemsCount() != 0;
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
@@ -559,12 +550,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         if (name) {
             PrismPropertyDefinition def = ctx.getSchemaRegistry().findPropertyDefinitionByElementName(ObjectType.F_NAME);
-            QName matchingRule = PrismConstants.POLY_STRING_ORIG_MATCHING_RULE_NAME;
-            List<ObjectFilter> equals = new ArrayList<>();
+            QName matchingRule = PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME;
+            List<ObjectFilter> substrings = new ArrayList<>();
             for (String s : filtered) {
-                equals.add(qf.createEqual(ctx.path(ObjectType.F_NAME), def, matchingRule, ctx, s));
+                substrings.add(SubstringFilterImpl.createSubstring(ctx.path(ObjectType.F_NAME), def, ctx, matchingRule, s, false, false));
             }
-            OrFilter nameOr = qf.createOr(equals);
+            OrFilter nameOr = qf.createOr(substrings);
             or.addCondition(nameOr);
         }
 

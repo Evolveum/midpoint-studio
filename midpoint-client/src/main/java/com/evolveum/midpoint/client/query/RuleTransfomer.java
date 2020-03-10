@@ -39,10 +39,10 @@ public class RuleTransfomer {
         parser.addParseListener(filterBuilder);
 
         QueryGrammarParser.Rule_setContext ruleSet = parser.rule_set();
-        LOG.debug("Rule {}", ruleSet);
+        LOG.debug("Rule " + ruleSet);
 
         ObjectFilter filter = filterBuilder.getObjectFilter();
-        LOG.debug("Filter dump\n{}", filter.debugDump());
+        LOG.debug("Filter dump\n" + filter.debugDump());
 
         QueryConverter converter = prismContext.getQueryConverter();
 

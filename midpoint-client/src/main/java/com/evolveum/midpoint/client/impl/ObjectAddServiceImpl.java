@@ -35,14 +35,18 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
 
         WebClient client = client();
 
+        Response response;
         String path = ObjectTypes.getRestTypeFromClass(type());
         if (opts.overwrite() && object.getOid() != null) {
             path += "/" + object.getOid();
+
+            client.replacePath(REST_PREFIX + "/" + path);
+            response = client.put(object);
+        } else {
+            client.replacePath(REST_PREFIX + "/" + path);
+            response = client.post(object);
         }
 
-        client.replacePath(REST_PREFIX + "/" + path);
-
-        Response response = opts.overwrite() ? client.put(object) : client.post(object);
         validateResponse(response);
 
         return response.readEntity(String.class);

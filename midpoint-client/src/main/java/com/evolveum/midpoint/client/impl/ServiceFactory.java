@@ -35,7 +35,7 @@ import java.util.Locale;
  */
 public class ServiceFactory {
 
-    private static final PrismContext DEFAULT_PRISM_CONTEXT;
+    public static final PrismContext DEFAULT_PRISM_CONTEXT;
 
     static {
         try {

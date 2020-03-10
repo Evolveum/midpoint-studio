@@ -36,6 +36,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
@@ -49,6 +50,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.util.List;
 import java.util.*;
@@ -66,6 +68,8 @@ public class MidPointUtils {
     public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart());
 
     public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
+
+    private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
 
     private static final Random RANDOM = new Random();
 
@@ -204,6 +208,18 @@ public class MidPointUtils {
                 .generateServiceName(MidPointSettings.class.getSimpleName(), key));
     }
 
+    public static void publishExceptionNotification(String key, String message, Exception ex) {
+        String msg = message + ", reason: " + ex.getMessage();
+        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR);
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(msg);
+            LOG.trace(ex);
+        } else {
+            LOG.debug(msg);
+        }
+    }
+
     public static void publishNotification(String key, String title, String content, NotificationType type) {
         publishNotification(key, title, content, type, (NotificationAction[]) null);
     }
@@ -291,6 +307,7 @@ public class MidPointUtils {
         table.setEditable(false);
         table.setDragEnabled(false);
         table.setHorizontalScrollEnabled(true);
+        table.setSelectionModel(new ExtendedListSelectionModel());
         table.setLeafIcon(null);
         table.setClosedIcon(null);
         table.setOpenIcon(null);
@@ -318,6 +335,42 @@ public class MidPointUtils {
 
     public static String getOrigFromPolyString(PolyStringType poly) {
         return poly != null ? poly.getOrig() : null;
+    }
+
+    public static String generateTaskIdentifier() {
+        return System.currentTimeMillis() + ":" + Math.round(Math.random() * 1000000000.0);
+    }
+
+    public static ObjectTypes commonSuperType(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return null;
+        }
+
+        Class<? extends ObjectType> c1 = o1.getClassDefinition();
+        Class<? extends ObjectType> c2 = o2.getClassDefinition();
+
+        Class<? extends ObjectType> s = c1;
+        while (!s.isAssignableFrom(c2)) {
+            s = (Class<? extends ObjectType>) s.getSuperclass();
+        }
+
+        return ObjectTypes.getObjectType(s);
+    }
+
+    public static boolean isAssignableFrom(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return false;
+        }
+
+        return o1.getClassDefinition().isAssignableFrom(o2.getClassDefinition());
+    }
+
+    public static QName getTypeQName(ObjectType obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        return ObjectTypes.getObjectType(obj.getClass()).getTypeQName();
     }
 
     public static String formatTime(Long time) {

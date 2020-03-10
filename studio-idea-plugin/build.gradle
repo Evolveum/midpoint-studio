@@ -12,7 +12,10 @@ plugins {
 }
 
 dependencies {
-    compile project(':midpoint-client')
+    compile (project(':midpoint-client')) {
+        exclude group: "org.slf4j"
+        exclude group: "ch.qos.logback"
+    }
 
     compile("com.evolveum.midpoint.model:model-common:$midpointVersion") {
         transitive = false
@@ -29,16 +32,13 @@ dependencies {
     compile "com.evolveum.midpoint:midpoint-localization:$midpointVersion"
 
     compile "de.slackspace:openkeepass:$openkeepass"
-    compile "net.mikehardy:google-analytics-java7:$analyticsVersion"
     compile "org.apache.commons:commons-lang3:$commonsLang"
     compile "org.knowm.xchart:xchart:$xchartVersion"
-    compile "com.h2database:h2:$h2Version"
-//    compile "org.slf4j:slf4j-log4j12:1.7.25"
-//    compile 'com.github.adedayo.intellij.sdk:forms_rt:142.1'
+    compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
 }
 
 intellij {
-    version '2019.3'
+    version '2019.3'    // 'LATEST-EAP-SNAPSHOT'
     type 'IC'
     downloadSources true
     pluginName 'MidPoint Studio'
@@ -65,4 +65,8 @@ buildPlugin.configure {
     doFirst {
         println "Git describe: " + versionDetails().commitDistance
     }
+}
+
+runIde {
+    jvmArgs "-Didea.log.config.file=$project.projectDir/src/test/resources/log4j.xml"
 }

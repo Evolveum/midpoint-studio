@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.util.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -121,19 +122,16 @@ public class BrowseTableModel extends AbstractTreeTableModel {
         return objects;
     }
 
-    public List<Pair<String, ObjectTypes>> getSelectedOids(JXTreeTable table) {
-        List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
-
+    public List<ObjectType> getSelectedObjects(JXTreeTable table) {
         if (!this.equals(table.getTreeTableModel())) {
             throw new IllegalArgumentException("Table doesn't match with current object model (this).");
         }
 
-        List<ObjectType> data = this.objects;
-        if (data == null) {
-            return selected;
-        }
+        List<ObjectType> selected = new ArrayList<>();
 
-        ListSelectionModel selectionModel = table.getSelectionModel();
+        List<ObjectType> data = this.objects;
+
+        ExtendedListSelectionModel selectionModel = (ExtendedListSelectionModel) table.getSelectionModel();
         int[] indices = selectionModel.getSelectedIndices();
         for (int i : indices) {
             DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) table.getPathForRow(i).getLastPathComponent();
@@ -142,14 +140,27 @@ public class BrowseTableModel extends AbstractTreeTableModel {
                 ObjectTypes type = (ObjectTypes) obj;
                 data.forEach(o -> {
                     if (type.getClassDefinition().equals(o.getClass())) {
-                        selected.add(new Pair<>(o.getOid(), type));
+                        selected.add(o);
                     }
                 });
             } else if (obj instanceof ObjectType) {
                 ObjectType o = (ObjectType) obj;
-                selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass())));
+                selected.add(o);
             }
         }
+
+        return selected;
+    }
+
+    public List<Pair<String, ObjectTypes>> getSelectedOids(JXTreeTable table) {
+        List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
+
+        List<ObjectType> objects = getSelectedObjects(table);
+        if (objects == null) {
+            return selected;
+        }
+
+        objects.forEach(o -> selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass()))));
 
         return selected;
     }

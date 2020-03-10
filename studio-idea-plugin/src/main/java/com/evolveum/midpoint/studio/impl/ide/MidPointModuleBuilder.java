@@ -49,6 +49,8 @@ import java.util.regex.Pattern;
  */
 public class MidPointModuleBuilder extends ModuleBuilder {
 
+    public static final String NOTIFICATION_KEY = "Module";
+
     public static String MODULE_NAME = "MidPoint";
 
     private ModuleSettings settings = new ModuleSettings();
@@ -91,7 +93,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
             VfsUtil.createDirectories(root.getPath() + "/objects");
             VfsUtil.createDirectories(root.getPath() + "/scratches");
         } catch (IOException ex) {
-            ex.printStackTrace(); // todo handle error
+            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't create directory structure", ex);
         }
 
         // build pom file
@@ -110,7 +112,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
                     createGitIgnoreFile(project, root);
                 } catch (IOException ex) {
-                    ex.printStackTrace();   // todo error handling
+                    MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't create pom.xml file", ex);
                 }
             });
         });
