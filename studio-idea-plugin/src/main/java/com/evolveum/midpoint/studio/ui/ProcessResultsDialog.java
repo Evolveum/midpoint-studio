@@ -7,15 +7,12 @@ import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
 import com.evolveum.midpoint.studio.util.LocalizedRenderer;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.ide.actions.ActionsCollector;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogEarthquakeShaker;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.IdeFocusManager;
-import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,9 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,7 +29,7 @@ import java.util.List;
  */
 public class ProcessResultsDialog extends DialogWrapper {
 
-    private static final List<Generator> GENERATORS = Arrays.asList(
+    public static final List<Generator> GENERATORS = Arrays.asList(
             new BulkActionGenerator(BulkActionGenerator.Action.RECOMPUTE),
             new BulkActionGenerator(BulkActionGenerator.Action.ENABLE),
             new BulkActionGenerator(BulkActionGenerator.Action.DISABLE),
@@ -61,6 +56,8 @@ public class ProcessResultsDialog extends DialogWrapper {
             new RefGenerator("ownerRef", ObjectTypes.ORG)
     );
 
+    public static final int GENERATE_EXIT_CODE = 1000;
+
     private JComboBox<Generator> generate;
     private JComboBox<Execution> execution;
     private JTextField n;
@@ -77,13 +74,17 @@ public class ProcessResultsDialog extends DialogWrapper {
     private ObjectTypes type;
     private List<ObjectType> selected;
 
-    public ProcessResultsDialog(String query, ComboQueryType.Type queryType, ObjectTypes type, List<ObjectType> selected) {
+    private ProcessResultsOptions options;
+
+    public ProcessResultsDialog(@NotNull ProcessResultsOptions options, String query,
+                                ComboQueryType.Type queryType, ObjectTypes type, List<ObjectType> selected) {
         super(false);
         setTitle("Process results");
 
         setOKButtonText("Execute");
         setOKButtonTooltip("Process results");
 
+        this.options = options;
         this.query = query;
         this.queryType = queryType;
         this.type = type;
@@ -97,13 +98,14 @@ public class ProcessResultsDialog extends DialogWrapper {
     private void initInputFields() {
         EnumComboBoxModel em = new EnumComboBoxModel(Execution.class, true);
         execution.setModel(em);
-        execution.setSelectedItem(Execution.OID_ONE_BATCH);
         execution.setRenderer(new LocalizedRenderer());
 
         execution.addItemListener(e -> n.setEnabled(Execution.OID_BATCHES_BY_N.equals(execution.getSelectedItem())));
 
+        execution.setSelectedItem(options.getExecution());
+
         generate.setModel(new ListComboBoxModel<Generator>(GENERATORS));
-        generate.getModel().setSelectedItem(GENERATORS.get(0));
+        generate.getModel().setSelectedItem(options.getGenerator());
         generate.setRenderer(new DefaultListCellRenderer() {
 
             @Override
@@ -115,7 +117,13 @@ public class ProcessResultsDialog extends DialogWrapper {
             }
         });
 
-        n.setEnabled(false);
+        GeneratorOptions opts = options.getOptions();
+        n.setText(Integer.toString(opts.getBatchSize()));
+        createTasksInSuspendedCheckBox.setSelected(opts.isCreateSuspended());
+        executeInDryRunCheckBox.setSelected(opts.isDryRun());
+        useSymbolicReferencesCheckBox.setSelected(opts.isSymbolicReferences());
+        runtimeResolutionCheckBox.setSelected(opts.isSymbolicReferencesRuntime());
+        wrapCreatedBulkActionCheckBox.setSelected(opts.isWrapActions());
     }
 
     @Nullable
@@ -134,40 +142,25 @@ public class ProcessResultsDialog extends DialogWrapper {
         };
     }
 
+
     private Action getGenerateAction() {
         return new GenerateAction();
     }
 
     private void doGenerateAction(ActionEvent evt) {
-        performGenerate(false);
+        close(GENERATE_EXIT_CODE);
     }
 
-    private void performGenerate(boolean execute) {
-        GeneratorOptions opts = buildOptions();
+    public ProcessResultsOptions buildOptions() {
+        ProcessResultsOptions options = new ProcessResultsOptions();
+        options.setOptions(buildGeneratorOptions());
+        options.setExecution((Execution) execution.getSelectedItem());
+        options.setGenerator((Generator) generate.getSelectedItem());
 
-        if (opts.isBatchByOids() && selected.isEmpty()) {
-            return;
-        }
-
-        if (opts.isBatchUsingOriginalQuery() && StringUtils.isEmpty(query)) {
-            return;
-        }
-
-        Generator generator = (Generator) generate.getSelectedItem();
-        GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);
-
-        AWTEvent evt = EventQueue.getCurrentEvent();
-        InputEvent ie;
-        if (evt instanceof InputEvent) {
-            ie = (InputEvent) evt;
-        } else {
-            ie = new MouseEvent(getWindow(), ActionEvent.ACTION_PERFORMED, System.currentTimeMillis(), 0, 0, 0, 0, false, 0);
-        }
-
-        ActionManager.getInstance().tryToExecute(ga, ie, getContentPane(), ActionPlaces.UNKNOWN, false);
+        return options;
     }
 
-    private GeneratorOptions buildOptions() {
+    private GeneratorOptions buildGeneratorOptions() {
         GeneratorOptions opts = new GeneratorOptions();
         opts.setBatchSize(Integer.parseInt(n.getText()));
         opts.setCreateSuspended(createTasksInSuspendedCheckBox.isSelected());
@@ -204,11 +197,8 @@ public class ProcessResultsDialog extends DialogWrapper {
         return opts;
     }
 
-    @Override
-    protected void doOKAction() {
-        super.doOKAction();
-
-        performGenerate(true);
+    public boolean isGenerate() {
+        return getExitCode() == GENERATE_EXIT_CODE;
     }
 
     private class GenerateAction extends DialogWrapperAction {

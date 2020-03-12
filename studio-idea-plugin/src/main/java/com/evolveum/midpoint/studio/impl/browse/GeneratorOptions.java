@@ -15,7 +15,7 @@ public class GeneratorOptions {
 
     private boolean batchByOids;
     private boolean batchUsingOriginalQuery;
-    private int batchSize;
+    private int batchSize = 100;
     private String originalQuery;
     private Collection<ObjectTypes> originalQueryTypes;
 

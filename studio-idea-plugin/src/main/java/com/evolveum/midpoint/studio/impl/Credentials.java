@@ -96,6 +96,7 @@ public class Credentials implements Serializable {
                 "key='" + key + '\'' +
                 ", env='" + environment + '\'' +
                 ", username='" + username + '\'' +
+                ", password (" + (password != null ? password.length() : null) +
                 '}';
     }
 }
