@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.intellij.openapi.options.ConfigurationException;
 import com.evolveum.midpoint.studio.impl.ModuleSettings;
+import com.intellij.openapi.options.ConfigurationException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,6 +16,7 @@ public class ProjectConfigurationPanel extends JPanel {
     private EnvironmentsPanel environmentsPanel;
     private JPasswordField password1;
     private JPasswordField password2;
+    private MidPointSettingsPanel midpointSettingsPanel;
 
     private ModuleSettings settings;
 
@@ -32,6 +33,7 @@ public class ProjectConfigurationPanel extends JPanel {
     }
 
     private void createUIComponents() {
+        midpointSettingsPanel = new MidPointSettingsPanel(settings.getMidPointSettings());
         environmentsPanel = new EnvironmentsPanel(settings.getEnvironmentSettings());
     }
 
@@ -52,9 +54,7 @@ public class ProjectConfigurationPanel extends JPanel {
 
     public void updateSettings() {
         settings.setEnvironmentSettings(environmentsPanel.getFullSettings());
-        // settings.setFileObjectSettings(); // todo now it can't be configured via UI
-        // settings.setMidPointSettings();
-
+        settings.setMidPointSettings(midpointSettingsPanel.getSettings());
         settings.setMasterPassword(new String(password1.getPassword()));
     }
 }
