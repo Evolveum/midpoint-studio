@@ -44,6 +44,8 @@ public class CredentialsManagerImpl implements CredentialsManager {
     }
 
     private void refresh(boolean create) {
+        LOG.debug("Refreshing credentials create=", create);
+
         String masterPassword = getMasterPassword();
         if (StringUtils.isEmpty(masterPassword)) {
             return;
@@ -77,6 +79,8 @@ public class CredentialsManagerImpl implements CredentialsManager {
 
     @Override
     public synchronized String add(Credentials credentials) {
+        LOG.debug("Adding credentials ", credentials);
+
         Group group = getTopGroup();
         if (group == null) {
             return null;
@@ -103,6 +107,8 @@ public class CredentialsManagerImpl implements CredentialsManager {
 
     @Override
     public synchronized boolean delete(String key) {
+        LOG.debug("Deleting credentials with key ", key);
+
         Group group = getTopGroup();
         if (group == null) {
             return false;

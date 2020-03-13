@@ -17,6 +17,10 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.impl.browse.Generator;
+import com.evolveum.midpoint.studio.impl.browse.GeneratorAction;
+import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
+import com.evolveum.midpoint.studio.impl.browse.ProcessResultsOptions;
 import com.evolveum.midpoint.studio.util.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -47,6 +51,9 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.xml.namespace.QName;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,6 +92,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private boolean rawDownload = true;
 
     private Paging paging = new Paging();
+
+    private ProcessResultsOptions processResultsOptions = new ProcessResultsOptions();
 
     public BrowseToolPanel(Project project) {
         super(false, true);
@@ -314,14 +323,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         ObjectTypes type = this.objectType.getSelected();
         List<ObjectType> selected = getResultsModel().getSelectedObjects(results);
 
-        ProcessResultsDialog dialog = new ProcessResultsDialog(query, queryType, type, selected);
+        ProcessResultsDialog dialog = new ProcessResultsDialog(processResultsOptions, query, queryType, type, selected);
+        dialog.show();
 
-        if (!dialog.showAndGet()) {
-            return;
+        if (dialog.isOK() || dialog.isGenerate()) {
+            processResultsOptions = dialog.buildOptions();
+
+            performGenerate(selected, processResultsOptions, !dialog.isGenerate());
         }
-
-
-        // todo implement
     }
 
     private void searchPerformed(AnActionEvent evt, ProgressIndicator indicator) {
@@ -560,5 +569,30 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         }
 
         return or;
+    }
+
+    private void performGenerate(List<ObjectType> selected, ProcessResultsOptions options, boolean execute) {
+        GeneratorOptions opts = options.getOptions();
+
+        if (opts.isBatchByOids() && selected.isEmpty()) {
+            return;
+        }
+
+        if (opts.isBatchUsingOriginalQuery() && StringUtils.isEmpty(opts.getOriginalQuery())) {
+            return;
+        }
+
+        Generator generator = options.getGenerator();
+        GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);
+
+        AWTEvent evt = EventQueue.getCurrentEvent();
+        InputEvent ie;
+        if (evt instanceof InputEvent) {
+            ie = (InputEvent) evt;
+        } else {
+            ie = new MouseEvent(this, ActionEvent.ACTION_PERFORMED, System.currentTimeMillis(), 0, 0, 0, 0, false, 0);
+        }
+
+        ActionManager.getInstance().tryToExecute(ga, ie, this, ActionPlaces.UNKNOWN, false);
     }
 }
