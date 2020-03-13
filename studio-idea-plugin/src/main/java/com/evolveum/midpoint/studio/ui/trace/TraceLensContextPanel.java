@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -29,12 +30,12 @@ public class TraceLensContextPanel extends BorderLayoutPanel {
         label.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
         add(label, BorderLayout.CENTER);
 
-        List<TableColumnDefinition> columns = new ArrayList<>();
+        List<TreeTableColumnDefinition> columns = new ArrayList<>();
 
-        columns.add(new TableColumnDefinition<String, String>("Item", 500, o -> null));
-        columns.add(new TableColumnDefinition<String, String>("Old", 500, o -> null));
-        columns.add(new TableColumnDefinition<String, String>("Current", 500, o -> null));
-        columns.add(new TableColumnDefinition<String, String>("New", 500, o -> null));
+        columns.add(new TreeTableColumnDefinition<String, String>("Item", 500, o -> null));
+        columns.add(new TreeTableColumnDefinition<String, String>("Old", 500, o -> null));
+        columns.add(new TreeTableColumnDefinition<String, String>("Current", 500, o -> null));
+        columns.add(new TreeTableColumnDefinition<String, String>("New", 500, o -> null));
 
         this.table = MidPointUtils.createTable(new DefaultTreeTableModel(new DefaultMutableTreeTableNode("")), null);
 

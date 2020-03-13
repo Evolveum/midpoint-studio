@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetType;
+import com.intellij.facet.FacetTypeId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
 import org.jetbrains.annotations.NotNull;
@@ -15,10 +16,14 @@ import javax.swing.*;
  */
 public class MidPointFacetType extends FacetType<MidPointFacet, MidPointFacetConfiguration> {
 
-    public static final String TYPE_ID = "MidPointFacet";
+    public static final FacetTypeId<MidPointFacet> FACET_TYPE_ID = new FacetTypeId<>("MidPointFacet");
+
+    public static final String FACET_ID = "MidPointFacet";
+
+    public static final String FACET_NAME = "MidPoint";
 
     public MidPointFacetType() {
-        super(MidPointFacet.ID, TYPE_ID, "MidPoint");
+        super(FACET_TYPE_ID, FACET_ID, FACET_NAME);
     }
 
     @Override

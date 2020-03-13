@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.studio.impl.trace.OpNode;
+import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
@@ -12,9 +13,9 @@ import java.util.List;
  */
 public class TraceTreeTableModel extends DefaultTreeTableModel {
 
-    private List<TableColumnDefinition> columns;
+    private List<TreeTableColumnDefinition> columns;
 
-    public TraceTreeTableModel(List<TableColumnDefinition> columns, List<OpNode> nodes) {
+    public TraceTreeTableModel(List<TreeTableColumnDefinition> columns, List<OpNode> nodes) {
         if (columns == null) {
             columns = new ArrayList<>();
         }

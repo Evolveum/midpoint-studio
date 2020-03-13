@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import org.jdesktop.swingx.treetable.AbstractTreeTableModel;
 
 import java.util.List;
@@ -9,11 +10,11 @@ import java.util.List;
  */
 public class TraceStructureTreeTableModel<T> extends AbstractTreeTableModel {
 
-    private List<TableColumnDefinition<T, ?>> columns;
+    private List<TreeTableColumnDefinition<T, ?>> columns;
 
     private List<T> data;
 
-    public TraceStructureTreeTableModel(List<TableColumnDefinition<T, ?>> columns, List<T> data) {
+    public TraceStructureTreeTableModel(List<TreeTableColumnDefinition<T, ?>> columns, List<T> data) {
         this.columns = columns;
         this.data = data;
     }

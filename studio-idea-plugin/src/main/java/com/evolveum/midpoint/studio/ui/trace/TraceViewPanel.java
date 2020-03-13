@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui.trace;
 import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
+import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.OnePixelSplitter;
@@ -55,21 +56,21 @@ public class TraceViewPanel extends JPanel {
     }
 
     private JComponent initMain(List<OpNode> data) {
-        List<TableColumnDefinition> columns = new ArrayList<>();
+        List<TreeTableColumnDefinition> columns = new ArrayList<>();
 
-        columns.add(new TableColumnDefinition<OpNode, String>("Operation", 500, o -> o.getOperationNameFormatted()));
-        columns.add(new TableColumnDefinition<OpNode, String>("State", 60, o -> o.getClockworkState()));
-        columns.add(new TableColumnDefinition<OpNode, String>("EW", 35, o -> o.getExecutionWave()));
-        columns.add(new TableColumnDefinition<OpNode, String>("PW", 35, o -> o.getProjectionWave()));
-        columns.add(new TableColumnDefinition<OpNode, String>("Status", 100, o -> o.getResult().getStatus().toString()));
-        columns.add(new TableColumnDefinition<OpNode, String>("W", 20, o -> o.getImportanceSymbol()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Operation", 500, o -> o.getOperationNameFormatted()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("State", 60, o -> o.getClockworkState()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("EW", 35, o -> o.getExecutionWave()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("PW", 35, o -> o.getProjectionWave()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Status", 100, o -> o.getResult().getStatus().toString()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("W", 20, o -> o.getImportanceSymbol()));
 
         long start = System.currentTimeMillis();    // todo fix
-        columns.add(new TableColumnDefinition<OpNode, String>("Start", 60, o -> Long.toString(o.getStart(start))));
-        columns.add(new TableColumnDefinition<OpNode, String>("Time", 80, o -> formatTime(o.getResult().getMicroseconds())));
-        columns.add(new TableColumnDefinition<OpNode, String>("Type", 100, o -> o.getType().toString()));
-        columns.add(new TableColumnDefinition<OpNode, String>("OH", 50, o -> formatPercent(o.getOverhead())));
-        columns.add(new TableColumnDefinition<OpNode, String>("OH2", 50, o -> formatPercent(o.getOverhead2())));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Start", 60, o -> Long.toString(o.getStart(start))));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Time", 80, o -> formatTime(o.getResult().getMicroseconds())));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Type", 100, o -> o.getType().toString()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("OH", 50, o -> formatPercent(o.getOverhead())));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("OH2", 50, o -> formatPercent(o.getOverhead2())));
 
         addPerformanceColumn(columns, PerformanceCategory.REPOSITORY, false, false);
         addPerformanceColumn(columns, PerformanceCategory.REPOSITORY_READ, false, true);
@@ -80,7 +81,7 @@ public class TraceViewPanel extends JPanel {
         addPerformanceColumn(columns, PerformanceCategory.ICF_READ, false, true);
         addPerformanceColumn(columns, PerformanceCategory.ICF_WRITE, false, true);
 
-        columns.add(new TableColumnDefinition<OpNode, String>("Log", 50, o -> Integer.toString(o.getLogEntriesCount())));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Log", 50, o -> Integer.toString(o.getLogEntriesCount())));
 
         main = MidPointUtils.createTable(new TraceTreeTableModel(columns, data), columns);
         main.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -99,23 +100,23 @@ public class TraceViewPanel extends JPanel {
     }
 
     private JComponent initTraceStructure(List<OpNode> data) {
-        List<TableColumnDefinition> columns = new ArrayList<>();
+        List<TreeTableColumnDefinition> columns = new ArrayList<>();
 
-        columns.add(new TableColumnDefinition<OpNode, String>("Operation", 500, o -> o.getOperationNameFormatted()));
-        columns.add(new TableColumnDefinition<OpNode, String>("State", 60, o -> o.getClockworkState()));
-        columns.add(new TableColumnDefinition<OpNode, String>("EW", 35, o -> o.getExecutionWave()));
-        columns.add(new TableColumnDefinition<OpNode, String>("PW", 35, o -> o.getProjectionWave()));
-        columns.add(new TableColumnDefinition<OpNode, String>("Status", 100, o -> o.getResult().getStatus().toString()));
-        columns.add(new TableColumnDefinition<OpNode, String>("W", 20, o -> o.getImportanceSymbol()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Operation", 500, o -> o.getOperationNameFormatted()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("State", 60, o -> o.getClockworkState()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("EW", 35, o -> o.getExecutionWave()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("PW", 35, o -> o.getProjectionWave()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Status", 100, o -> o.getResult().getStatus().toString()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("W", 20, o -> o.getImportanceSymbol()));
 
         long start = System.currentTimeMillis();    // todo fix
-        columns.add(new TableColumnDefinition<OpNode, String>("Start", 60, o -> Long.toString(o.getStart(start))));
-        columns.add(new TableColumnDefinition<OpNode, String>("Time", 80, o -> formatTime(o.getResult().getMicroseconds())));
-        columns.add(new TableColumnDefinition<OpNode, String>("Type", 100, o -> o.getType().toString()));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Start", 60, o -> Long.toString(o.getStart(start))));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Time", 80, o -> formatTime(o.getResult().getMicroseconds())));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Type", 100, o -> o.getType().toString()));
 
         // todo add columns
 
-        columns.add(new TableColumnDefinition<OpNode, String>("Log", 50, o -> Integer.toString(o.getLogEntriesCount())));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>("Log", 50, o -> Integer.toString(o.getLogEntriesCount())));
 
         traceStructure = MidPointUtils.createTable(new TraceStructureTreeTableModel(columns, data), columns);
 
@@ -127,8 +128,8 @@ public class TraceViewPanel extends JPanel {
         return new HeaderDecorator("Trace Performance Information", new JBScrollPane(perfInformation));
     }
 
-    private void addPerformanceColumn(List<TableColumnDefinition> columns, PerformanceCategory category, boolean hidable, boolean readWrite) {
-        TableColumnDefinition def = new TableColumnDefinition<OpNode, Integer>(category.getShortLabel() + " #", 70, o -> o.getPerformanceByCategory().get(category).getTotalCount());
+    private void addPerformanceColumn(List<TreeTableColumnDefinition> columns, PerformanceCategory category, boolean hidable, boolean readWrite) {
+        TreeTableColumnDefinition def = new TreeTableColumnDefinition<OpNode, Integer>(category.getShortLabel() + " #", 70, o -> o.getPerformanceByCategory().get(category).getTotalCount());
         def.tableCellRenderer(new DefaultTableCellRenderer() {
 
             @Override
@@ -148,7 +149,7 @@ public class TraceViewPanel extends JPanel {
 //        }
 //        //countColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new MyLabelProvider(n -> n.getPerformanceByCategory().get(category).getTotalCount())));
 
-        columns.add(new TableColumnDefinition<OpNode, String>(category.getShortLabel() + " time", 80, o -> formatTime(o.getPerformanceByCategory().get(category).getTotalTime())));
+        columns.add(new TreeTableColumnDefinition<OpNode, String>(category.getShortLabel() + " time", 80, o -> formatTime(o.getPerformanceByCategory().get(category).getTotalTime())));
 
 //        timeColumn.setLabelProvider(new ColumnLabelProvider() {
 //            @Override

@@ -1,20 +1,18 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.client.api.ClientException;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
-import com.evolveum.midpoint.studio.impl.MidPointException;
-import com.evolveum.midpoint.client.api.ClientException;
-import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.impl.MidPointFacet;
+import com.evolveum.midpoint.studio.impl.MidPointException;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
-import com.evolveum.midpoint.studio.ui.trace.TableColumnDefinition;
-import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
@@ -24,7 +22,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
-import com.intellij.facet.FacetManager;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
@@ -37,8 +34,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
@@ -291,17 +286,7 @@ public class MidPointUtils {
         };
     }
 
-    public static boolean isMidPointFacetPresent(Project project) {
-        Module[] modules = ModuleManager.getInstance(project).getModules();
-        if (modules == null || modules.length == 0) {
-            return false;
-        }
-
-        FacetManager facetManager = FacetManager.getInstance(modules[0]);
-        return facetManager.getFacetByType(MidPointFacet.ID) != null;
-    }
-
-    public static JXTreeTable createTable(TreeTableModel model, List<TableColumnDefinition> columns) {
+    public static JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition> columns) {
         JXTreeTable table = new JXTreeTable(model);
         table.setRootVisible(false);
         table.setEditable(false);
@@ -314,7 +299,7 @@ public class MidPointUtils {
 
         if (columns != null) {
             for (int i = 0; i < columns.size(); i++) {
-                TableColumnDefinition def = columns.get(i);
+                TreeTableColumnDefinition def = columns.get(i);
 
                 TableColumn column = table.getColumnModel().getColumn(i);
                 column.setPreferredWidth(def.getSize());
