@@ -84,12 +84,19 @@
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.MidPointReferenceContributor"/>
 
         <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
+
         <moduleBuilder builderClass="com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder"/>
 
-        <toolWindow id="MidPoint"
-                    anchor="bottom"
-                    icon="/icons/midpoint.png"
-                    factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
+<!--        <toolWindow id="MidPoint"-->
+<!--                    anchor="bottom"-->
+<!--                    icon="/icons/midpoint.png"-->
+<!--                    factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>-->
+
+        <facet.toolWindow id="MidPoint"
+                          facetIdList="MidPointFacet"
+                          anchor="bottom"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
 
 <!--
         <toolWindow id="MidPointTrace"
@@ -130,6 +137,7 @@
 
         <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.RefOidAnnotator"/>
         <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.ResourceTypeAnnotator"/>
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.DeprecatedElementAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
