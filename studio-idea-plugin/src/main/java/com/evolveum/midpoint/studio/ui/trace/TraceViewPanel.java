@@ -13,11 +13,9 @@ import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -41,12 +39,12 @@ public class TraceViewPanel extends JPanel {
     public TraceViewPanel(MessageBus bus, List<OpNode> data) {
         super(new BorderLayout());
 
-        initLayout(data);
+        initLayout(bus, data);
 
         notifier = bus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC);
     }
 
-    private void initLayout(List<OpNode> data) {
+    private void initLayout(MessageBus bus, List<OpNode> data) {
         JBSplitter horizontal = new OnePixelSplitter(true);
         add(horizontal, BorderLayout.CENTER);
 
@@ -59,7 +57,7 @@ public class TraceViewPanel extends JPanel {
         JComponent traceStructure = initTraceStructure(data);
         horizontal2.setFirstComponent(traceStructure);
 
-        JComponent tracePerformance = initTracePerformance();
+        JComponent tracePerformance = initTracePerformance(bus);
         horizontal2.setSecondComponent(tracePerformance);
 
 //        JXTreeTable t = new JXTreeTable();
@@ -163,8 +161,8 @@ public class TraceViewPanel extends JPanel {
         return new HeaderDecorator("Trace Structure", new JBScrollPane(traceStructure));
     }
 
-    private JComponent initTracePerformance() {
-        TracePerformanceInformationPanel perfInformation = new TracePerformanceInformationPanel();
+    private JComponent initTracePerformance(MessageBus bus) {
+        TracePerformanceInformationPanel perfInformation = new TracePerformanceInformationPanel(bus);
         return new HeaderDecorator("Trace Performance Information", new JBScrollPane(perfInformation));
     }
 

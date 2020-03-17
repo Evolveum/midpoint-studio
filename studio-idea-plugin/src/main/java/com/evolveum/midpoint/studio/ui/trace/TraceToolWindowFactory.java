@@ -31,14 +31,12 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     private Content buildVariables(Project project) {
-        TraceVariablesPanel variables = new TraceVariablesPanel();
+        TraceVariablesPanel variables = new TraceVariablesPanel(project.getMessageBus());
         return ContentFactory.SERVICE.getInstance().createContent(variables, "Variables", false);
     }
 
     private Content buildLogs(Project project) {
-        MessageBus bus = project.getMessageBus();
-
-        TraceLogsPanel logs = new TraceLogsPanel(bus);
+        TraceLogsPanel logs = new TraceLogsPanel(project.getMessageBus());
         return ContentFactory.SERVICE.getInstance().createContent(logs, "Logs", false);
     }
 

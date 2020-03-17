@@ -1,9 +1,15 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
+import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.trace.Format;
+import com.evolveum.midpoint.studio.impl.trace.OpNode;
+import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
+import com.evolveum.midpoint.studio.impl.trace.PerformanceCategoryInfo;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.SingleOperationPerformanceInformationType;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
@@ -12,6 +18,7 @@ import com.intellij.ui.JBSplitter;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
+import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
@@ -21,7 +28,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -33,8 +42,20 @@ public class TraceVariablesPanel extends BorderLayoutPanel {
     private CheckboxAction variablesWrapText;
     private JBTextArea variablesValue;
 
-    public TraceVariablesPanel() {
+    public TraceVariablesPanel(MessageBus bus) {
         initLayout();
+
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+
+            @Override
+            public void selectedTraceNodeChange(OpNode node) {
+                nodeChange(node);
+            }
+        });
+    }
+
+    private void nodeChange(OpNode node) {
+        // todo
     }
 
     private void initLayout() {

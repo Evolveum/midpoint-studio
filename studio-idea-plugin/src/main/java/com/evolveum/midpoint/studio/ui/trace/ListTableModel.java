@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui.trace;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 
 import javax.swing.table.AbstractTableModel;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,6 +17,16 @@ public class ListTableModel<T> extends AbstractTableModel {
     public ListTableModel(List<TreeTableColumnDefinition<T, ?>> columns, List<T> data) {
         this.columns = columns;
         this.data = data;
+    }
+
+    public void setData(List<T> data) {
+        if (data != null) {
+            this.data = data;
+        } else {
+            this.data = new ArrayList<>();
+        }
+
+        fireTableDataChanged();
     }
 
     @Override

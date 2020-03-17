@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
+import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
+import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
 import com.evolveum.midpoint.studio.impl.trace.PerformanceCategoryInfo;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
@@ -8,10 +11,12 @@ import com.intellij.ui.JBSplitter;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
+import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +31,30 @@ public class TracePerformanceInformationPanel extends BorderLayoutPanel {
 
     private JBTable operation;
 
-    public TracePerformanceInformationPanel() {
+    public TracePerformanceInformationPanel(MessageBus bus) {
         initLayout();
+
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+
+            @Override
+            public void selectedTraceNodeChange(OpNode node) {
+                nodeChange(node);
+            }
+        });
+    }
+
+    private void nodeChange(OpNode node) {
+        List<Map.Entry<PerformanceCategory, PerformanceCategoryInfo>> categories = new ArrayList<>(node.getPerformanceByCategory().entrySet());
+        categories.sort(Comparator.comparing(e -> e.getKey()));
+        getTableModel(category).setData(categories);
+
+        List<SingleOperationPerformanceInformationType> operations = new ArrayList<>(node.getPerformance().getOperation());
+        operations.sort(Comparator.comparing(SingleOperationPerformanceInformationType::getName));
+        getTableModel(operation).setData(operations);
+    }
+
+    private <T> ListTableModel getTableModel(JBTable table) {
+        return (ListTableModel<T>) table.getModel();
     }
 
     private void initLayout() {
@@ -40,7 +67,7 @@ public class TracePerformanceInformationPanel extends BorderLayoutPanel {
         categoryColumns.add(new TreeTableColumnDefinition<>("Own #", 50, o -> o.getValue().getOwnCount()));
         categoryColumns.add(new TreeTableColumnDefinition<>("Own time", 70, o -> o.getValue().getOwnTime()));
 
-        this.category = new JBTable(new ListTableModel(categoryColumns, new ArrayList<>()));  // todo data
+        this.category = new JBTable(new ListTableModel(categoryColumns, new ArrayList<>()));
         split.setFirstComponent(new JBScrollPane(category));
 
         List<TreeTableColumnDefinition<SingleOperationPerformanceInformationType, ?>> operationColumns = new ArrayList<>();
@@ -51,7 +78,7 @@ public class TracePerformanceInformationPanel extends BorderLayoutPanel {
         operationColumns.add(new TreeTableColumnDefinition<>("Max", 50, o -> o.getMaxTime()));
         operationColumns.add(new TreeTableColumnDefinition<>("Avg", 50, o -> formatTime(o.getTotalTime() / o.getInvocationCount())));
 
-        this.operation = new JBTable(new ListTableModel<>(operationColumns, new ArrayList<>()));    // todo data
+        this.operation = new JBTable(new ListTableModel<>(operationColumns, new ArrayList<>()));
         split.setSecondComponent(new JBScrollPane(operation));
 
         add(split, BorderLayout.CENTER);
