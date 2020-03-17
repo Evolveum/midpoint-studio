@@ -68,6 +68,10 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
     @Override
     public Object getValueAt(Object node, int column) {
         DefaultMutableTreeTableNode d = (DefaultMutableTreeTableNode) node;
+        if (d == null || d.getUserObject() == null) {
+            return null;
+        }
+
         return columns.get(column).getValue().apply(d.getUserObject());
     }
 }

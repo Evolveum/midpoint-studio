@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
@@ -8,8 +9,11 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
@@ -32,10 +36,14 @@ public class TraceViewPanel extends JPanel {
 
     private JXTreeTable traceStructure;
 
-    public TraceViewPanel(List<OpNode> data) {
+    private MidPointProjectNotifier notifier;
+
+    public TraceViewPanel(MessageBus bus, List<OpNode> data) {
         super(new BorderLayout());
 
         initLayout(data);
+
+        notifier = bus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC);
     }
 
     private void initLayout(List<OpNode> data) {
@@ -53,6 +61,38 @@ public class TraceViewPanel extends JPanel {
 
         JComponent tracePerformance = initTracePerformance();
         horizontal2.setSecondComponent(tracePerformance);
+
+//        JXTreeTable t = new JXTreeTable();
+//        t.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//        DefaultMutableTreeTableNode n1 = new DefaultMutableTreeTableNode("a");
+//        n1.add(new DefaultMutableTreeTableNode("b"));
+//        n1.add(new DefaultMutableTreeTableNode("c"));
+//        t.setTreeTableModel(new DefaultTreeTableModel(n1) {
+//
+//            @Override
+//            public int getColumnCount() {
+//                return 3;
+//            }
+//
+//            @Override
+//            public String getColumnName(int column) {
+//                return Integer.toString(column);
+//            }
+//
+//            @Override
+//            public Object getValueAt(Object node, int column) {
+//                return node.toString() + column;
+//            }
+//        });
+//        t.addTreeSelectionListener(new TreeSelectionListener() {
+//
+//            @Override
+//            public void valueChanged(TreeSelectionEvent e) {
+//                System.out.println("");
+//            }
+//        });
+////        add(t, BorderLayout.SOUTH);
+//        horizontal.setSecondComponent(new JBScrollPane(t));
     }
 
     private JComponent initMain(List<OpNode> data) {
@@ -85,18 +125,18 @@ public class TraceViewPanel extends JPanel {
 
         main = MidPointUtils.createTable(new TraceTreeTableModel(columns, data), columns);
         main.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        main.addTreeSelectionListener(new TreeSelectionListener() {
-
-            @Override
-            public void valueChanged(TreeSelectionEvent e) {
-                TreePath path = e.getNewLeadSelectionPath();
-                Object obj = path.getLastPathComponent();
-
-                // todo
-            }
-        });
+        main.addTreeSelectionListener(e -> mainTableSelectionChanged(e));
 
         return new JBScrollPane(main);
+    }
+
+    private void mainTableSelectionChanged(TreeSelectionEvent e) {
+        TreePath path = e.getNewLeadSelectionPath();
+        DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) path.getLastPathComponent();
+
+        OpNode opNode = node != null ? (OpNode) node.getUserObject() : null;
+
+        notifier.selectedTraceNodeChange(opNode);
     }
 
     private JComponent initTraceStructure(List<OpNode> data) {

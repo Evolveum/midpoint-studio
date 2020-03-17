@@ -83,6 +83,10 @@ public class BrowseTableModel extends AbstractTreeTableModel {
             return null;
         }
 
+        if (obj == null) {
+            return null;
+        }
+
         if (columns.get(i).getValue() == null) {
             return null;
         }

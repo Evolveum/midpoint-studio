@@ -10,6 +10,7 @@ import com.intellij.openapi.project.PossiblyDumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,7 +51,8 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             e.printStackTrace();    // todo error handling
         }
 
-        panel = new TraceViewPanel(data);
+        MessageBus bus = project.getMessageBus();
+        panel = new TraceViewPanel(bus, data);
     }
 
     @NotNull

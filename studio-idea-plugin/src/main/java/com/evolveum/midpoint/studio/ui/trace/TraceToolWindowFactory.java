@@ -7,6 +7,7 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -35,7 +36,9 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     private Content buildLogs(Project project) {
-        TraceLogsPanel logs = new TraceLogsPanel();
+        MessageBus bus = project.getMessageBus();
+
+        TraceLogsPanel logs = new TraceLogsPanel(bus);
         return ContentFactory.SERVICE.getInstance().createContent(logs, "Logs", false);
     }
 

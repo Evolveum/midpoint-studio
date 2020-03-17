@@ -98,7 +98,8 @@
                           icon="/icons/midpoint.png"
                           factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
 
-<!--
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
+
         <toolWindow id="MidPointTrace"
                     anchor="bottom"
                     order="last"
@@ -117,8 +118,6 @@
                     icon="/icons/midpoint.png"
                     factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceOptionsWindowFactory"/>
 
-        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
-
         <fileType
                 name="MPTrace"
                 fieldName="INSTANCE"
@@ -126,7 +125,6 @@
                 language=""
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
         <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.trace.MPTraceFileTypeFactory"/>
--->
 
         <!--        <toolWindow id="NodesToolWindow"-->
         <!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
