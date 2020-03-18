@@ -1,18 +1,32 @@
 package com.evolveum.midpoint.studio.impl.trace;
 
+import com.evolveum.midpoint.studio.ui.trace.TraceViewEditor;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class TraceManager {
 
+    private Project project;
+
     private OpViewType opViewType;
 
     private Options options;
 
-    public TraceManager() {
-        opViewType = OpViewType.ALL;
+    public TraceManager(@NotNull Project project) {
+        this.project = project;
 
-        options = createOptions(opViewType);
+        this.opViewType = OpViewType.ALL;
+
+        this.options = createOptions(opViewType);
+    }
+
+    public static TraceManager getInstance(@NotNull Project project) {
+        return project.getComponent(TraceManager.class);
     }
 
     public OpViewType getOpViewType() {
@@ -29,6 +43,17 @@ public class TraceManager {
 
     public void setOptions(Options options) {
         this.options = options;
+
+        FileEditorManager fem = FileEditorManager.getInstance(project);
+
+        for (FileEditor editor : fem.getAllEditors()) {
+            if (!(editor instanceof TraceViewEditor)) {
+                continue;
+            }
+
+            TraceViewEditor traceViewEditor = (TraceViewEditor) editor;
+            traceViewEditor.applyOptions(options);
+        }
     }
 
     private Options createOptions(OpViewType opViewType) {

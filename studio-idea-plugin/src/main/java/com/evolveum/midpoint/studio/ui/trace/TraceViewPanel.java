@@ -4,16 +4,20 @@ import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
+import com.evolveum.midpoint.studio.impl.trace.TraceManager;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
+import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
@@ -46,13 +50,18 @@ public class TraceViewPanel extends JPanel {
 
     private List<TreeTableColumnDefinition> readWriteOpColumns = new ArrayList<>();
 
-    public TraceViewPanel(MessageBus bus, List<OpNode> data) {
+    public TraceViewPanel(Project project, List<OpNode> data) {
         super(new BorderLayout());
 
         this.data = data;
+
+        MessageBus bus = project.getMessageBus();
         this.notifier = bus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC);
 
         initLayout(bus);
+
+        TraceManager tm = TraceManager.getInstance(project);
+        applyOptions(tm.getOptions());
     }
 
     private void initLayout(MessageBus bus) {
@@ -234,8 +243,12 @@ public class TraceViewPanel extends JPanel {
         }
 
         TraceTreeTableModel model = (TraceTreeTableModel) main.getTreeTableModel();
-        model.refreshVisibleColumns();
-        main.packAll();
+
+        DefaultTableColumnModelExt columnModel = (DefaultTableColumnModelExt) main.getColumnModel();
+        for (int i = 0; i < model.getColumnCount(); i++) {
+            TableColumnExt tce = columnModel.getColumnExt(i);
+            tce.setVisible(model.getColumn(i).isVisible());
+        }
     }
 
     private static class ColoredTableCellRenderer extends DefaultTableCellRenderer {

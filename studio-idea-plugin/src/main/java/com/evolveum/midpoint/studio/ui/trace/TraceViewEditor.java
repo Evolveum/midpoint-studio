@@ -43,8 +43,6 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
         List<OpNode> data = new ArrayList<>();
 
         try (InputStream is = file.getInputStream()) {
-            //new File("/Users/lazyman/Work/monoted/projects/ek/midpoint-4.0-SNAPSHOT/var/trace/functional-trace 2019-10-29-16-40-06-677 iadubdor.zip");
-
             boolean isZip = file.getExtension().equalsIgnoreCase("zip");
 
             data = new TraceParser().parse(is, isZip);
@@ -52,8 +50,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             e.printStackTrace();    // todo error handling
         }
 
-        MessageBus bus = project.getMessageBus();
-        panel = new TraceViewPanel(bus, data);
+        panel = new TraceViewPanel(project, data);
     }
 
     public void applyOptions(Options options) {

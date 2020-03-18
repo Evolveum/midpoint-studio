@@ -16,14 +16,11 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
 
     private List<TreeTableColumnDefinition> columns;
 
-    private List<TreeTableColumnDefinition> visibleColumns;
-
     public TraceTreeTableModel(List<TreeTableColumnDefinition> columns, List<OpNode> nodes) {
         if (columns == null) {
             columns = new ArrayList<>();
         }
         this.columns = columns;
-        refreshVisibleColumns();
 
         List<DefaultMutableTreeTableNode> list = init(nodes);
 
@@ -32,8 +29,8 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
         setRoot(root);
     }
 
-    public void refreshVisibleColumns() {
-        this.visibleColumns = columns.stream().filter(d -> d.isVisible()).collect(Collectors.toList());
+    public TreeTableColumnDefinition getColumn(int index) {
+        return columns.get(index);
     }
 
     private List<DefaultMutableTreeTableNode> init(List<OpNode> nodes) {
@@ -65,12 +62,12 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
 
     @Override
     public int getColumnCount() {
-        return visibleColumns.size();
+        return columns.size();
     }
 
     @Override
     public String getColumnName(int column) {
-        return visibleColumns.get(column).getHeader();
+        return columns.get(column).getHeader();
     }
 
     @Override
@@ -80,6 +77,6 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
             return null;
         }
 
-        return visibleColumns.get(column).getValue().apply(d.getUserObject());
+        return columns.get(column).getValue().apply(d.getUserObject());
     }
 }

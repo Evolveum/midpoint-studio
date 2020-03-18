@@ -1,17 +1,13 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
-import com.evolveum.midpoint.studio.impl.trace.OpType;
-import com.evolveum.midpoint.studio.impl.trace.OpViewType;
-import com.evolveum.midpoint.studio.impl.trace.Options;
-import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
+import com.evolveum.midpoint.studio.impl.trace.*;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +24,8 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
     private static final Logger LOG = Logger.getInstance(TraceOptionsPanel.class);
 
+    private TraceManager traceManager;
+
     private Map<OpType, JCheckBox> eventChecks = new HashMap<>();
 
     private Map<PerformanceCategory, JCheckBox> categoriesChecks = new HashMap<>();
@@ -42,13 +40,15 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
     private JCheckBox readWriteColumns;
 
-    public TraceOptionsPanel() {
+    public TraceOptionsPanel(Project project) {
+        this.traceManager = TraceManager.getInstance(project);
+
         initLayout();
     }
 
     private void initLayout() {
         DefaultActionGroup group = new DefaultActionGroup();
-        viewType = new ViewTypeComboboxAction() {
+        viewType = new ViewTypeComboboxAction(traceManager.getOpViewType()) {
 
             @Override
             public void setOpView(OpViewType opView) {
@@ -129,6 +129,8 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
     private void viewTypeChanged(OpViewType opViewType) {
         LOG.debug("View type changed to: ", opViewType);
 
+        traceManager.setOpViewType(opViewType);
+
         eventChecks.forEach((type, button) ->
                 button.setSelected(opViewType.getTypes() == null || opViewType.getTypes().contains(type)));
         categoriesChecks.forEach((category, button) ->
@@ -143,16 +145,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
     private void applyPerformed(AnActionEvent evt) {
         Options options = createOptions();
 
-        FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
-
-        for (FileEditor editor : fem.getAllEditors()) {
-            if (!(editor instanceof TraceViewEditor)) {
-                continue;
-            }
-
-            TraceViewEditor traceViewEditor = (TraceViewEditor) editor;
-            traceViewEditor.applyOptions(options);
-        }
+        traceManager.setOptions(options);
     }
 
     private Options createOptions() {
@@ -176,7 +169,11 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
     private static class ViewTypeComboboxAction extends ComboBoxAction {
 
-        private OpViewType opView = OpViewType.ALL;
+        private OpViewType opView;
+
+        public ViewTypeComboboxAction(OpViewType opView) {
+            this.opView = opView;
+        }
 
         @NotNull
         @Override
