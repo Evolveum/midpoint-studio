@@ -2,10 +2,12 @@ package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.OpNode;
+import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
@@ -30,21 +32,30 @@ import static com.evolveum.midpoint.studio.util.MidPointUtils.formatTime;
  */
 public class TraceViewPanel extends JPanel {
 
+    private static final Logger LOG = Logger.getInstance(TraceViewPanel.class);
+
     private JXTreeTable main;
 
     private JXTreeTable traceStructure;
 
     private MidPointProjectNotifier notifier;
 
+    private List<OpNode> data;
+
+    private List<TreeTableColumnDefinition> hideablePerformanceColumns = new ArrayList<>();
+
+    private List<TreeTableColumnDefinition> readWriteOpColumns = new ArrayList<>();
+
     public TraceViewPanel(MessageBus bus, List<OpNode> data) {
         super(new BorderLayout());
 
-        initLayout(bus, data);
+        this.data = data;
+        this.notifier = bus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC);
 
-        notifier = bus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC);
+        initLayout(bus);
     }
 
-    private void initLayout(MessageBus bus, List<OpNode> data) {
+    private void initLayout(MessageBus bus) {
         JBSplitter horizontal = new OnePixelSplitter(true);
         add(horizontal, BorderLayout.CENTER);
 
@@ -166,56 +177,75 @@ public class TraceViewPanel extends JPanel {
         return new HeaderDecorator("Trace Performance Information", new JBScrollPane(perfInformation));
     }
 
-    private void addPerformanceColumn(List<TreeTableColumnDefinition> columns, PerformanceCategory category, boolean hidable, boolean readWrite) {
-        TreeTableColumnDefinition def = new TreeTableColumnDefinition<OpNode, Integer>(category.getShortLabel() + " #", 70, o -> o.getPerformanceByCategory().get(category).getTotalCount());
-        def.tableCellRenderer(new DefaultTableCellRenderer() {
+    private void addPerformanceColumn(List<TreeTableColumnDefinition> columns, PerformanceCategory category, boolean hideable, boolean readWrite) {
+        TreeTableColumnDefinition count = new TreeTableColumnDefinition<OpNode, Integer>(
+                category.getShortLabel() + " #",
+                70,
+                o -> o.getPerformanceByCategory().get(category).getTotalCount());
+        count.tableCellRenderer(new ColoredTableCellRenderer());
 
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                c.setForeground(getColor((int) value));
+        columns.add(count);
 
-                return c;
-            }
-        });
-        columns.add(def);
+        if (readWrite) {
+            readWriteOpColumns.add(count);
+        } else if (hideable) {
+            hideablePerformanceColumns.add(count);
+        }
 
-//        if (readWrite) {
-//            readWriteOpColumns.add(countColumn);
-//        } else if (hidable) {
-//            hidablePerformanceColumns.add(countColumn);
-//        }
-//        //countColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new MyLabelProvider(n -> n.getPerformanceByCategory().get(category).getTotalCount())));
+        TreeTableColumnDefinition time = new TreeTableColumnDefinition<OpNode, String>(
+                category.getShortLabel() + " time",
+                80,
+                o -> formatTime(o.getPerformanceByCategory().get(category).getTotalTime()));
+        time.tableCellRenderer(new ColoredTableCellRenderer());
 
-        columns.add(new TreeTableColumnDefinition<OpNode, String>(category.getShortLabel() + " time", 80, o -> formatTime(o.getPerformanceByCategory().get(category).getTotalTime())));
+        columns.add(time);
 
-//        timeColumn.setLabelProvider(new ColumnLabelProvider() {
-//            @Override
-//            public String getText(Object element) {
-//                return formatTime(getTime(element));
-//            }
-//
-//            private long getTime(Object element) {
-//                return ((OpNode) element).getPerformanceByCategory().get(category).getTotalTime();
-//            }
-//
-//            @Override
-//            public Color getForeground(Object element) {
-//                return TracePerformanceView.getColor(getTime(element));
-//            }
-//        });
-//        if (readWrite) {
-//            readWriteOpColumns.add(countColumn);
-//        } else {
-//            hidablePerformanceColumns.add(timeColumn);
-//        }
+        if (readWrite) {
+            readWriteOpColumns.add(time);
+        } else {
+            hideablePerformanceColumns.add(time);
+        }
     }
 
-    private static Color getColor(int value) {
-        if (value != 0) {
-            return JBUI.CurrentTheme.Label.foreground();
-        } else {
+    private static Color getColor(Object value) {
+        if (value == null || value.toString() == "0") {
             return JBUI.CurrentTheme.Label.disabledForeground();
+        }
+
+        return JBUI.CurrentTheme.Label.foreground();
+    }
+
+    public void applyOptions(Options options) {
+        LOG.debug("Applying options", options);
+
+        if (data == null) {
+            return;
+        }
+
+        for (OpNode root : data) {
+            root.applyOptions(options);
+        }
+
+        for (TreeTableColumnDefinition column : hideablePerformanceColumns) {
+            column.setVisible(options.isShowPerformanceColumns());
+        }
+        for (TreeTableColumnDefinition column : readWriteOpColumns) {
+            column.setVisible(options.isShowReadWriteColumns());
+        }
+
+        TraceTreeTableModel model = (TraceTreeTableModel) main.getTreeTableModel();
+        model.refreshVisibleColumns();
+        main.packAll();
+    }
+
+    private static class ColoredTableCellRenderer extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            c.setForeground(getColor(value));
+
+            return c;
         }
     }
 }

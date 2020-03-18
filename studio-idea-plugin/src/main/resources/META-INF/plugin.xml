@@ -65,6 +65,9 @@
             <interface-class>com.evolveum.midpoint.studio.impl.EnvironmentManager</interface-class>
             <implementation-class>com.evolveum.midpoint.studio.impl.EnvironmentManagerImpl</implementation-class>
         </component>
+        <component>
+            <implementation-class>com.evolveum.midpoint.studio.impl.trace.TraceManager</implementation-class>
+        </component>
     </project-components>
 
     <extensions defaultExtensionNs="com.intellij">

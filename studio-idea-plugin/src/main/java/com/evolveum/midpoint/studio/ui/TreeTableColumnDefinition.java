@@ -16,6 +16,8 @@ public class TreeTableColumnDefinition<R, V> {
 
     private TableCellRenderer tableCellRenderer;
 
+    private boolean visible = true;
+
     public TreeTableColumnDefinition(String header, int size, Function<R, V> value) {
         this.header = header;
         this.size = size;
@@ -41,5 +43,13 @@ public class TreeTableColumnDefinition<R, V> {
 
     public TableCellRenderer getTableCellRenderer() {
         return tableCellRenderer;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

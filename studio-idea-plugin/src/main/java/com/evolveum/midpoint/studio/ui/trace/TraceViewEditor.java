@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.studio.impl.trace.OpNode;
+import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceParser;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -53,6 +54,10 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
         MessageBus bus = project.getMessageBus();
         panel = new TraceViewPanel(bus, data);
+    }
+
+    public void applyOptions(Options options) {
+        panel.applyOptions(options);
     }
 
     @NotNull

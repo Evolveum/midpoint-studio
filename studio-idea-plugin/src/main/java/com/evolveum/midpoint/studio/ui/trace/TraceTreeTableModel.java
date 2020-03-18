@@ -7,6 +7,7 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -15,17 +16,24 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
 
     private List<TreeTableColumnDefinition> columns;
 
+    private List<TreeTableColumnDefinition> visibleColumns;
+
     public TraceTreeTableModel(List<TreeTableColumnDefinition> columns, List<OpNode> nodes) {
         if (columns == null) {
             columns = new ArrayList<>();
         }
         this.columns = columns;
+        refreshVisibleColumns();
 
         List<DefaultMutableTreeTableNode> list = init(nodes);
 
         DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
         list.forEach(i -> root.add(i));
         setRoot(root);
+    }
+
+    public void refreshVisibleColumns() {
+        this.visibleColumns = columns.stream().filter(d -> d.isVisible()).collect(Collectors.toList());
     }
 
     private List<DefaultMutableTreeTableNode> init(List<OpNode> nodes) {
@@ -57,12 +65,12 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
 
     @Override
     public int getColumnCount() {
-        return columns.size();
+        return visibleColumns.size();
     }
 
     @Override
     public String getColumnName(int column) {
-        return columns.get(column).getHeader();
+        return visibleColumns.get(column).getHeader();
     }
 
     @Override
@@ -72,6 +80,6 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
             return null;
         }
 
-        return columns.get(column).getValue().apply(d.getUserObject());
+        return visibleColumns.get(column).getValue().apply(d.getUserObject());
     }
 }

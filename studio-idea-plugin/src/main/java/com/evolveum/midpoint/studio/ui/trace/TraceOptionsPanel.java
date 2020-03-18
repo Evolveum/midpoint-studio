@@ -9,6 +9,8 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -27,13 +29,17 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
     private static final Logger LOG = Logger.getInstance(TraceOptionsPanel.class);
 
     private Map<OpType, JCheckBox> eventChecks = new HashMap<>();
+
     private Map<PerformanceCategory, JCheckBox> categoriesChecks = new HashMap<>();
 
     private ViewTypeComboboxAction viewType;
+
     private AnAction apply;
 
     private JCheckBox alsoParents;
+
     private JCheckBox perfColumns;
+
     private JCheckBox readWriteColumns;
 
     public TraceOptionsPanel() {
@@ -89,7 +95,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
             categoriesChecks.put(type, check);
         }
 
-        root.add(new HeaderDecorator("Categories to show", categories), BorderLayout.SOUTH);
+        root.add(new HeaderDecorator("Categories to show", categories), BorderLayout.CENTER);
 
         JPanel other = createBoxLayoutPanel();
 
@@ -108,6 +114,8 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         root.add(new HeaderDecorator("Other to show", other), BorderLayout.SOUTH);
 
         add(new JBScrollPane(root));
+
+        viewTypeChanged(viewType.getOpView());
     }
 
     private JPanel createBoxLayoutPanel() {
@@ -135,10 +143,16 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
     private void applyPerformed(AnActionEvent evt) {
         Options options = createOptions();
 
-//        todo
-//        for (TracerViewerEditor editor : getEditors()) {
-//            editor.applyOptions(options);
-//        }
+        FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
+
+        for (FileEditor editor : fem.getAllEditors()) {
+            if (!(editor instanceof TraceViewEditor)) {
+                continue;
+            }
+
+            TraceViewEditor traceViewEditor = (TraceViewEditor) editor;
+            traceViewEditor.applyOptions(options);
+        }
     }
 
     private Options createOptions() {
@@ -156,6 +170,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         rv.setShowAlsoParents(alsoParents.isSelected());
         rv.setShowPerformanceColumns(perfColumns.isSelected());
         rv.setShowReadWriteColumns(readWriteColumns.isSelected());
+
         return rv;
     }
 
