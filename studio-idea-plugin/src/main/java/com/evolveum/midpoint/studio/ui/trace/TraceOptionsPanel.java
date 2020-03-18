@@ -2,11 +2,13 @@ package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.studio.impl.trace.OpType;
 import com.evolveum.midpoint.studio.impl.trace.OpViewType;
+import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -14,14 +16,25 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class TraceOptionsPanel extends BorderLayoutPanel {
 
+    private static final Logger LOG = Logger.getInstance(TraceOptionsPanel.class);
+
+    private Map<OpType, JCheckBox> eventChecks = new HashMap<>();
+    private Map<PerformanceCategory, JCheckBox> categoriesChecks = new HashMap<>();
+
     private ViewTypeComboboxAction viewType;
-    private CheckboxAction todo;
+    private AnAction apply;
+
+    private JCheckBox alsoParents;
+    private JCheckBox perfColumns;
+    private JCheckBox readWriteColumns;
 
     public TraceOptionsPanel() {
         initLayout();
@@ -29,39 +42,121 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
     private void initLayout() {
         DefaultActionGroup group = new DefaultActionGroup();
-        viewType = new ViewTypeComboboxAction();
+        viewType = new ViewTypeComboboxAction() {
+
+            @Override
+            public void setOpView(OpViewType opView) {
+                super.setOpView(opView);
+
+                viewTypeChanged(opView);
+            }
+        };
         group.add(viewType);
+
+        apply = new AnAction("Apply", "Apply options changes", AllIcons.Actions.Commit) {
+
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                applyPerformed(e);
+            }
+        };
+        group.add(apply);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceOptionsToolbar", group, true);
         add(toolbar.getComponent(), BorderLayout.NORTH);
 
         JPanel root = new BorderLayoutPanel();
 
-        JPanel events = new JPanel();
-        events.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        events.setLayout(new BoxLayout(events, BoxLayout.Y_AXIS));
+        JPanel events = createBoxLayoutPanel();
 
         for (OpType type : OpType.values()) {
             JCheckBox check = new JCheckBox();
             check.setText(type.getLabel());
             events.add(check);
+
+            eventChecks.put(type, check);
         }
 
         root.add(new HeaderDecorator("Events to show", events), BorderLayout.NORTH);
 
-        JPanel categories = new JPanel();
-        categories.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        categories.setLayout(new BoxLayout(categories, BoxLayout.Y_AXIS));
+        JPanel categories = createBoxLayoutPanel();
 
         for (PerformanceCategory type : PerformanceCategory.values()) {
             JCheckBox check = new JCheckBox();
             check.setText(type.getLabel());
             categories.add(check);
+
+            categoriesChecks.put(type, check);
         }
 
         root.add(new HeaderDecorator("Categories to show", categories), BorderLayout.SOUTH);
 
+        JPanel other = createBoxLayoutPanel();
+
+        alsoParents = new JCheckBox();
+        alsoParents.setText("Show also parents");
+        other.add(alsoParents);
+
+        perfColumns = new JCheckBox();
+        perfColumns.setText("Show performance columns");
+        other.add(perfColumns);
+
+        readWriteColumns = new JCheckBox();
+        readWriteColumns.setText("Show read/write ops columns");
+        other.add(readWriteColumns);
+
+        root.add(new HeaderDecorator("Other to show", other), BorderLayout.SOUTH);
+
         add(new JBScrollPane(root));
+    }
+
+    private JPanel createBoxLayoutPanel() {
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        return panel;
+    }
+
+    private void viewTypeChanged(OpViewType opViewType) {
+        LOG.debug("View type changed to: ", opViewType);
+
+        eventChecks.forEach((type, button) ->
+                button.setSelected(opViewType.getTypes() == null || opViewType.getTypes().contains(type)));
+        categoriesChecks.forEach((category, button) ->
+                button.setSelected(opViewType.getCategories() == null || opViewType.getCategories().contains(category)));
+        alsoParents.setSelected(opViewType.isShowAlsoParents());
+        perfColumns.setSelected(opViewType.isShowPerformanceColumns());
+        readWriteColumns.setSelected(opViewType.isShowReadWriteColumns());
+
+        invalidate();
+    }
+
+    private void applyPerformed(AnActionEvent evt) {
+        Options options = createOptions();
+
+//        todo
+//        for (TracerViewerEditor editor : getEditors()) {
+//            editor.applyOptions(options);
+//        }
+    }
+
+    private Options createOptions() {
+        Options rv = new Options();
+        for (Map.Entry<OpType, JCheckBox> e : eventChecks.entrySet()) {
+            if (e.getValue().isSelected()) {
+                rv.getTypesToShow().add(e.getKey());
+            }
+        }
+        for (Map.Entry<PerformanceCategory, JCheckBox> e : categoriesChecks.entrySet()) {
+            if (e.getValue().isSelected()) {
+                rv.getCategoriesToShow().add(e.getKey());
+            }
+        }
+        rv.setShowAlsoParents(alsoParents.isSelected());
+        rv.setShowPerformanceColumns(perfColumns.isSelected());
+        rv.setShowReadWriteColumns(readWriteColumns.isSelected());
+        return rv;
     }
 
     private static class ViewTypeComboboxAction extends ComboBoxAction {
@@ -72,14 +167,6 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         @Override
         protected DefaultActionGroup createPopupActionGroup(JComponent button) {
             DefaultActionGroup group = new DefaultActionGroup();
-            group.add(new ViewTypeAction(null) {
-
-                @Override
-                public void actionPerformed(@NotNull AnActionEvent e) {
-                    ViewTypeComboboxAction.this.setOpView(this.getOpView());
-                }
-            });
-
             for (OpViewType o : OpViewType.values()) {
                 group.add(new ViewTypeAction(o) {
 
