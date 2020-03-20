@@ -123,7 +123,8 @@ public class TraceParser {
 				}
 			}
 		} else {
-			object = prismContext.parserFor(stream).xml().parseRealValue();
+			ParsingContext parsingContext = prismContext.createParsingContextForCompatibilityMode();
+			object = prismContext.parserFor(stream).xml().context(parsingContext).parseRealValue();
 		}
 		stream.close();
 		if (object instanceof TracingOutputType) {
