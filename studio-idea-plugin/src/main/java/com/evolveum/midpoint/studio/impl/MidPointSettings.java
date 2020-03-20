@@ -16,6 +16,8 @@ public class MidPointSettings implements Serializable {
 
     private String generatedFilePattern;
 
+    private boolean printRestCommunicationToConsole = false;
+
     public MidPointSettings() {
     }
 
@@ -47,6 +49,14 @@ public class MidPointSettings implements Serializable {
         return generatedFilePattern;
     }
 
+    public boolean isPrintRestCommunicationToConsole() {
+        return printRestCommunicationToConsole;
+    }
+
+    public void setPrintRestCommunicationToConsole(boolean printRestCommunicationToConsole) {
+        this.printRestCommunicationToConsole = printRestCommunicationToConsole;
+    }
+
     public void setGeneratedFilePattern(String generatedFilePattern) {
         this.generatedFilePattern = generatedFilePattern;
     }
@@ -58,6 +68,7 @@ public class MidPointSettings implements Serializable {
 
         MidPointSettings that = (MidPointSettings) o;
 
+        if (printRestCommunicationToConsole != that.printRestCommunicationToConsole) return false;
         if (projectId != null ? !projectId.equals(that.projectId) : that.projectId != null) return false;
         if (midPointVersion != null ? !midPointVersion.equals(that.midPointVersion) : that.midPointVersion != null)
             return false;
@@ -72,6 +83,7 @@ public class MidPointSettings implements Serializable {
         result = 31 * result + (midPointVersion != null ? midPointVersion.hashCode() : 0);
         result = 31 * result + (dowloadFilePattern != null ? dowloadFilePattern.hashCode() : 0);
         result = 31 * result + (generatedFilePattern != null ? generatedFilePattern.hashCode() : 0);
+        result = 31 * result + (printRestCommunicationToConsole ? 1 : 0);
         return result;
     }
 

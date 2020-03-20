@@ -74,7 +74,7 @@ public class MidPointManager extends ManagerBase<MidPointSettings> implements Pr
         sb.append(DATE_FORMAT.format(new Date()));
         sb.append(' ');
         sb.append(clazz.getSimpleName());
-        sb.append(' ');
+        sb.append(":\t");
         if (message != null) {
             sb.append(message);
         }
