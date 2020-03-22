@@ -63,9 +63,9 @@ public class TracePerformanceInformationPanel extends BorderLayoutPanel {
         List<TreeTableColumnDefinition<Map.Entry<PerformanceCategory, PerformanceCategoryInfo>, ?>> categoryColumns = new ArrayList<>();
         categoryColumns.add(new TreeTableColumnDefinition<>("Category", 200, o -> o.getKey().getLabel()));
         categoryColumns.add(new TreeTableColumnDefinition<>("Total #", 50, o -> o.getValue().getTotalCount()));
-        categoryColumns.add(new TreeTableColumnDefinition<>("Total time", 70, o -> o.getValue().getTotalTime()));
+        categoryColumns.add(new TreeTableColumnDefinition<>("Total time", 70, o -> formatTime(o.getValue().getTotalTime())));
         categoryColumns.add(new TreeTableColumnDefinition<>("Own #", 50, o -> o.getValue().getOwnCount()));
-        categoryColumns.add(new TreeTableColumnDefinition<>("Own time", 70, o -> o.getValue().getOwnTime()));
+        categoryColumns.add(new TreeTableColumnDefinition<>("Own time", 70, o -> formatTime(o.getValue().getOwnTime())));
 
         this.category = new JBTable(new ListTableModel(categoryColumns, new ArrayList<>()));
         split.setFirstComponent(new JBScrollPane(category));
@@ -73,9 +73,9 @@ public class TracePerformanceInformationPanel extends BorderLayoutPanel {
         List<TreeTableColumnDefinition<SingleOperationPerformanceInformationType, ?>> operationColumns = new ArrayList<>();
         operationColumns.add(new TreeTableColumnDefinition<>("Operation", 500, o -> o.getName()));
         operationColumns.add(new TreeTableColumnDefinition<>("Count", 50, o -> o.getInvocationCount()));
-        operationColumns.add(new TreeTableColumnDefinition<>("Total time", 100, o -> o.getTotalTime()));
-        operationColumns.add(new TreeTableColumnDefinition<>("Min", 50, o -> o.getMinTime()));
-        operationColumns.add(new TreeTableColumnDefinition<>("Max", 50, o -> o.getMaxTime()));
+        operationColumns.add(new TreeTableColumnDefinition<>("Total time", 100, o -> formatTime(o.getTotalTime())));
+        operationColumns.add(new TreeTableColumnDefinition<>("Min", 50, o -> formatTime(o.getMinTime())));
+        operationColumns.add(new TreeTableColumnDefinition<>("Max", 50, o -> formatTime(o.getMaxTime())));
         operationColumns.add(new TreeTableColumnDefinition<>("Avg", 50, o -> formatTime(o.getTotalTime() / o.getInvocationCount())));
 
         this.operation = new JBTable(new ListTableModel<>(operationColumns, new ArrayList<>()));

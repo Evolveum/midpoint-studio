@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.util.ExtendedListSelectionModel;
+import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;

@@ -7,6 +7,7 @@ import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.MidPointException;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
@@ -287,12 +288,13 @@ public class MidPointUtils {
     }
 
     public static JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition> columns) {
-        JXTreeTable table = new JXTreeTable(model);
+        JXTreeTable table = new JXTreeTable();
         table.setRootVisible(false);
         table.setEditable(false);
         table.setDragEnabled(false);
         table.setHorizontalScrollEnabled(true);
-        table.setSelectionModel(new ExtendedListSelectionModel());
+        table.setSelectionModel(new ExtendedListSelectionModel(table.getSelectionModel()));        // todo fix
+        table.setTreeTableModel(model);
         table.setLeafIcon(null);
         table.setClosedIcon(null);
         table.setOpenIcon(null);
