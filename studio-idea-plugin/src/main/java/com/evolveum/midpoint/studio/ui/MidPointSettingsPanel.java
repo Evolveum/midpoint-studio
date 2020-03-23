@@ -15,6 +15,7 @@ public class MidPointSettingsPanel extends JPanel {
     private JTextField generatedPattern;
 
     private JPanel root;
+    private JCheckBox logRestCommunication;
 
     private MidPointSettings settings;
 
@@ -31,12 +32,14 @@ public class MidPointSettingsPanel extends JPanel {
     private void initInputFields() {
         downloadPattern.setText(settings.getDowloadFilePattern());
         generatedPattern.setText(settings.getGeneratedFilePattern());
+        logRestCommunication.setSelected(settings.isPrintRestCommunicationToConsole());
     }
 
     public MidPointSettings getSettings() {
         MidPointSettings settings = MidPointSettings.createDefaultSettings();
         settings.setDowloadFilePattern(downloadPattern.getText());
         settings.setGeneratedFilePattern(generatedPattern.getText());
+        settings.setPrintRestCommunicationToConsole(logRestCommunication.isSelected());
 
         return settings;
     }
