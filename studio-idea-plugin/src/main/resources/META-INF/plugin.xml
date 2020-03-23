@@ -69,8 +69,10 @@
             <implementation-class>com.evolveum.midpoint.studio.impl.trace.TraceManager</implementation-class>
         </component>
     </project-components>
-
+    
     <extensions defaultExtensionNs="com.intellij">
+
+        <projectStructureConfigurableAdder implementation="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurableContributor" />
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
