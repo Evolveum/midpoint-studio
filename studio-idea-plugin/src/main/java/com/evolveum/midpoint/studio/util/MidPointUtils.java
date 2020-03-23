@@ -38,6 +38,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
@@ -374,5 +375,22 @@ public class MidPointUtils {
         } else {
             return String.format(Locale.US, "%.1f%%", value * 100);
         }
+    }
+
+    public static XmlTag[] findSubTags(XmlTag tag, QName name) {
+        if (tag == null) {
+            return new XmlTag[0];
+        }
+
+        return tag.findSubTags(name.getLocalPart(), name.getNamespaceURI());
+    }
+
+    public static XmlTag findSubTag(XmlTag tag, QName name) {
+        XmlTag[] tags = findSubTags(tag, name);
+        if (tags != null && tags.length > 0) {
+            return tags[0];
+        }
+
+        return null;
     }
 }
