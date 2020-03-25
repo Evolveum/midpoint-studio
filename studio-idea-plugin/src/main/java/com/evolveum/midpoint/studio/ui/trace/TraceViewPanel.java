@@ -53,7 +53,7 @@ public class TraceViewPanel extends JPanel {
 
     private List<TreeTableColumnDefinition> readWriteOpColumns = new ArrayList<>();
 
-    public TraceViewPanel(Project project, List<OpNode> data) {
+    public TraceViewPanel(Project project, List<OpNode> data, long startTimestamp) {
         super(new BorderLayout());
 
         this.data = data;
@@ -61,30 +61,30 @@ public class TraceViewPanel extends JPanel {
         MessageBus bus = project.getMessageBus();
         this.notifier = bus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC);
 
-        initLayout(bus);
+        initLayout(bus, startTimestamp);
 
         TraceManager tm = TraceManager.getInstance(project);
         applyOptions(tm.getOptions());
     }
 
-    private void initLayout(MessageBus bus) {
+    private void initLayout(MessageBus bus, long startTimestamp) {
         JBSplitter horizontal = new OnePixelSplitter(true);
         add(horizontal, BorderLayout.CENTER);
 
-        JComponent main = initMain(data);
+        JComponent main = initMain(data, startTimestamp);
         horizontal.setFirstComponent(main);
 
         JBSplitter horizontal2 = new OnePixelSplitter(true);
         horizontal.setSecondComponent(horizontal2);
 
-        JComponent traceStructure = initTraceStructure(data);
+        JComponent traceStructure = initTraceStructure(data, startTimestamp);
         horizontal2.setFirstComponent(traceStructure);
 
         JComponent tracePerformance = initTracePerformance(bus);
         horizontal2.setSecondComponent(tracePerformance);
     }
 
-    private JComponent initMain(List<OpNode> data) {
+    private JComponent initMain(List<OpNode> data, long start) {
         List<TreeTableColumnDefinition> columns = new ArrayList<>();
 
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Operation", 500, o -> o.getOperationNameFormatted()));
@@ -94,7 +94,6 @@ public class TraceViewPanel extends JPanel {
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Status", 100, o -> o.getResult().getStatus().toString()));
         columns.add(new TreeTableColumnDefinition<OpNode, String>("W", 20, o -> o.getImportanceSymbol()));
 
-        long start = System.currentTimeMillis();
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Start", 60, o -> Long.toString(o.getStart(start))));
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Time", 80, o -> formatTime(o.getResult().getMicroseconds())));
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Type", 100, o -> o.getType().toString()));
@@ -128,7 +127,7 @@ public class TraceViewPanel extends JPanel {
         notifier.selectedTraceNodeChange(opNode);
     }
 
-    private JComponent initTraceStructure(List<OpNode> data) {
+    private JComponent initTraceStructure(List<OpNode> data, long start) {
         JPanel panel = new BorderLayoutPanel();
 
         traceStructureLabel = new JLabel();
@@ -146,7 +145,6 @@ public class TraceViewPanel extends JPanel {
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Status", 100, o -> o.getResult().getStatus().toString()));
         columns.add(new TreeTableColumnDefinition<OpNode, String>("W", 20, o -> o.getImportanceSymbol()));
 
-        long start = System.currentTimeMillis();    // todo fix
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Start", 60, o -> Long.toString(o.getStart(start))));
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Time", 80, o -> formatTime(o.getResult().getMicroseconds())));
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Type", 100, o -> o.getType().toString()));

@@ -45,11 +45,14 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
     private void initEditor() {
         List<OpNode> data = new ArrayList<>();
+        long start = 0;
 
         try (InputStream is = file.getInputStream()) {
             boolean isZip = file.getExtension().equalsIgnoreCase("zip");
 
-            data = new TraceParser().parse(is, isZip);
+            TraceParser parser = new TraceParser();
+            data = parser.parse(is, isZip);
+            start = parser.getStartTimestamp();
         } catch (Exception ex) {
             MidPointManager mm = MidPointManager.getInstance(project);
             mm.printToConsole(TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
@@ -57,7 +60,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't load file", ex);
         }
 
-        panel = new TraceViewPanel(project, data);
+        panel = new TraceViewPanel(project, data, start);
     }
 
     public void applyOptions(Options options) {

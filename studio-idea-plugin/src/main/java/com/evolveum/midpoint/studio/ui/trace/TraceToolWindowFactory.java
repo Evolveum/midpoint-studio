@@ -7,7 +7,6 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
-import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -29,11 +28,25 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
         Content logsContent = buildLogs(project);
         contentManager.addContent(logsContent);
 
-//        Content trace
+        Content traceEntryDetails = buildTraceEntryDetails(project);
+        contentManager.addContent(traceEntryDetails);
+
+        Content traceEntryDetailsRaw = buildTraceEntryDetailsRaw(project);
+        contentManager.addContent(traceEntryDetailsRaw);
+    }
+
+    private Content buildTraceEntryDetails(Project project) {
+        TraceEntryDetailsPanel panel = new TraceEntryDetailsPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entry Details", false);
+    }
+
+    private Content buildTraceEntryDetailsRaw(Project project) {
+        TraceEntryDetailsRawPanel panel = new TraceEntryDetailsRawPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entry Details Raw", false);
     }
 
     private Content buildVariables(Project project) {
-        TraceVariablesPanel variables = new TraceVariablesPanel(project.getMessageBus());
+        TraceTreePanel variables = new TraceTreePanel(project.getMessageBus());
         return ContentFactory.SERVICE.getInstance().createContent(variables, "Trace Tree", false);
     }
 

@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TraceVariablesPanel extends BorderLayoutPanel {
+public class TraceTreePanel extends BorderLayoutPanel {
 
     private JXTreeTable variables;
 
@@ -46,7 +46,7 @@ public class TraceVariablesPanel extends BorderLayoutPanel {
 
     private JBTextArea variablesValue;
 
-    public TraceVariablesPanel(MessageBus bus) {
+    public TraceTreePanel(MessageBus bus) {
         initLayout();
 
         bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
