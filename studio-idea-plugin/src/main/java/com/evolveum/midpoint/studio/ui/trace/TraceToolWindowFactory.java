@@ -28,6 +28,8 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
 
         Content logsContent = buildLogs(project);
         contentManager.addContent(logsContent);
+
+//        Content trace
     }
 
     private Content buildVariables(Project project) {

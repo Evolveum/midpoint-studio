@@ -15,6 +15,7 @@ import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
@@ -39,6 +40,8 @@ public class TraceViewPanel extends JPanel {
     private static final Logger LOG = Logger.getInstance(TraceViewPanel.class);
 
     private JXTreeTable main;
+
+    private JLabel traceStructureLabel;
 
     private JXTreeTable traceStructure;
 
@@ -79,38 +82,6 @@ public class TraceViewPanel extends JPanel {
 
         JComponent tracePerformance = initTracePerformance(bus);
         horizontal2.setSecondComponent(tracePerformance);
-
-//        JXTreeTable t = new JXTreeTable();
-//        t.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//        DefaultMutableTreeTableNode n1 = new DefaultMutableTreeTableNode("a");
-//        n1.add(new DefaultMutableTreeTableNode("b"));
-//        n1.add(new DefaultMutableTreeTableNode("c"));
-//        t.setTreeTableModel(new DefaultTreeTableModel(n1) {
-//
-//            @Override
-//            public int getColumnCount() {
-//                return 3;
-//            }
-//
-//            @Override
-//            public String getColumnName(int column) {
-//                return Integer.toString(column);
-//            }
-//
-//            @Override
-//            public Object getValueAt(Object node, int column) {
-//                return node.toString() + column;
-//            }
-//        });
-//        t.addTreeSelectionListener(new TreeSelectionListener() {
-//
-//            @Override
-//            public void valueChanged(TreeSelectionEvent e) {
-//                System.out.println("");
-//            }
-//        });
-////        add(t, BorderLayout.SOUTH);
-//        horizontal.setSecondComponent(new JBScrollPane(t));
     }
 
     private JComponent initMain(List<OpNode> data) {
@@ -123,7 +94,7 @@ public class TraceViewPanel extends JPanel {
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Status", 100, o -> o.getResult().getStatus().toString()));
         columns.add(new TreeTableColumnDefinition<OpNode, String>("W", 20, o -> o.getImportanceSymbol()));
 
-        long start = System.currentTimeMillis();    // todo fix
+        long start = System.currentTimeMillis();
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Start", 60, o -> Long.toString(o.getStart(start))));
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Time", 80, o -> formatTime(o.getResult().getMicroseconds())));
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Type", 100, o -> o.getType().toString()));
@@ -158,6 +129,14 @@ public class TraceViewPanel extends JPanel {
     }
 
     private JComponent initTraceStructure(List<OpNode> data) {
+        JPanel panel = new BorderLayoutPanel();
+
+        traceStructureLabel = new JLabel();
+        traceStructureLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel.add(traceStructureLabel, BorderLayout.NORTH);
+
+        refreshFileLabel(null);
+
         List<TreeTableColumnDefinition> columns = new ArrayList<>();
 
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Operation", 500, o -> o.getOperationNameFormatted()));
@@ -177,13 +156,18 @@ public class TraceViewPanel extends JPanel {
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Log", 50, o -> Integer.toString(o.getLogEntriesCount())));
 
         traceStructure = MidPointUtils.createTable(new TraceStructureTreeTableModel(columns, data), columns);
+        panel.add(new JBScrollPane(traceStructure), BorderLayout.CENTER);
 
-        return new HeaderDecorator("Trace Structure", new JBScrollPane(traceStructure));
+        return new HeaderDecorator("Trace Structure", panel);
     }
 
     private JComponent initTracePerformance(MessageBus bus) {
         TracePerformanceInformationPanel perfInformation = new TracePerformanceInformationPanel(bus);
         return new HeaderDecorator("Trace Performance Information", new JBScrollPane(perfInformation));
+    }
+
+    private void refreshFileLabel(String traceFile) {
+        traceStructureLabel.setText("Trace file: " + (traceFile != null ? traceFile : "(undefined)"));
     }
 
     private void addPerformanceColumn(List<TreeTableColumnDefinition> columns, PerformanceCategory category, boolean hideable, boolean readWrite) {

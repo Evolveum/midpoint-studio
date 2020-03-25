@@ -26,6 +26,7 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,8 +39,11 @@ import java.util.Map;
 public class TraceVariablesPanel extends BorderLayoutPanel {
 
     private JXTreeTable variables;
+
     private FormatComboboxAction variablesDisplayAs;
+
     private CheckboxAction variablesWrapText;
+
     private JBTextArea variablesValue;
 
     public TraceVariablesPanel(MessageBus bus) {
@@ -76,7 +80,14 @@ public class TraceVariablesPanel extends BorderLayoutPanel {
         DefaultActionGroup group = new DefaultActionGroup();
         variablesDisplayAs = new FormatComboboxAction();
         group.add(variablesDisplayAs);
-        variablesWrapText = new SimpleCheckboxAction("Wrap text");
+        variablesWrapText = new SimpleCheckboxAction("Wrap text") {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                variablesValue.setLineWrap(isSelected());
+                variablesValue.invalidate();
+            }
+        };
         group.add(variablesWrapText);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceViewVariablesToolbar", group, true);
