@@ -9,6 +9,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,6 +75,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         JPanel root = new BorderLayoutPanel();
 
         JPanel events = createBoxLayoutPanel();
+        events.setBorder(JBUI.Borders.empty(5));
 
         for (OpType type : OpType.values()) {
             JCheckBox check = new JCheckBox();
@@ -86,6 +88,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         root.add(new HeaderDecorator("Events to show", events), BorderLayout.NORTH);
 
         JPanel categories = createBoxLayoutPanel();
+        categories.setBorder(JBUI.Borders.empty(5));
 
         for (PerformanceCategory type : PerformanceCategory.values()) {
             JCheckBox check = new JCheckBox();
@@ -98,6 +101,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         root.add(new HeaderDecorator("Categories to show", categories), BorderLayout.CENTER);
 
         JPanel other = createBoxLayoutPanel();
+        other.setBorder(JBUI.Borders.empty(5));
 
         alsoParents = new JCheckBox();
         alsoParents.setText("Show also parents");
