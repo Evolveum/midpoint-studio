@@ -9,23 +9,25 @@ import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrismValueNode extends Node {
+public class PrismValueNode extends Node<PrismValue> {
 
-    private final String label;
-    private final PrismValue value;
+    public PrismValueNode(String label, PrismValue prismValue) throws SchemaException {
+        super(prismValue);
 
-    public PrismValueNode(String label, PrismValue value) throws SchemaException {
-        this.label = label;
-        this.value = value;
+        setLabel(label);
+        setValue(Util.prettyPrint(prismValue));
 
         createChildren();
     }
 
     private void createChildren() throws SchemaException {
-        if (!(value instanceof PrismContainerValue)) {
+        PrismValue prismValue = getUserObject();
+
+        if (!(prismValue instanceof PrismContainerValue)) {
             return;
         }
-        PrismContainerValue<?> pcv = (PrismContainerValue<?>) value;
+
+        PrismContainerValue<?> pcv = (PrismContainerValue<?>) prismValue;
         List<ItemName> itemNames = getItemNames();
         for (ItemName itemName : itemNames) {
             Item<?, ?> item = pcv.findItem(itemName);
@@ -36,8 +38,10 @@ public class PrismValueNode extends Node {
     }
 
     private List<ItemName> getItemNames() throws SchemaException {
+        PrismValue prismValue = getUserObject();
+
         List<ItemName> rv = new ArrayList<>();
-        PrismContainerValue<?> pcv = (PrismContainerValue<?>) value;
+        PrismContainerValue<?> pcv = (PrismContainerValue<?>) prismValue;
         ComplexTypeDefinition ctd = pcv.getComplexTypeDefinition();
         if (ctd != null) {
             @SuppressWarnings("rawtypes")
@@ -53,16 +57,6 @@ public class PrismValueNode extends Node {
         return rv;
     }
 
-    @Override
-    public String getLabel() {
-        return label;
-    }
-
-    @Override
-    public String getValue() {
-        return Util.prettyPrint(value);
-    }
-
     public static PrismValueNode create(String string, PrismValue value, Node parent) throws SchemaException {
         PrismValueNode node = new PrismValueNode(string, value);
         if (parent != null) {
@@ -70,10 +64,5 @@ public class PrismValueNode extends Node {
         }
 
         return node;
-    }
-
-    @Override
-    public Object getObject() {
-        return value;
     }
 }

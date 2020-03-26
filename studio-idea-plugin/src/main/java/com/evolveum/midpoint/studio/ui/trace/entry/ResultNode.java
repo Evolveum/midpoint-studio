@@ -9,24 +9,15 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ParamsType;
 
 import java.util.Locale;
 
-public class ResultNode extends Node {
-
-    private final OpNode opNode;
+public class ResultNode extends Node<OpNode> {
 
     public ResultNode(OpNode opNode) {
-        this.opNode = opNode;
+        super(opNode);
+
+        setLabel("Operation result");
+        setValue(opNode.getOperationNameFormatted() + " (" + opNode.getResult().getStatus() + ")");
 
         createChildren();
-    }
-
-    @Override
-    public String getLabel() {
-        return "Operation result";
-    }
-
-    @Override
-    public String getValue() {
-        return opNode.getOperationNameFormatted() + " (" + opNode.getResult().getStatus() + ")";
     }
 
     @Override
@@ -40,6 +31,8 @@ public class ResultNode extends Node {
     }
 
     private void createChildren() {
+        OpNode opNode = getUserObject();
+
         OperationResultType result = opNode.getResult();
         TextNode.create("Operation", opNode.getOperationNameFormatted(), this);
         TextNode.create("Operation raw", result.getOperation(), this);
@@ -79,10 +72,5 @@ public class ResultNode extends Node {
 
     private String toString(Object o) {
         return o != null ? o.toString() : "";
-    }
-
-    @Override
-    public Object getObject() {
-        return opNode;
     }
 }

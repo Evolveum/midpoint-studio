@@ -4,7 +4,23 @@ import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
 
 import java.util.Objects;
 
-public abstract class Node extends AbstractMutableTreeTableNode {
+public abstract class Node<T> extends AbstractMutableTreeTableNode {
+
+    private String label;
+
+    private String value;
+
+    public Node() {
+    }
+
+    public Node(Object userObject) {
+        super(userObject);
+    }
+
+    @Override
+    public T getUserObject() {
+        return (T) super.getUserObject();
+    }
 
     @Override
     public Object getValueAt(int i) {
@@ -23,11 +39,21 @@ public abstract class Node extends AbstractMutableTreeTableNode {
         return 2;
     }
 
-    public abstract String getLabel();
+    public String getLabel() {
+        return label;
+    }
 
-    public abstract String getValue();
+    protected void setLabel(String label) {
+        this.label = label;
+    }
 
-    public abstract Object getObject();
+    public String getValue() {
+        return value;
+    }
+
+    protected void setValue(String value) {
+        this.value = value;
+    }
 
     @Override
     public int hashCode() {

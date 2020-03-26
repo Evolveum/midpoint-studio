@@ -4,22 +4,13 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ModelExecuteDeltaTraceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceType;
 
-public class TraceNode<T extends TraceType> extends Node {
-
-    protected final T trace;
+public class TraceNode<T extends TraceType> extends Node<T> {
 
     public TraceNode(T trace) {
-        this.trace = trace;
-    }
+        super(trace);
 
-    @Override
-    public String getLabel() {
-        return trace.getClass().getSimpleName();
-    }
-
-    @Override
-    public String getValue() {
-        return "...";
+        setLabel(trace.getClass().getSimpleName());
+        setValue("...");
     }
 
     @Override
@@ -48,10 +39,4 @@ public class TraceNode<T extends TraceType> extends Node {
 
         return node;
     }
-
-    @Override
-    public Object getObject() {
-        return trace.asPrismContainerValue();
-    }
-
 }

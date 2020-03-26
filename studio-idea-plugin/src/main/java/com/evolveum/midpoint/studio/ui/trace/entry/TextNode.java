@@ -1,29 +1,12 @@
 package com.evolveum.midpoint.studio.ui.trace.entry;
 
-public class TextNode extends Node {
-
-    private String label;
-
-    private String value;
+public class TextNode extends Node<String> {
 
     public TextNode(String label, String value) {
-        this.label = label;
-        this.value = value;
-    }
+        super(value);
 
-    @Override
-    public String getLabel() {
-        return label;
-    }
-
-    @Override
-    public String getValue() {
-        return value;
-    }
-
-    @Override
-    public Object getObject() {
-        return value;
+        setLabel(label);
+        setValue(value);
     }
 
     public static TextNode create(String label, Object value, Node parent) {
