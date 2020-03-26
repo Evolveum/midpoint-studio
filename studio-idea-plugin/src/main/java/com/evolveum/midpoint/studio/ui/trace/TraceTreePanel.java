@@ -97,7 +97,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
         }
 
         Format format = variablesDisplayAs.getFormat();
-        String text = format.format(obj);
+        String text = format.format(obj.getObject());
 
         variablesValue.setText(text);
     }
@@ -136,7 +136,10 @@ public class TraceTreePanel extends BorderLayoutPanel {
         TreePath path = e.getNewLeadSelectionPath();
         TreeTableNode node = (TreeTableNode) path.getLastPathComponent();
 
-        Node obj = node != null ? (Node) node.getUserObject() : null;
+        Node obj = null;
+        if (node instanceof Node) {
+            obj = (Node) node;
+        }
 
         applySelection(obj);
     }

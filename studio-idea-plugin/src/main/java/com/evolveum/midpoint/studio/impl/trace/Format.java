@@ -15,16 +15,22 @@ import java.util.function.Function;
 public enum Format {
 
     AUTO("Auto", obj -> formatAutomatically(simplify(obj))),
+
     DEBUG_DUMP("Debug dump", obj -> formatDebugDumpable(simplify(obj))),
+
     XML("XML", obj -> formatValue(simplify(obj), PrismContext.LANG_XML)),
+
     JSON("JSON", obj -> formatValue(simplify(obj), PrismContext.LANG_JSON)),
+
     YAML("YAML", obj -> formatValue(simplify(obj), PrismContext.LANG_YAML)),
+
     TO_STRING("toString", obj -> String.valueOf(simplify(obj)));
 
     private final String displayName;
+
     private final Function<Object, String> formatter;
 
-    private Format(String displayName, Function<Object, String> formatter) {
+    Format(String displayName, Function<Object, String> formatter) {
         this.displayName = displayName;
         this.formatter = formatter;
     }

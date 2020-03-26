@@ -55,6 +55,10 @@ public abstract class Node<T> extends AbstractMutableTreeTableNode {
         this.value = value;
     }
 
+    public Object getObject() {
+        return getUserObject();
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(getLabel());

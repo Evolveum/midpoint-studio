@@ -24,6 +24,11 @@ public class TraceNode<T extends TraceType> extends Node<T> {
         // TODO
     }
 
+    @Override
+    public Object getObject() {
+        return getUserObject().asPrismContainerValue();
+    }
+
     public static Node create(TraceType trace, TextNode parent) throws SchemaException {
         Node node;
         if (trace instanceof ModelExecuteDeltaTraceType) {
