@@ -9,11 +9,7 @@ import java.util.List;
 
 public abstract class PrismNode extends AbstractMutableTreeTableNode {
 
-    protected PrismNode parent;        // due to hack in PrismItemNode
-
     public PrismNode(PrismNode parent) {
-        this.parent = parent;
-
         if (parent != null) {
             parent.add(this);
         }

@@ -46,7 +46,7 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     private Content buildVariables(Project project) {
-        TraceTreePanel variables = new TraceTreePanel(project.getMessageBus());
+        TraceTreePanel variables = new TraceTreePanel(project);
         return ContentFactory.SERVICE.getInstance().createContent(variables, "Trace Tree", false);
     }
 
