@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.trace.Format;
@@ -74,7 +75,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
     }
 
     private void nodeChange(OpNode node) {
-        Node result = new ResultNode(node   );
+        Node result = new ResultNode(node);
 
         Node trace;
         try {
@@ -132,6 +133,21 @@ public class TraceTreePanel extends BorderLayoutPanel {
         return TraceNode.create(trace, parent);
     }
 
+    private void variableDisplayAsChanged(Format format) {
+        ExtendedListSelectionModel ext = (ExtendedListSelectionModel) variables.getSelectionModel();
+        int[] indices = ext.getSelectedIndices();
+        if (indices == null || indices.length == 0) {
+            applySelection(null);
+        }
+
+        TreeTableNode node = (TreeTableNode) variables.getPathForRow(indices[0]).getLastPathComponent();
+        if (node instanceof Node) {
+            applySelection((Node) node);
+        } else {
+            applySelection(null);
+        }
+    }
+
     private void variablesSelectionChanged(TreeSelectionEvent e) {
         TreePath path = e.getNewLeadSelectionPath();
         TreeTableNode node = (TreeTableNode) path.getLastPathComponent();
@@ -163,7 +179,15 @@ public class TraceTreePanel extends BorderLayoutPanel {
         splitter.setSecondComponent(left);
 
         DefaultActionGroup group = new DefaultActionGroup();
-        variablesDisplayAs = new FormatComboboxAction();
+        variablesDisplayAs = new FormatComboboxAction() {
+
+            @Override
+            public void setFormat(Format format) {
+                super.setFormat(format);
+
+                variableDisplayAsChanged(format);
+            }
+        };
         group.add(variablesDisplayAs);
         variablesWrapText = new SimpleCheckboxAction("Wrap text") {
 
