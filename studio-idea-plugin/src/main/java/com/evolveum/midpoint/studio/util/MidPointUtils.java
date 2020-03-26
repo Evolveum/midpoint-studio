@@ -1,14 +1,19 @@
 package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.client.api.ClientException;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.util.PrismContextFactory;
+import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.impl.MidPointFacet;
+import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
+import com.evolveum.midpoint.studio.impl.MidPointException;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
@@ -18,7 +23,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
-import com.intellij.facet.FacetManager;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
@@ -30,11 +34,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
@@ -43,6 +47,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.util.List;
 import java.util.*;
@@ -61,9 +66,27 @@ public class MidPointUtils {
 
     public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
 
+    private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
+
     private static final Random RANDOM = new Random();
 
+    public static final PrismContext DEFAULT_PRISM_CONTEXT;
+
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
+
+    static {
+        DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
+
+        try {
+            PrismContextFactory factory = new MidPointPrismContextFactory();
+            PrismContext prismContext = factory.createPrismContext();
+            prismContext.initialize();
+
+            DEFAULT_PRISM_CONTEXT = prismContext;
+        } catch (Exception ex) {
+            throw new MidPointException("Couldn't initialize default prism context", ex);
+        }
+    }
 
     @Deprecated
     public static Project getCurrentProject() {
@@ -182,6 +205,18 @@ public class MidPointUtils {
                 .generateServiceName(MidPointSettings.class.getSimpleName(), key));
     }
 
+    public static void publishExceptionNotification(String key, String message, Exception ex) {
+        String msg = message + ", reason: " + ex.getMessage();
+        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR);
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(msg);
+            LOG.trace(ex);
+        } else {
+            LOG.debug(msg);
+        }
+    }
+
     public static void publishNotification(String key, String title, String content, NotificationType type) {
         publishNotification(key, title, content, type, (NotificationAction[]) null);
     }
@@ -253,23 +288,14 @@ public class MidPointUtils {
         };
     }
 
-    public static boolean isMidPointFacetPresent(Project project) {
-        Module[] modules = ModuleManager.getInstance(project).getModules();
-        if (modules == null || modules.length == 0) {
-            return false;
-        }
-
-        FacetManager facetManager = FacetManager.getInstance(modules[0]);
-        return facetManager.getFacetByType(MidPointFacet.ID) != null;
-    }
-
     public static JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition> columns) {
-        JXTreeTable table = new JXTreeTable(model);
+        JXTreeTable table = new JXTreeTable();
         table.setRootVisible(false);
         table.setEditable(false);
         table.setDragEnabled(false);
         table.setHorizontalScrollEnabled(true);
-        table.setSelectionModel(new ExtendedListSelectionModel());
+        table.setSelectionModel(new ExtendedListSelectionModel(table.getSelectionModel()));        // todo fix
+        table.setTreeTableModel(model);
         table.setLeafIcon(null);
         table.setClosedIcon(null);
         table.setOpenIcon(null);
@@ -297,5 +323,74 @@ public class MidPointUtils {
 
     public static String getOrigFromPolyString(PolyStringType poly) {
         return poly != null ? poly.getOrig() : null;
+    }
+
+    public static String generateTaskIdentifier() {
+        return System.currentTimeMillis() + ":" + Math.round(Math.random() * 1000000000.0);
+    }
+
+    public static ObjectTypes commonSuperType(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return null;
+        }
+
+        Class<? extends ObjectType> c1 = o1.getClassDefinition();
+        Class<? extends ObjectType> c2 = o2.getClassDefinition();
+
+        Class<? extends ObjectType> s = c1;
+        while (!s.isAssignableFrom(c2)) {
+            s = (Class<? extends ObjectType>) s.getSuperclass();
+        }
+
+        return ObjectTypes.getObjectType(s);
+    }
+
+    public static boolean isAssignableFrom(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return false;
+        }
+
+        return o1.getClassDefinition().isAssignableFrom(o2.getClassDefinition());
+    }
+
+    public static QName getTypeQName(ObjectType obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        return ObjectTypes.getObjectType(obj.getClass()).getTypeQName();
+    }
+
+    public static String formatTime(Long time) {
+        if (time == null) {
+            return "";
+        } else {
+            return String.format(Locale.US, "%.1f", time / 1000.0);
+        }
+    }
+
+    public static String formatPercent(Double value) {
+        if (value == null) {
+            return "";
+        } else {
+            return String.format(Locale.US, "%.1f%%", value * 100);
+        }
+    }
+
+    public static XmlTag[] findSubTags(XmlTag tag, QName name) {
+        if (tag == null) {
+            return new XmlTag[0];
+        }
+
+        return tag.findSubTags(name.getLocalPart(), name.getNamespaceURI());
+    }
+
+    public static XmlTag findSubTag(XmlTag tag, QName name) {
+        XmlTag[] tags = findSubTags(tag, name);
+        if (tags != null && tags.length > 0) {
+            return tags[0];
+        }
+
+        return null;
     }
 }

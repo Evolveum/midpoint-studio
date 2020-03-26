@@ -1,15 +1,15 @@
 package com.evolveum.midpoint.studio.impl.ide;
 
 import com.evolveum.midpoint.studio.MidPointIcons;
-import com.evolveum.midpoint.studio.impl.CredentialsManager;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
-import com.evolveum.midpoint.studio.impl.ModuleSettings;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.MidPointWizardStep;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.actions.ReformatCodeProcessor;
 import com.intellij.codeInsight.template.TemplateManager;
 import com.intellij.codeInsight.template.impl.TemplateImpl;
+import com.intellij.facet.FacetManager;
+import com.intellij.facet.FacetType;
+import com.intellij.facet.FacetTypeRegistry;
 import com.intellij.ide.fileTemplates.FileTemplate;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
@@ -48,6 +48,8 @@ import java.util.regex.Pattern;
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointModuleBuilder extends ModuleBuilder {
+
+    public static final String NOTIFICATION_KEY = "Module";
 
     public static String MODULE_NAME = "MidPoint";
 
@@ -91,7 +93,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
             VfsUtil.createDirectories(root.getPath() + "/objects");
             VfsUtil.createDirectories(root.getPath() + "/scratches");
         } catch (IOException ex) {
-            ex.printStackTrace(); // todo handle error
+            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't create directory structure", ex);
         }
 
         // build pom file
@@ -110,10 +112,13 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
                     createGitIgnoreFile(project, root);
                 } catch (IOException ex) {
-                    ex.printStackTrace();   // todo error handling
+                    MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't create pom.xml file", ex);
                 }
             });
         });
+
+        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
+        FacetManager.getInstance(modifiableRootModel.getModule()).addFacet(facetType, facetType.getDefaultFacetName(), null);
     }
 
     private void createGitIgnoreFile(Project project, VirtualFile root) throws IOException {

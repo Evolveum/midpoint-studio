@@ -65,11 +65,18 @@
             <interface-class>com.evolveum.midpoint.studio.impl.EnvironmentManager</interface-class>
             <implementation-class>com.evolveum.midpoint.studio.impl.EnvironmentManagerImpl</implementation-class>
         </component>
+        <component>
+            <implementation-class>com.evolveum.midpoint.studio.impl.trace.TraceManager</implementation-class>
+        </component>
     </project-components>
-
+    
     <extensions defaultExtensionNs="com.intellij">
 
-        <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType" />
+        <projectStructureConfigurableAdder implementation="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurableContributor" />
+
+        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
+
+        <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
@@ -82,15 +89,50 @@
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.MidPointReferenceContributor"/>
 
         <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
+
         <moduleBuilder builderClass="com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder"/>
 
-        <toolWindow id="MidPoint"
-                    anchor="bottom"
-                    icon="/icons/midpoint.png"
-                    factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
+<!--        <toolWindow id="MidPoint"-->
+<!--                    anchor="bottom"-->
+<!--                    icon="/icons/midpoint.png"-->
+<!--                    factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>-->
 
-<!--        <toolWindow id="NodesToolWindow"-->
-<!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
+        <facet.toolWindow id="MidPoint"
+                          facetIdList="MidPointFacet"
+                          anchor="bottom"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
+
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
+
+        <toolWindow id="MidPointTrace"
+                    anchor="bottom"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
+
+        <toolWindow id="TraceLensContext"
+                    anchor="left"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceLensContextToolWindowFactory"/>
+
+        <toolWindow id="TraceOptions"
+                    anchor="right"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceOptionsWindowFactory"/>
+
+        <fileType
+                name="MPTrace"
+                fieldName="INSTANCE"
+                extensions="zip|xml|mptrace"
+                language=""
+                implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
+        <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.trace.MPTraceFileTypeFactory"/>
+
+        <!--        <toolWindow id="NodesToolWindow"-->
+        <!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
@@ -98,6 +140,7 @@
 
         <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.RefOidAnnotator"/>
         <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.ResourceTypeAnnotator"/>
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.DeprecatedElementAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
@@ -107,7 +150,10 @@
 
 <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
 
-        <diff.lang.DiffIgnoredRangeProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
+
+
+        <diff.lang.DiffIgnoredRangeProvider
+                implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
 
 <!--        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.MidPointObjectNameIndex"/>-->
     </extensions>

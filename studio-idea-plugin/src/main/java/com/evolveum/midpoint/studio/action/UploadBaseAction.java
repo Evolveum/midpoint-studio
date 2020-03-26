@@ -1,13 +1,10 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.UploadOptions;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -27,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -43,6 +41,9 @@ public abstract class UploadBaseAction extends BackgroundAction {
 
     @Override
     protected void executeOnBackground(AnActionEvent e, ProgressIndicator indicator) {
+        MidPointManager mm = MidPointManager.getInstance(e.getProject());
+        mm.printToConsole(getClass(), "Initializing upload action");
+
         LOG.debug("Setting up MidPoint client");
 
         EnvironmentManager em = EnvironmentManager.getInstance(e.getProject());
@@ -64,11 +65,12 @@ public abstract class UploadBaseAction extends BackgroundAction {
             });
 
             if (!StringUtils.isEmpty(text)) {
-                try {
-                    execute(indicator, client, text);
-                } catch (Exception ex) {
-                    // todo
+                int problemCount = execute(mm, indicator, client, text);
+                if (problemCount != 0) {
+                    showNotificationAfterFinish(problemCount);
                 }
+            } else {
+                MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error", "Text is empty", NotificationType.ERROR);
             }
 
             return;
@@ -106,14 +108,16 @@ public abstract class UploadBaseAction extends BackgroundAction {
             return;
         }
 
-        execute(indicator, client, toUpload);
+        execute(mm, indicator, client, toUpload);
     }
 
     protected UploadOptions buildAddOptions() {
         return new UploadOptions().overwrite(true);
     }
 
-    private void execute(ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
+    private void execute(MidPointManager mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
+        AtomicInteger count = new AtomicInteger(0);
+
         for (VirtualFile file : files) {
             if (isCanceled()) {
                 break;
@@ -124,29 +128,73 @@ public abstract class UploadBaseAction extends BackgroundAction {
                         try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                             String xml = IOUtils.toString(in);
 
-                            execute(indicator, client, xml);
-                        } catch (IOException ex) {
-                            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error",
-                                    "Couldn't read file " + file.getName() + ", reason: " + ex.getMessage(), NotificationType.ERROR);
+                            int problems = execute(mm, indicator, client, xml);
+                            count.addAndGet(problems);
 
-                            LOG.debug("Exception occurred when loading file {}, reason: {}", file.getName(), ex.getMessage());
-                        } catch (SchemaException ex) {
-                            // todo
+                        } catch (IOException ex) {
+                            publishException(mm, "Exception occurred when loading file " + file.getName(), ex);
                         }
                     }));
         }
+
+        if (count.get() > 0) {
+            showNotificationAfterFinish(count.get());
+        }
     }
 
-    private void execute(ProgressIndicator indicator, MidPointClient client, String text) throws IOException, SchemaException {
-        List<PrismObject<?>> objects = client.parseObjects(text);
+    private int execute(MidPointManager mm, ProgressIndicator indicator, MidPointClient client, String text) {
+        int problemCount = 0;
 
-        for (PrismObject obj : objects) {
-            try {
-                client.upload(obj, buildAddOptions());
-            } catch (Exception ex) {
-                // todo error handling
-                ex.printStackTrace();
+        try {
+            List<PrismObject<?>> objects = client.parseObjects(text);
+
+            int i = 0;
+            for (PrismObject obj : objects) {
+                i++;
+
+                indicator.setFraction(i / objects.size());
+                try {
+                    UploadResponse resp = client.upload(obj, buildAddOptions());
+                    OperationResult result = resp.getResult();
+                    if (result != null && !result.isSuccess()) {
+                        problemCount++;
+
+
+                        String msg = "Upload status of " + obj.getName() + "(" + obj.getOid() + ") was " + result.getStatus();
+                        mm.printToConsole(getClass(), msg);
+
+                        MidPointUtils.publishNotification(NOTIFICATION_KEY, "Warning", msg,
+                                NotificationType.WARNING, new ShowResultNotificationAction(result));
+                    } else {
+                        mm.printToConsole(getClass(), "Uploaded object " + obj.getName());
+                    }
+                } catch (Exception ex) {
+                    problemCount++;
+
+                    publishException(mm, "Exception occurred during upload of " + obj.getName() + "(" + obj.getOid() + ")", ex);
+                }
             }
+        } catch (Exception ex) {
+            problemCount++;
+
+            publishException(mm, "Exception occurred during upload", ex);
+        }
+
+        return problemCount;
+    }
+
+    private void publishException(MidPointManager mm, String msg, Exception ex) {
+        mm.printToConsole(getClass(), msg + ". Reason: " + ex.getMessage());
+
+        MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, msg, ex);
+    }
+
+    private void showNotificationAfterFinish(int problemCount) {
+        if (problemCount == 0) {
+            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Success", "Upload finished", NotificationType.INFORMATION);
+        } else {
+            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Warning",
+                    "There were " + problemCount + " problems during upload", NotificationType.WARNING);
         }
     }
 }

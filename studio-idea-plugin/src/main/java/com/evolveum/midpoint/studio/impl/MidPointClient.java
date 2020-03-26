@@ -82,6 +82,10 @@ public class MidPointClient {
 
             factory.messageListener((messageId, type, message) -> {
 
+                if (!midPointManager.getSettings().isPrintRestCommunicationToConsole()) {
+                    return;
+                }
+
                 ConsoleViewContentType contentType = ConsoleViewContentType.LOG_INFO_OUTPUT;
                 if (MessageListener.MessageType.FAULT == type) {
                     contentType = ConsoleViewContentType.LOG_ERROR_OUTPUT;
@@ -97,7 +101,7 @@ public class MidPointClient {
             handleGenericException("Couldn't create rest client", ex);
         }
 
-        LOG.debug("Rest client initialized in {}ms", (System.currentTimeMillis() - time));
+        LOG.debug("Rest client initialized in " + (System.currentTimeMillis() - time) + "ms");
     }
 
     public Project getProject() {
