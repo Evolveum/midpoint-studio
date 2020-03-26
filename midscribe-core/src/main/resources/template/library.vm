@@ -2,6 +2,8 @@
 
 $!object.getDescription()
 
+$!utils.stripIndent($object.getDocumentation())
+
 #foreach($expression in $object.getFunction())
 ==== $expression.getName()
 

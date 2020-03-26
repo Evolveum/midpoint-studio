@@ -1,6 +1,10 @@
 
 === $!utils.getOrig($object.getName())
 
+$!object.getDescription()
+
+$!utils.stripIndent($object.getDocumentation())
+
 ==== Connector
 
 #set($connector=$utils.loadObject($client, $object.getConnectorRef()))

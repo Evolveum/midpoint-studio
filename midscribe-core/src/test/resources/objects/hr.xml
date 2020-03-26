@@ -30,6 +30,22 @@
 
         <c:name>HR Feed</c:name>
 
+        <description>Some description, more usable for midpoint UI</description>
+
+        <documentation>
+            ==== More technical documentation
+
+            here we go. With some list:
+
+            * A
+            * B
+            * C
+
+            ==== Another title
+
+            there is is. were're using asciidoc.
+        </documentation>
+
         <connectorRef type="ConnectorType">
             <filter>
                 <q:equal>

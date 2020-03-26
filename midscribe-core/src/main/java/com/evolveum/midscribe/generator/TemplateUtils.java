@@ -1,13 +1,14 @@
 package com.evolveum.midscribe.generator;
 
-import com.evolveum.midscribe.generator.data.Attribute;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorConfigurationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.evolveum.midpoint.xml.ns._public.connector.icf_1.connector_schema_3.ConfigurationPropertiesType;
 import com.evolveum.midpoint.xml.ns._public.connector.icf_1.connector_schema_3.ResultsHandlerConfigurationType;
+import com.evolveum.midscribe.generator.data.Attribute;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
@@ -24,6 +25,45 @@ public class TemplateUtils {
 
     public static String getOrig(PolyStringType poly) {
         return poly != null ? poly.getOrig() : null;
+    }
+
+    public static String stripIndent(String text) {
+        if (text == null) {
+            return null;
+        }
+
+        String[] lines = text.split("\n", -1);
+        int skip = countSkipCharacters(lines);
+
+        StringBuilder sb = new StringBuilder();
+        for (String line : lines) {
+            String newLine = StringUtils.right(line, line.length() - skip);
+            sb.append(newLine).append('\n');
+        }
+
+        return sb.toString();
+    }
+
+    private static final int countSkipCharacters(String[] lines) {
+        int count = 0;
+
+        outer:
+        for (String line : lines) {
+            if (StringUtils.isEmpty(line)) {
+                continue;
+            }
+
+            char[] chars = line.toCharArray();
+            for (char c : chars) {
+                if (Character.isWhitespace(c)) {
+                    count++;
+                } else {
+                    break outer;
+                }
+            }
+        }
+
+        return count;
     }
 
     public static List<Attribute> getResultsHandlerConfiguration(ResourceType resource) {

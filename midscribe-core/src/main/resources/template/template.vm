@@ -2,4 +2,7 @@
 
 $!object.getDescription()
 
+$!utils.stripIndent($object.getDocumentation())
+
+
 ##todo describe mappings, items, archetypes, includeRef, iterations
