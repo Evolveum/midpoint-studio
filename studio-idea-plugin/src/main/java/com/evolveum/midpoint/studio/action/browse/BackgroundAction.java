@@ -48,7 +48,14 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
             public void run(ProgressIndicator indicator) {
                 running = true;
 
-                executeOnBackground(evt, indicator);
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(BackgroundAction.class.getClassLoader());
+
+                    executeOnBackground(evt, indicator);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(cl);
+                }
             }
 
             @Override

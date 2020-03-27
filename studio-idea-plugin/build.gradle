@@ -12,7 +12,7 @@ plugins {
 }
 
 dependencies {
-    compile (project(':midpoint-client')) {
+    compile(project(':midpoint-client')) {
         exclude group: "org.slf4j"
         exclude group: "ch.qos.logback"
     }
@@ -33,14 +33,10 @@ dependencies {
     compile("com.evolveum.midpoint:midscribe-core:$midpointVersion") {
         exclude group: "org.springframework"
         exclude group: "net.sf.jasperreports"
-        exclude group: "xml-resolver"
-        exclude group: "xerces"
-        exclude group: "xml-apis"
         exclude group: "org.apache.cxf", module: "cxf-rt-wsdl"
 
         exclude group: "org.slf4j"
         exclude group: "ch.qos.logback"
-        // todo fix, this creates class cast issue with Documentbuilder factory
     }
 
     compile "de.slackspace:openkeepass:$openkeepass"

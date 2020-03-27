@@ -1,19 +1,16 @@
 package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.client.api.ClientException;
+import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.util.PrismContextFactory;
-import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
-import com.evolveum.midpoint.studio.impl.MidPointException;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
-import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
@@ -70,23 +67,9 @@ public class MidPointUtils {
 
     private static final Random RANDOM = new Random();
 
-    public static final PrismContext DEFAULT_PRISM_CONTEXT;
+    public static final PrismContext DEFAULT_PRISM_CONTEXT = ServiceFactory.DEFAULT_PRISM_CONTEXT;
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
-
-    static {
-        DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
-
-        try {
-            PrismContextFactory factory = new MidPointPrismContextFactory();
-            PrismContext prismContext = factory.createPrismContext();
-            prismContext.initialize();
-
-            DEFAULT_PRISM_CONTEXT = prismContext;
-        } catch (Exception ex) {
-            throw new MidPointException("Couldn't initialize default prism context", ex);
-        }
-    }
 
     @Deprecated
     public static Project getCurrentProject() {
