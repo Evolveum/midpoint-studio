@@ -1,5 +1,6 @@
 package com.evolveum.midscribe.util;
 
+import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
@@ -29,7 +30,7 @@ public class InMemoryFileFilter implements IOFileFilter {
             return null;
         }
 
-        return new WildcardFileFilter(wildcards);
+        return new WildcardFileFilter(wildcards, IOCase.INSENSITIVE);
     }
 
     @Override
