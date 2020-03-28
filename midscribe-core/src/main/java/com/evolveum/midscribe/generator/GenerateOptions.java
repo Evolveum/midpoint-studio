@@ -19,14 +19,26 @@ public class GenerateOptions {
 
     private File template;
 
-    private File output;
+    private File adocOutput;
+
+    private File exportOutput;
+
+    private Class<? extends MidPointClient> midpointClient;
 
     public File getTemplate() {
         return template;
     }
 
-    public File getOutput() {
-        return output;
+    public File getAdocOutput() {
+        return adocOutput;
+    }
+
+    public void setAdocOutput(File adocOutput) {
+        this.adocOutput = adocOutput;
+    }
+
+    public File getExportOutput() {
+        return exportOutput;
     }
 
     public ExportFormat getExportFormat() {
@@ -41,8 +53,8 @@ public class GenerateOptions {
         this.template = template;
     }
 
-    public void setOutput(File output) {
-        this.output = output;
+    public void setExportOutput(File exportOutput) {
+        this.exportOutput = exportOutput;
     }
 
     public File getSourceDirectory() {
@@ -59,6 +71,14 @@ public class GenerateOptions {
 
     public void setExclude(List<String> exclude) {
         this.exclude = exclude;
+    }
+
+    public Class<? extends MidPointClient> getMidpointClient() {
+        return midpointClient;
+    }
+
+    public void setMidpointClient(Class<? extends MidPointClient> midpointClient) {
+        this.midpointClient = midpointClient;
     }
 
     public List<String> getInclude() {

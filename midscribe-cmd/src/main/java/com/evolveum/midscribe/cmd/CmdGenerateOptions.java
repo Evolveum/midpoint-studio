@@ -46,8 +46,8 @@ public class CmdGenerateOptions extends GenerateOptions {
 
     @Parameter(names = {P_OUTPUT, P_OUTPUT_LONG}, descriptionKey = "generate.output")
     @Override
-    public void setOutput(File output) {
-        super.setOutput(output);
+    public void setExportOutput(File exportOutput) {
+        super.setExportOutput(exportOutput);
     }
 
     @Parameter(names = {P_SOURCE_DIRECTORY, P_SOURCE_DIRECTORY_LONG}, validateWith = URIConverter.class, descriptionKey = "generate.sourceDirectory")

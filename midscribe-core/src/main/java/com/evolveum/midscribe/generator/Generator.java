@@ -4,10 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -35,26 +37,25 @@ public class Generator {
     }
 
     public void generate() throws Exception {
-        MidPointClient client = new InMemoryClient(configuration);
-        client.init();
+        generate(new Properties());
+    }
 
-        File adocFile = createAsciidocFile();
-        if (adocFile.exists()) {
-            adocFile.delete();
+    public void generate(Properties properties) throws Exception {
+        Class<? extends MidPointClient> clientType = configuration.getMidpointClient();
+        if (clientType == null) {
+            clientType = InMemoryClient.class;
         }
+        MidPointClient client = createMidPointClient(clientType);
 
-        adocFile.createNewFile();
+        File adocFile = createFile(configuration.getAdocOutput());
 
         try (Writer output = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(adocFile), StandardCharsets.UTF_8))) {
 
-            VelocityGeneratorProcessor processor = new VelocityGeneratorProcessor();
+            VelocityGeneratorProcessor processor = new VelocityGeneratorProcessor(properties);
 
             GeneratorContext ctx = new GeneratorContext(configuration, client);
             processor.process(output, ctx);
-        } catch (IOException ex) {
-            // todo error handling
-            ex.printStackTrace();
         }
 
         LOG.info("Asciidoc file '{}' generated for all objects", adocFile.getPath());
@@ -69,27 +70,25 @@ public class Generator {
             return;
         }
 
-        File output = configuration.getOutput();
-        if (output.exists()) {
-            output.delete();
-        }
-
-        try {
-            output.createNewFile();
-
-            exporter.export(adocFile, output);
-        } catch (IOException ex) {
-            // todo error handling
-            ex.printStackTrace();
-        }
+        File exportFile = createFile(configuration.getExportOutput());
+        exporter.export(adocFile, exportFile);
     }
 
-    private File createAsciidocFile() {
-        File output = configuration.getOutput();
-        if (configuration.getExportFormat() == null) {
-            return output;
+    private File createFile(File file) throws IOException {
+        if (file.exists()) {
+            file.delete();
         }
 
-        return new File(output.getParent(), output.getName() + ADOC_EXTENSION);
+        file.createNewFile();
+
+        return file;
+    }
+
+    private MidPointClient createMidPointClient(Class<? extends MidPointClient> type) throws Exception {
+        Constructor<? extends MidPointClient> con = type.getConstructor(GenerateOptions.class);
+        MidPointClient client = con.newInstance(configuration);
+        client.init();
+
+        return client;
     }
 }

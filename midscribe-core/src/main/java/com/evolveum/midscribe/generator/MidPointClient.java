@@ -11,6 +11,8 @@ public interface MidPointClient {
 
     void init() throws Exception;
 
+    void destroy() throws Exception;
+
     <T extends ObjectType> List<T> list(Class<T> type);
 
     <T extends ObjectType> T get(Class<T> type, String oid);

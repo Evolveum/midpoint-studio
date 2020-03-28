@@ -4,5 +4,20 @@ $!object.getDescription()
 
 $!utils.stripIndent($object.getDocumentation())
 
+==== Include References
+
+// todo
+
+==== Iterator Specification
+
+// todo
+
+==== Items
+
+// todo
+
+==== Mappings
+
+// todo
 
 ##todo describe mappings, items, archetypes, includeRef, iterations
