@@ -4,24 +4,24 @@ plugins {
 }
 
 dependencies {
-    compile ("com.evolveum.midpoint.model:model-impl:$midpointVersion") {
+    compile("com.evolveum.midpoint.model:model-impl:$midpointVersion") {
         transitive = false
     }
-    compile ("com.evolveum.midpoint.infra:common:$midpointVersion") {
+    compile("com.evolveum.midpoint.infra:common:$midpointVersion") {
         exclude group: "org.springframework"
         exclude group: "net.sf.jasperreports"
         exclude group: "org.apache.cxf", module: "cxf-rt-wsdl"
     }
-    compile ("org.springframework:spring-core:$springVersion") {
+    compile("org.springframework:spring-core:$springVersion") {
         transitive = false
     }
-    
+
     compile "org.apache.cxf:cxf-core:$cxfVersion"
     compile "org.apache.cxf:cxf-rt-frontend-jaxrs:$cxfVersion"
     compile "org.apache.cxf:cxf-rt-rs-extension-providers:$cxfVersion"
     compile "org.apache.cxf:cxf-rt-rs-client:$cxfVersion"
     compile "org.apache.cxf:cxf-rt-features-logging:$cxfVersion"
-    compile ("org.apache.cxf:cxf-rt-wsdl:$cxfVersion") {
+    compile("org.apache.cxf:cxf-rt-wsdl:$cxfVersion") {
         transitive = false
     }
     compile "stax:stax:$staxVersion"

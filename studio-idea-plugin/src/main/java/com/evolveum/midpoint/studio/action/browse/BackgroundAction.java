@@ -52,7 +52,7 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
                 try {
                     Thread.currentThread().setContextClassLoader(BackgroundAction.class.getClassLoader());
 
-                executeOnBackground(evt, indicator);
+                    executeOnBackground(evt, indicator);
                 } finally {
                     Thread.currentThread().setContextClassLoader(cl);
                 }

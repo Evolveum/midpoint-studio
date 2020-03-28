@@ -12,7 +12,7 @@ plugins {
 }
 
 dependencies {
-    compile (project(':midpoint-client')) {
+    compile(project(':midpoint-client')) {
         exclude group: "org.slf4j"
         exclude group: "ch.qos.logback"
     }
@@ -30,6 +30,14 @@ dependencies {
         transitive = false
     }
     compile "com.evolveum.midpoint:midpoint-localization:$midpointVersion"
+    compile("com.evolveum.midpoint:midscribe-core:$midpointVersion") {
+        exclude group: "org.springframework"
+        exclude group: "net.sf.jasperreports"
+        exclude group: "org.apache.cxf", module: "cxf-rt-wsdl"
+
+        exclude group: "org.slf4j"
+        exclude group: "ch.qos.logback"
+    }
 
     compile "de.slackspace:openkeepass:$openkeepass"
     compile "org.apache.commons:commons-lang3:$commonsLang"
