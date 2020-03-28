@@ -126,6 +126,7 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
         }
 
         getSettings().setSelectedId(id);
+        settingsUpdated();
 
         messageBus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentChanged(selected, newSelected);
     }
