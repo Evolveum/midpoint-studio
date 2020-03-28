@@ -66,8 +66,8 @@ public class DocumentationDialog extends DialogWrapper {
 
         exportFormat.getModel().setSelectedItem(opts.getExportFormat());
 
-        if (opts.getOutput() != null) {
-            output.setText(opts.getOutput().getPath());
+        if (opts.getAdocOutput() != null) {
+            output.setText(opts.getAdocOutput().getPath());
         }
     }
 
@@ -95,7 +95,7 @@ public class DocumentationDialog extends DialogWrapper {
         opts.setExportFormat((ExportFormat) exportFormat.getSelectedItem());
 
         if (output.getText() != null) {
-            opts.setOutput(new File(output.getText()));
+            opts.setAdocOutput(new File(output.getText()));
         }
 
         return opts;

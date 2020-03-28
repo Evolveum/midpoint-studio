@@ -19,16 +19,18 @@ public class DocumentationAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
         GenerateOptions options = new GenerateOptions();     // todo fix
-        options.setSourceDirectory(new File("./t67/objects"));
+        options.setSourceDirectory(new File("~/IdeaProjects/t67/objects"));
         options.setExportFormat(ExportFormat.HTML);
-        options.setOutput(new File("./t67/example.adoc"));
+        options.setAdocOutput(new File("~/IdeaProjects/t67/example.adoc"));
+        options.setExportOutput(new File("~/IdeaProjects/t67/example.html"));
+//        options.setMidpointClient(); // todo client that is able to fetch connectors
 
         DocumentationDialog dialog = new DocumentationDialog(options);
         if (!dialog.showAndGet()) {
             return;
         }
 
-        options = dialog.getOptions();
+//        options = dialog.getOptions();
 
 //        options.setSourceDirectory(new File("./midpoint-project/objects"));
 //        options.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
