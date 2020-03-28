@@ -38,7 +38,11 @@ public class ServiceFactory {
     public static final PrismContext DEFAULT_PRISM_CONTEXT;
 
     static {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
         try {
+            Thread.currentThread().setContextClassLoader(ServiceFactory.class.getClassLoader());
+
             DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
             // todo create web client just to obtain extension schemas!
 
@@ -49,6 +53,8 @@ public class ServiceFactory {
             DEFAULT_PRISM_CONTEXT = prismContext;
         } catch (Exception ex) {
             throw new IllegalStateException("Couldn't initialize prism context", ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
         }
     }
 

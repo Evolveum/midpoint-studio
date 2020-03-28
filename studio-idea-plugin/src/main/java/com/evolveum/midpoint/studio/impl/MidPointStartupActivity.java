@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
@@ -17,8 +17,7 @@ public class MidPointStartupActivity implements StartupActivity {
     @Override
     public void runActivity(@NotNull Project project) {
         LOG.info("Initializing service factory");
-        PrismContext ctx = ServiceFactory.DEFAULT_PRISM_CONTEXT;
+        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
         LOG.info("Service factory initialized " + ctx.toString());
     }
-
 }
