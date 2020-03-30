@@ -1,7 +1,9 @@
 package com.evolveum.midpoint.studio.action;
 
+import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
+import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.ui.DocumentationDialog;
-import com.evolveum.midscribe.generator.ExportFormat;
 import com.evolveum.midscribe.generator.GenerateOptions;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
@@ -18,26 +20,31 @@ public class DocumentationAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
-        GenerateOptions options = new GenerateOptions();     // todo fix
-        options.setSourceDirectory(new File("~/IdeaProjects/t67/objects"));
-        options.setExportFormat(ExportFormat.HTML);
-        options.setAdocOutput(new File("~/IdeaProjects/t67/example.adoc"));
-        options.setExportOutput(new File("~/IdeaProjects/t67/example.html"));
-//        options.setMidpointClient(); // todo client that is able to fetch connectors
+        MidPointManager mm = MidPointManager.getInstance(evt.getProject());
+        MidPointSettings settings = mm.getSettings();
 
-        DocumentationDialog dialog = new DocumentationDialog(options);
+        DocGeneratorOptions opts = settings.getDocGeneratorOptions();
+
+        if (opts == null) {
+            opts = DocGeneratorOptions.createDefaultOptions(evt.getProject());
+        }
+
+        DocumentationDialog dialog = new DocumentationDialog(evt.getProject(), opts);
         if (!dialog.showAndGet()) {
             return;
         }
 
-//        options = dialog.getOptions();
+        opts = dialog.getOptions();
+        settings.setDocGeneratorOptions(opts);
+        mm.settingsUpdated();
 
-//        options.setSourceDirectory(new File("./midpoint-project/objects"));
-//        options.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
-//        File adoc = new File("./local.adoc");
-//        options.setOutput(adoc);
-//
-//        options.setExportFormat(ExportFormat.HTML);
+        GenerateOptions options = DocGeneratorOptions.buildGenerateOptions(opts);
+
+        File exportOutput = opts.getExportOutput();
+        File adocOutput = new File(exportOutput.getParent(), exportOutput.getName() + ".adoc");
+        options.setAdocOutput(adocOutput);
+
+        // todo set custom midpoint client that can fetch for example connectors from environment
 
         GenerateDocumentationAction gda = new GenerateDocumentationAction(options);
         ActionManager.getInstance().tryToExecute(gda, evt.getInputEvent(), null, ActionPlaces.UNKNOWN, false);

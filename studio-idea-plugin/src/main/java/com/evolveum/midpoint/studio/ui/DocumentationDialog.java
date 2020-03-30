@@ -1,9 +1,10 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
 import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
-import com.evolveum.midpoint.studio.util.LocalizedRenderer;
 import com.evolveum.midscribe.generator.ExportFormat;
-import com.evolveum.midscribe.generator.GenerateOptions;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -29,14 +30,25 @@ public class DocumentationDialog extends DialogWrapper {
     private JComboBox exportFormat;
     private TextFieldWithBrowseButton output;
 
-    public DocumentationDialog(GenerateOptions options) {
+    public DocumentationDialog(Project project, DocGeneratorOptions options) {
         super(false);
 
         setTitle("Documentation settings");
+        setSize(400,200);
+
+        initLayout(project);
 
         populateFields(options);
 
         init();
+    }
+
+    private void initLayout(Project project) {
+        sourceDirectory.addBrowseFolderListener("Select source folder", "Folder where MidPoint object xml files are stored", project,
+                FileChooserDescriptorFactory.createSingleFolderDescriptor());
+
+        output.addBrowseFolderListener("Select output file", null, project,
+                FileChooserDescriptorFactory.createSingleLocalFileDescriptor());
     }
 
     @Nullable
@@ -51,7 +63,7 @@ public class DocumentationDialog extends DialogWrapper {
         return sourceDirectory;
     }
 
-    private void populateFields(GenerateOptions opts) {
+    private void populateFields(DocGeneratorOptions opts) {
         if (opts.getSourceDirectory() != null) {
             sourceDirectory.setText(opts.getSourceDirectory().getPath());
         }
@@ -66,8 +78,8 @@ public class DocumentationDialog extends DialogWrapper {
 
         exportFormat.getModel().setSelectedItem(opts.getExportFormat());
 
-        if (opts.getAdocOutput() != null) {
-            output.setText(opts.getAdocOutput().getPath());
+        if (opts.getExportOutput() != null) {
+            output.setText(opts.getExportOutput().getPath());
         }
     }
 
@@ -79,8 +91,8 @@ public class DocumentationDialog extends DialogWrapper {
 //        exportFormat.setRenderer(new LocalizedRenderer());    // todo improve
     }
 
-    public GenerateOptions getOptions() {
-        GenerateOptions opts = new GenerateOptions();
+    public DocGeneratorOptions getOptions() {
+        DocGeneratorOptions opts = new DocGeneratorOptions();
 
         if (sourceDirectory.getText() != null) {
             opts.setSourceDirectory(new File(sourceDirectory.getText()));
@@ -95,7 +107,7 @@ public class DocumentationDialog extends DialogWrapper {
         opts.setExportFormat((ExportFormat) exportFormat.getSelectedItem());
 
         if (output.getText() != null) {
-            opts.setAdocOutput(new File(output.getText()));
+            opts.setExportOutput(new File(output.getText()));
         }
 
         return opts;
