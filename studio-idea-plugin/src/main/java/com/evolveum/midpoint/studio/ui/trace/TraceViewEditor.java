@@ -47,7 +47,11 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
         List<OpNode> data = new ArrayList<>();
         long start = 0;
 
+        // todo definitely load asynchronously via background task using RunnableUtils !!!
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try (InputStream is = file.getInputStream()) {
+            Thread.currentThread().setContextClassLoader(TraceViewEditor.class.getClassLoader());
+
             boolean isZip = file.getExtension().equalsIgnoreCase("zip");
 
             TraceParser parser = new TraceParser();
@@ -58,6 +62,8 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             mm.printToConsole(TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
 
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't load file", ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
         }
 
         panel = new TraceViewPanel(project, data, start);

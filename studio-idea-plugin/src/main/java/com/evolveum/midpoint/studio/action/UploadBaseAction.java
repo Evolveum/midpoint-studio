@@ -5,6 +5,7 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -124,13 +125,12 @@ public abstract class UploadBaseAction extends BackgroundAction {
             }
 
             ApplicationManager.getApplication().invokeAndWait(() ->
-                    ApplicationManager.getApplication().runWriteAction(() -> {
+                    RunnableUtils.runWriteAction(() -> {
                         try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                             String xml = IOUtils.toString(in);
 
                             int problems = execute(mm, indicator, client, xml);
                             count.addAndGet(problems);
-
                         } catch (IOException ex) {
                             publishException(mm, "Exception occurred when loading file " + file.getName(), ex);
                         }

@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
@@ -103,7 +104,7 @@ public class GeneratorAction extends BackgroundAction {
         updateIndicator(indicator, "Content created, writing to file");
 
         ApplicationManager.getApplication().invokeAndWait(() ->
-                ApplicationManager.getApplication().runWriteAction(() -> {
+                RunnableUtils.runWriteAction(() -> {
 
                     VirtualFile file = null;
                     Writer out = null;

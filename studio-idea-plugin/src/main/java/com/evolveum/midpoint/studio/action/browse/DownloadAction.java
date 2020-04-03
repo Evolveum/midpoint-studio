@@ -11,6 +11,7 @@ import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -94,7 +95,7 @@ public class DownloadAction extends BackgroundAction {
         PrismSerializer<String> serializer = ctx.serializerFor(PrismContext.LANG_XML);
 
         ApplicationManager.getApplication().invokeAndWait(() ->
-                ApplicationManager.getApplication().runWriteAction(() -> {
+                RunnableUtils.runWriteAction(() -> {
                     BufferedWriter out = null;
                     VirtualFile file = null;
                     try {
@@ -185,7 +186,7 @@ public class DownloadAction extends BackgroundAction {
                 LOG.debug("Storing file");
 
                 ApplicationManager.getApplication().invokeAndWait(() ->
-                        ApplicationManager.getApplication().runWriteAction(() -> {
+                        RunnableUtils.runWriteAction(() -> {
 
                             VirtualFile file = null;
                             Writer out = null;
