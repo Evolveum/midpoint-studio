@@ -5,8 +5,10 @@ import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceParser;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
@@ -14,6 +16,7 @@ import com.intellij.openapi.project.PossiblyDumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.components.panels.Wrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,24 +37,20 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
     private VirtualFile file;
 
-    private TraceViewPanel panel;
+    private Wrapper wrapper = new Wrapper();
 
     public TraceViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.project = project;
         this.file = file;
 
-        initEditor();
+        ApplicationManager.getApplication().invokeLater(() -> RunnableUtils.runReadAction(() -> initialize()));
     }
 
-    private void initEditor() {
+    private void initialize() {
         List<OpNode> data = new ArrayList<>();
         long start = 0;
 
-        // todo definitely load asynchronously via background task using RunnableUtils !!!
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try (InputStream is = file.getInputStream()) {
-            Thread.currentThread().setContextClassLoader(TraceViewEditor.class.getClassLoader());
-
             boolean isZip = file.getExtension().equalsIgnoreCase("zip");
 
             TraceParser parser = new TraceParser();
@@ -62,27 +61,29 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             mm.printToConsole(TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
 
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't load file", ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
         }
 
-        panel = new TraceViewPanel(project, data, start);
+        TraceViewPanel panel = new TraceViewPanel(project, data, start);
+        wrapper.setContent(panel);
     }
 
     public void applyOptions(Options options) {
-        panel.applyOptions(options);
+        TraceViewPanel panel = (TraceViewPanel) wrapper.getTargetComponent();
+        if (panel != null) {
+            panel.applyOptions(options);
+        }
     }
 
     @NotNull
     @Override
     public JComponent getComponent() {
-        return panel;
+        return wrapper;
     }
 
     @Nullable
     @Override
     public JComponent getPreferredFocusedComponent() {
-        return panel;
+        return wrapper;
     }
 
     @NotNull
