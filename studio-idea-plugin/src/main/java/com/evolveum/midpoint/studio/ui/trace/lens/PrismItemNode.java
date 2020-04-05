@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui.trace.lens;
 import com.evolveum.midpoint.prism.Item;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class PrismItemNode extends PrismNode {
         this.items = items;
 
         values = new ArrayList<>();
-        items.stream().forEach(i -> values.add(Util.prettyPrint(i)));
+        items.stream().forEach(i -> values.add(TraceUtils.prettyPrint(i)));
 
         createChildren();
     }

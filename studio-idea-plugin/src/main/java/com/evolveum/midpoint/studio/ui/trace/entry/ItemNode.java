@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace.entry;
 
 import com.evolveum.midpoint.prism.Item;
-import com.evolveum.midpoint.studio.ui.trace.lens.Util;
+import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 import java.util.Collections;
@@ -12,7 +12,7 @@ public class ItemNode extends Node<Item<?, ?>> {
         super(item);
 
         setLabel(item.getDefinition() != null ? item.getDefinition().getItemName().getLocalPart() : item.getElementName().getLocalPart());
-        setValue(Util.prettyPrint(item));
+        setValue(TraceUtils.prettyPrint(item));
 
         createChildren();
     }

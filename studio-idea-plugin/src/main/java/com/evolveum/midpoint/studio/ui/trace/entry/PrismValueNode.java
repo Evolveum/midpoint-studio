@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui.trace.entry;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemName;
-import com.evolveum.midpoint.studio.ui.trace.lens.Util;
+import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 import javax.xml.namespace.QName;
@@ -15,7 +15,7 @@ public class PrismValueNode extends Node<PrismValue> {
         super(prismValue);
 
         setLabel(label);
-        setValue(Util.prettyPrint(prismValue));
+        setValue(TraceUtils.prettyPrint(prismValue));
 
         createChildren();
     }

@@ -34,9 +34,7 @@ public class TraceLensContextToolWindowFactory implements ToolWindowFactory, Dum
 
     @Override
     public boolean shouldBeAvailable(@NotNull Project project) {
-        // todo improve with MidPointUtils.isMidPointFacetPresent(project);
-        // also only if trace editor is opened
-        return true;
+        return TraceUtils.shouldBeVisible(project);
     }
 
     @Override

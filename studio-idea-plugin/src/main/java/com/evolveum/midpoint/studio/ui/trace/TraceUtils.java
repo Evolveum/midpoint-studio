@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace.lens;
+package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.util.PrismPrettyPrinter;
@@ -8,13 +8,16 @@ import com.evolveum.prism.xml.ns._public.types_3.HashedDataType;
 import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.Project;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Util {
+public class TraceUtils {
 
-    private static final Logger LOG = Logger.getInstance(Util.class);
+    private static final Logger LOG = Logger.getInstance(TraceUtils.class);
 
     public static String prettyPrint(PrismValue prismValue) {
         if (prismValue instanceof PrismPropertyValue) {
@@ -132,5 +135,20 @@ public class Util {
 
     public static String prettyPrint(List<PrismValue> values) {
         return values.stream().map(value -> prettyPrint(value)).collect(Collectors.joining("; "));
+    }
+
+    public static boolean shouldBeVisible(Project project) {
+        return true;
+        // todo finish - window factories - tool window visibility should be checked not only on startup
+
+//        FileEditorManager fem = FileEditorManager.getInstance(project);
+//
+//        for (FileEditor editor : fem.getAllEditors()) {
+//            if (editor instanceof TraceViewEditor) {
+//                return true;
+//            }
+//        }
+//
+//        return false;
     }
 }

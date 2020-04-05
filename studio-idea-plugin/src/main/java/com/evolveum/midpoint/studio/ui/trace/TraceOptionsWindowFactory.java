@@ -34,9 +34,7 @@ public class TraceOptionsWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public boolean shouldBeAvailable(@NotNull Project project) {
-        // todo improve with MidPointUtils.isMidPointFacetPresent(project);
-        // also only if trace editor is opened
-        return true;
+        return TraceUtils.shouldBeVisible(project);
     }
 
     @Override
