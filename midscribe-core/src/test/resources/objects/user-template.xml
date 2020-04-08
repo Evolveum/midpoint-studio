@@ -21,11 +21,40 @@
    xmlns:c='http://midpoint.evolveum.com/xml/ns/public/common/common-3'
    xmlns:t='http://prism.evolveum.com/xml/ns/public/types-3'>
     <name>Default User Template</name>
+    <documentation>
+        aaa I don't know that to put here, it's just an *example*.
+        [cols=3, options=header]
+        |===
+        | col1
+        | col2
+        | col3
+
+        | row1
+        | row2
+        | row3
+        |===
+    </documentation>
     <item>
         <c:ref>employeeType</c:ref>
         <valueEnumerationRef oid="5783c174-d141-11e4-bb29-001e8c717e5b"/>
     </item>
     <mapping>
+        <name>Some name</name>
+        <documentation>
+            I don't know that to put here, it's just an *example*. Table should follow:
+            [cols=3, options=header]
+            !===
+            ! col1
+            ! col2
+            ! col3
+
+            ! row1
+            ! row2
+            ! row3
+            !===
+
+
+        </documentation>
         <strength>strong</strength>
         <source>
             <path>$user/givenName</path>
@@ -34,6 +63,7 @@
             <path>$user/familyName</path>
         </source>
         <expression>
+            <documentation>some test description of this code</documentation>
             <script>
                 <code>(givenName == null ? '' : givenName) + ' ' + (familyName == null ? '' : familyName)</code>
             </script>

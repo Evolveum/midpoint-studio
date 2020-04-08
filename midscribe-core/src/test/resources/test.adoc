@@ -1,6 +1,87 @@
 :toc: left
 
-= First example
+= Examples
+
+== Mappings
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| Some name
+
+| Description
+3+| Bla bla bla some description
+
+| Documentation
+3+a|
+I don't know that to put here, it's just an *example*.
+Some list:
+
+* strength/authoritative/exclusive/channel
+* source/target/expression
+* condition/timeFrom/timeTo
+
+| Options
+| Strength: *strong*
+| Authoritative: *false*
+| Exclusive: *false*
+
+| Channels
+3+a|
+
+`channel 1` +
+`channel 2`
+
+| Except channels
+3+a|
+
+`channel 1` +
+`channel 2`
+
+| Source
+a|
+
+`$user/givenName`
+`$user/givenName`
+
+h| Target
+a|
+
+`assignment`
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+==== Ivan mapping
+
+[cols="1h,1"]
+|===
+
+^|Configuration
+^|Description
+
+|Strength
+|strong
+
+|Source(s)
+|(implicit)
+
+|Expression
+|Copies the `ri:name` attribute to user's `name` attribute
+
+|Target
+|`$focus/name`
+
+|Condition
+|(none)
+
+|===
+
+
+
+== First example
 
 Whoa.
 
@@ -11,3 +92,19 @@ I'm fine
 === third level
 
 asdf
+
+[cols=2, options=header]
+|===
+|asdf
+|asdf
+
+a|
+vilko
+
+a janko
+|
+
+a| [*]
+|d
+
+|===

@@ -18,6 +18,8 @@ $!utils.stripIndent($object.getDocumentation())
 
 ==== Mappings
 
+#parse("/template/mappings.vm")
+
 // todo
 
 ##todo describe mappings, items, archetypes, includeRef, iterations

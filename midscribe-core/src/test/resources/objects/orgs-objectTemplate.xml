@@ -16,6 +16,19 @@
            when using Projects & Orgs you need to disable 'projects-objectTemplate.xml' and enable 'orgs-objectTemplate.xml'  -->
     <mapping>
         <description>A hack to avoid feedback to HR feed - deleting accounts because they are not assigned</description>
+        <documentation>
+            ==== More technical documentation
+
+            here we go. With some list:
+
+            * A
+            * B
+            * C
+
+            ==== Another title
+
+            there is is. were're using asciidoc.
+        </documentation>
         <strength>strong</strength>
         <source>
             <c:path>orgType</c:path>

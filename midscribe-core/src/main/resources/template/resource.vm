@@ -46,7 +46,7 @@ Resource uses $!utils.getOrig($connector.getDisplayName()) connector. Artifact d
 
 #foreach($attribute in $handlersConfig)
 |$!attribute.getName()
-| $!attribute.getValue()
+|$!attribute.getValue()
 
 #end
 |===

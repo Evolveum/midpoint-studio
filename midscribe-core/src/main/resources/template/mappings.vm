@@ -1,0 +1,47 @@
+#foreach($mapping in $object.getMapping())
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| $!mapping.getName()
+
+| Description
+3+| $!mapping.getDescription()
+
+| Documentation
+3+a|
+$!utils.stripIndent($mapping.getDocumentation())
+
+| Options
+| Strength: *$mapping.getStrength()*
+| Authoritative: *$mapping.isAuthoritative()*
+| Exclusive: *$mapping.isExclusive()*
+
+| Channels
+3+a|
+
+`channel 1` +
+`channel 2`
+
+| Except channels
+3+a|
+
+`channel 1` +
+`channel 2`
+
+| Source
+a|
+
+`$user/givenName`
+`$user/givenName`
+
+h| Target
+a|
+
+`assignment`
+
+| Expression
+3+a| Expression documentation block
+|===
+
+#end
