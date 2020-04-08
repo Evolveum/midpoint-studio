@@ -38,10 +38,12 @@ public class MidPointInlayParameterHintsProvider implements InlayParameterHintsP
 
         int offset = inlayOffset(element, false);
 
-        return Arrays.asList(
-                new InlayInfo("vilo", offset, false, true, false),
-                new InlayInfo("jano", inlayOffset(element, true), false, true, true)
-        );
+        // todo implement his inlay parameter hints correctly for oid references
+//        return Arrays.asList(
+//                new InlayInfo("vilo", offset, false, true, false),
+//                new InlayInfo("jano", inlayOffset(element, true), false, true, true)
+//        );
+        return Collections.emptyList();
     }
 
     private int inlayOffset(PsiElement expr, boolean atEnd) {
