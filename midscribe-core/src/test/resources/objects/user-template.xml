@@ -56,11 +56,16 @@
 
         </documentation>
         <strength>strong</strength>
+        <channel>asdf</channel>
+        <channel>jklo</channel>
+        <exceptChannel>zxcv</exceptChannel>
+        <exceptChannel>opiu</exceptChannel>
         <source>
             <path>$user/givenName</path>
         </source>
         <source>
             <path>$user/familyName</path>
+            <name>familyNameeee</name>
         </source>
         <expression>
             <documentation>some test description of this code</documentation>

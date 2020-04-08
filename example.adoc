@@ -36,19 +36,17 @@ writing simple sectionless documents consisting only of a preamble.
 
 ==== Mappings
 
-[cols=6,options=header]
+
+[cols="h,d,d,d"]
 |===
-|Name
-|Description
-|Authoritative
-|Exclusive
-|Channel
-|
+| Name
+3+| 
 
-|
-a|
-A hack to avoid feedback to HR feed - deleting accounts because they are not assigned
+| Description
+3+| A hack to avoid feedback to HR feed - deleting accounts because they are not assigned
 
+| Documentation
+3+a|
 
 ==== More technical documentation
 
@@ -63,26 +61,78 @@ here we go. With some list:
 there is is. were're using asciidoc.
 
 
-|[*]
-|
-|
-|
-|
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
 a|
-A hack to avoid feedback to HR feed - deleting accounts because they are not assigned
 
+`orgType` +
 
-|[*]
-|
-|
-|
+h| Target
+a|
 
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
 |===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+| Description
+3+| A hack to avoid feedback to HR feed - deleting accounts because they are not assigned
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+`orgType` +
+
+h| Target
+a|
+
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
 // todo
 
 === Default User Template
 
 
+
+
+aaa I don't know that to put here, it's just an *example*.
+[cols=3, options=header]
+|===
+| col1
+| col2
+| col3
+
+| row1
+| row2
+| row3
+|===
 
 
 
@@ -100,53 +150,154 @@ A hack to avoid feedback to HR feed - deleting accounts because they are not ass
 
 ==== Mappings
 
-[cols=6,options=header]
+
+[cols="h,d,d,d"]
 |===
-|Name
-|Description
-|Authoritative
-|Exclusive
-|Channel
-|
+| Name
+3+| Some name
 
-|
+
+| Documentation
+3+a|
+
+I don't know that to put here, it's just an *example*. Table should follow:
+[cols=3, options=header]
+!===
+! col1
+! col2
+! col3
+
+! row1
+! row2
+! row3
+!===
+
+
+
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+| Channels
+3+a|
+
+`asdf` +
+`jklo` +
+
+| Except channels
+3+a|
+
+`zxcv` +
+`opiu` +
+
+| Source
 a|
 
-
-
-|[*]
-|
-|
-|
-|
-a|
-A hack to avoid feedback to HR feed - deleting accounts because they are not assigned
-
-
-|[*]
-|
-|
-|
-|
+`$user/givenName` +
+`$user/familyName` +
+ &nbsp;&nbsp;&nbsp;&nbsp;=> `familyNameeee` + 
+h| Target
 a|
 
+`fullName`  +
 
-
-|[*]
-|
-|
-|
-|
-a|
-
-
-
-|[*]
-|
-|
-|
-
+| Expression
+3+a| Expression documentation block
 |===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+| Description
+3+| A hack to avoid feedback to HR feed - deleting accounts because they are not assigned
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+`employeeType` +
+
+h| Target
+a|
+
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+`employeeType` +
+
+h| Target
+a|
+
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+`employeeType` +
+
+h| Target
+a|
+
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
 // todo
 
 
@@ -290,7 +441,7 @@ $object.getCapabilities().getNative()
 
 ===== Configured Capabilities
 
-PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@2653b95f[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@47338b8b[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}validity,enableValue=[true],disableValue=[false, ],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
+PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@7c8ae2c6[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@692c8530[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}validity,enableValue=[true],disableValue=[false, ],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
 
 === HR Feed
 
@@ -837,7 +988,7 @@ $object.getCapabilities().getNative()
 
 ===== Configured Capabilities
 
-PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@5e9affdc[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@76a756f[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}ds-pwp-account-disabled,enableValue=[],disableValue=[true],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
+PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@2b720a2c[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@21faf535[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}ds-pwp-account-disabled,enableValue=[],disableValue=[true],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
 
 === LDAP Server (OpenLDAP) over new LDAPConn.
 

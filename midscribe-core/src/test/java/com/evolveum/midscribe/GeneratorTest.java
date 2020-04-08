@@ -20,8 +20,8 @@ public class GeneratorTest {
         GenerateOptions opts = new GenerateOptions();
         opts.setSourceDirectory(new File("./src/test/resources/objects"));
         opts.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
-        opts.setAdocOutput(new File("./target/local.adoc"));
-        opts.setExportOutput(new File("./target/local.html"));
+        opts.setAdocOutput(new File("./target/example.adoc"));
+        opts.setExportOutput(new File("./target/example.html"));
         opts.setExportFormat(ExportFormat.HTML);
 
         Generator generator = new Generator(opts);
