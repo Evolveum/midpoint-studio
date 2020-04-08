@@ -19,6 +19,7 @@
             </li>
             <li>Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
             <li>Simple OID generator</li>
+            <li>Trace files viewer</li>
         </ul>
     ]]></description>
 
@@ -155,7 +156,13 @@
         <diff.lang.DiffIgnoredRangeProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
 
-<!--        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.MidPointObjectNameIndex"/>-->
+
+<!--        <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.lang.MidPointFileTypeFactory"/>-->
+<!--        <lang.ast.factory language="MidPoint" implementationClass="com.intellij.lang.xml.XmlASTFactory"/>-->
+
+        <!--<stubElementTypeHolder class="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointStubElementTypes" externalIdPrefix="xml."/>
+        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectNameIndex"/>
+        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectOidIndex"/>-->
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
