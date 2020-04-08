@@ -40,7 +40,8 @@ public class TraceViewEditorProvider implements FileEditorProvider, DumbAware {
             try (ZipInputStream zis = new ZipInputStream(file.getInputStream())) {
                 ZipEntry zipEntry = zis.getNextEntry();
                 if (zipEntry != null) {
-                    byte[] data = zis.readNBytes(FILE_DATA_PREFIX.length());
+                    byte[] data = new byte[FILE_DATA_PREFIX.length()];
+                    zis.read(data, 0, data.length);
                     if (FILE_DATA_PREFIX.equals(new String(data))) {
                         return true;
                     }
