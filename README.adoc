@@ -1,0 +1,10 @@
+= midscribe
+
+Tool that is able to generate documentation from midpoint configuration objects in asciidoc format and html export.
+
+== Example
+
+Here is an example generated from object located in `midscribe-core/src/test/resources/objects` folder.
+
+https://github.com/Evolveum/midscribe/blob/master/example.adoc[example.adoc]
+https://github.com/Evolveum/midscribe/blob/master/example.html[example.html]
