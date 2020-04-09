@@ -53,6 +53,20 @@
                         <configuration>
                             <mainClass>com.evolveum.midscribe.cmd.MidScribeMain</mainClass>
                             <classifier>executable</classifier>
+                            <requiresUnpack>
+                                <dependency>
+                                    <groupId>org.asciidoctor</groupId>
+                                    <artifactId>asciidoctorj</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.asciidoctor</groupId>
+                                    <artifactId>asciidoctorj-pdf</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jruby</groupId>
+                                    <artifactId>jruby</artifactId>
+                                </dependency>
+                            </requiresUnpack>
                         </configuration>
                     </execution>
                 </executions>
