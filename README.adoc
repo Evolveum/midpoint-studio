@@ -1,10 +1,71 @@
 = midscribe
 
-Tool that is able to generate documentation from midpoint configuration objects in asciidoc format and html export.
+Tool that is able to generate documentation from midpoint configuration objects in asciidoc format and HTML export. Export to PDF is not implemented yet.
+
+== How To Build
+
+Maven 3 is used to build this repository. To build whole project please run:
+
+```
+mvn clean install -DskipTests
+```
+
+Executable JAR file will be located in `midscribe/midscribe-cmd/target/midscribe-executable.jar`
+
+== Command Line Options
+
+```
+Usage: java [-Dlogback.configurationFile=logback.xml] -jar midscribe.jar [options] [command] [command options]
+  Options:
+    -h, --help
+      Print this help
+    -s, --silent
+      No output at all
+      Default: false
+    -v, --verbose
+      Verbose output
+      Default: false
+    -V, --version
+      Version and build description
+      Default: false
+  Commands:
+    generate      Generate documentation
+      Usage: generate [options]
+        Options:
+          -ao, --adoc-output
+            AsciiDoc output file
+          -e, --exclude
+            Exclude
+            Default: []
+          -ef, --export-format
+            Export format
+            Possible Values: [PDF, HTML]
+          -eo, --export-output
+            Export output file
+          -i, --include
+            Include
+            Default: []
+          -s, --source-directory
+            Source directory
+          -t, --template
+            Template file
+```
+
+=== Examples
+
+Following example generates only AsciiDoc file
+```
+java -jar midscribe-executable.jar generate -s <FOLDER_WITH_MIDPOINT_XML_OBJECTS> -ao documentation.adoc
+```
+
+This example generates AsciiDoc as well as HTML file
+```
+java -jar midscribe-executable.jar generate -s <FOLDER_WITH_MIDPOINT_XML_OBJECTS> -eo documentation.html -ef HTML
+```
 
 == Example
 
 Here is an example generated from object located in `midscribe-core/src/test/resources/objects` folder.
 
-https://github.com/Evolveum/midscribe/blob/master/example.adoc[example.adoc]
-https://github.com/Evolveum/midscribe/blob/master/example.html[example.html]
+* https://github.com/Evolveum/midscribe/blob/master/example.adoc[example.adoc]
+* https://github.com/Evolveum/midscribe/blob/master/example.html[example.html]
