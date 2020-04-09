@@ -47,7 +47,13 @@ public class Generator {
         }
         MidPointClient client = createMidPointClient(clientType);
 
-        File adocFile = createFile(configuration.getAdocOutput());
+        File adocOutput = configuration.getAdocOutput();
+        File exportOutput = configuration.getExportOutput();
+
+        if (adocOutput == null) {
+            adocOutput = new File(exportOutput.getParent(), exportOutput.getName() + ADOC_EXTENSION);
+        }
+        File adocFile = createFile(adocOutput);
 
         try (Writer output = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(adocFile), StandardCharsets.UTF_8))) {
@@ -70,11 +76,19 @@ public class Generator {
             return;
         }
 
-        File exportFile = createFile(configuration.getExportOutput());
+        if (exportOutput == null) {
+            exportOutput = new File(adocOutput.getParent(), adocOutput.getName() + "." + exporter.getDefaultExtension());
+        }
+        File exportFile = createFile(exportOutput);
+
+        LOG.debug("Preparing export from adoc {} to {}", adocFile, exportFile);
+
         exporter.export(adocFile, exportFile);
     }
 
     private File createFile(File file) throws IOException {
+        LOG.debug("Creating file " + file.getAbsolutePath());
+
         if (file.exists()) {
             file.delete();
         }

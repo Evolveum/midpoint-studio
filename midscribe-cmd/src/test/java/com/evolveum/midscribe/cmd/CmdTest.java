@@ -10,11 +10,12 @@ public class CmdTest {
     @Test
     public void generate() {
         String[] args = {
+                "-v",
                 "generate",
                 "-s",
-                "/Users/lazyman/Work/monoted/projects/ek/git/midpoint-project/objects",
-                "-o",
-                "./local.html",
+                "../midscribe-core/src/test/resources/objects",
+                "-eo",
+                "asdf.html",
                 "-ef",
                 "HTML"
         };

@@ -9,4 +9,6 @@ import java.io.IOException;
 public interface Exporter {
 
     void export(File adocFile, File output) throws IOException;
+
+    String getDefaultExtension();
 }

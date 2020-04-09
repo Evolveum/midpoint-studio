@@ -1,6 +1,5 @@
 package com.evolveum.midscribe.generator;
 
-import org.apache.commons.io.FileUtils;
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.AttributesBuilder;
 import org.asciidoctor.OptionsBuilder;
@@ -18,16 +17,14 @@ public class HtmlExporter implements Exporter {
     // todo figure out templates
 
     @Override
+    public String getDefaultExtension() {
+        return "html";
+    }
+
+    @Override
     public void export(File adocFile, File output) throws IOException {
-        File dir = output.getParentFile();
+        File dir = output.getAbsoluteFile().getParentFile();
         File file = new File(output.getName());
-
-        FileUtils.forceMkdir(dir);
-
-        if (output.exists()) {
-            output.delete();
-        }
-        output.createNewFile();
 
         OptionsBuilder builder = OptionsBuilder.options()
                 .safe(SafeMode.UNSAFE)

@@ -14,15 +14,6 @@ import java.util.List;
 @Parameters(resourceBundle = "messages", commandDescriptionKey = "generate")
 public class CmdGenerateOptions extends GenerateOptions {
 
-    public static final String P_EXPORT_FORMAT = "-ef";
-    public static final String P_EXPORT_FORMAT_LONG = "--export-format";
-
-    public static final String P_TEMPLATE = "-t";
-    public static final String P_TEMPLATE_LONG = "--template";
-
-    public static final String P_OUTPUT = "-o";
-    public static final String P_OUTPUT_LONG = "--output";
-
     public static final String P_SOURCE_DIRECTORY = "-s";
     public static final String P_SOURCE_DIRECTORY_LONG = "--source-directory";
 
@@ -31,6 +22,18 @@ public class CmdGenerateOptions extends GenerateOptions {
 
     public static final String P_EXCLUDE = "-e";
     public static final String P_EXCLUDE_LONG = "--exclude";
+
+    public static final String P_EXPORT_FORMAT = "-ef";
+    public static final String P_EXPORT_FORMAT_LONG = "--export-format";
+
+    public static final String P_TEMPLATE = "-t";
+    public static final String P_TEMPLATE_LONG = "--template";
+
+    public static final String P_ADOC_OUTPUT = "-ao";
+    public static final String P_ADOC_OUTPUT_LONG = "--adoc-output";
+
+    public static final String P_EXPORT_OUTPUT = "-eo";
+    public static final String P_EXPORT_OUTPUT_LONG = "--export-output";
 
     @Parameter(names = {P_TEMPLATE, P_TEMPLATE_LONG}, descriptionKey = "generate.template")
     @Override
@@ -44,7 +47,7 @@ public class CmdGenerateOptions extends GenerateOptions {
         super.setExportFormat(exportFormat);
     }
 
-    @Parameter(names = {P_OUTPUT, P_OUTPUT_LONG}, descriptionKey = "generate.output")
+    @Parameter(names = {P_EXPORT_OUTPUT, P_EXPORT_OUTPUT_LONG}, descriptionKey = "generate.exportOutput")
     @Override
     public void setExportOutput(File exportOutput) {
         super.setExportOutput(exportOutput);
@@ -66,5 +69,11 @@ public class CmdGenerateOptions extends GenerateOptions {
     @Override
     public void setInclude(List<String> include) {
         super.setInclude(include);
+    }
+
+    @Parameter(names = {P_ADOC_OUTPUT, P_ADOC_OUTPUT_LONG}, descriptionKey = "generate.adocOutput")
+    @Override
+    public void setAdocOutput(File adocOutput) {
+        super.setAdocOutput(adocOutput);
     }
 }
