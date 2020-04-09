@@ -196,6 +196,9 @@
         </capabilities> -->
         <synchronization>
             <objectSynchronization>
+                <kind>account</kind>
+                <intent>default</intent>
+                <objectClass>ri:AccountObjectClass</objectClass>
                 <enabled>true</enabled>
 
                 <correlation>

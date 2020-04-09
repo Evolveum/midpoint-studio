@@ -56,36 +56,82 @@ Resource uses $!utils.getOrig($connector.getDisplayName()) connector. Artifact d
 ==== Object Types
 ##todo sort
 #foreach($type in $object.getSchemaHandling().getObjectType())
-===== $!type.getDisplayName(), $!type.getKind()/$!type.getIntent()
+===== $!type.getDisplayName()#if ($type.getKind()), $!type.getKind()/$!type.getIntent() #end
 
 $!type.getDescription()
+
+$!type.getDocumentation()
+
+====== Overview
 
 [cols=3,options=header]
 |===
 |Attribute
 |Type
 |Description
-##todo sort
-#foreach($attribute in $type.getAttribute())
-|$!attribute.getRef().toString() ($!attribute.getDisplayName())
-|
-|$!attribute.getDescription()
+    ##todo sort
+    #foreach($attribute in $type.getAttribute())
+    |$!attribute.getRef().toString() ($!attribute.getDisplayName())
+    |
+    |$!attribute.getDescription()
 
-#end
+    #end
 |===
 
+====== Attribute Details
+
+#foreach($attribute in $type.getAttribute())
+*$!attribute.getRef().toString() ($!attribute.getDisplayName())*
+
+[.underline]#Inbounds#
+
+    #set($mappings = $attribute.getInbound())
+    #parse("/template/mappings.vm")
+
+[.underline]#Outbounds#
+
+    #set($mappings = $attribute.getOutbound())
+    #parse("/template/mappings.vm")
+
 #end
 
-==== Synchronization Configuration
+====== Credentials
 
-* Table
+====== Activation
+
+====== Association
+
+#end
+
+#if ($object.getSynchronization())
+#set ($synchronization = $object.getSynchronization())
+==== Synchronization
+
+#if ($synchronization.getObjectSynchronizationSorter())
+===== Sorter
+
+### todo sorter
+
+#end
+
+===== Object Types
+
+#foreach($obj in $synchronization.getObjectSynchronization())
+## todo improve
+===== $!obj.getName()#if ($obj.getKind()), $!obj.getKind()/$!obj.getIntent() #end
+
+##### todo describe object synchronization
+
+#end
+
+#end
 
 ==== Capabilities
 
-===== Native Capabilities
+===== Native
 
 $object.getCapabilities().getNative()
 
-===== Configured Capabilities
+===== Configured
 
 $object.getCapabilities().getConfigured()

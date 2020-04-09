@@ -1,4 +1,4 @@
-#foreach($mapping in $object.getMapping())
+#foreach($mapping in $mappings)
 
 [cols="h,d,d,d"]
 |===

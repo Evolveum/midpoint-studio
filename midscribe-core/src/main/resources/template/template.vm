@@ -18,6 +18,7 @@ $!utils.stripIndent($object.getDocumentation())
 
 ==== Mappings
 
+#set($mappings = $object.getMapping())
 #parse("/template/mappings.vm")
 
 // todo
