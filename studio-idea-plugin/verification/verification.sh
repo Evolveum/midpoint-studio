@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # IDE versions that needs to be validated with plugin
-IDE_VERSIONS=(2019.1.4 2019.2.4 2019.3.3)
+IDE_VERSIONS=(2019.2.4 2019.3.4 2020.1)
 
 # Verifier library version, see https://github.com/JetBrains/intellij-plugin-verifier
 VERIFIER_VERSION=1.223
