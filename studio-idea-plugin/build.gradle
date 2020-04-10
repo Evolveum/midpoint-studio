@@ -30,7 +30,7 @@ dependencies {
         transitive = false
     }
     compile "com.evolveum.midpoint:midpoint-localization:$midpointVersion"
-    compile("com.evolveum.midpoint:midscribe-core:$midpointVersion") {
+    compile("com.evolveum.midpoint:midscribe-core:$midscribeVersion") {
         exclude group: "org.springframework"
         exclude group: "net.sf.jasperreports"
         exclude group: "org.apache.cxf", module: "cxf-rt-wsdl"
