@@ -1,6 +1,6 @@
-= MidPoint Project Documentation
-Evolveum, s.r.o. (c) 2020
-Version 0.1, 27. 1. 2020
+= $processor.getProperty("project.name")
+$processor.getProperty("project.author")
+Version $processor.getProperty("project.version"), $processor.getProperty("project.date")
 :sectnums:
 :toc: left
 :toclevels: 4
@@ -8,8 +8,7 @@ Version 0.1, 27. 1. 2020
 
 :imagesdir: ./img
 
-This is the optional preamble (an untitled section body). Useful for
-writing simple sectionless documents consisting only of a preamble.
+$processor.getProperty("project.description")
 
 #parse("/template/templates.vm")
 

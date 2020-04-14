@@ -23,6 +23,8 @@ public class GenerateOptions {
 
     private File exportOutput;
 
+    private File properties;
+
     private Class<? extends MidPointClient> midpointClient;
 
     public File getTemplate() {
@@ -94,5 +96,13 @@ public class GenerateOptions {
         }
 
         return exclude;
+    }
+
+    public File getProperties() {
+        return properties;
+    }
+
+    public void setProperties(File properties) {
+        this.properties = properties;
     }
 }

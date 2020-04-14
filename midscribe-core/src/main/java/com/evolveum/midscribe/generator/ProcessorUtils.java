@@ -4,10 +4,10 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -16,10 +16,53 @@ public class ProcessorUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessorUtils.class);
 
+    private static final String PROPERTY_PREFIX = "midscribe.";
+
     private GeneratorContext context;
+
+    private Properties properties = new Properties();
 
     public ProcessorUtils(GeneratorContext context) {
         this.context = context;
+
+        URL url = ProcessorUtils.class.getResource("/midscribe.properties");
+        try (InputStream is = url.openStream()) {
+            properties.load(new InputStreamReader(is, StandardCharsets.UTF_8));
+        } catch (IOException ex) {
+            LOG.error("Couldn't load midscribe.properties from classpath", ex);
+        }
+
+        GenerateOptions opts = context.getConfiguration();
+        if (opts.getProperties() != null) {
+            File file = opts.getProperties();
+            if (!file.isFile() || !file.canRead()) {
+                LOG.error("Can't read file (not a regular file, doesn't exist, or access rights issue");
+            } else {
+                try (InputStream is = new FileInputStream(opts.getProperties())) {
+                    properties.load(new InputStreamReader(is, StandardCharsets.UTF_8));
+                } catch (IOException ex) {
+                    LOG.error("Couldn't load file {}, reason: {}", opts.getProperties(), ex.getMessage());
+                }
+            }
+        }
+
+        Properties system = System.getProperties();
+        for (Object obj : system.keySet()) {
+            if (!(obj instanceof String)) {
+                continue;
+            }
+
+            String key = (String) obj;
+            if (!key.startsWith(PROPERTY_PREFIX)) {
+                continue;
+            }
+
+            properties.put(key.replaceFirst(PROPERTY_PREFIX, ""), system.get(key));
+        }
+    }
+
+    public String getProperty(String key) {
+        return properties.getProperty(key);
     }
 
     public List<UserType> loadUsers() throws Exception {
