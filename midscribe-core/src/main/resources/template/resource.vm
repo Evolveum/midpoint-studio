@@ -90,7 +90,7 @@ $!type.getDocumentation()
 #parse("/template/mappings.vm")
 #end
 
-#if (!$attribute.getOutbound().isEmpty())
+#if ($attribute.getOutbound())
 [.underline]#Outbounds#
 
 #set($mappings = $attribute.getOutbound())

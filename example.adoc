@@ -1,6 +1,6 @@
 = MidPoint Project Documentation
-Evolveum, s.r.o. (c) 2020
-Version 0.1, 27. 1. 2020
+Evolveum, s.r.o.
+Version 0.1, {localdate}
 :sectnums:
 :toc: left
 :toclevels: 4
@@ -8,8 +8,7 @@ Version 0.1, 27. 1. 2020
 
 :imagesdir: ./img
 
-This is the optional preamble (an untitled section body). Useful for
-writing simple sectionless documents consisting only of a preamble.
+This is the optional preamble (an untitled section body).Useful for writing simple sectionless documents consisting only of a preamble.
 
 
 
@@ -406,29 +405,29 @@ Resource uses  connector. Artifact details:
 |Attribute
 |Type
 |Description
-        |uid (Entry ID)
-    |
-    |
+|uid (Entry ID)
+|
+|
 
-    |name (Username)
-    |
-    |
+|name (Username)
+|
+|
 
-    |first_name (First Name)
-    |
-    |
+|first_name (First Name)
+|
+|
 
-    |last_name (Last name)
-    |
-    |
+|last_name (Last name)
+|
+|
 
-    |tel_number (Telephone Number)
-    |
-    |
+|tel_number (Telephone Number)
+|
+|
 
-    |city (City)
-    |
-    |
+|city (City)
+|
+|
 
 |===
 
@@ -436,51 +435,31 @@ Resource uses  connector. Artifact details:
 
 *uid (Entry ID)*
 
-[.underline]#Inbounds#
-
-
-[.underline]#Outbounds#
-
 
 *name (Username)*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *first_name (First Name)*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *last_name (Last name)*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *tel_number (Telephone Number)*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *city (City)*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 
 ====== Credentials
@@ -499,7 +478,7 @@ $object.getCapabilities().getNative()
 
 ===== Configured
 
-PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@1a8b7423[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@4b145278[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}validity,enableValue=[true],disableValue=[false, ],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
+PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@3e60be48[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@68312b85[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}validity,enableValue=[true],disableValue=[false, ],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
 
 === HR Feed
 
@@ -584,40 +563,35 @@ Resource uses  connector. Artifact details:
 |Attribute
 |Type
 |Description
-        |uid (ICF UID)
-    |
-    |
+|uid (ICF UID)
+|
+|
 
-    |name (Employee#)
-    |
-    |
+|name (Employee#)
+|
+|
 
-    |firstname (First Name)
-    |
-    |Definition of Firstname attribute handling.
+|firstname (First Name)
+|
+|Definition of Firstname attribute handling.
 
-    |lastname (Last name)
-    |
-    |
+|lastname (Last name)
+|
+|
 
-    |artname (Artistic name)
-    |
-    |
+|artname (Artistic name)
+|
+|
 
-    |emptype (Employee type)
-    |
-    |
+|emptype (Employee type)
+|
+|
 
 |===
 
 ====== Attribute Details
 
 *uid (ICF UID)*
-
-[.underline]#Inbounds#
-
-
-[.underline]#Outbounds#
 
 
 *name (Employee#)*
@@ -653,9 +627,6 @@ a|
 |===
 
 
-[.underline]#Outbounds#
-
-
 *firstname (First Name)*
 
 [.underline]#Inbounds#
@@ -689,9 +660,6 @@ a|
 |===
 
 
-[.underline]#Outbounds#
-
-
 *lastname (Last name)*
 
 [.underline]#Inbounds#
@@ -723,9 +691,6 @@ a|
 | Expression
 3+a| Expression documentation block
 |===
-
-
-[.underline]#Outbounds#
 
 
 *artname (Artistic name)*
@@ -817,9 +782,6 @@ a|
 |===
 
 
-[.underline]#Outbounds#
-
-
 *emptype (Employee type)*
 
 [.underline]#Inbounds#
@@ -851,9 +813,6 @@ a|
 | Expression
 3+a| Expression documentation block
 |===
-
-
-[.underline]#Outbounds#
 
 
 
@@ -970,13 +929,13 @@ Resource uses  connector. Artifact details:
 |Attribute
 |Type
 |Description
-        |dn ()
-    |
-    |
+|dn ()
+|
+|
 
-    |ou ()
-    |
-    |
+|ou ()
+|
+|
 
 |===
 
@@ -984,18 +943,10 @@ Resource uses  connector. Artifact details:
 
 *dn ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *ou ()*
-
-[.underline]#Inbounds#
-
-
-[.underline]#Outbounds#
 
 
 
@@ -1112,17 +1063,17 @@ Resource uses  connector. Artifact details:
 |Attribute
 |Type
 |Description
-        |name ()
-    |
-    |
+|name ()
+|
+|
 
-    |cn ()
-    |
-    |
+|cn ()
+|
+|
 
-    |description ()
-    |
-    |
+|description ()
+|
+|
 
 |===
 
@@ -1130,27 +1081,18 @@ Resource uses  connector. Artifact details:
 
 *name ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *cn ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *description ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 
 ====== Credentials
@@ -1270,49 +1212,49 @@ Resource uses  connector. Artifact details:
 |Attribute
 |Type
 |Description
-        |dn (Distinguished Name)
-    |
-    |
+|dn (Distinguished Name)
+|
+|
 
-    |entryUUID (Entry UUID)
-    |
-    |
+|entryUUID (Entry UUID)
+|
+|
 
-    |cn (Common Name)
-    |
-    |
+|cn (Common Name)
+|
+|
 
-    |sn (Surname)
-    |
-    |
+|sn (Surname)
+|
+|
 
-    |givenName (Given Name)
-    |
-    |
+|givenName (Given Name)
+|
+|
 
-    |uid (Login Name)
-    |
-    |
+|uid (Login Name)
+|
+|
 
-    |description ()
-    |
-    |
+|description ()
+|
+|
 
-    |l ()
-    |
-    |
+|l ()
+|
+|
 
-    |telephoneNumber ()
-    |
-    |
+|telephoneNumber ()
+|
+|
 
-    |employeeNumber ()
-    |
-    |
+|employeeNumber ()
+|
+|
 
-    |employeeType ()
-    |
-    |
+|employeeType ()
+|
+|
 
 |===
 
@@ -1320,18 +1262,10 @@ Resource uses  connector. Artifact details:
 
 *dn (Distinguished Name)*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *entryUUID (Entry UUID)*
-
-[.underline]#Inbounds#
-
-
-[.underline]#Outbounds#
 
 
 *cn (Common Name)*
@@ -1369,7 +1303,6 @@ a|
 
 [.underline]#Outbounds#
 
-
 *sn (Surname)*
 
 [.underline]#Inbounds#
@@ -1404,7 +1337,6 @@ a|
 
 
 [.underline]#Outbounds#
-
 
 *givenName (Given Name)*
 
@@ -1441,7 +1373,6 @@ a|
 
 [.underline]#Outbounds#
 
-
 *uid (Login Name)*
 
 [.underline]#Inbounds#
@@ -1477,14 +1408,10 @@ a|
 
 [.underline]#Outbounds#
 
-
 *description ()*
-
-[.underline]#Inbounds#
 
 
 [.underline]#Outbounds#
-
 
 *l ()*
 
@@ -1517,9 +1444,6 @@ a|
 | Expression
 3+a| Expression documentation block
 |===
-
-
-[.underline]#Outbounds#
 
 
 *telephoneNumber ()*
@@ -1557,7 +1481,6 @@ a|
 
 [.underline]#Outbounds#
 
-
 *employeeNumber ()*
 
 [.underline]#Inbounds#
@@ -1592,7 +1515,6 @@ a|
 
 
 [.underline]#Outbounds#
-
 
 *employeeType ()*
 
@@ -1630,7 +1552,6 @@ a|
 [.underline]#Outbounds#
 
 
-
 ====== Credentials
 
 ====== Activation
@@ -1650,7 +1571,7 @@ a|
 |Attribute
 |Type
 |Description
-    |===
+|===
 
 ====== Attribute Details
 
@@ -1674,17 +1595,17 @@ a|
 |Attribute
 |Type
 |Description
-        |dn ()
-    |
-    |
+|dn ()
+|
+|
 
-    |cn ()
-    |
-    |
+|cn ()
+|
+|
 
-    |description ()
-    |
-    |
+|description ()
+|
+|
 
 |===
 
@@ -1692,27 +1613,18 @@ a|
 
 *dn ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *cn ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *description ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 
 ====== Credentials
@@ -1734,13 +1646,13 @@ a|
 |Attribute
 |Type
 |Description
-        |dn ()
-    |
-    |
+|dn ()
+|
+|
 
-    |ou ()
-    |
-    |
+|ou ()
+|
+|
 
 |===
 
@@ -1748,18 +1660,10 @@ a|
 
 *dn ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *ou ()*
-
-[.underline]#Inbounds#
-
-
-[.underline]#Outbounds#
 
 
 
@@ -1794,7 +1698,7 @@ $object.getCapabilities().getNative()
 
 ===== Configured
 
-PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@2fb37f92[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@a55ed01[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}ds-pwp-account-disabled,enableValue=[],disableValue=[true],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
+PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@1e40edb7[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@27381497[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}ds-pwp-account-disabled,enableValue=[],disableValue=[true],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
 
 === LDAP Server (OpenLDAP) over new LDAPConn.
 
@@ -1895,49 +1799,49 @@ Resource uses  connector. Artifact details:
 |Attribute
 |Type
 |Description
-        |dn (Distinguished Name)
-    |
-    |
+|dn (Distinguished Name)
+|
+|
 
-    |entryUUID (Entry UUID)
-    |
-    |
+|entryUUID (Entry UUID)
+|
+|
 
-    |cn (Common Name)
-    |
-    |
+|cn (Common Name)
+|
+|
 
-    |sn (Surname)
-    |
-    |
+|sn (Surname)
+|
+|
 
-    |givenName (Given Name)
-    |
-    |
+|givenName (Given Name)
+|
+|
 
-    |uid (Login Name)
-    |
-    |
+|uid (Login Name)
+|
+|
 
-    |description ()
-    |
-    |
+|description ()
+|
+|
 
-    |l ()
-    |
-    |
+|l ()
+|
+|
 
-    |telephoneNumber ()
-    |
-    |
+|telephoneNumber ()
+|
+|
 
-    |employeeNumber ()
-    |
-    |
+|employeeNumber ()
+|
+|
 
-    |employeeType ()
-    |
-    |
+|employeeType ()
+|
+|
 
 |===
 
@@ -1945,18 +1849,10 @@ Resource uses  connector. Artifact details:
 
 *dn (Distinguished Name)*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *entryUUID (Entry UUID)*
-
-[.underline]#Inbounds#
-
-
-[.underline]#Outbounds#
 
 
 *cn (Common Name)*
@@ -1994,7 +1890,6 @@ a|
 
 [.underline]#Outbounds#
 
-
 *sn (Surname)*
 
 [.underline]#Inbounds#
@@ -2029,7 +1924,6 @@ a|
 
 
 [.underline]#Outbounds#
-
 
 *givenName (Given Name)*
 
@@ -2066,7 +1960,6 @@ a|
 
 [.underline]#Outbounds#
 
-
 *uid (Login Name)*
 
 [.underline]#Inbounds#
@@ -2102,14 +1995,10 @@ a|
 
 [.underline]#Outbounds#
 
-
 *description ()*
-
-[.underline]#Inbounds#
 
 
 [.underline]#Outbounds#
-
 
 *l ()*
 
@@ -2142,9 +2031,6 @@ a|
 | Expression
 3+a| Expression documentation block
 |===
-
-
-[.underline]#Outbounds#
 
 
 *telephoneNumber ()*
@@ -2182,7 +2068,6 @@ a|
 
 [.underline]#Outbounds#
 
-
 *employeeNumber ()*
 
 [.underline]#Inbounds#
@@ -2217,7 +2102,6 @@ a|
 
 
 [.underline]#Outbounds#
-
 
 *employeeType ()*
 
@@ -2255,7 +2139,6 @@ a|
 [.underline]#Outbounds#
 
 
-
 ====== Credentials
 
 ====== Activation
@@ -2275,7 +2158,7 @@ a|
 |Attribute
 |Type
 |Description
-    |===
+|===
 
 ====== Attribute Details
 
@@ -2299,17 +2182,17 @@ a|
 |Attribute
 |Type
 |Description
-        |dn ()
-    |
-    |
+|dn ()
+|
+|
 
-    |cn ()
-    |
-    |
+|cn ()
+|
+|
 
-    |description ()
-    |
-    |
+|description ()
+|
+|
 
 |===
 
@@ -2317,27 +2200,18 @@ a|
 
 *dn ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *cn ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *description ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 
 ====== Credentials
@@ -2359,13 +2233,13 @@ a|
 |Attribute
 |Type
 |Description
-        |dn ()
-    |
-    |
+|dn ()
+|
+|
 
-    |ou ()
-    |
-    |
+|ou ()
+|
+|
 
 |===
 
@@ -2373,18 +2247,10 @@ a|
 
 *dn ()*
 
-[.underline]#Inbounds#
-
 
 [.underline]#Outbounds#
-
 
 *ou ()*
-
-[.underline]#Inbounds#
-
-
-[.underline]#Outbounds#
 
 
 
