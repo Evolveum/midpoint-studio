@@ -35,6 +35,9 @@ public class CmdGenerateOptions extends GenerateOptions {
     public static final String P_EXPORT_OUTPUT = "-eo";
     public static final String P_EXPORT_OUTPUT_LONG = "--export-output";
 
+    public static final String P_PROPERTIES_FILE = "-pf";
+    public static final String P_PROPERTIES_FILE_LONG = "--properties-file";
+
     @Parameter(names = {P_TEMPLATE, P_TEMPLATE_LONG}, descriptionKey = "generate.template")
     @Override
     public void setTemplate(File template) {
@@ -75,5 +78,11 @@ public class CmdGenerateOptions extends GenerateOptions {
     @Override
     public void setAdocOutput(File adocOutput) {
         super.setAdocOutput(adocOutput);
+    }
+
+    @Parameter(names = {P_PROPERTIES_FILE, P_PROPERTIES_FILE_LONG}, descriptionKey = "generate.propertiesFile")
+    @Override
+    public void setProperties(File properties) {
+        super.setProperties(properties);
     }
 }

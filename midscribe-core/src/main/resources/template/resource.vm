@@ -69,13 +69,13 @@ $!type.getDocumentation()
 |Attribute
 |Type
 |Description
-    ##todo sort
-    #foreach($attribute in $type.getAttribute())
-    |$!attribute.getRef().toString() ($!attribute.getDisplayName())
-    |
-    |$!attribute.getDescription()
+##todo sort
+#foreach($attribute in $type.getAttribute())
+|$!attribute.getRef().toString() ($!attribute.getDisplayName())
+|
+|$!attribute.getDescription()
 
-    #end
+#end
 |===
 
 ====== Attribute Details
@@ -83,16 +83,19 @@ $!type.getDocumentation()
 #foreach($attribute in $type.getAttribute())
 *$!attribute.getRef().toString() ($!attribute.getDisplayName())*
 
+#if (!$attribute.getInbound().isEmpty())
 [.underline]#Inbounds#
 
-    #set($mappings = $attribute.getInbound())
-    #parse("/template/mappings.vm")
+#set($mappings = $attribute.getInbound())
+#parse("/template/mappings.vm")
+#end
 
+#if (!$attribute.getOutbound().isEmpty())
 [.underline]#Outbounds#
 
-    #set($mappings = $attribute.getOutbound())
-    #parse("/template/mappings.vm")
-
+#set($mappings = $attribute.getOutbound())
+#parse("/template/mappings.vm")
+#end
 #end
 
 ====== Credentials

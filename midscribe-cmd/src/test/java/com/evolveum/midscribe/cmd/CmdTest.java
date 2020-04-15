@@ -15,9 +15,11 @@ public class CmdTest {
                 "-s",
                 "../midscribe-core/src/test/resources/objects",
                 "-eo",
-                "asdf.html",
+                "./target/example.html",
                 "-ef",
-                "HTML"
+                "HTML",
+                "-pf",
+                "./src/test/resources/example.properties"
         };
 
         MidScribeMain.main(args);
