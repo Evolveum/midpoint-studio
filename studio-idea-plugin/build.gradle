@@ -11,6 +11,8 @@ plugins {
     id "com.palantir.git-version" version "0.12.2"
 }
 
+apply from: "$rootDir/$project.name/verifier.gradle"
+
 dependencies {
     compile(project(':midpoint-client')) {
         exclude group: "org.slf4j"
@@ -67,6 +69,11 @@ intellij {
         channels project.channels
         token System.getenv('studio_intellijPublishToken')
     }
+}
+
+runPluginVerifier {
+    pluginFileName = "$project.name-$version"
+    ides = ["IC-2019.2", "IC-2019.3", "IC-2020.1"]
 }
 
 buildPlugin.configure {
