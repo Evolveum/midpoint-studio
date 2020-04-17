@@ -47,18 +47,12 @@ public class Generator {
         }
         MidPointClient client = createMidPointClient(clientType);
 
-        File adocOutput = configuration.getAdocOutput();
-        File exportOutput = configuration.getExportOutput();
-
-        if (adocOutput == null) {
-            adocOutput = new File(exportOutput.getParent(), exportOutput.getName() + ADOC_EXTENSION);
-        }
-        File adocFile = createFile(adocOutput);
+        File adocFile = createAdocFile();
 
         try (Writer output = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(adocFile), StandardCharsets.UTF_8))) {
 
-            VelocityGeneratorProcessor processor = new VelocityGeneratorProcessor(properties);
+            VelocityGeneratorProcessor processor = new VelocityGeneratorProcessor(configuration.getTemplate(), properties);
 
             GeneratorContext ctx = new GeneratorContext(configuration, client);
             processor.process(output, ctx);
@@ -76,14 +70,32 @@ public class Generator {
             return;
         }
 
-        if (exportOutput == null) {
-            exportOutput = new File(adocOutput.getParent(), adocOutput.getName() + "." + exporter.getDefaultExtension());
-        }
-        File exportFile = createFile(exportOutput);
-
+        File exportFile = createExportFile(exporter);
         LOG.debug("Preparing export from adoc {} to {}", adocFile, exportFile);
 
         exporter.export(adocFile, exportFile);
+    }
+
+    private File createExportFile(Exporter exporter) throws IOException {
+        File adocOutput = configuration.getAdocOutput();
+        File exportOutput = configuration.getExportOutput();
+
+        if (exportOutput == null) {
+            exportOutput = new File(adocOutput.getParent(), adocOutput.getName() + "." + exporter.getDefaultExtension());
+        }
+
+        return createFile(exportOutput);
+    }
+
+    private File createAdocFile() throws IOException {
+        File adocOutput = configuration.getAdocOutput();
+        File exportOutput = configuration.getExportOutput();
+
+        if (adocOutput == null) {
+            adocOutput = new File(exportOutput.getParent(), exportOutput.getName() + ADOC_EXTENSION);
+        }
+
+        return createFile(adocOutput);
     }
 
     private File createFile(File file) throws IOException {

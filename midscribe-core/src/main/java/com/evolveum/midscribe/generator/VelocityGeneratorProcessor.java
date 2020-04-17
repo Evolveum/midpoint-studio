@@ -6,6 +6,7 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -18,14 +19,14 @@ public class VelocityGeneratorProcessor {
 
     private VelocityEngine engine;
 
-    public VelocityGeneratorProcessor(Properties props) {
-        init(props);
+    public VelocityGeneratorProcessor(File template, Properties props) {
+        init(template, props);
     }
 
-    private void init(Properties properties) {
+    private void init(File template, Properties properties) {
         Properties props = new Properties();
-        props.put(RuntimeConstants.RESOURCE_LOADER, "classpath");
-        props.put("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+        props.put(RuntimeConstants.RESOURCE_LOADER, "composite");
+        props.put("composite.resource.loader.instance", new CompositeResourceLoader(template));
 
         if (properties != null) {
             props.putAll(properties);
