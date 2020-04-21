@@ -16,9 +16,6 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        toolWindow.setStripeTitle("Trace");
-        toolWindow.setTitle("Trace");
-
         ContentManager contentManager = toolWindow.getContentManager();
 
         Content variablesContent = buildVariables(project);
@@ -57,6 +54,8 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public void init(ToolWindow window) {
+        window.setStripeTitle("Trace");
+        window.setTitle("Trace");
     }
 
     @Override

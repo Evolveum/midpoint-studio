@@ -27,9 +27,7 @@ public class TraceOptionsWindowFactory implements ToolWindowFactory, DumbAware {
     @Override
     public void init(ToolWindow window) {
         window.setStripeTitle("Trace Options");
-//        window.setTitle("Trace Options");
-        window.setDefaultContentUiType(ToolWindowContentUiType.COMBO);
-        window.setContentUiType(ToolWindowContentUiType.COMBO, null);
+        window.setTitle("Trace Options");
     }
 
     @Override

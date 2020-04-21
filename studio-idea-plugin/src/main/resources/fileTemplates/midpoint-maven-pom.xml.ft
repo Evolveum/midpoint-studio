@@ -26,9 +26,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>9</java.version>
 
-        <connid.version>1.5.0.0</connid.version>
+        <connid.version>1.5.0.10</connid.version>
         <scripted.sql.version>2.1</scripted.sql.version>
-        <midpoint.version>4.1-SNAPSHOT</midpoint.version>
+        <midpoint.version>4.1</midpoint.version>
         <groovy.version>2.4.14</groovy.version>
         <testng.version>6.14.3</testng.version>
     </properties>

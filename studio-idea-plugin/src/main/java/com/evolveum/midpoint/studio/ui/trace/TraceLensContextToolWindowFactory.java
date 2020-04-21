@@ -27,9 +27,7 @@ public class TraceLensContextToolWindowFactory implements ToolWindowFactory, Dum
     @Override
     public void init(ToolWindow window) {
         window.setStripeTitle("Lens Context");
-//        window.setTitle("Lens Context");
-        window.setDefaultContentUiType(ToolWindowContentUiType.COMBO);
-        window.setContentUiType(ToolWindowContentUiType.COMBO, null);
+        window.setTitle("Lens Context");
     }
 
     @Override
