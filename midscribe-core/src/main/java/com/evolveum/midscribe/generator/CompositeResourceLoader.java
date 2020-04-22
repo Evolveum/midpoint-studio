@@ -1,5 +1,6 @@
 package com.evolveum.midscribe.generator;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeServices;
 import org.apache.velocity.runtime.resource.Resource;
@@ -8,6 +9,8 @@ import org.apache.velocity.runtime.resource.loader.ResourceLoader;
 import org.apache.velocity.util.ExtProperties;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -41,6 +44,14 @@ public class CompositeResourceLoader extends ResourceLoader {
             return;
         }
 
+        if (template.isDirectory()) {
+            loadDirectory();
+        } else {
+            loadZipFile();
+        }
+    }
+
+    private void loadZipFile() {
         try (ZipInputStream zis = new ZipInputStream(new FileInputStream(template))) {
             ZipEntry zipEntry = zis.getNextEntry();
             while (zipEntry != null) {
@@ -52,6 +63,26 @@ public class CompositeResourceLoader extends ResourceLoader {
             zis.closeEntry();
         } catch (IOException ex) {
             throw new RuntimeException("Couldn't load template " + template, ex);
+        }
+    }
+
+    private void loadDirectory() {
+        Collection<File> templates = FileUtils.listFiles(template, new String[]{"vm"}, true);
+
+        try {
+            for (File template : templates) {
+                byte[] data = FileUtils.readFileToByteArray(template);
+
+                Path path = this.template.toPath().relativize(template.toPath());
+                String name = path.toString();
+                if (!name.startsWith("/")) {
+                    name = "/" + name;
+                }
+
+                templateMap.put(name, data);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException("Couldn't load template", ex);
         }
     }
 
