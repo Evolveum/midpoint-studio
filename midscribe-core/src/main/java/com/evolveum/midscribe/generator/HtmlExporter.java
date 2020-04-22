@@ -36,6 +36,10 @@ public class HtmlExporter implements Exporter {
 
         Map<String, Object> options = builder.asMap();
 
+        // this should improve performance of JRuby
+        System.setProperty("jruby.compat.version", "RUBY1_9");
+        System.setProperty("jruby.compile.mode", "OFF");
+
         Asciidoctor doctor = Asciidoctor.Factory.create();
         doctor.convertFile(adocFile, options);
     }
