@@ -4,10 +4,8 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -17,13 +15,19 @@ import java.util.Properties;
  */
 public class VelocityGeneratorProcessor {
 
+    private GenerateOptions options;
+
     private VelocityEngine engine;
 
-    public VelocityGeneratorProcessor(File template, Properties props) {
-        init(template, props);
+    public VelocityGeneratorProcessor(GenerateOptions options, Properties props) {
+        this.options = options;
+
+        init(props);
     }
 
-    private void init(File template, Properties properties) {
+    private void init(Properties properties) {
+        File template = options.getTemplate();
+
         Properties props = new Properties();
         props.put(RuntimeConstants.RESOURCE_LOADER, "composite");
         props.put("composite.resource.loader.instance", new CompositeResourceLoader(template));
@@ -40,7 +44,7 @@ public class VelocityGeneratorProcessor {
         return engine.getTemplate(name, StandardCharsets.UTF_8.name());
     }
 
-    public void process(Writer output, GeneratorContext ctx) throws IOException {
+    public void process(Writer output, GeneratorContext ctx) throws Exception {
         Template template = getTemplate("/template/documentation.vm");
         if (template == null) {
             return;
@@ -52,6 +56,20 @@ public class VelocityGeneratorProcessor {
         context.put("utils", TemplateUtils.class);
         context.put("processor", new ProcessorUtils(ctx));
 
+        TemplateEngineContextBuilder builder = createTemplateEngineContextBuilder();
+        if (builder != null) {
+            builder.registerVariables(context, ctx);
+        }
+
         template.merge(context, output);
+    }
+
+    private TemplateEngineContextBuilder createTemplateEngineContextBuilder() throws Exception {
+        Class<? extends TemplateEngineContextBuilder> type = options.getTemplateEngineContextBuilder();
+        if (type == null) {
+            return null;
+        }
+
+        return type.getDeclaredConstructor().newInstance();
     }
 }

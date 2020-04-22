@@ -27,6 +27,8 @@ public class GenerateOptions {
 
     private Class<? extends MidPointClient> midpointClient;
 
+    private Class<? extends TemplateEngineContextBuilder> templateEngineContextBuilder;
+
     public File getTemplate() {
         return template;
     }
@@ -81,6 +83,14 @@ public class GenerateOptions {
 
     public void setMidpointClient(Class<? extends MidPointClient> midpointClient) {
         this.midpointClient = midpointClient;
+    }
+
+    public Class<? extends TemplateEngineContextBuilder> getTemplateEngineContextBuilder() {
+        return templateEngineContextBuilder;
+    }
+
+    public void setTemplateEngineContextBuilder(Class<? extends TemplateEngineContextBuilder> templateEngineContextBuilder) {
+        this.templateEngineContextBuilder = templateEngineContextBuilder;
     }
 
     public List<String> getInclude() {

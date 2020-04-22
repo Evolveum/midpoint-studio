@@ -52,7 +52,7 @@ public class Generator {
         try (Writer output = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(adocFile), StandardCharsets.UTF_8))) {
 
-            VelocityGeneratorProcessor processor = new VelocityGeneratorProcessor(configuration.getTemplate(), properties);
+            VelocityGeneratorProcessor processor = new VelocityGeneratorProcessor(configuration, properties);
 
             GeneratorContext ctx = new GeneratorContext(configuration, client);
             processor.process(output, ctx);
