@@ -5,10 +5,11 @@ Version $processor.getProperty("project.version"), $processor.getProperty("proje
 :toc: left
 :toclevels: 4
 :toc-title: Table of Contents
+:source-highlighter: highlightjs
 
 :imagesdir: ./img
 
-$processor.getProperty("project.description")
+#parse("/template/introduction.vm")
 
 #parse("/template/templates.vm")
 
@@ -23,3 +24,5 @@ $processor.getProperty("project.description")
 #parse("/template/tasks.vm")
 
 #parse("/template/users.vm")
+
+#parse("/template/conclusion.vm")
