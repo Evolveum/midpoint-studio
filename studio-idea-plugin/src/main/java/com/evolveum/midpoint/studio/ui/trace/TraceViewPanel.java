@@ -8,6 +8,11 @@ import com.evolveum.midpoint.studio.impl.trace.TraceManager;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBSplitter;
@@ -115,7 +120,39 @@ public class TraceViewPanel extends JPanel {
         main.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         main.addTreeSelectionListener(e -> mainTableSelectionChanged(e));
 
-        return new JBScrollPane(main);
+        JPanel panel = new BorderLayoutPanel();
+        JComponent toolbar = initMainToolbar();
+        panel.add(toolbar, BorderLayout.NORTH);
+
+        panel.add(new JBScrollPane(main), BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JComponent initMainToolbar() {
+        DefaultActionGroup group = new DefaultActionGroup();
+
+        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> main.expandAll());
+        group.add(expandAll);
+
+        AnAction collapseAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Collapseall, e -> main.collapseAll());
+        group.add(collapseAll);
+
+        ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceViewPanelMainToolbar", group, true);
+        return resultsActionsToolbar.getComponent();
+    }
+
+    private JComponent initTraceStructureToolbar() {
+        DefaultActionGroup group = new DefaultActionGroup();
+
+        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> traceStructure.expandAll());
+        group.add(expandAll);
+
+        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> traceStructure.collapseAll());
+        group.add(collapseAll);
+
+        ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceViewPanelStructureToolbar", group, true);
+        return resultsActionsToolbar.getComponent();
     }
 
     private void mainTableSelectionChanged(TreeSelectionEvent e) {
@@ -128,14 +165,6 @@ public class TraceViewPanel extends JPanel {
     }
 
     private JComponent initTraceStructure(List<OpNode> data, long start) {
-        JPanel panel = new BorderLayoutPanel();
-
-        traceStructureLabel = new JLabel();
-        traceStructureLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        panel.add(traceStructureLabel, BorderLayout.NORTH);
-
-        refreshFileLabel(null);
-
         List<TreeTableColumnDefinition> columns = new ArrayList<>();
 
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Operation", 500, o -> o.getOperationNameFormatted()));
@@ -154,7 +183,19 @@ public class TraceViewPanel extends JPanel {
         columns.add(new TreeTableColumnDefinition<OpNode, String>("Log", 50, o -> Integer.toString(o.getLogEntriesCount())));
 
         traceStructure = MidPointUtils.createTable(new TraceStructureTreeTableModel(columns, data), columns);
-        panel.add(new JBScrollPane(traceStructure), BorderLayout.CENTER);
+
+        JComponent toolbar = initTraceStructureToolbar();
+
+        traceStructureLabel = new JLabel();
+        traceStructureLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        refreshFileLabel(null);
+
+        JPanel panel = MidPointUtils.createBorderLayoutPanel(
+                MidPointUtils.createBorderLayoutPanel(toolbar, traceStructureLabel, null),
+                new JBScrollPane(traceStructure),
+                null
+        );
 
         return new HeaderDecorator("Trace Structure", panel);
     }

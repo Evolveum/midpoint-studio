@@ -14,6 +14,7 @@ import com.evolveum.midpoint.studio.ui.trace.entry.TraceNode;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceType;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
@@ -173,7 +174,9 @@ public class TraceTreePanel extends BorderLayoutPanel {
         this.variables.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.variables.addTreeSelectionListener(e -> variablesSelectionChanged(e));
 
-        splitter.setFirstComponent(new JBScrollPane(this.variables));
+        JComponent mainToolbar = initMainToolbar();
+
+        splitter.setFirstComponent(MidPointUtils.createBorderLayoutPanel(mainToolbar, new JBScrollPane(this.variables), null));
 
         JPanel left = new BorderLayoutPanel();
         splitter.setSecondComponent(left);
@@ -204,6 +207,19 @@ public class TraceTreePanel extends BorderLayoutPanel {
 
         variablesValue = new JBTextArea();
         left.add(new JBScrollPane(variablesValue), BorderLayout.CENTER);
+    }
+
+    private JComponent initMainToolbar() {
+        DefaultActionGroup group = new DefaultActionGroup();
+
+        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> variables.expandAll());
+        group.add(expandAll);
+
+        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> variables.collapseAll());
+        group.add(collapseAll);
+
+        ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceTreeToolbar", group, true);
+        return resultsActionsToolbar.getComponent();
     }
 
     private static class FormatComboboxAction extends ComboBoxAction {

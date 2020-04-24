@@ -10,6 +10,11 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ClockworkTraceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LensContextType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
@@ -66,6 +71,22 @@ public class TraceLensContextPanel extends BorderLayoutPanel {
                 Arrays.asList("Item", "Old", "Current", "New")), null);
 
         add(new JBScrollPane(table), BorderLayout.CENTER);
+
+        JComponent toolbar = initMainToolbar();
+        add(toolbar, BorderLayout.NORTH);
+    }
+
+    private JComponent initMainToolbar() {
+        DefaultActionGroup group = new DefaultActionGroup();
+
+        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> table.expandAll());
+        group.add(expandAll);
+
+        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> table.collapseAll());
+        group.add(collapseAll);
+
+        ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceLensContextToolbar", group, true);
+        return resultsActionsToolbar.getComponent();
     }
 
     private void nodeChange(OpNode node) {

@@ -18,7 +18,7 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ContentManager contentManager = toolWindow.getContentManager();
 
-        Content variablesContent = buildVariables(project);
+        Content variablesContent = buildTraceTree(project);
         contentManager.addContent(variablesContent);
         contentManager.setSelectedContent(variablesContent);
 
@@ -42,7 +42,7 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
         return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entry Details Raw", false);
     }
 
-    private Content buildVariables(Project project) {
+    private Content buildTraceTree(Project project) {
         TraceTreePanel variables = new TraceTreePanel(project);
         return ContentFactory.SERVICE.getInstance().createContent(variables, "Trace Tree", false);
     }

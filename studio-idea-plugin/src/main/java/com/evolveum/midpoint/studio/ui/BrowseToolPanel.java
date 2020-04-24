@@ -277,6 +277,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private DefaultActionGroup createResultsActionGroup() {
         DefaultActionGroup group = new DefaultActionGroup();
 
+        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> results.expandAll());
+        group.add(expandAll);
+
+        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> results.collapseAll());
+        group.add(collapseAll);
+
+        group.add(new Separator());
+
         downloadAction = createAnAction("Download", AllIcons.Actions.Download,
                 e -> downloadPerformed(e, false, rawDownload),
                 e -> isDownloadShowEnabled());

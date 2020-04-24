@@ -37,6 +37,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
+import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.TreeTableModel;
@@ -46,6 +47,7 @@ import javax.swing.*;
 import javax.swing.table.TableColumn;
 import javax.xml.namespace.QName;
 import java.awt.Color;
+import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
@@ -246,6 +248,10 @@ public class MidPointUtils {
         return map;
     }
 
+    public static AnAction createAnAction(String text, Icon icon, Consumer<AnActionEvent> actionPerformed) {
+        return createAnAction(text, icon, actionPerformed, null);
+    }
+
     public static AnAction createAnAction(String text, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
         return createAnAction(text, text, icon, actionPerformed, update);
     }
@@ -375,5 +381,22 @@ public class MidPointUtils {
         }
 
         return null;
+    }
+
+    public static JPanel createBorderLayoutPanel(JComponent north, JComponent center, JComponent south) {
+        JPanel panel = new BorderLayoutPanel();
+        if (north != null) {
+            panel.add(north, BorderLayout.NORTH);
+        }
+
+        if (center != null) {
+            panel.add(center, BorderLayout.CENTER);
+        }
+
+        if (south != null) {
+            panel.add(south, BorderLayout.SOUTH);
+        }
+
+        return panel;
     }
 }
