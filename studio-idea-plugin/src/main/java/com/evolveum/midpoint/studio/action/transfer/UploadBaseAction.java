@@ -143,6 +143,8 @@ public abstract class UploadBaseAction extends BackgroundAction {
     }
 
     private int execute(MidPointManager mm, ProgressIndicator indicator, MidPointClient client, String text) {
+        indicator.setIndeterminate(false);
+
         int problemCount = 0;
 
         try {

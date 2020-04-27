@@ -41,10 +41,10 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
             path += "/" + object.getOid();
 
             client.replacePath(REST_PREFIX + "/" + path);
-            response = client.put(object);
+            response = client.put(object.asPrismObject());
         } else {
             client.replacePath(REST_PREFIX + "/" + path);
-            response = client.post(object);
+            response = client.post(object.asPrismObject());
         }
 
         validateResponse(response);
