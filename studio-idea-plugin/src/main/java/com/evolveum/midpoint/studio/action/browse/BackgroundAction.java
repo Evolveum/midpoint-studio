@@ -38,6 +38,10 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
         this.taskTitle = taskTitle;
     }
 
+    public String getTaskTitle() {
+        return taskTitle;
+    }
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
         Project project = evt.getProject();

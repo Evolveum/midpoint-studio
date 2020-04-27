@@ -62,18 +62,19 @@
             <implementation-class>com.evolveum.midpoint.studio.impl.trace.TraceManager</implementation-class>
         </component>
     </project-components>
-    
+
     <extensions defaultExtensionNs="com.intellij">
 
-        <projectStructureConfigurableAdder implementation="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurableContributor" />
+        <projectStructureConfigurableAdder
+                implementation="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurableContributor"/>
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
-        
-<!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
+
+        <!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
 
         <!-- TODO finish implementation -->
         <!--<xmlStructureViewBuilderProvider
@@ -87,10 +88,10 @@
 
         <moduleBuilder builderClass="com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder"/>
 
-<!--        <toolWindow id="MidPoint"-->
-<!--                    anchor="bottom"-->
-<!--                    icon="/icons/midpoint.png"-->
-<!--                    factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>-->
+        <!--        <toolWindow id="MidPoint"-->
+        <!--                    anchor="bottom"-->
+        <!--                    icon="/icons/midpoint.png"-->
+        <!--                    factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>-->
 
         <facet.toolWindow id="MidPoint"
                           facetIdList="MidPointFacet"
@@ -135,7 +136,8 @@
 
         <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.RefOidAnnotator"/>
         <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.ResourceTypeAnnotator"/>
-        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.DeprecatedElementAnnotator"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.DeprecatedElementAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
@@ -143,16 +145,15 @@
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
-<!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
-
+        <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
 
 
         <diff.lang.DiffIgnoredRangeProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
 
 
-<!--        <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.lang.MidPointFileTypeFactory"/>-->
-<!--        <lang.ast.factory language="MidPoint" implementationClass="com.intellij.lang.xml.XmlASTFactory"/>-->
+        <!--        <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.lang.MidPointFileTypeFactory"/>-->
+        <!--        <lang.ast.factory language="MidPoint" implementationClass="com.intellij.lang.xml.XmlASTFactory"/>-->
 
         <!--<stubElementTypeHolder class="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointStubElementTypes" externalIdPrefix="xml."/>
         <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectNameIndex"/>
@@ -189,10 +190,12 @@
                 text="Upload Raw"
                 icon="/icons/upload-raw.png"/>
 
-        <action id="MidPoint.Action.UploadExecuteNoAfterAction" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteNoAfterAction"
+        <action id="MidPoint.Action.UploadExecuteNoAfterAction"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteNoAfterAction"
                 text="Upload/Execute (no after-action)"/>
 
-        <action id="MidPoint.Action.UploadExecuteStopOnError" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
+        <action id="MidPoint.Action.UploadExecuteStopOnError"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
                 text="Upload/Execute (stop on error)"/>
 
         <!-- SERVER SIDE -->
@@ -218,10 +221,6 @@
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
                 text="Delete (non-raw)"/>
 
-        <action id="MidPoint.Action.DeleteRawAndLocally"
-                class="com.evolveum.midpoint.studio.action.transfer.DeleteRawOnServerAndLocally"
-                text="Delete on server (raw) and locally"/>
-
         <!-- -->
 
         <group id="MidPoint.Toolbar.Main">
@@ -246,7 +245,8 @@
                     text="Profile Environment"
                     icon="AllIcons.Actions.Profile"/>-->
 
-            <action id="MidPoint.Action.DocumentationAction" class="com.evolveum.midpoint.studio.action.DocumentationAction"
+            <action id="MidPoint.Action.DocumentationAction"
+                    class="com.evolveum.midpoint.studio.action.DocumentationAction"
                     text="Generate Documentation"
                     icon="AllIcons.Actions.Annotate"/>
 
@@ -295,7 +295,6 @@
 
                 <reference ref="MidPoint.Action.DeleteRaw"/>
                 <reference ref="MidPoint.Action.Delete"/>
-                <reference ref="MidPoint.Action.DeleteRawAndLocally"/>
             </group>
             <group id="MidPoint.Group.Menu.ServerLog"
                    text="Server Log"

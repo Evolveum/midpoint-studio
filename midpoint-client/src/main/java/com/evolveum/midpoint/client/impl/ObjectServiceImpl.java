@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.client.impl;
 
 import com.evolveum.midpoint.client.api.AuthenticationException;
+import com.evolveum.midpoint.client.api.DeleteOptions;
 import com.evolveum.midpoint.client.api.ObjectService;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.schema.GetOperationOptions;
@@ -70,7 +71,13 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
 
     @Override
     public void delete() throws ObjectNotFoundException, AuthenticationException {
-        // todo implement
+        delete(new DeleteOptions());
+    }
+
+    @Override
+    public void delete(DeleteOptions options) throws ObjectNotFoundException, AuthenticationException {
+        // todo implement, use options
+
     }
 
     @Override

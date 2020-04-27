@@ -1,9 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.client.api.AddOptions;
-import com.evolveum.midpoint.client.api.AuthenticationException;
-import com.evolveum.midpoint.client.api.MessageListener;
-import com.evolveum.midpoint.client.api.Service;
+import com.evolveum.midpoint.client.api.*;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
@@ -17,6 +14,7 @@ import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
@@ -181,6 +179,10 @@ public class MidPointClient {
         }
 
         return null;
+    }
+
+    public <O extends ObjectType> void delete(Class<O> type, String oid, DeleteOptions options) throws AuthenticationException, ObjectNotFoundException {
+        client.oid(type, oid).delete();
     }
 
     public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, UploadOptions options) throws AuthenticationException {

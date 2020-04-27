@@ -1,16 +1,14 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import org.jetbrains.annotations.NotNull;
+import com.evolveum.midpoint.client.api.DeleteOptions;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class DeleteRawAction  extends AnAction {
+public class DeleteRawAction extends DeleteAction {
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-        // todo implement
+    public DeleteOptions createOptions() {
+        return new DeleteOptions().raw(true);
     }
 }
