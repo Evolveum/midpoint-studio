@@ -6,6 +6,7 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.diff.actions.CompareFilesAction;
 import com.intellij.diff.chains.DiffRequestChain;
 import com.intellij.diff.chains.SimpleDiffRequestChain;
@@ -66,7 +67,7 @@ public class CompareFileWithServerAction extends CompareFilesAction {
                 }
             }
 
-            if (isAvailable(file, project)) {
+            if (RunnableUtils.executeWithPluginClassloader(() -> isAvailable(file, project))) {
                 return true;
             }
         }
