@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.studio.action.UploadBaseAction;
+import com.evolveum.midpoint.studio.action.transfer.UploadBaseAction;
 import com.intellij.openapi.application.ApplicationManager;
 
 import java.util.concurrent.Callable;

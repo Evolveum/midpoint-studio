@@ -72,6 +72,8 @@
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
+        
+<!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
 
         <!-- TODO finish implementation -->
         <!--<xmlStructureViewBuilderProvider
@@ -163,32 +165,74 @@
 
     <actions>
 
+        <!-- MISCELLANEOUS -->
+
         <action id="MidPoint.Action.EditEnvironments"
                 class="com.evolveum.midpoint.studio.action.environment.EditEnvironments"
                 text="Edit Environments..."
                 description="Edit Environments..."
                 icon="AllIcons.Actions.EditSource"/>
 
+        <action id="MidPoint.Action.GenerateRandomOid"
+                class="com.evolveum.midpoint.studio.action.GenerateRandomOid"
+                icon="/icons/random_oid.png"
+                text="Generate Random OID"
+                description="Generate Random OID"/>
+
+        <!-- TRANSFER RELATED -->
+
+        <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecute"
+                text="Upload/Execute"
+                icon="AllIcons.Actions.Upload"/>
+
+        <action id="MidPoint.Action.UploadRaw" class="com.evolveum.midpoint.studio.action.transfer.UploadRaw"
+                text="Upload Raw"
+                icon="/icons/upload-raw.png"/>
+
+        <action id="MidPoint.Action.UploadExecuteNoAfterAction" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteNoAfterAction"
+                text="Upload/Execute (no after-action)"/>
+
+        <action id="MidPoint.Action.UploadExecuteStopOnError" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
+                text="Upload/Execute (stop on error)"/>
+
+        <!-- SERVER SIDE -->
+
+        <action id="MidPoint.Action.UploadRecompute"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadRecomputeAction"
+                text="Upoad/Recompute"/>
+
+        <action id="MidPoint.Action.UploadTestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResource"
+                text="Upload/Test Resource"
+                icon="/icons/upload-test.png"/>
+
+        <action id="MidPoint.Action.UploadTestValidateResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestValidateResourceAction"
+                text="Upload/Test/Validate Resource"/>
+
+        <action id="MidPoint.Action.DeleteRaw"
+                class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
+                text="Delete (raw)"/>
+
+        <action id="MidPoint.Action.Delete"
+                class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
+                text="Delete (non-raw)"/>
+
+        <action id="MidPoint.Action.DeleteRawAndLocally"
+                class="com.evolveum.midpoint.studio.action.transfer.DeleteRawOnServerAndLocally"
+                text="Delete on server (raw) and locally"/>
+
+        <!-- -->
+
         <group id="MidPoint.Toolbar.Main">
 
-            <action id="MidPointPlugin.Menu.GenerateRandomOid"
-                    class="com.evolveum.midpoint.studio.action.GenerateRandomOid"
-                    icon="/icons/random_oid.png"
-                    text="Generate Random OID"
-                    description="Generate Random OID"/>
+            <reference ref="MidPoint.Action.GenerateRandomOid"/>
 
-            <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.UploadExecute"
-                    text="Upload/Execute"
-                    icon="AllIcons.Actions.Upload"/>
+            <reference ref="MidPoint.Action.UploadExecute"/>
 
-            <action id="MidPoint.Action.UploadRaw" class="com.evolveum.midpoint.studio.action.UploadRaw"
-                    text="Upload Raw"
-                    icon="/icons/upload-raw.png"/>
+            <reference ref="MidPoint.Action.UploadRaw"/>
 
-            <action id="MidPoint.Action.UploadTestResource"
-                    class="com.evolveum.midpoint.studio.action.UploadTestResource"
-                    text="Upload/Test Resource"
-                    icon="/icons/upload-test.png"/>
+            <reference ref="MidPoint.Action.UploadTestResource"/>
 
             <separator/>
 
@@ -198,9 +242,9 @@
             <action id="MidPoint.Action.ComboEnvironmentAction"
                     class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
 
-            <action id="MidPoint.Action.ProfileAction" class="com.evolveum.midpoint.studio.action.ProfileEnvironment"
+            <!--<action id="MidPoint.Action.ProfileAction" class="com.evolveum.midpoint.studio.action.ProfileEnvironment"
                     text="Profile Environment"
-                    icon="AllIcons.Actions.Profile"/>
+                    icon="AllIcons.Actions.Profile"/>-->
 
             <action id="MidPoint.Action.DocumentationAction" class="com.evolveum.midpoint.studio.action.DocumentationAction"
                     text="Generate Documentation"
@@ -211,7 +255,7 @@
         </group>
 
         <!-- todo create icon diff with server, example AllIcons.Actions.diffWithClipboard -->
-        <action id="MidPoint.Action.CompareFileWithServerAction"
+        <!--<action id="MidPoint.Action.CompareFileWithServerAction"
                 class="com.evolveum.midpoint.studio.action.CompareFileWithServerAction"
                 icon="AllIcons.Actions.Diff"/>
 
@@ -222,5 +266,86 @@
             <add-to-group group-id="Diff.KeymapGroup" anchor="last"/>
             <add-to-group group-id="EditorPopupMenu" relative-to-action="CompareClipboardWithSelection" anchor="after"/>
         </group>
+        -->
+
+        <group id="MidPoint.Group.Menu">
+
+            <separator/>
+
+            <group id="MidPoint.Group.Menu.TransferRelated"
+                   text="Transfer Related Actions"
+                   popup="true"
+                   icon="/icons/midpoint.png">
+
+                <reference ref="MidPoint.Action.UploadExecute"/>
+                <reference ref="MidPoint.Action.UploadExecuteNoAfterAction"/>
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+
+            </group>
+            <group id="MidPoint.Group.Menu.ServerSide"
+                   text="Server Side Actions"
+                   popup="true"
+                   icon="/icons/midpoint.png">
+
+                <reference ref="MidPoint.Action.UploadRecompute"/>
+                <reference ref="MidPoint.Action.UploadTestResource"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.DeleteRaw"/>
+                <reference ref="MidPoint.Action.Delete"/>
+                <reference ref="MidPoint.Action.DeleteRawAndLocally"/>
+            </group>
+            <group id="MidPoint.Group.Menu.ServerLog"
+                   text="Server Log"
+                   popup="true"
+                   icon="/icons/midpoint.png">
+
+                <group id="MidPoint.Group.Menu.ServerLog.ModelLogging"
+                       text="Set Model Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.ModelLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.ModelLoggingGroupAction"/>
+                </group>
+                <group id="MidPoint.Group.Menu.ServerLog.ProvisioningLogging"
+                       text="Set Provisioning Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.ProvisioningLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.ProvisioningLoggingGroupAction"/>
+                </group>
+                <group id="MidPoint.Group.Menu.ServerLog.RepositoryLogging"
+                       text="Set Repository Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.RepositoryLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.RepositoryLoggingGroupAction"/>
+                </group>
+                <group id="MidPoint.Group.Menu.ServerLog.GuiLogging"
+                       text="Set Gui Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.GuiLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.GuiLoggingGroupAction"/>
+                </group>
+
+                <action id="MidPoint.Group.Menu.ServerLog.SetAllToInfo"
+                        text="Set All of These to INFO"
+                        class="com.evolveum.midpoint.studio.action.logging.SetAllToInfoAction"/>
+            </group>
+        </group>
+
+        <group id="MidPoint.Group.Menu.Editor">
+            <reference ref="MidPoint.Group.Menu"/>
+            <add-to-group anchor="last" group-id="EditorPopupMenu"/>
+        </group>
+        <group id="MidPoint.Group.Menu.NonEditor">
+            <reference ref="MidPoint.Group.Menu"/>
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
+            <add-to-group anchor="last" group-id="StructureViewPopupMenu"/>
+        </group>
+
     </actions>
 </idea-plugin>

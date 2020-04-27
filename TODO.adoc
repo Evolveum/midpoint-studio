@@ -5,3 +5,4 @@
 * MidPoint Facet (existence) should show/hide MidPoint plugin UI panels/toolbars
 * Trace panels doesn't clear up when you close trace editor
 * Trace panels doesn't refresh properly when you changing tabs,e.g tracetree/logs
+* Delete menu actions

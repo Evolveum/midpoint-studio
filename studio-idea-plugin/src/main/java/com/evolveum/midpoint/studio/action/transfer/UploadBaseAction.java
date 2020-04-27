@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.action;
+package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.result.OperationResult;
