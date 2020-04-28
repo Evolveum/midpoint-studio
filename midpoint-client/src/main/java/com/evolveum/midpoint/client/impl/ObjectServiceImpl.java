@@ -76,8 +76,23 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
 
     @Override
     public void delete(DeleteOptions options) throws ObjectNotFoundException, AuthenticationException {
-        // todo implement, use options
+        if (options == null) {
+            options = new DeleteOptions();
+        }
 
+        String opts = null;
+        if (options.raw()) {
+            opts = "options=raw";
+        }
+
+        WebClient client = client();
+
+        String path = ObjectTypes.getRestTypeFromClass(type());
+        client.replacePath(REST_PREFIX + "/" + path + "/" + oid).replaceQuery(opts);
+
+        Response response = client.delete();
+
+        validateResponseCode(response);
     }
 
     @Override

@@ -202,7 +202,7 @@
 
         <action id="MidPoint.Action.UploadRecompute"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadRecomputeAction"
-                text="Upoad/Recompute"/>
+                text="Upload/Recompute"/>
 
         <action id="MidPoint.Action.UploadTestResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestResource"
