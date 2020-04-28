@@ -163,6 +163,8 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     }
 
     private int processText(MidPointManager mm, ProgressIndicator indicator, MidPointClient client, String text) {
+        indicator.setIndeterminate(false);
+
         int problemCount = 0;
 
         try {

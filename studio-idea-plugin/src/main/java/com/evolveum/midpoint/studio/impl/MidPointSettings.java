@@ -16,7 +16,7 @@ public class MidPointSettings implements Serializable {
 
     private String generatedFilePattern;
 
-    private boolean printRestCommunicationToConsole = false;
+    private boolean printRestCommunicationToConsole;
 
     private DocGeneratorOptions docGeneratorOptions;
 
