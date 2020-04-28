@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.evolveum.midpoint.studio.util.MidPointUtils.publishException;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -132,7 +134,8 @@ public abstract class UploadBaseAction extends BackgroundAction {
                             int problems = execute(mm, indicator, client, xml);
                             count.addAndGet(problems);
                         } catch (IOException ex) {
-                            publishException(mm, "Exception occurred when loading file " + file.getName(), ex);
+                            publishException(mm.getProject(), getClass(), NOTIFICATION_KEY,
+                                    "Exception occurred when loading file " + file.getName(), ex);
                         }
                     }));
         }
@@ -173,22 +176,17 @@ public abstract class UploadBaseAction extends BackgroundAction {
                 } catch (Exception ex) {
                     problemCount++;
 
-                    publishException(mm, "Exception occurred during upload of " + obj.getName() + "(" + obj.getOid() + ")", ex);
+                    publishException(mm.getProject(), getClass(), NOTIFICATION_KEY,
+                            "Exception occurred during upload of " + obj.getName() + "(" + obj.getOid() + ")", ex);
                 }
             }
         } catch (Exception ex) {
             problemCount++;
 
-            publishException(mm, "Exception occurred during upload", ex);
+            publishException(mm.getProject(), getClass(), NOTIFICATION_KEY, "Exception occurred during upload", ex);
         }
 
         return problemCount;
-    }
-
-    private void publishException(MidPointManager mm, String msg, Exception ex) {
-        mm.printToConsole(getClass(), msg + ". Reason: " + ex.getMessage());
-
-        MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, msg, ex);
     }
 
     private void showNotificationAfterFinish(int problemCount) {

@@ -10,6 +10,6 @@ import org.jetbrains.annotations.NotNull;
 public class RepositoryLoggingGroupAction extends SetModuleLoggingGroupAction {
 
     public RepositoryLoggingGroupAction() {
-        super("com.evolveum.midpoint.repo");
+        super(ModuleLogger.REPOSITORY);
     }
 }

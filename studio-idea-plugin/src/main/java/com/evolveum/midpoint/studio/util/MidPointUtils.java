@@ -190,6 +190,13 @@ public class MidPointUtils {
                 .generateServiceName(MidPointSettings.class.getSimpleName(), key));
     }
 
+    public static void publishException(Project project, Class clazz, String notificationKey, String msg, Exception ex) {
+        MidPointManager mm = MidPointManager.getInstance(project);
+        mm.printToConsole(clazz, msg + ". Reason: " + ex.getMessage());
+
+        publishExceptionNotification(notificationKey, msg, ex);
+    }
+
     public static void publishExceptionNotification(String key, String message, Exception ex) {
         String msg = message + ", reason: " + ex.getMessage();
         MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR);

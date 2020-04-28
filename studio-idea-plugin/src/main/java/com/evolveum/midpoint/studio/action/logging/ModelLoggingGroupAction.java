@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.Separator;
 public class ModelLoggingGroupAction extends SetModuleLoggingGroupAction {
 
     public ModelLoggingGroupAction() {
-        super("com.evolveum.midpoint.model");
+        super(ModuleLogger.MODEL);
 
         add(new Separator());
 

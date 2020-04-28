@@ -6,6 +6,6 @@ package com.evolveum.midpoint.studio.action.logging;
 public class ProvisioningLoggingGroupAction extends SetModuleLoggingGroupAction {
 
     public ProvisioningLoggingGroupAction() {
-        super("com.evolveum.midpoint.provisioning");
+        super(ModuleLogger.PROVISIONING);
     }
 }

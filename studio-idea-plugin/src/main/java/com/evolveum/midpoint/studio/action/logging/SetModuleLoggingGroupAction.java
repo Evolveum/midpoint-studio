@@ -10,7 +10,7 @@ import com.intellij.openapi.project.DumbAware;
  */
 public abstract class SetModuleLoggingGroupAction extends DefaultActionGroup implements DumbAware {
 
-    public SetModuleLoggingGroupAction(String logger) {
+    public SetModuleLoggingGroupAction(ModuleLogger logger) {
         addAction(new SetBasicLoggerAction(logger, LoggingLevelType.INFO));
         addAction(new SetBasicLoggerAction(logger, LoggingLevelType.DEBUG));
         addAction(new SetBasicLoggerAction(logger, LoggingLevelType.TRACE));

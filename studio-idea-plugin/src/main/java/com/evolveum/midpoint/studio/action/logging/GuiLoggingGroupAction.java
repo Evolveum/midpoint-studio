@@ -6,6 +6,6 @@ package com.evolveum.midpoint.studio.action.logging;
 public class GuiLoggingGroupAction extends SetModuleLoggingGroupAction {
 
     public GuiLoggingGroupAction() {
-        super("com.evolveum.midpoint.web");
+        super(ModuleLogger.GUI);
     }
 }
