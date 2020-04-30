@@ -76,7 +76,7 @@ public class CompositeResourceLoader extends ResourceLoader {
                 Path path = this.template.toPath().relativize(template.toPath());
                 String name = path.toString();
                 // this is to replace windows paths
-                name = name.replaceAll("\\/", "\\");
+                name = name.replaceAll("\\\\", "/");
 
                 if (!name.startsWith("/")) {
                     name = "/" + name;
