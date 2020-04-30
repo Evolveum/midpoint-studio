@@ -182,7 +182,7 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> void delete(Class<O> type, String oid, DeleteOptions options) throws AuthenticationException, ObjectNotFoundException {
-        client.oid(type, oid).delete();
+        client.oid(type, oid).delete(options);
     }
 
     public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, UploadOptions options) throws AuthenticationException {

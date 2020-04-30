@@ -48,6 +48,13 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
 
         // todo use options
 
+        GetOperationOptions rootOptions = SelectorOptions.findRootOptions(options);
+
+        String query = null;
+        if (GetOperationOptions.isRaw(rootOptions)) {
+            query = "options=raw";
+        }
+
         WebClient client = client();
 
         String path = ObjectTypes.getRestTypeFromClass(type());
@@ -88,7 +95,7 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
         WebClient client = client();
 
         String path = ObjectTypes.getRestTypeFromClass(type());
-        client.replacePath(REST_PREFIX + "/" + path + "/" + oid).replaceQuery(opts);
+        client = client.replacePath(REST_PREFIX + "/" + path + "/" + oid).replaceQuery(opts);
 
         Response response = client.delete();
 

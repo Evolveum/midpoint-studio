@@ -33,6 +33,11 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
             opts = new AddOptions();
         }
 
+        String query = null;
+        if (opts.raw()) {
+            query = "options=raw";
+        }
+
         WebClient client = client();
 
         Response response;
@@ -40,10 +45,10 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
         if (opts.overwrite() && object.getOid() != null) {
             path += "/" + object.getOid();
 
-            client.replacePath(REST_PREFIX + "/" + path);
+            client = client.replacePath(REST_PREFIX + "/" + path).replaceQuery(query);
             response = client.put(object.asPrismObject());
         } else {
-            client.replacePath(REST_PREFIX + "/" + path);
+            client = client.replacePath(REST_PREFIX + "/" + path).replaceQuery(query);
             response = client.post(object.asPrismObject());
         }
 
