@@ -37,6 +37,7 @@ public class MidPointSettingsPanel extends JPanel {
 
     public MidPointSettings getSettings() {
         MidPointSettings settings = MidPointSettings.createDefaultSettings();
+        settings.setProjectId(this.settings.getProjectId());    // we don't want to replace projectId with random id
         settings.setDowloadFilePattern(downloadPattern.getText());
         settings.setGeneratedFilePattern(generatedPattern.getText());
         settings.setPrintRestCommunicationToConsole(logRestCommunication.isSelected());

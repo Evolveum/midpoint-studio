@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -71,12 +72,18 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
     @Override
     public boolean isModified() {
-        return false;
+        if (settings.getSettings() == null) {
+            return false;
+        }
+
+        MidPointManager mm = MidPointManager.getInstance(project);
+        return !Objects.equals(mm.getSettings(), settings.getSettings());
     }
 
     @Override
-    public void apply() throws ConfigurationException {
-
+    public void apply() {
+        MidPointManager mm = MidPointManager.getInstance(project);
+        mm.setSettings(settings.getSettings());
     }
 
     @Override
