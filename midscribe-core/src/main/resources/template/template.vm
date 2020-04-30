@@ -4,23 +4,29 @@ $!object.getDescription()
 
 $!utils.stripIndent($object.getDocumentation())
 
+#set($includeRef = $object.getIncludeRef())
+#if ($includeRef)
 ==== Include References
+## todo
+#end
 
-// todo
-
+#set($iterationSpecification = $object.getIterationSpecification())
+#if ($iterationSpecification)
 ==== Iterator Specification
+#set($headingLevel=5)
+#parse("/template/iterationSpecification.vm")
+#end
 
-// todo
-
+#set($items = $object.getItems())
+#if ($items)
 ==== Items
-
-// todo
-
-==== Mappings
+## todo
+#end
 
 #set($mappings = $object.getMapping())
+#if ($mappings)
+==== Mappings
 #parse("/template/mappings.vm")
-
-// todo
+#end
 
 ##todo describe mappings, items, archetypes, includeRef, iterations

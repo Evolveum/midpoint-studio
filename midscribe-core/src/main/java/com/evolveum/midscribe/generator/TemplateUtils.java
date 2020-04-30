@@ -13,10 +13,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 import javax.xml.bind.JAXBElement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -25,6 +22,14 @@ public class TemplateUtils {
 
     public static String getOrig(PolyStringType poly) {
         return poly != null ? poly.getOrig() : null;
+    }
+
+    public static String createHeading(int level) {
+        return StringUtils.repeat('=', level);
+    }
+
+    public static List<Object> asList(Object... array) {
+        return Arrays.asList(array);
     }
 
     public static String stripIndent(String text) {

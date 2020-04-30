@@ -1,0 +1,4 @@
+## main object: $expression
+$!expression.getDescription()
+
+$!utils.stripIndent($expression.getDocumentation())

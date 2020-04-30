@@ -44,6 +44,18 @@
             ==== Another title
 
             there is is. were're using asciidoc.
+
+            ==== Example of groovy code in documentation
+
+            [source,groovy]
+            ----
+            def givenName = givenName as PolyString
+            def familyName = familyName as PolyString
+
+            super.asdf()
+
+            (givenName == null ? '' : givenName) + ' ' + (familyName == null ? '' : familyName)
+            ----
         </documentation>
 
         <connectorRef type="ConnectorType">

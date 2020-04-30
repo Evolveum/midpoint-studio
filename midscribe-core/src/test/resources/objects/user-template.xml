@@ -34,6 +34,15 @@
         | row3
         |===
     </documentation>
+    <iterationSpecification>
+        <maxIterations>5</maxIterations>
+        <tokenExpression>
+            <description>some token expression description</description>
+            <script>
+                <code></code>
+            </script>
+        </tokenExpression>
+    </iterationSpecification>
     <item>
         <c:ref>employeeType</c:ref>
         <valueEnumerationRef oid="5783c174-d141-11e4-bb29-001e8c717e5b"/>

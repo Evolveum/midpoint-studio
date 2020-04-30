@@ -91,28 +91,33 @@ $!type.getDocumentation()
 #end
 
 #if ($attribute.getOutbound())
-[.underline]#Outbounds#
+[.underline]#Outbound#
 
-#set($mappings = $attribute.getOutbound())
+#set($mappings = $utils.asList($attribute.getOutbound()))
 #parse("/template/mappings.vm")
 #end
 #end
 
+#if ($type.getCredentials())
 ====== Credentials
-
+##todo
+#end
+#if ($type.getActivation())
 ====== Activation
-
+##todo
+#end
+#if ($type.getAssociation())
 ====== Association
-
+##todo
+#end
 #end
 
 #if ($object.getSynchronization())
 #set ($synchronization = $object.getSynchronization())
 ==== Synchronization
-
+##todo
 #if ($synchronization.getObjectSynchronizationSorter())
 ===== Sorter
-
 ### todo sorter
 
 #end
