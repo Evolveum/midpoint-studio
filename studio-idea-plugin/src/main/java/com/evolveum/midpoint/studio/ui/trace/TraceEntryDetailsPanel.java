@@ -53,6 +53,11 @@ public class TraceEntryDetailsPanel extends BorderLayoutPanel {
     }
 
     private void nodeChange(OpNode node) {
+        if (node == null) {
+            this.text.setText(null);
+            return;
+        }
+
         OperationResultType result = node.getResult();
         StringBuilder sb = new StringBuilder();
         for (TraceType trace : result.getTrace()) {

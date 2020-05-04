@@ -164,6 +164,19 @@ public class TraceViewPanel extends JPanel {
         notifier.selectedTraceNodeChange(opNode);
     }
 
+    public void selectNotify() {
+        int index = main.getSelectionModel().getLeadSelectionIndex();
+
+        DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) main.getPathForRow(index).getLastPathComponent();
+        OpNode opNode = node != null ? (OpNode) node.getUserObject() : null;
+
+        notifier.selectedTraceNodeChange(opNode);
+    }
+
+    public void deselectNotify() {
+        notifier.selectedTraceNodeChange(null);
+    }
+
     private JComponent initTraceStructure(List<OpNode> data, long start) {
         List<TreeTableColumnDefinition> columns = new ArrayList<>();
 

@@ -104,17 +104,19 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
     @Override
     public boolean isValid() {
-        return true;    // todo improve
+        return file.isValid();
     }
 
     @Override
     public void selectNotify() {
-
+        TraceViewPanel panel = (TraceViewPanel) wrapper.getTargetComponent();
+        panel.selectNotify();
     }
 
     @Override
     public void deselectNotify() {
-
+        TraceViewPanel panel = (TraceViewPanel) wrapper.getTargetComponent();
+        panel.deselectNotify();
     }
 
     @Override

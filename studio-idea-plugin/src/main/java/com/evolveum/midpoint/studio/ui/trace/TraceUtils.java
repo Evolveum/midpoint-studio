@@ -34,7 +34,7 @@ public class TraceUtils {
     }
 
     public static String prettyPrint(PrismPropertyValue ppv) {
-        LOG.trace("Pretty printing prism property value");
+        // LOG.trace("Pretty printing prism property value");
 
         Object realValue = ppv.getRealValue();
         if (realValue instanceof RawType) {

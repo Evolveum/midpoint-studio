@@ -76,6 +76,12 @@ public class TraceTreePanel extends BorderLayoutPanel {
     }
 
     private void nodeChange(OpNode node) {
+        if (node == null) {
+            updateModel(null, null);
+            applySelection(null);
+            return;
+        }
+
         Node result = new ResultNode(node);
 
         Node trace;
@@ -106,8 +112,12 @@ public class TraceTreePanel extends BorderLayoutPanel {
 
     private void updateModel(Node result, Node trace) {
         DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
-        root.add(result);
-        root.add(trace);
+        if (result != null) {
+            root.add(result);
+        }
+        if (trace != null) {
+            root.add(trace);
+        }
 
         DefaultTreeTableModel model = (DefaultTreeTableModel) variables.getTreeTableModel();
         model.setRoot(root);

@@ -44,6 +44,12 @@ public class TracePerformanceInformationPanel extends BorderLayoutPanel {
     }
 
     private void nodeChange(OpNode node) {
+        if (node == null) {
+            getTableModel(category).setData(new ArrayList());
+            getTableModel(operation).setData(new ArrayList());
+            return;
+        }
+
         List<Map.Entry<PerformanceCategory, PerformanceCategoryInfo>> categories = new ArrayList<>(node.getPerformanceByCategory().entrySet());
         categories.sort(Comparator.comparing(e -> e.getKey()));
         getTableModel(category).setData(categories);
