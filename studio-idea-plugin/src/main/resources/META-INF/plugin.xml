@@ -223,15 +223,90 @@
 
         <!-- -->
 
+        <group id="MidPoint.Group.Menu">
+
+            <separator/>
+
+            <group id="MidPoint.Group.Menu.TransferRelated"
+                   text="Transfer Related Actions"
+                   popup="true"
+                   icon="/icons/midpoint.png">
+
+                <reference ref="MidPoint.Action.UploadExecute"/>
+                <reference ref="MidPoint.Action.UploadExecuteNoAfterAction"/>
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+
+            </group>
+            <group id="MidPoint.Group.Menu.ServerSide"
+                   text="Server Side Actions"
+                   popup="true"
+                   icon="/icons/midpoint.png">
+
+                <reference ref="MidPoint.Action.UploadRecompute"/>
+                <reference ref="MidPoint.Action.UploadTestResource"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.DeleteRaw"/>
+                <reference ref="MidPoint.Action.Delete"/>
+            </group>
+            <group id="MidPoint.Group.Menu.ServerLog"
+                   text="Server Log"
+                   popup="true">
+
+                <group id="MidPoint.Group.Menu.ServerLog.ModelLogging"
+                       text="Set Model Logging"
+                       popup="true"
+                       icon="/icons/midpoint.png">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.ModelLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.ModelLoggingGroupAction"/>
+                </group>
+                <group id="MidPoint.Group.Menu.ServerLog.ProvisioningLogging"
+                       text="Set Provisioning Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.ProvisioningLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.ProvisioningLoggingGroupAction"/>
+                </group>
+                <group id="MidPoint.Group.Menu.ServerLog.RepositoryLogging"
+                       text="Set Repository Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.RepositoryLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.RepositoryLoggingGroupAction"/>
+                </group>
+                <group id="MidPoint.Group.Menu.ServerLog.GuiLogging"
+                       text="Set Gui Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.GuiLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.GuiLoggingGroupAction"/>
+                </group>
+
+                <action id="MidPoint.Group.Menu.ServerLog.SetAllToInfo"
+                        text="Set All of These to INFO"
+                        class="com.evolveum.midpoint.studio.action.logging.SetAllToInfoAction"/>
+            </group>
+        </group>
+
         <group id="MidPoint.Toolbar.Main">
 
             <reference ref="MidPoint.Action.GenerateRandomOid"/>
 
+            <separator/>
+
             <reference ref="MidPoint.Action.UploadExecute"/>
-
-            <reference ref="MidPoint.Action.UploadRaw"/>
-
+            <reference ref="MidPoint.Action.UploadRecompute"/>
             <reference ref="MidPoint.Action.UploadTestResource"/>
+
+            <separator/>
+
+            <reference ref="MidPoint.Action.Delete"/>
+            <reference ref="MidPoint.Action.DeleteRaw"/>
+
+            <reference ref="MidPoint.Group.Menu"/>
 
             <separator/>
 
@@ -267,74 +342,6 @@
             <add-to-group group-id="EditorPopupMenu" relative-to-action="CompareClipboardWithSelection" anchor="after"/>
         </group>
         -->
-
-        <group id="MidPoint.Group.Menu">
-
-            <separator/>
-
-            <group id="MidPoint.Group.Menu.TransferRelated"
-                   text="Transfer Related Actions"
-                   popup="true"
-                   icon="/icons/midpoint.png">
-
-                <reference ref="MidPoint.Action.UploadExecute"/>
-                <reference ref="MidPoint.Action.UploadExecuteNoAfterAction"/>
-                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
-
-            </group>
-            <group id="MidPoint.Group.Menu.ServerSide"
-                   text="Server Side Actions"
-                   popup="true"
-                   icon="/icons/midpoint.png">
-
-                <reference ref="MidPoint.Action.UploadRecompute"/>
-                <reference ref="MidPoint.Action.UploadTestResource"/>
-                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
-
-                <separator/>
-
-                <reference ref="MidPoint.Action.DeleteRaw"/>
-                <reference ref="MidPoint.Action.Delete"/>
-            </group>
-            <group id="MidPoint.Group.Menu.ServerLog"
-                   text="Server Log"
-                   popup="true"
-                   icon="/icons/midpoint.png">
-
-                <group id="MidPoint.Group.Menu.ServerLog.ModelLogging"
-                       text="Set Model Logging"
-                       popup="true">
-
-                    <group id="MidPoint.Group.Menu.ServerLog.ModelLogging.SetToInfoAction"
-                           class="com.evolveum.midpoint.studio.action.logging.ModelLoggingGroupAction"/>
-                </group>
-                <group id="MidPoint.Group.Menu.ServerLog.ProvisioningLogging"
-                       text="Set Provisioning Logging"
-                       popup="true">
-
-                    <group id="MidPoint.Group.Menu.ServerLog.ProvisioningLogging.SetToInfoAction"
-                           class="com.evolveum.midpoint.studio.action.logging.ProvisioningLoggingGroupAction"/>
-                </group>
-                <group id="MidPoint.Group.Menu.ServerLog.RepositoryLogging"
-                       text="Set Repository Logging"
-                       popup="true">
-
-                    <group id="MidPoint.Group.Menu.ServerLog.RepositoryLogging.SetToInfoAction"
-                           class="com.evolveum.midpoint.studio.action.logging.RepositoryLoggingGroupAction"/>
-                </group>
-                <group id="MidPoint.Group.Menu.ServerLog.GuiLogging"
-                       text="Set Gui Logging"
-                       popup="true">
-
-                    <group id="MidPoint.Group.Menu.ServerLog.GuiLogging.SetToInfoAction"
-                           class="com.evolveum.midpoint.studio.action.logging.GuiLoggingGroupAction"/>
-                </group>
-
-                <action id="MidPoint.Group.Menu.ServerLog.SetAllToInfo"
-                        text="Set All of These to INFO"
-                        class="com.evolveum.midpoint.studio.action.logging.SetAllToInfoAction"/>
-            </group>
-        </group>
 
         <group id="MidPoint.Group.Menu.Editor">
             <reference ref="MidPoint.Group.Menu"/>

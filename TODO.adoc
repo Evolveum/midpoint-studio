@@ -3,6 +3,13 @@
 * EnvironmentManagerImpl.getSelected() always reads credentials keepass file (full environment), multiple times pre second only to get color
 * MidPointXmlStructureViewBuilderProvider not finished
 * MidPoint Facet (existence) should show/hide MidPoint plugin UI panels/toolbars
-* Trace panels doesn't clear up when you close trace editor
-* Trace panels doesn't refresh properly when you changing tabs,e.g tracetree/logs
-* Delete menu actions
+* Delete/Upload menu actions - code cleanup
+* Action icons:
+** Upload/Execute
+** Upload/Recompute
+** Upload/Test Resource
+** Delete
+** Delete (raw)
+** Transfer Related (group)
+** Server Side (group)
+** Server Log (group)
