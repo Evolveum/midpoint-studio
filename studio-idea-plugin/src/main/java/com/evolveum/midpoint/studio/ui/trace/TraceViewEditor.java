@@ -39,6 +39,8 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
     private Wrapper wrapper = new Wrapper();
 
+    private TraceViewPanel traceViewPanel;
+
     public TraceViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.project = project;
         this.file = file;
@@ -63,14 +65,13 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't load file", ex);
         }
 
-        TraceViewPanel panel = new TraceViewPanel(project, data, start);
-        wrapper.setContent(panel);
+        traceViewPanel = new TraceViewPanel(project, data, start);
+        wrapper.setContent(traceViewPanel);
     }
 
     public void applyOptions(Options options) {
-        TraceViewPanel panel = (TraceViewPanel) wrapper.getTargetComponent();
-        if (panel != null) {
-            panel.applyOptions(options);
+        if (traceViewPanel != null) {
+            traceViewPanel.applyOptions(options);
         }
     }
 
@@ -109,14 +110,16 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
     @Override
     public void selectNotify() {
-        TraceViewPanel panel = (TraceViewPanel) wrapper.getTargetComponent();
-        panel.selectNotify();
+        if (traceViewPanel != null) {
+            traceViewPanel.selectNotify();
+        }
     }
 
     @Override
     public void deselectNotify() {
-        TraceViewPanel panel = (TraceViewPanel) wrapper.getTargetComponent();
-        panel.deselectNotify();
+        if (traceViewPanel != null) {
+            traceViewPanel.deselectNotify();
+        }
     }
 
     @Override

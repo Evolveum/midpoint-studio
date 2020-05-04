@@ -157,24 +157,37 @@ public class TraceViewPanel extends JPanel {
 
     private void mainTableSelectionChanged(TreeSelectionEvent e) {
         TreePath path = e.getNewLeadSelectionPath();
+        selectedTraceNodeChange(path);
+    }
+
+    public void selectedTraceNodeChange(TreePath path) {
+        if (path == null) {
+            notifier.selectedTraceNodeChange(null);
+            return;
+        }
+
         DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) path.getLastPathComponent();
+        if (node == null || !(node.getUserObject() instanceof OpNode)) {
+            notifier.selectedTraceNodeChange(null);
+            return;
+        }
 
-        OpNode opNode = node != null ? (OpNode) node.getUserObject() : null;
-
-        notifier.selectedTraceNodeChange(opNode);
+        notifier.selectedTraceNodeChange((OpNode) node.getUserObject());
     }
 
     public void selectNotify() {
         int index = main.getSelectionModel().getLeadSelectionIndex();
+        if (index < 0) {
+            notifier.selectedTraceNodeChange(null);
+            return;
+        }
 
-        DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) main.getPathForRow(index).getLastPathComponent();
-        OpNode opNode = node != null ? (OpNode) node.getUserObject() : null;
-
-        notifier.selectedTraceNodeChange(opNode);
+        TreePath path = main.getPathForRow(index);
+        selectedTraceNodeChange(path);
     }
 
     public void deselectNotify() {
-        notifier.selectedTraceNodeChange(null);
+        selectedTraceNodeChange(null);
     }
 
     private JComponent initTraceStructure(List<OpNode> data, long start) {
