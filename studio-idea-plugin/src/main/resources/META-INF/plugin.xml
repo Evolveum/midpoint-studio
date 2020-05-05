@@ -186,14 +186,6 @@
                 text="Upload/Execute"
                 icon="AllIcons.Actions.Upload"/>
 
-        <action id="MidPoint.Action.UploadRaw" class="com.evolveum.midpoint.studio.action.transfer.UploadRaw"
-                text="Upload Raw"
-                icon="/icons/upload-raw.png"/>
-
-        <action id="MidPoint.Action.UploadExecuteNoAfterAction"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteNoAfterAction"
-                text="Upload/Execute (no after-action)"/>
-
         <action id="MidPoint.Action.UploadExecuteStopOnError"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
                 text="Upload/Execute (stop on error)"/>
@@ -201,7 +193,7 @@
         <!-- SERVER SIDE -->
 
         <action id="MidPoint.Action.UploadRecompute"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadRecomputeAction"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadRecompute"
                 text="Upload/Recompute"/>
 
         <action id="MidPoint.Action.UploadTestResource"
@@ -221,8 +213,6 @@
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
                 text="Delete (non-raw)"/>
 
-        <!-- -->
-
         <group id="MidPoint.Group.Menu">
 
             <separator/>
@@ -233,7 +223,6 @@
                    icon="/icons/midpoint.png">
 
                 <reference ref="MidPoint.Action.UploadExecute"/>
-                <reference ref="MidPoint.Action.UploadExecuteNoAfterAction"/>
                 <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
 
             </group>

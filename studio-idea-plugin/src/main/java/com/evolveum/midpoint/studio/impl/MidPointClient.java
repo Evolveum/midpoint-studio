@@ -185,6 +185,15 @@ public class MidPointClient {
         client.oid(type, oid).delete(options);
     }
 
+    public void execute(Object object) {
+        // todo implement
+    }
+
+    public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, List<String> options) {
+        // todo implement
+        return null;
+    }
+
     public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, UploadOptions options) throws AuthenticationException {
         AddOptions opts = options.buildAddOptions();
 

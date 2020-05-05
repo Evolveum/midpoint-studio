@@ -3,19 +3,20 @@ package com.evolveum.midpoint.client.prism;
 import com.evolveum.midpoint.client.api.*;
 import com.evolveum.midpoint.client.api.exception.AuthenticationException;
 import com.evolveum.midpoint.client.api.scripting.ScriptingUtil;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class RestService implements Service {
-
-    public static final String REST_PREFIX = "/ws/rest";
 
     public static final String IMPERSONATE_HEADER = "Switch-To-Principal";
 
@@ -43,7 +44,7 @@ public class RestService implements Service {
     @Override
     public UserType self() throws AuthenticationException {
         Request request = new Request.Builder()
-                .url(buildUrl("/self"))
+                .url(context.buildUrl("/self"))
                 .build();
 
         Call call = context.client().newCall(request);
@@ -136,16 +137,6 @@ public class RestService implements Service {
         return collection(OrgType.class);
     }
 
-    public <O extends ObjectType> ObjectCollectionService<O> collection(Class<O> type) {
-        if (ResourceType.class.equals(type)) {
-            return (ObjectCollectionService<O>) new RestResourceCollectionService(context);
-        } else if (ShadowType.class.equals(type)) {
-            return (ObjectCollectionService<O>) new RestShadowCollectionService(context);
-        }
-
-        return new RestObjectCollectionService<O>(context, type);
-    }
-
     @Override
     public ServiceUtil util() {
         return new RestServiceUtil(context.prismContext());
@@ -156,16 +147,32 @@ public class RestService implements Service {
         return new RestScriptingUtil();
     }
 
-    public String buildUrl(String path) {
-        return buildUrl(path, null);
-    }
-
-    public String buildUrl(String path, Map<String, String> query) {
-        HttpUrl.Builder builder = HttpUrl.parse(context.configuration().url() + REST_PREFIX + path).newBuilder();
-        if (query != null) {
-            query.forEach((k, v) -> builder.addQueryParameter(k, v));
+    public <O extends ObjectType> ObjectCollectionService<O> collection(Class<O> type) {
+        if (ResourceType.class.equals(type)) {
+            return (ObjectCollectionService<O>) new RestResourceCollectionService(context);
+        } else if (ShadowType.class.equals(type)) {
+            return (ObjectCollectionService<O>) new RestShadowCollectionService(context);
         }
 
-        return builder.build().toString();
+        return new RestObjectCollectionService<O>(context, type);
+    }
+
+    public TestConnectionResult testConnection() {
+        String path = "/" + ObjectTypes.NODE.getRestType() + "/current";
+
+        Request request = new Request.Builder()
+                .url(context.buildUrl(path))
+                .build();
+
+        Call call = context.client().newCall(request);
+
+        try (Response response = call.execute()) {
+            NodeType node = new RestParser(context.prismContext()).read(NodeType.class, response.body().byteStream());
+            BuildInformationType build = node.getBuild();
+
+            return new TestConnectionResult(true, build.getVersion(), build.getRevision());
+        } catch (IOException | SchemaException ex) {
+            return new TestConnectionResult(false, ex);
+        }
     }
 }

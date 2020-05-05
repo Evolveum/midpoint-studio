@@ -5,8 +5,15 @@ import com.evolveum.midpoint.client.api.ObjectModifyService;
 import com.evolveum.midpoint.client.api.ObjectService;
 import com.evolveum.midpoint.client.api.ValidateGenerateRpcService;
 import com.evolveum.midpoint.client.api.exception.ObjectNotFoundException;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import okhttp3.Call;
+import okhttp3.Request;
+import okhttp3.Response;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,13 +34,27 @@ public class RestObjectService<O extends ObjectType> implements ObjectService<O>
     }
 
     @Override
-    public O get(List<String> list) throws ObjectNotFoundException {
-        return null;
+    public O get(List<String> options) throws ObjectNotFoundException {
+        return get(options, Collections.emptyList(), Collections.emptyList());
     }
 
     @Override
-    public O get(List<String> list, List<String> list1, List<String> list2) throws ObjectNotFoundException {
-        return null;
+    public O get(List<String> options, List<String> include, List<String> exclude) throws ObjectNotFoundException {
+        // todo options + error handling
+
+        String path = "/" + ObjectTypes.getObjectType(type).getRestType() + "/" + oid;
+
+        Request request = new Request.Builder()
+                .url(context.buildUrl(path))
+                .build();
+
+        Call call = context.client().newCall(request);
+
+        try (Response response = call.execute()) {
+            return new RestParser(context.prismContext()).read(type, response.body().byteStream());
+        } catch (IOException | SchemaException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
@@ -63,6 +84,6 @@ public class RestObjectService<O extends ObjectType> implements ObjectService<O>
 
     @Override
     public O get() throws ObjectNotFoundException {
-        return null;
+        return get(Collections.emptyList());
     }
 }

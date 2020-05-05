@@ -4,18 +4,19 @@ import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class UploadExecuteStopOnError extends UploadExecute {
+public class UploadRecompute extends UploadExecute {
 
     @Override
     public <O extends ObjectType> OperationResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
-        OperationResult result = super.processObject(client, obj);
+        return super.processObject(client, obj);
 
-        // todo stop on error
-
-        return result;
+        // todo execute bulk action "RECOMPUTE"
     }
 }

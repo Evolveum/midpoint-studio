@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.studio.action.transfer.UploadBaseAction;
 import com.intellij.openapi.application.ApplicationManager;
 
 import java.util.concurrent.Callable;
@@ -19,7 +18,7 @@ public abstract class RunnableUtils {
 
             ClassLoader cl = thread.getContextClassLoader();
             try {
-                thread.setContextClassLoader(UploadBaseAction.class.getClassLoader());
+                thread.setContextClassLoader(RunnableUtils.class.getClassLoader());
 
                 runWithPluginClassLoader();
             } finally {
@@ -38,7 +37,7 @@ public abstract class RunnableUtils {
 
             ClassLoader cl = thread.getContextClassLoader();
             try {
-                thread.setContextClassLoader(UploadBaseAction.class.getClassLoader());
+                thread.setContextClassLoader(RunnableUtils.class.getClassLoader());
 
                 return callWithPluginClassLoader();
             } finally {
