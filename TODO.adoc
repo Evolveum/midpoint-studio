@@ -13,3 +13,4 @@
 ** Transfer Related (group)
 ** Server Side (group)
 ** Server Log (group)
+* What's the difference between upload/recompute and upload/execute?
