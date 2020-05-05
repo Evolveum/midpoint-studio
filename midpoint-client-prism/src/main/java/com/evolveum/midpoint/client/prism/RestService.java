@@ -3,8 +3,6 @@ package com.evolveum.midpoint.client.prism;
 import com.evolveum.midpoint.client.api.*;
 import com.evolveum.midpoint.client.api.exception.AuthenticationException;
 import com.evolveum.midpoint.client.api.scripting.ScriptingUtil;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import okhttp3.*;
@@ -19,16 +17,12 @@ public class RestService implements Service {
 
     public static final String REST_PREFIX = "/ws/rest";
 
-    private RestServiceConfiguration configuration;
+    public static final String IMPERSONATE_HEADER = "Switch-To-Principal";
 
-    private OkHttpClient client;
+    private RestServiceContext context;
 
-    private PrismContext prismContext;
-
-    public RestService(RestServiceConfiguration configuration, OkHttpClient client, PrismContext prismContext) {
-        this.configuration = configuration;
-        this.client = client;
-        this.prismContext = prismContext;
+    public RestService(RestServiceContext context) {
+        this.context = context;
     }
 
     @Override
@@ -38,7 +32,7 @@ public class RestService implements Service {
 
     @Override
     public <T> RpcService<T> rpc() {
-        return null;
+        return new RestRpcService<>();
     }
 
     @Override
@@ -52,23 +46,39 @@ public class RestService implements Service {
                 .url(buildUrl("/self"))
                 .build();
 
-        Call call = client.newCall(request);
+        Call call = context.client().newCall(request);
 
         try (Response response = call.execute()) {
-            return new RestParser(prismContext).read(UserType.class, response.body().byteStream());
+            return new RestParser(context.prismContext()).read(UserType.class, response.body().byteStream());
         } catch (IOException | SchemaException ex) {
             throw new RuntimeException(ex);
         }
     }
 
     @Override
-    public Service impersonate(String s) {
-        return null;
+    public Service impersonate(String name) {
+        return addHeader(IMPERSONATE_HEADER, name);
     }
 
     @Override
-    public Service addHeader(String s, String s1) {
-        return null;
+    public Service addHeader(String name, String value) {
+        OkHttpClient.Builder builder = context.client().newBuilder();
+        builder.addInterceptor(chain -> {
+
+            Request request = chain.request();
+            Request newRequest;
+
+            newRequest = request.newBuilder()
+                    .addHeader(name, value)
+                    .build();
+
+            return chain.proceed(newRequest);
+        });
+
+        RestServiceContext context = new RestServiceContext(this.context.configuration(), builder.build(),
+                this.context.prismContext());
+
+        return new RestService(context);
     }
 
     @Override
@@ -93,7 +103,7 @@ public class RestService implements Service {
 
     @Override
     public ResourceCollectionService resources() {
-        return new RestResourceCollectionService();
+        return new RestResourceCollectionService(context);
     }
 
     @Override
@@ -113,7 +123,7 @@ public class RestService implements Service {
 
     @Override
     public ShadowCollectionService shadows() {
-        return new RestShadowCollectionService();
+        return new RestShadowCollectionService(context);
     }
 
     @Override
@@ -127,18 +137,23 @@ public class RestService implements Service {
     }
 
     public <O extends ObjectType> ObjectCollectionService<O> collection(Class<O> type) {
-        ObjectTypes ot = ObjectTypes.getObjectType(type);
-        return new RestObjectCollectionService<>(ot);
+        if (ResourceType.class.equals(type)) {
+            return (ObjectCollectionService<O>) new RestResourceCollectionService(context);
+        } else if (ShadowType.class.equals(type)) {
+            return (ObjectCollectionService<O>) new RestShadowCollectionService(context);
+        }
+
+        return new RestObjectCollectionService<O>(context, type);
     }
 
     @Override
     public ServiceUtil util() {
-        return new RestServiceUtil(prismContext);
+        return new RestServiceUtil(context.prismContext());
     }
 
     @Override
     public ScriptingUtil scriptingUtil() {
-        return null;
+        return new RestScriptingUtil();
     }
 
     public String buildUrl(String path) {
@@ -146,7 +161,7 @@ public class RestService implements Service {
     }
 
     public String buildUrl(String path, Map<String, String> query) {
-        HttpUrl.Builder builder = HttpUrl.parse(configuration.url() + REST_PREFIX + path).newBuilder();
+        HttpUrl.Builder builder = HttpUrl.parse(context.configuration().url() + REST_PREFIX + path).newBuilder();
         if (query != null) {
             query.forEach((k, v) -> builder.addQueryParameter(k, v));
         }

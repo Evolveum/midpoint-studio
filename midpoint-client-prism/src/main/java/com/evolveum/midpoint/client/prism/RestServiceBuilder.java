@@ -162,6 +162,6 @@ public class RestServiceBuilder {
     public Service create() throws Exception {
         OkHttpClient.Builder builder = createBuilder();
 
-        return new RestService(configuration, builder.build(), DEFAULT_PRISM_CONTEXT);
+        return new RestService(new RestServiceContext(configuration, builder.build(), DEFAULT_PRISM_CONTEXT));
     }
 }

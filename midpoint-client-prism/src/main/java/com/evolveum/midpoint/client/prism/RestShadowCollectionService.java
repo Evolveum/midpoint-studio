@@ -2,7 +2,6 @@ package com.evolveum.midpoint.client.prism;
 
 import com.evolveum.midpoint.client.api.ShadowCollectionService;
 import com.evolveum.midpoint.client.api.ShadowService;
-import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ShadowType;
 
 /**
@@ -11,12 +10,12 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ShadowType;
 public class RestShadowCollectionService extends RestObjectCollectionService<ShadowType>
         implements ShadowCollectionService {
 
-    public RestShadowCollectionService() {
-        super(ObjectTypes.SHADOW);
+    public RestShadowCollectionService(RestServiceContext context) {
+        super(context, ShadowType.class);
     }
 
     @Override
-    public ShadowService oid(String s) {
-        return null;
+    public ShadowService oid(String oid) {
+        return new RestShadowService(context(), oid);
     }
 }
