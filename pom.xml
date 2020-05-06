@@ -177,10 +177,10 @@
                 <artifactId>schema</artifactId>
                 <version>${midpoint.version}</version>
                 <exclusions>
-                    <!--<exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-wsdl</artifactId>
-                    </exclusion>-->
+                    <exclusion>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>net.sf.jasperreports</groupId>
                         <artifactId>jasperreports</artifactId>
