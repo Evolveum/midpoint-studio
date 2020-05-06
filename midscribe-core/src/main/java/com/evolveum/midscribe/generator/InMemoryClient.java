@@ -12,7 +12,6 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.annotation.XmlSchema;
 import java.io.File;
 import java.util.*;
 
@@ -37,20 +36,11 @@ public class InMemoryClient implements MidPointClient {
     public void init() throws Exception {
         LOG.debug("Initializing prism context");
 
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
 
-        PrismContext prismContext;
-        try {
-            Thread.currentThread().setContextClassLoader(InMemoryClient.class.getClassLoader());
-
-            DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
-
-            PrismContextFactory factory = new MidPointPrismContextFactory();
-            prismContext = factory.createPrismContext();
-            prismContext.initialize();
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
+        PrismContextFactory factory = new MidPointPrismContextFactory();
+        PrismContext prismContext = factory.createPrismContext();
+        prismContext.initialize();
 
         ParsingContext parsingContext = prismContext.createParsingContextForCompatibilityMode();
 
