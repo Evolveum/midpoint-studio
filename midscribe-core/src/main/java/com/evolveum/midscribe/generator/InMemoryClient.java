@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midscribe.util.Expander;
 import com.evolveum.midscribe.util.InMemoryFileFilter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -12,7 +13,8 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -34,6 +36,22 @@ public class InMemoryClient implements MidPointClient {
 
     @Override
     public void init() throws Exception {
+        Properties expanderProperties = new Properties();
+        if (options.isExpand()) {
+            File file = options.getExpanderProperties();
+            if (file == null || !file.isFile() || !file.canRead()) {
+                LOG.error("Expander properties file doesn't exist or can't be read '{}'", file);
+            } else {
+                try (InputStream is = new FileInputStream(options.getExpanderProperties())) {
+                    expanderProperties.load(new InputStreamReader(is, StandardCharsets.UTF_8));
+                } catch (IOException ex) {
+                    LOG.error("Couldn't load midscribe.properties from classpath", ex);
+                }
+            }
+        }
+
+        Expander expander = new Expander(expanderProperties);
+
         LOG.debug("Initializing prism context");
 
         DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
@@ -51,9 +69,16 @@ public class InMemoryClient implements MidPointClient {
 
             LOG.debug("Loading {}", file);
 
-            try {
-                PrismParser parser = prismContext.parserFor(file).language(PrismContext.LANG_XML).context(parsingContext);
-                List<PrismObject<? extends Objectable>> objects = parser.parseObjects();
+            try (InputStream is = new FileInputStream(file)) {
+                List<PrismObject<? extends Objectable>> objects;
+                if (options.isExpand()) {
+                    InputStream expanded = expander.expand(is, StandardCharsets.UTF_8);
+                    PrismParser parser = prismContext.parserFor(expanded).language(PrismContext.LANG_XML).context(parsingContext);
+                    objects = parser.parseObjects();
+                } else {
+                    PrismParser parser = prismContext.parserFor(is).language(PrismContext.LANG_XML).context(parsingContext);
+                    objects = parser.parseObjects();
+                }
 
                 for (PrismObject<? extends Objectable> object : objects) {
                     ObjectType obj = (ObjectType) object.asObjectable();

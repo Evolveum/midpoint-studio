@@ -25,6 +25,10 @@ public class GenerateOptions {
 
     private File properties;
 
+    private boolean expand;
+
+    private File expanderProperties;
+
     private Class<? extends MidPointClient> midpointClient;
 
     private Class<? extends TemplateEngineContextBuilder> templateEngineContextBuilder;
@@ -114,5 +118,21 @@ public class GenerateOptions {
 
     public void setProperties(File properties) {
         this.properties = properties;
+    }
+
+    public boolean isExpand() {
+        return expand;
+    }
+
+    public void setExpand(boolean expand) {
+        this.expand = expand;
+    }
+
+    public File getExpanderProperties() {
+        return expanderProperties;
+    }
+
+    public void setExpanderProperties(File expanderProperties) {
+        this.expanderProperties = expanderProperties;
     }
 }
