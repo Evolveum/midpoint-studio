@@ -21,6 +21,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -90,7 +91,7 @@ public class GeneratorAction extends BackgroundAction {
 
         for (PrismObject object : objects) {
             try {
-                UploadResponse resp = client.upload(object, new UploadOptions());
+                UploadResponse resp = client.upload(object, Collections.emptyList());
                 // todo check oid/result
             } catch (Exception ex) {
                 // todo proper error handling (sum all errors and show notification if necessary)

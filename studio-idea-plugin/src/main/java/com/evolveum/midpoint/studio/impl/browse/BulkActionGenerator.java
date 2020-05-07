@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.browse;
 
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -179,10 +180,10 @@ public class BulkActionGenerator extends Generator {
         }
     }
 
-    public void createSingleSourceSearch(Element root, SourceObject object) {
+    public void createSingleSourceSearch(Element root, PrismObject object) {
         Element search = DOMUtil.createSubElement(root, new QName(Constants.SCRIPT_NS, "expression", "s"));
         DOMUtil.setXsiType(search, new QName(Constants.SCRIPT_NS, "SearchExpressionType", "s"));
-        DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "type", "s")).setTextContent(object.getType().getTypeQName().getLocalPart());
+        DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "type", "s")).setTextContent(MidPointUtils.getTypeQName(object).getLocalPart());
         Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "searchFilter", "s"));
         if (object.getOid() != null) {
             Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
@@ -191,7 +192,7 @@ public class BulkActionGenerator extends Generator {
         } else if (object.getName() != null) {
             Element equal = DOMUtil.createSubElement(filter, Constants.Q_EQUAL_Q);
             DOMUtil.createSubElement(equal, Constants.Q_PATH_Q).setTextContent("name");
-            DOMUtil.createSubElement(equal, Constants.Q_VALUE_Q).setTextContent(object.getName());
+            DOMUtil.createSubElement(equal, Constants.Q_VALUE_Q).setTextContent(object.getName().getOrig());
         } else {
             MidPointUtils.publishNotification(GeneratorAction.NOTIFICATION_KEY, "Warning",
                     "No OID nor name provided; action on this object cannot be executed.", NotificationType.WARNING);
@@ -305,7 +306,7 @@ public class BulkActionGenerator extends Generator {
         return true;
     }
 
-    public String generateFromSourceObject(SourceObject object, GeneratorOptions options) {
+    public String generateFromSourceObject(PrismObject object, GeneratorOptions options) {
         Element pipe = DOMUtil.getDocument(new QName(Constants.SCRIPT_NS, "pipeline", "s")).getDocumentElement();
         createSingleSourceSearch(pipe, object);
         if (action == Action.ASSIGN_THIS) {

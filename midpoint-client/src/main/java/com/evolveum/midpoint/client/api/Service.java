@@ -14,5 +14,7 @@ public interface Service {
 
     <O extends ObjectType> ObjectAddService<O> add(O object);
 
+    Object execute(Object input) throws AuthenticationException;
+
     PrismContext prismContext();
 }

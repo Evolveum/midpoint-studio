@@ -38,7 +38,7 @@ public abstract class CommonService<O extends ObjectType> {
         return context.getClient();
     }
 
-    protected void validateResponse(Response response) throws AuthenticationException {
+    public static void validateResponse(Response response) throws AuthenticationException {
         Response.StatusType info = response.getStatusInfo();
 
         if (Response.Status.UNAUTHORIZED.getStatusCode() == info.getStatusCode()) {

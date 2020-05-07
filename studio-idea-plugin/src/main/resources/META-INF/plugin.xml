@@ -188,13 +188,15 @@
 
         <action id="MidPoint.Action.UploadExecuteStopOnError"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
-                text="Upload/Execute (stop on error)"/>
+                text="Upload/Execute (stop on error)"
+                icon="AllIcons.Actions.Upload"/>
 
         <!-- SERVER SIDE -->
 
         <action id="MidPoint.Action.UploadRecompute"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadRecompute"
-                text="Upload/Recompute"/>
+                text="Upload/Recompute"
+                icon="AllIcons.Actions.Upload"/>
 
         <action id="MidPoint.Action.UploadTestResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestResource"
@@ -203,33 +205,33 @@
 
         <action id="MidPoint.Action.UploadTestValidateResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestValidateResourceAction"
-                text="Upload/Test/Validate Resource"/>
+                text="Upload/Test/Validate Resource"
+                icon="/icons/upload-test.png"/>
 
+<!--        todo add "raw" pictogram -->
         <action id="MidPoint.Action.DeleteRaw"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
-                text="Delete (raw)"/>
+                text="Delete (raw)"
+                icon="AllIcons.Vcs.Remove"/>
 
         <action id="MidPoint.Action.Delete"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
-                text="Delete (non-raw)"/>
+                text="Delete (non-raw)"
+                icon="AllIcons.Vcs.Remove"/>
 
         <group id="MidPoint.Group.Menu">
 
             <separator/>
 
             <group id="MidPoint.Group.Menu.TransferRelated"
-                   text="Transfer Related Actions"
+                   text="Update Object Actions"
                    popup="true"
-                   icon="/icons/midpoint.png">
+                   icon="AllIcons.Actions.ListChanges">
 
                 <reference ref="MidPoint.Action.UploadExecute"/>
                 <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
 
-            </group>
-            <group id="MidPoint.Group.Menu.ServerSide"
-                   text="Server Side Actions"
-                   popup="true"
-                   icon="/icons/midpoint.png">
+                <separator/>
 
                 <reference ref="MidPoint.Action.UploadRecompute"/>
                 <reference ref="MidPoint.Action.UploadTestResource"/>
@@ -239,15 +241,17 @@
 
                 <reference ref="MidPoint.Action.DeleteRaw"/>
                 <reference ref="MidPoint.Action.Delete"/>
+
             </group>
+
             <group id="MidPoint.Group.Menu.ServerLog"
                    text="Server Log"
+                   icon="AllIcons.Nodes.LogFolder"
                    popup="true">
 
                 <group id="MidPoint.Group.Menu.ServerLog.ModelLogging"
                        text="Set Model Logging"
-                       popup="true"
-                       icon="/icons/midpoint.png">
+                       popup="true">
 
                     <group id="MidPoint.Group.Menu.ServerLog.ModelLogging.SetToInfoAction"
                            class="com.evolveum.midpoint.studio.action.logging.ModelLoggingGroupAction"/>
@@ -282,10 +286,6 @@
 
         <group id="MidPoint.Toolbar.Main">
 
-            <reference ref="MidPoint.Action.GenerateRandomOid"/>
-
-            <separator/>
-
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>
             <reference ref="MidPoint.Action.UploadTestResource"/>
@@ -295,7 +295,21 @@
             <reference ref="MidPoint.Action.Delete"/>
             <reference ref="MidPoint.Action.DeleteRaw"/>
 
-            <reference ref="MidPoint.Group.Menu"/>
+            <separator/>
+
+            <group id="MidPoint.Toolbar.Others"
+                   text="Other Update Actions"
+                   popup="true"
+                   icon="AllIcons.Actions.ListChanges">
+
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+            </group>
+
+            <reference ref="MidPoint.Group.Menu.ServerLog"/>
+
+            <reference ref="MidPoint.Action.GenerateRandomOid"/>
 
             <separator/>
 

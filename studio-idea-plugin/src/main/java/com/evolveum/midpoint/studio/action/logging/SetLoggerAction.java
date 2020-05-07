@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +91,9 @@ public class SetLoggerAction extends BackgroundAction {
         LOG.debug("Uploading system configuration");
 
         try {
-            UploadResponse resp = client.upload(configPrism, new UploadOptions().overwrite(true));
+            UploadResponse resp = client.upload(configPrism, Arrays.asList(
+                    ModelExecuteOptionsType.F_OVERWRITE.getLocalPart()
+            ));
             OperationResult result = resp.getResult();
             if (result != null && !result.isSuccess()) {
                 String msg = "Upload status of system configuration was " + result.getStatus();

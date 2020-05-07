@@ -1,6 +1,9 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.client.api.*;
+import com.evolveum.midpoint.client.api.AuthenticationException;
+import com.evolveum.midpoint.client.api.DeleteOptions;
+import com.evolveum.midpoint.client.api.MessageListener;
+import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
@@ -20,7 +23,6 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -185,34 +187,15 @@ public class MidPointClient {
         client.oid(type, oid).delete(options);
     }
 
-    public void execute(Object object) {
-        // todo implement
+    public Object execute(Object object) throws AuthenticationException {
+        return client.execute(object);
     }
 
-    public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, List<String> options) {
-        // todo implement
-        return null;
-    }
-
-    public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, UploadOptions options) throws AuthenticationException {
-        AddOptions opts = options.buildAddOptions();
-
+    public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, List<String> options) throws AuthenticationException {
         UploadResponse response = new UploadResponse();
 
-        String oid = client.add((ObjectType) obj.asObjectable()).add(opts);
+        String oid = client.add((ObjectType) obj.asObjectable()).add(options);
         response.setOid(oid);
-
-        if (options.testConnection() && ResourceType.class.equals(obj.getCompileTimeClass())) {
-            OperationResult result = testResource(obj.getOid());
-
-            response.setResult(result);
-
-            if (!result.isSuccess()) {
-                MidPointUtils.publishNotification(NOTIFICATION_KEY, "Test connection error",
-                        "Test connection error for '" + obj.getName() + "'", NotificationType.ERROR,
-                        new ShowResultNotificationAction(result));
-            }
-        }
 
         return response;
     }

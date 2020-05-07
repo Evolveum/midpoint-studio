@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.util;
 import com.evolveum.midpoint.client.api.ClientException;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
@@ -10,7 +11,9 @@ import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
+import com.evolveum.midpoint.studio.impl.browse.Constants;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
@@ -35,6 +38,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -42,6 +46,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -354,7 +359,15 @@ public class MidPointUtils {
             return null;
         }
 
-        return ObjectTypes.getObjectType(obj.getClass()).getTypeQName();
+        return getTypeQName(obj.asPrismObject());
+    }
+
+    public static QName getTypeQName(PrismObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        return ObjectTypes.getObjectType(obj.getCompileTimeClass()).getTypeQName();
     }
 
     public static String formatTime(Long time) {
@@ -406,4 +419,72 @@ public class MidPointUtils {
 
         return panel;
     }
+
+//    public static void applyTestResult(VirtualFile file, ExecuteActionServerResponse lastResponse) {
+//        if (file == null) {
+//            return;
+//        }
+//        if (lastResponse.isSuccess()) {
+//            return;
+//        }
+//
+//        try {
+//            file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+//            IMarker m = file.createMarker(IMarker.PROBLEM);
+//            m.setAttribute(IMarker.LINE_NUMBER, 1);
+//            m.setAttribute(IMarker.MESSAGE, "Test resource failed: " + lastResponse.getErrorDescription());
+//            m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+//            m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+//        } catch (CoreException e) {
+//            Console.logError("Couldn't show validation result: " + e.getMessage(), e);
+//        }
+//    }
+//
+//    public static void applyValidationResult(VirtualFile file, String dataOutput) {
+//        if (file == null) {
+//            return;
+//        }
+//
+//        Element root = DOMUtil.parseDocument(dataOutput).getDocumentElement();
+//        Element item = DOMUtil.getChildElement(root, "item");
+//        if (item == null) {
+//            return;
+//        }
+//        Element validationResult = DOMUtil.getChildElement(item, "validationResult");
+//        if (validationResult == null) {
+//            return;
+//        }
+//        List<Element> issues = DOMUtil.getChildElements(validationResult, new QName(Constants.COMMON_NS, "issue"));
+//
+//        try {
+//            file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+//            for (Element issue : issues) {
+//                String severity = getElementText(issue, "severity");
+//                String category = getElementText(issue, "category");
+//                String code = getElementText(issue, "code");
+//                String text = getElementText(issue, "text");
+//                String itemPath = getElementText(issue, "itemPath");
+//                int severityCode;
+//                switch (severity) {
+//                    case "error": severityCode = IMarker.SEVERITY_ERROR; break;
+//                    case "warning": severityCode = IMarker.SEVERITY_WARNING; break;
+//                    default: severityCode = IMarker.SEVERITY_INFO; break;
+//                }
+//                IMarker m = file.createMarker(IMarker.PROBLEM);
+//                m.setAttribute(IMarker.LINE_NUMBER, 1);
+//                m.setAttribute(IMarker.MESSAGE, text);
+//                m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+//                m.setAttribute(IMarker.SEVERITY, severityCode);
+//                m.setAttribute(IMarker.LOCATION, itemPath);
+//            }
+//
+//        } catch (CoreException e) {
+//            Console.logError("Couldn't show validation result: " + e.getMessage(), e);
+//        }
+//    }
+//
+//    private static String getElementText(Element element, String name) {
+//        Element child = DOMUtil.getChildElement(element, name);
+//        return child != null ? child.getTextContent() : null;
+//    }
 }

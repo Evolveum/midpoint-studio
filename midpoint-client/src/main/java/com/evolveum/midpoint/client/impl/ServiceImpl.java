@@ -1,11 +1,12 @@
 package com.evolveum.midpoint.client.impl;
 
-import com.evolveum.midpoint.client.api.ObjectAddService;
-import com.evolveum.midpoint.client.api.ObjectService;
-import com.evolveum.midpoint.client.api.SearchService;
-import com.evolveum.midpoint.client.api.Service;
+import com.evolveum.midpoint.client.api.*;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import org.apache.cxf.jaxrs.client.WebClient;
+
+import javax.ws.rs.core.Response;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -36,5 +37,17 @@ public class ServiceImpl implements Service {
     @Override
     public PrismContext prismContext() {
         return context.getPrismContext();
+    }
+
+    @Override
+    public Object execute(Object input) throws AuthenticationException  {
+        WebClient client = context.getClient();
+
+        client = client.replacePath(CommonService.REST_PREFIX + "/rpc/executeScript");
+        Response response = client.post(input);
+
+        CommonService.validateResponse(response);
+
+        return response.readEntity(Object.class);
     }
 }
