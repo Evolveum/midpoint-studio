@@ -177,10 +177,14 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 indicator.setFraction(i / objects.size());
 
                 try {
-                    OperationResult result = processObject(client, obj);
-                    if (result != null && !result.isSuccess()) {
+                    ProcessObjectResult processResult = processObject(client, obj);
+                    if (processResult.problem()) {
                         problemCount++;
+                    }
 
+                    OperationResult result = processResult.result();
+
+                    if (result != null && !result.isSuccess()) {
                         String msg = StringUtils.capitalize(operation) + " status of " + obj.getName() + "(" + obj.getOid() + ") was " + result.getStatus();
                         mm.printToConsole(getClass(), msg);
 
@@ -188,6 +192,10 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                                 NotificationType.WARNING, new ShowResultNotificationAction(result));
                     } else {
                         mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " " + obj.getName() + " finished");
+                    }
+
+                    if (!processResult.shouldContinue()) {
+                        break;
                     }
                 } catch (Exception ex) {
                     problemCount++;
@@ -204,5 +212,5 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         return problemCount;
     }
 
-    public abstract <O extends ObjectType> OperationResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception;
+    public abstract <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception;
 }

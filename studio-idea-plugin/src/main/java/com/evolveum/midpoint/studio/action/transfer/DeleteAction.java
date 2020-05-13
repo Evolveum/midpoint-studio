@@ -16,10 +16,10 @@ public class DeleteAction extends BaseObjectsAction {
     }
 
     @Override
-    public <O extends ObjectType> OperationResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
+    public <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
         client.delete(obj.getCompileTimeClass(), obj.getOid(), createOptions());
 
-        return null;
+        return new ProcessObjectResult(null);
     }
 
     public DeleteOptions createOptions() {

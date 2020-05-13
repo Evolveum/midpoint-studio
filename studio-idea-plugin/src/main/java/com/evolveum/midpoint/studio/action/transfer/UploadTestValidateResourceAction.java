@@ -6,9 +6,6 @@ import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.browse.BulkActionGenerator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -16,9 +13,9 @@ import org.jetbrains.annotations.NotNull;
 public class UploadTestValidateResourceAction extends UploadTestResource {
 
     @Override
-    public <O extends ObjectType> OperationResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
-        OperationResult testConnectionResult = super.processObject(client, obj);
-
+    public <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
+        ProcessObjectResult por = super.processObject(client, obj);
+        OperationResult testConnectionResult = por.result();
         // todo validate testConnectionResult
 
         GeneratorOptions genOptions = new GeneratorOptions();

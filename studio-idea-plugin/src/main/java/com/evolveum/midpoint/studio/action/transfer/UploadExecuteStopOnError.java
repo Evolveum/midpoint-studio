@@ -11,11 +11,16 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 public class UploadExecuteStopOnError extends UploadExecute {
 
     @Override
-    public <O extends ObjectType> OperationResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
-        OperationResult result = super.processObject(client, obj);
+    public <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
+        try {
+            ProcessObjectResult por = super.processObject(client, obj);
+            OperationResult result = por.result();
+            // todo validate error
 
-        // todo stop on error
-
-        return result;
+            return por;
+        } catch (Exception ex) {
+            // todo
+            return new ProcessObjectResult(null).problem(true).shouldContinue(false);
+        }
     }
 }

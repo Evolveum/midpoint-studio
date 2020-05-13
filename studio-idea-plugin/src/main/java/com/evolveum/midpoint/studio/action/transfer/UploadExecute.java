@@ -20,9 +20,12 @@ public class UploadExecute extends BaseObjectsAction {
     }
 
     @Override
-    public <O extends ObjectType> OperationResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
+    public <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
         UploadResponse resp = client.upload(obj, buildAddOptions(obj));
-        return resp.getResult();
+        OperationResult result = resp.getResult();
+
+        ProcessObjectResult por = new ProcessObjectResult(result);
+        return por;
     }
 
     public <O extends ObjectType> List<String> buildAddOptions(PrismObject<O> object) {

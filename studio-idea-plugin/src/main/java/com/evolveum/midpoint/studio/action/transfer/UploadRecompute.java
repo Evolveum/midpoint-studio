@@ -18,13 +18,14 @@ import org.jetbrains.annotations.NotNull;
 public class UploadRecompute extends UploadExecute {
 
     @Override
-    public <O extends ObjectType> OperationResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
-        OperationResult uploadResult = super.processObject(client, obj);
+    public <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
+        ProcessObjectResult por = super.processObject(client, obj);
+        OperationResult uploadResult = por.result();
 
         if (!MidPointUtils.isAssignableFrom(ObjectTypes.FOCUS_TYPE,
                 ObjectTypes.getObjectType(obj.getCompileTimeClass()))) {
 
-            return uploadResult;
+            return por;
         }
 
         GeneratorOptions genOptions = new GeneratorOptions();
@@ -34,6 +35,6 @@ public class UploadRecompute extends UploadExecute {
         Object response = client.execute(requestString);
 
         // todo fix result and handle response
-        return uploadResult;
+        return por;
     }
 }
