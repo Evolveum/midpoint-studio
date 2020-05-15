@@ -14,6 +14,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -74,7 +75,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             });
 
             if (!StringUtils.isEmpty(text)) {
-                int problemCount = processText(mm, indicator, client, text);
+                int problemCount = processText(e, mm, indicator, client, text);
                 if (problemCount != 0) {
                     showNotificationAfterFinish(problemCount);
                 }
@@ -118,7 +119,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             return;
         }
 
-        processFiles(mm, indicator, client, toProcess);
+        processFiles(e, mm, indicator, client, toProcess);
     }
 
     private void showNotificationAfterFinish(int problemCount) {
@@ -136,7 +137,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         MidPointUtils.publishExceptionNotification(notificationKey, msg, ex);
     }
 
-    private void processFiles(MidPointManager mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
+    private void processFiles(AnActionEvent evt, MidPointManager mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
         AtomicInteger count = new AtomicInteger(0);
 
         for (VirtualFile file : files) {
@@ -149,7 +150,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                         try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                             String xml = IOUtils.toString(in);
 
-                            int problems = processText(mm, indicator, client, xml);
+                            int problems = processText(evt, mm, indicator, client, xml);
                             count.addAndGet(problems);
                         } catch (IOException ex) {
                             publishException(mm, "Exception occurred when loading file " + file.getName(), ex);
@@ -162,7 +163,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         }
     }
 
-    private int processText(MidPointManager mm, ProgressIndicator indicator, MidPointClient client, String text) {
+    private int processText(AnActionEvent evt, MidPointManager mm, ProgressIndicator indicator, MidPointClient client, String text) {
         indicator.setIndeterminate(false);
 
         int problemCount = 0;
@@ -177,21 +178,9 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 indicator.setFraction(i / objects.size());
 
                 try {
-                    ProcessObjectResult processResult = processObject(client, obj);
+                    ProcessObjectResult processResult = processObject(evt, client, obj);
                     if (processResult.problem()) {
                         problemCount++;
-                    }
-
-                    OperationResult result = processResult.result();
-
-                    if (result != null && !result.isSuccess()) {
-                        String msg = StringUtils.capitalize(operation) + " status of " + obj.getName() + "(" + obj.getOid() + ") was " + result.getStatus();
-                        mm.printToConsole(getClass(), msg);
-
-                        MidPointUtils.publishNotification(notificationKey, "Warning", msg,
-                                NotificationType.WARNING, new ShowResultNotificationAction(result));
-                    } else {
-                        mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " " + obj.getName() + " finished");
                     }
 
                     if (!processResult.shouldContinue()) {
@@ -212,5 +201,46 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         return problemCount;
     }
 
-    public abstract <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception;
+    public abstract <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, PrismObject<O> obj) throws Exception;
+
+    protected ProcessObjectResult validateOperationResult(AnActionEvent evt, OperationResult result, String operation, String objectName) {
+        boolean problem = result != null && !result.isSuccess();
+        if (problem) {
+            printAndNotifyProblem(evt.getProject(), operation, objectName, result, null);
+        } else {
+            printSuccess(evt.getProject(), operation, objectName);
+        }
+
+        return new ProcessObjectResult(result).problem(problem);
+    }
+
+    protected void printProblem(Project project, String message) {
+        MidPointManager mm = MidPointManager.getInstance(project);
+
+        mm.printToConsole(getClass(), message);
+    }
+
+    protected void printAndNotifyProblem(Project project, String operation, String objectName, OperationResult result, Exception ex) {
+        MidPointManager mm = MidPointManager.getInstance(project);
+
+        String msg = StringUtils.capitalize(operation) + " status of " + objectName + " was " + result.getStatus();
+        mm.printToConsole(getClass(), msg);
+
+        MidPointUtils.publishNotification(notificationKey, "Warning", msg,
+                NotificationType.WARNING, new ShowResultNotificationAction(result));
+
+        if (ex != null) {
+            publishException(mm, "Exception occurred during " + operation + " of " + objectName, ex);
+        }
+    }
+
+    protected void printSuccess(Project project, String operation, String objectName) {
+        MidPointManager mm = MidPointManager.getInstance(project);
+
+        mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " " + objectName + " finished");
+    }
+
+    protected String getOperation() {
+        return operation;
+    }
 }

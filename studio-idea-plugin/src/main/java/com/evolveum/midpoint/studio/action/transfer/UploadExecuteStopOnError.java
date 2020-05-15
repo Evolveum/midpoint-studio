@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -11,15 +11,15 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 public class UploadExecuteStopOnError extends UploadExecute {
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
+    public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, PrismObject<O> obj) throws Exception {
         try {
-            ProcessObjectResult por = super.processObject(client, obj);
-            OperationResult result = por.result();
-            // todo validate error
+            ProcessObjectResult por = super.processObject(evt, client, obj);
+            if (por.problem()) {
+                por.shouldContinue(false);
+            }
 
             return por;
         } catch (Exception ex) {
-            // todo
             return new ProcessObjectResult(null).problem(true).shouldContinue(false);
         }
     }

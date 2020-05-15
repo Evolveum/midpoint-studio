@@ -5,7 +5,9 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.UploadResponse;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +22,11 @@ public class UploadExecute extends BaseObjectsAction {
     }
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
+    public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, PrismObject<O> obj) throws Exception {
         UploadResponse resp = client.upload(obj, buildAddOptions(obj));
         OperationResult result = resp.getResult();
 
-        ProcessObjectResult por = new ProcessObjectResult(result);
-        return por;
+        return validateOperationResult(evt, result, getOperation(), MidPointUtils.getName(obj));
     }
 
     public <O extends ObjectType> List<String> buildAddOptions(PrismObject<O> object) {

@@ -13,7 +13,7 @@ public class ProcessObjectResult {
 
     private boolean shouldContinue = true;
 
-    public ProcessObjectResult(OperationResult result) {
+    ProcessObjectResult(OperationResult result) {
         this.result = result;
     }
 

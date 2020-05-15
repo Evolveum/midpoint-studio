@@ -318,6 +318,10 @@ public class MidPointUtils {
         return table;
     }
 
+    public static String getName(PrismObject obj) {
+        return obj != null ? getOrigFromPolyString(obj.getName()) : null;
+    }
+
     public static String getOrigFromPolyString(PolyString poly) {
         return poly != null ? poly.getOrig() : null;
     }

@@ -8,9 +8,7 @@ import com.evolveum.midpoint.studio.impl.browse.BulkActionGenerator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -18,9 +16,15 @@ import org.jetbrains.annotations.NotNull;
 public class UploadRecompute extends UploadExecute {
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObject(MidPointClient client, PrismObject<O> obj) throws Exception {
-        ProcessObjectResult por = super.processObject(client, obj);
+    public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, PrismObject<O> obj) throws Exception {
+        ProcessObjectResult por = super.processObject(evt, client, obj);
         OperationResult uploadResult = por.result();
+
+        if (uploadResult != null && !uploadResult.isSuccess()) {
+            printProblem(evt.getProject(), "Skippint recomputation for " + MidPointUtils.getName(obj) + ", there was a problem with upload");
+
+            return por;
+        }
 
         if (!MidPointUtils.isAssignableFrom(ObjectTypes.FOCUS_TYPE,
                 ObjectTypes.getObjectType(obj.getCompileTimeClass()))) {
