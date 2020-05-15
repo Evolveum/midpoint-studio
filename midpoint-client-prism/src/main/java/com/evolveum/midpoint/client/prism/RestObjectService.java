@@ -64,22 +64,22 @@ public class RestObjectService<O extends ObjectType> implements ObjectService<O>
 
     @Override
     public ObjectCredentialService<O> credential() {
-        return null;
+        return new RestObjectCredentialService();
     }
 
     @Override
     public ValidateGenerateRpcService generate() {
-        return null;
+        return new RestValidateGenerateRpcService();
     }
 
     @Override
     public ValidateGenerateRpcService validate() {
-        return null;
+        return new RestValidateGenerateRpcService();
     }
 
     @Override
     public void delete() throws ObjectNotFoundException {
-
+        // todo implement
     }
 
     @Override

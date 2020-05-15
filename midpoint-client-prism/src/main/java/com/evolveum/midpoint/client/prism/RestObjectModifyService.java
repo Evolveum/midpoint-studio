@@ -27,7 +27,7 @@ public class RestObjectModifyService<O extends ObjectType> implements ObjectModi
 
     @Override
     public ObjectModifyService<O> add(String s, Object o) {
-        return null;
+        return this;
     }
 
     @Override
