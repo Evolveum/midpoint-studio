@@ -1,9 +1,6 @@
 package com.evolveum.midscribe.generator;
 
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorConfigurationType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.midpoint.xml.ns._public.connector.icf_1.connector_schema_3.ConfigurationPropertiesType;
 import com.evolveum.midpoint.xml.ns._public.connector.icf_1.connector_schema_3.ResultsHandlerConfigurationType;
 import com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.CapabilityType;
@@ -208,6 +205,47 @@ public class TemplateUtils {
         description = description.replaceFirst(" \\+\n   ","");
 
         return description;
+    }
+
+    public static String getNameOfObjectType(String displayName, ShadowKindType kind, String intent) {
+        StringBuilder sb = new StringBuilder();
+        if (displayName != null) {
+            sb.append(displayName);
+        }
+
+        if (displayName != null && (kind != null || intent != null)) {
+            sb.append(", ");
+        }
+
+        if (kind != null) {
+            sb.append(kind);
+        }
+
+        if (kind != null && intent != null) {
+            sb.append("/");
+        }
+
+        if (intent != null) {
+            sb.append(intent);
+        }
+
+        return sb.toString();
+    }
+
+    public static String getNameOfObjectType(ObjectSynchronizationType type) {
+        if (type == null) {
+            return null;
+        }
+
+        return getNameOfObjectType(type.getName(), type.getKind(), type.getIntent());
+    }
+
+    public static String getNameOfObjectType(ResourceObjectTypeDefinitionType type) {
+        if (type == null) {
+            return null;
+        }
+
+        return getNameOfObjectType(type.getDisplayName(), type.getKind(), type.getIntent());
     }
 
     private static class CustomToStringStyle extends ToStringStyle {
