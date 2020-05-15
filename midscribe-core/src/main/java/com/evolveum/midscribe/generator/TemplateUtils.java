@@ -6,19 +6,43 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.evolveum.midpoint.xml.ns._public.connector.icf_1.connector_schema_3.ConfigurationPropertiesType;
 import com.evolveum.midpoint.xml.ns._public.connector.icf_1.connector_schema_3.ResultsHandlerConfigurationType;
+import com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.CapabilityType;
 import com.evolveum.midscribe.generator.data.Attribute;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class TemplateUtils {
+
+    private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
+
+    private static Set<Class<?>> getWrapperTypes() {
+        Set<Class<?>> ret = new HashSet<>();
+        ret.add(Boolean.class);
+        ret.add(Character.class);
+        ret.add(Byte.class);
+        ret.add(Short.class);
+        ret.add(Integer.class);
+        ret.add(Long.class);
+        ret.add(Float.class);
+        ret.add(Double.class);
+        ret.add(Void.class);
+        return ret;
+    }
+
+    public static boolean isWrapperType(Class<?> clazz) {
+        return WRAPPER_TYPES.contains(clazz);
+    }
 
     public static String getOrig(PolyStringType poly) {
         return poly != null ? poly.getOrig() : null;
@@ -173,5 +197,52 @@ public class TemplateUtils {
 //
 //        return client.oid(type.getClassDefinition(), ref.getOid()).get();
         return null;
+    }
+
+    /**
+     * Not very clean way of describing capabilities, but better than nothing
+     */
+    public static String describeCapability(CapabilityType cap) {
+        String description = new ReflectionToStringBuilder(cap, new CustomToStringStyle(), null,
+                CapabilityType.class, false, false, true).toString();
+        description = description.replaceFirst(" \\+\n   ","");
+
+        return description;
+    }
+
+    private static class CustomToStringStyle extends ToStringStyle {
+
+        public CustomToStringStyle() {
+            setUseClassName(false);
+            setUseIdentityHashCode(false);
+            setFieldSeparator(" +\n   ");
+            setFieldSeparatorAtStart(true);
+            setArrayStart("");
+            setArrayEnd("");
+            setContentStart("");
+            setContentEnd("");
+        }
+
+        @Override
+        protected void appendDetail(StringBuffer buffer, String fieldName, Object value) {
+            if (value instanceof QName) {
+                QName qname = (QName) value;
+                buffer.append(qname.getPrefix());
+                buffer.append(":");
+                buffer.append(qname.getLocalPart());
+                return;
+            }
+
+            if (value == null || isWrapperType(value.getClass()) || String.class.equals(value.getClass())) {
+                super.appendDetail(buffer, fieldName, value);
+                return;
+            }
+
+            buffer.append(" + \n[");
+            buffer.append(value.getClass().getSimpleName()).append(":");
+            new ReflectionToStringBuilder(value, new CustomToStringStyle(), buffer,
+                    (Class) value.getClass(), false, false, true).toString();
+            buffer.append("] +\n");
+        }
     }
 }

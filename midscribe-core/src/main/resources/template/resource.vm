@@ -134,12 +134,20 @@ $!type.getDocumentation()
 
 #end
 
+#set($native = $object.getCapabilities().getNative())
+#set($configured = $object.getCapabilities().getConfigured())
+#if ($native || $configured)
 ==== Capabilities
 
+#if ($native)
 ===== Native
+#set($capabilities = $native)
+#parse("/template/capabilities.vm")
+#end
 
-$object.getCapabilities().getNative()
-
+#if ($configured)
 ===== Configured
-
-$object.getCapabilities().getConfigured()
+#set($capabilities = $configured)
+#parse("/template/capabilities.vm")
+#end
+#end
