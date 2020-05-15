@@ -248,6 +248,19 @@ public class TemplateUtils {
         return getNameOfObjectType(type.getDisplayName(), type.getKind(), type.getIntent());
     }
 
+    public static List<ResourceAttributeDefinitionType> sortAttributes(List<ResourceAttributeDefinitionType> attributes) {
+        if (attributes == null) {
+            return null;
+        }
+
+        List<ResourceAttributeDefinitionType> list = new ArrayList<>();
+        list.addAll(attributes);
+
+        Collections.sort(list, (a1, a2) -> String.CASE_INSENSITIVE_ORDER.compare(a1.getRef().toString(), a2.getRef().toString()));
+
+        return list;
+    }
+
     private static class CustomToStringStyle extends ToStringStyle {
 
         public CustomToStringStyle() {

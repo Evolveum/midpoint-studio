@@ -62,16 +62,14 @@ $!type.getDescription()
 
 $!type.getDocumentation()
 
-====== Overview
-
 [cols=3,options=header]
 |===
 |Attribute
 |Type
 |Description
 ##todo sort
-#foreach($attribute in $type.getAttribute())
-|$!attribute.getRef().toString() ($!attribute.getDisplayName())
+#foreach($attribute in $utils.sortAttributes($type.getAttribute()))
+|$!attribute.getRef().toString() #if ($attribute.getDisplayName()) ($!attribute.getDisplayName()) #end
 |
 |$!attribute.getDescription()
 
@@ -80,8 +78,8 @@ $!type.getDocumentation()
 
 ====== Attribute Details
 
-#foreach($attribute in $type.getAttribute())
-*$!attribute.getRef().toString() ($!attribute.getDisplayName())*
+#foreach($attribute in $utils.sortAttributes($type.getAttribute()))
+*$!attribute.getRef().toString()* #if ($attribute.getDisplayName()) *($!attribute.getDisplayName())* #end
 
 #if (!$attribute.getInbound().isEmpty())
 [.underline]#Inbounds#
