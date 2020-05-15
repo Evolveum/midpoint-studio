@@ -135,7 +135,7 @@ public class TraceViewPanel extends JPanel {
         AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> main.expandAll());
         group.add(expandAll);
 
-        AnAction collapseAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Collapseall, e -> main.collapseAll());
+        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> main.collapseAll());
         group.add(collapseAll);
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceViewPanelMainToolbar", group, true);
