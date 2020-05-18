@@ -221,8 +221,6 @@
 
         <group id="MidPoint.Group.Menu">
 
-            <separator/>
-
             <group id="MidPoint.Group.Menu.TransferRelated"
                    text="Update Object Actions"
                    popup="true"

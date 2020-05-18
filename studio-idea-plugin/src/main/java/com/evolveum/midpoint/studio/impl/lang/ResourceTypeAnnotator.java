@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.SyncAction;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceAttributeDefinitionType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SynchronizationActionType;
@@ -11,6 +14,10 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
+
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -29,6 +36,38 @@ public class ResourceTypeAnnotator implements Annotator {
         synchronizationActionHandler(element, holder);
     }
 
+    private boolean isElementInResourceObject(PsiElement element) {
+        PsiFile file = element.getContainingFile();
+
+        XmlFile xmlFile = (XmlFile) file;
+        XmlTag root = xmlFile.getRootTag();
+        QName name = MidPointUtils.createQName(root);
+        if (SchemaConstants.C_OBJECTS.equals(name)) {
+            List<XmlTag> tags = new ArrayList<>();
+            PsiElement e = element;
+            do {
+                if (e instanceof XmlTag) {
+                    tags.add((XmlTag) e);
+                }
+                e = e.getParent();
+            } while (e.getParent() != null);
+
+            if (tags.size() < 3) {
+                return false;
+            }
+
+            XmlTag tag = tags.get(tags.size() - 2);
+            QName tagName = MidPointUtils.createQName(tag);
+            if (!ObjectTypes.RESOURCE.getElementName().equals(tagName)) {
+                return false;
+            }
+        } else if (!ObjectTypes.RESOURCE.getElementName().equals(name)) {
+            return false;
+        }
+
+        return true;
+    }
+
     private void synchronizationActionHandler(PsiElement element, AnnotationHolder holder) {
         if (!(element instanceof XmlTag)) {
             return;
@@ -38,6 +77,10 @@ public class ResourceTypeAnnotator implements Annotator {
         if (!SynchronizationActionType.F_HANDLER_URI.getLocalPart().equals(e.getLocalName())) {
             return;
         }
+
+//        if (!isElementInResourceObject(element)) {
+//            return;
+//        }
 
         String uri = e.getValue().getText();
         boolean found = false;
@@ -69,6 +112,10 @@ public class ResourceTypeAnnotator implements Annotator {
             return;
         }
 
+        if (!isElementInResourceObject(element)) {
+            return;
+        }
+
         XmlTag reaction = e.getParentTag();
         // todo implement if there's only situation and no action or synchronize=true
     }
@@ -80,6 +127,10 @@ public class ResourceTypeAnnotator implements Annotator {
 
         XmlTag e = (XmlTag) element;
         if (!ResourceAttributeDefinitionType.F_TOLERANT.getLocalPart().equals(e.getLocalName())) {
+            return;
+        }
+
+        if (!isElementInResourceObject(element)) {
             return;
         }
 

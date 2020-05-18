@@ -11,9 +11,7 @@ import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
-import com.evolveum.midpoint.studio.impl.browse.Constants;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
-import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
@@ -38,7 +36,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -46,7 +43,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -491,4 +487,13 @@ public class MidPointUtils {
 //        Element child = DOMUtil.getChildElement(element, name);
 //        return child != null ? child.getTextContent() : null;
 //    }
+
+    public static QName createQName(XmlTag element) {
+        if (element == null) {
+            return null;
+        }
+
+        return new QName(element.getNamespace(), element.getLocalName());
+
+    }
 }

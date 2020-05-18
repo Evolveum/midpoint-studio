@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.structureView;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
@@ -45,7 +46,7 @@ public class FileTreeElement extends MidPointPsiTreeElement<XmlFile> {
     }
 
     private boolean isMidPointObject(XmlTag tag) {
-        QName name = new QName(tag.getNamespace(), tag.getName());
+        QName name = MidPointUtils.createQName(tag);
 
         for (ObjectTypes t : ObjectTypes.values()) {
             if (t.getElementName().equals(name)) {
