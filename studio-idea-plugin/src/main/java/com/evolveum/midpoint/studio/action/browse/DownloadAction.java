@@ -94,34 +94,33 @@ public class DownloadAction extends BackgroundAction {
         PrismContext ctx = client.getPrismContext();
         PrismSerializer<String> serializer = ctx.serializerFor(PrismContext.LANG_XML);
 
-        ApplicationManager.getApplication().invokeAndWait(() ->
-                RunnableUtils.runWriteAction(() -> {
-                    BufferedWriter out = null;
-                    VirtualFile file = null;
-                    try {
-                        indicator.setFraction(0d);
+        RunnableUtils.runWriteActionAndWait(() -> {
+            BufferedWriter out = null;
+            VirtualFile file = null;
+            try {
+                indicator.setFraction(0d);
 
-                        file = FileUtils.createScratchFile(project, environment);
+                file = FileUtils.createScratchFile(project, environment);
 
-                        out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
-                        out.write(OBJECTS_XML_PREFIX);
+                out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
+                out.write(OBJECTS_XML_PREFIX);
 
-                        if (oids != null) {
-                            showByOid(client, serializer, out);
-                        } else {
-                            showByQuery(client, serializer, out);
-                        }
+                if (oids != null) {
+                    showByOid(client, serializer, out);
+                } else {
+                    showByQuery(client, serializer, out);
+                }
 
-                        out.write(OBJECTS_XML_SUFFIX);
+                out.write(OBJECTS_XML_SUFFIX);
 
-                        openFile(project, file);
-                    } catch (Exception ex) {
-                        MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
-                                "Exception occurred when preparing show only file " + (file != null ? file.getName() : null), ex);
-                    } finally {
-                        IOUtils.closeQuietly(out);
-                    }
-                }));
+                openFile(project, file);
+            } catch (Exception ex) {
+                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                        "Exception occurred when preparing show only file " + (file != null ? file.getName() : null), ex);
+            } finally {
+                IOUtils.closeQuietly(out);
+            }
+        });
     }
 
     private void showByOid(MidPointClient client, PrismSerializer<String> serializer, Writer out) {
@@ -185,28 +184,27 @@ public class DownloadAction extends BackgroundAction {
 
                 LOG.debug("Storing file");
 
-                ApplicationManager.getApplication().invokeAndWait(() ->
-                        RunnableUtils.runWriteAction(() -> {
+                RunnableUtils.runWriteActionAndWait(() -> {
 
-                            VirtualFile file = null;
-                            Writer out = null;
-                            try {
-                                file = FileUtils.createFile(project, environment,
-                                        obj.getCompileTimeClass(), obj.getOid(), MidPointUtils.getOrigFromPolyString(obj.getName()));
+                    VirtualFile file = null;
+                    Writer out = null;
+                    try {
+                        file = FileUtils.createFile(project, environment,
+                                obj.getCompileTimeClass(), obj.getOid(), MidPointUtils.getOrigFromPolyString(obj.getName()));
 
-                                out = new BufferedWriter(
-                                        new OutputStreamWriter(file.getOutputStream(DownloadAction.this), file.getCharset()));
+                        out = new BufferedWriter(
+                                new OutputStreamWriter(file.getOutputStream(DownloadAction.this), file.getCharset()));
 
-                                IOUtils.write(xml, out);
+                        IOUtils.write(xml, out);
 
-                                files.add(file);
-                            } catch (IOException ex) {
-                                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
-                                        "Exception occurred when serializing object to file " + (file != null ? file.getName() : null), ex);
-                            } finally {
-                                IOUtils.closeQuietly(out);
-                            }
-                        }));
+                        files.add(file);
+                    } catch (IOException ex) {
+                        MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                                "Exception occurred when serializing object to file " + (file != null ? file.getName() : null), ex);
+                    } finally {
+                        IOUtils.closeQuietly(out);
+                    }
+                });
 
                 LOG.debug("File saved");
             } catch (Exception ex) {

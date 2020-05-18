@@ -1,20 +1,47 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismSerializer;
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.fileChooser.FileChooserFactory;
+import com.intellij.openapi.fileChooser.FileSaverDescriptor;
+import com.intellij.openapi.fileChooser.FileSaverDialog;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.components.BorderLayoutPanel;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -32,9 +59,19 @@ public class OperationResultDialog extends DialogWrapper {
         this.panel = new BorderLayoutPanel();
 
         List<TreeTableColumnDefinition<OperationResult, Object>> columns = new ArrayList<>();
-        columns.add(new TreeTableColumnDefinition<>("Operation", 150, r -> r.getOperation()));
+        columns.add(new TreeTableColumnDefinition<>("Operation", 150, r -> r.getOperation().replace("com.evolveum.midpoint", "..")));
         columns.add(new TreeTableColumnDefinition<>("Status", 50, r -> r.getStatus()));
         columns.add(new TreeTableColumnDefinition<>("Message", 500, r -> r.getMessage() != null ? r.getMessage() : ""));
+        columns.add(new TreeTableColumnDefinition<>("Context", 150, r -> {
+
+            Map<String, Collection<String>> ctx = r.getContext();
+
+            StringBuilder sb = new StringBuilder();
+            for (String key : ctx.keySet()) {
+                sb.append(key).append(":").append(StringUtils.join(ctx.get(key), ',')).append('\n');
+            }
+            return sb.toString();
+        }));
 
         JXTreeTable table = MidPointUtils.createTable(new OperationResultModel(result, columns), (List) columns);
         table.setRootVisible(true);
@@ -58,15 +95,77 @@ public class OperationResultDialog extends DialogWrapper {
 
         group.add(new Separator());
 
-        AnAction export = MidPointUtils.createAnAction("Export Result", AllIcons.Actions.Download, e -> download(e, result));
+        AnAction export = MidPointUtils.createAnAction("Export Result", AllIcons.Actions.Download, e -> openSaveResultDialog(e, result));
         group.add(export);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("OperationResultDialogToolbar", group, true);
         return toolbar.getComponent();
     }
 
-    private void download(AnActionEvent e, OperationResult result) {
-        // todo implement
+    private void openSaveResultDialog(AnActionEvent e, OperationResult result) {
+        Project project = e.getProject();
+        String basePath = project.getBasePath();
+
+        VirtualFile projectRoot = LocalFileSystem.getInstance().findFileByPath(basePath);
+
+        FileSaverDialog saver = FileChooserFactory.getInstance().createSaveFileDialog(
+                new FileSaverDescriptor("Save Operation Result As Xml", "Save to", "xml"), project);
+
+        VirtualFileWrapper target = saver.save(null, project.getName() + ".xml");
+        if (target != null) {
+            Task.Backgroundable task = new Task.Backgroundable(project, "Saving Operation Result Xml") {
+
+                @Override
+                public void run(@NotNull ProgressIndicator indicator) {
+                    new RunnableUtils.PluginClasspathRunnable() {
+
+                        @Override
+                        public void runWithPluginClassLoader() {
+                            saveResult(project, indicator, target, result);
+                        }
+                    }.run();
+                }
+            };
+            ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
+        }
+    }
+
+    private void saveResult(final Project project, ProgressIndicator indicator, final VirtualFileWrapper fileWrapper, OperationResult result) {
+        MidPointManager mm = MidPointManager.getInstance(project);
+
+        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        Environment environment = em.getSelected();
+
+        RunnableUtils.runWriteActionAndWait(() -> {
+            File file = fileWrapper.getFile();
+
+            try {
+                if (file.exists()) {
+                    file.delete();
+                }
+
+                file.createNewFile();
+            } catch (IOException ex) {
+                mm.printToConsole(OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+            }
+
+            VirtualFile vFile = fileWrapper.getVirtualFile();
+
+            try (BufferedWriter out = new BufferedWriter(
+                    new OutputStreamWriter(vFile.getOutputStream(this), vFile.getCharset()))) {
+
+                MidPointClient client = new MidPointClient(project, environment);
+
+                PrismContext ctx = client.getPrismContext();
+                PrismSerializer<String> serializer = ctx.serializerFor(PrismContext.LANG_XML);
+
+                String xml = serializer.serializeAnyData(result.createOperationResultType(), SchemaConstantsGenerated.C_OPERATION_RESULT);
+
+                IOUtils.write(xml, out);
+            } catch (IOException | SchemaException ex) {
+                mm.printToConsole(OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+            }
+        });
     }
 
     @Nullable

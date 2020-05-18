@@ -145,17 +145,16 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 break;
             }
 
-            ApplicationManager.getApplication().invokeAndWait(() ->
-                    RunnableUtils.runWriteAction(() -> {
-                        try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
-                            String xml = IOUtils.toString(in);
+            RunnableUtils.runWriteActionAndWait(() -> {
+                try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
+                    String xml = IOUtils.toString(in);
 
-                            int problems = processText(evt, mm, indicator, client, xml);
-                            count.addAndGet(problems);
-                        } catch (IOException ex) {
-                            publishException(mm, "Exception occurred when loading file " + file.getName(), ex);
-                        }
-                    }));
+                    int problems = processText(evt, mm, indicator, client, xml);
+                    count.addAndGet(problems);
+                } catch (IOException ex) {
+                    publishException(mm, "Exception occurred when loading file " + file.getName(), ex);
+                }
+            });
         }
 
         if (count.get() > 0) {

@@ -104,27 +104,26 @@ public class GeneratorAction extends BackgroundAction {
     private void writeContent(AnActionEvent evt, ProgressIndicator indicator, Environment env, String content) {
         updateIndicator(indicator, "Content created, writing to file");
 
-        ApplicationManager.getApplication().invokeAndWait(() ->
-                RunnableUtils.runWriteAction(() -> {
+        RunnableUtils.runWriteActionAndWait(() -> {
 
-                    VirtualFile file = null;
-                    Writer out = null;
-                    try {
-                        file = FileUtils.createScratchFile(evt.getProject(), env);
+            VirtualFile file = null;
+            Writer out = null;
+            try {
+                file = FileUtils.createScratchFile(evt.getProject(), env);
 
-                        out = new BufferedWriter(
-                                new OutputStreamWriter(file.getOutputStream(GeneratorAction.this), file.getCharset()));
+                out = new BufferedWriter(
+                        new OutputStreamWriter(file.getOutputStream(GeneratorAction.this), file.getCharset()));
 
-                        IOUtils.write(content, out);
+                IOUtils.write(content, out);
 
-                        FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
-                        fem.openFile(file, true, true);
-                    } catch (IOException ex) {
-                        MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't store generated content to file " + (file != null ? file.getName() : "[null]"), ex);
-                    } finally {
-                        IOUtils.closeQuietly(out);
-                    }
-                }));
+                FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
+                fem.openFile(file, true, true);
+            } catch (IOException ex) {
+                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't store generated content to file " + (file != null ? file.getName() : "[null]"), ex);
+            } finally {
+                IOUtils.closeQuietly(out);
+            }
+        });
 
         updateIndicator(indicator, "File saved");
     }
