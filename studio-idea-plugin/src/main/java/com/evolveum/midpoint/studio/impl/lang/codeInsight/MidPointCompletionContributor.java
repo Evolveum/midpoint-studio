@@ -35,8 +35,10 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                 psiElement().inside(
                         XmlPatterns
                                 .xmlText()
-                                .withParent(XmlPatterns.xmlTag().withName("handlerUri"))
-                                .withParent(XmlPatterns.xmlTag().withName("action"))),
+                                .withParent(
+                                        XmlPatterns.xmlTag().withName("handlerUri")
+                                                .withParent(
+                                                        XmlPatterns.xmlTag().withName("action")))),
                 new SyncActionCompletionProvider());
 
 //        extend(CompletionType.BASIC,

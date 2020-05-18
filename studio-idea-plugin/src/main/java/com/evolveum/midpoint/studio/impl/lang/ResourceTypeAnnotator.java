@@ -78,9 +78,9 @@ public class ResourceTypeAnnotator implements Annotator {
             return;
         }
 
-//        if (!isElementInResourceObject(element)) {
-//            return;
-//        }
+        if (!isElementInResourceObject(element)) {
+            return;
+        }
 
         String uri = e.getValue().getText();
         boolean found = false;
