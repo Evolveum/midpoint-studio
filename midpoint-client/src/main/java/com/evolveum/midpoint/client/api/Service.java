@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.client.api;
 
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 
 /**
@@ -14,7 +15,7 @@ public interface Service {
 
     <O extends ObjectType> ObjectAddService<O> add(O object);
 
-    Object execute(Object input) throws AuthenticationException;
+    ExecuteScriptResponseType execute(Object input) throws AuthenticationException;
 
     PrismContext prismContext();
 }

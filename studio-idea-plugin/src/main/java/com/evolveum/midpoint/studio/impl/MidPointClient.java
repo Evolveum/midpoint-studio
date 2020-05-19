@@ -19,6 +19,7 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
@@ -187,7 +188,7 @@ public class MidPointClient {
         client.oid(type, oid).delete(options);
     }
 
-    public Object execute(Object object) throws AuthenticationException {
+    public ExecuteScriptResponseType execute(Object object) throws AuthenticationException {
         return client.execute(object);
     }
 

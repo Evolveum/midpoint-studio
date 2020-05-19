@@ -7,7 +7,9 @@ import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.browse.BulkActionGenerator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 /**
@@ -36,9 +38,10 @@ public class UploadRecompute extends UploadExecute {
         BulkActionGenerator gen = new BulkActionGenerator(BulkActionGenerator.Action.RECOMPUTE);
         String requestString = gen.generateFromSourceObject(obj, genOptions);
 
-        Object response = client.execute(requestString);
+        ExecuteScriptResponseType response = client.execute(requestString);
+        OperationResultType res = response.getResult();
+        OperationResult executionResult = OperationResult.createOperationResult(res);
 
-        // todo fix result and handle response
-        return por;
+        return validateOperationResult(evt, executionResult, "recompute", MidPointUtils.getName(obj));
     }
 }

@@ -3,6 +3,7 @@ package com.evolveum.midpoint.client.impl;
 import com.evolveum.midpoint.client.api.*;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import org.apache.cxf.jaxrs.client.WebClient;
 
@@ -40,7 +41,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public Object execute(Object input) throws AuthenticationException  {
+    public ExecuteScriptResponseType execute(Object input) throws AuthenticationException  {
         WebClient client = context.getClient();
 
         client = client.replacePath(CommonService.REST_PREFIX + "/rpc/executeScript");
@@ -48,6 +49,6 @@ public class ServiceImpl implements Service {
 
         CommonService.validateResponse(response);
 
-        return response.readEntity(Object.class);
+        return response.readEntity(ExecuteScriptResponseType.class);
     }
 }
