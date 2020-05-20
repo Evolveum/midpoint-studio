@@ -3,6 +3,6 @@
 * EnvironmentManagerImpl.getSelected() always reads credentials keepass file (full environment), multiple times pre second only to get color
 * MidPointXmlStructureViewBuilderProvider not finished
 * MidPoint Facet (existence) should show/hide MidPoint plugin UI panels/toolbars
-* What's the difference between upload/recompute and upload/execute?
-* Regroup transfer/server menu and toolbar!
+* Toolbar menu icons [wip]
 * Upload/Execute of scripts doesn't work
+* Test connection feature for environment configuration validation
