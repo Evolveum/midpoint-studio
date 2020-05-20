@@ -19,6 +19,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBus;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
@@ -57,7 +58,7 @@ public class TraceLensContextPanel extends BorderLayoutPanel {
 
     private void initLayout() {
         label = new JLabel(LABEL_DEFAULT_TEXT);
-        label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        label.setBorder(JBUI.Borders.empty(5));
         add(label, BorderLayout.NORTH);
 
         List<TreeTableColumnDefinition> columns = new ArrayList<>();

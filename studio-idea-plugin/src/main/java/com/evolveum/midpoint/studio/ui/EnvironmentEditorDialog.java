@@ -6,6 +6,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Selectable;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.util.ui.JBUI;
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +45,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         super(false);
         setTitle(environment == null ? "Add environment" : "Edit environment");
 
-        colorLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
+        colorLabel.setBorder(JBUI.Borders.emptyLeft(3));
 
         if (environment == null) {
             environment = new Selectable<>(new Environment());

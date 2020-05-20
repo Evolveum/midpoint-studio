@@ -40,6 +40,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
@@ -48,7 +49,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import javax.xml.namespace.QName;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -209,7 +209,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             @Override
             public JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
                 JComponent comp = super.createCustomComponent(presentation, place);
-                comp.setBorder(new CompoundBorder(comp.getBorder(), new EmptyBorder(0, 5, 0, 5)));
+                comp.setBorder(new CompoundBorder(comp.getBorder(), JBUI.Borders.empty(0, 5)));
 
                 return comp;
             }

@@ -213,7 +213,7 @@ public class TraceViewPanel extends JPanel {
         JComponent toolbar = initTraceStructureToolbar();
 
         traceStructureLabel = new JLabel();
-        traceStructureLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        traceStructureLabel.setBorder(JBUI.Borders.empty(5));
 
         refreshFileLabel(null);
 

@@ -124,7 +124,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
     private JPanel createBoxLayoutPanel() {
         JPanel panel = new JPanel();
-        panel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+        panel.setBorder(JBUI.Borders.emptyLeft(5));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         return panel;
