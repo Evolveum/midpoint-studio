@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.intellij.openapi.options.Configurable;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.StructureConfigurableContext;
@@ -16,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.Objects;
 
@@ -53,7 +51,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
     @Override
     public JComponent createComponent() {
         JPanel root = new BorderLayoutPanel();
-        root.setBorder(JBUI.Borders.empty(5,10,0,0));
+        root.setBorder(JBUI.Borders.empty(5, 10, 0, 0));
 
         JLabel label = new JLabel("<html><body><b>MidPoint settings</b></body></html>", SwingConstants.LEFT);
         root.add(label, BorderLayout.NORTH);
@@ -72,7 +70,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
     @Override
     public boolean isModified() {
-        if (settings.getSettings() == null) {
+        if (settings == null || settings.getSettings() == null) {
             return false;
         }
 
