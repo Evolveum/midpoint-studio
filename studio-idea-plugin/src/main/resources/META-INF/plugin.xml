@@ -134,10 +134,9 @@
 
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
 
-        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.RefOidAnnotator"/>
-        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.ResourceTypeAnnotator"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.DeprecatedElementAnnotator"/>
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.DeprecatedElementAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>

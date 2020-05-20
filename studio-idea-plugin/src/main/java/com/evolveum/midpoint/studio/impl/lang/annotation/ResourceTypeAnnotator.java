@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.lang;
+package com.evolveum.midpoint.studio.impl.lang.annotation;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;

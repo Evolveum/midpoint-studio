@@ -1,12 +1,14 @@
-package com.evolveum.midpoint.studio.impl.lang;
+package com.evolveum.midpoint.studio.impl.lang.annotation;
 
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,9 +28,10 @@ public class RefOidAnnotator implements Annotator {
 
         XmlAttributeValue value = (XmlAttributeValue) element;
         XmlTag tag = getTag(value);
-        if (!isObjectTemplateOidRef(tag)) {
-            return;
-        }
+        // todo finish
+//        if (!isObjectReference(tag)) {
+//            return;
+//        }
 
         String oidValue = value.getValue();
         if (StringUtils.isEmpty(oidValue)) {
@@ -61,13 +64,30 @@ public class RefOidAnnotator implements Annotator {
         return true;
     }
 
-    private boolean isObjectTemplateOidRef(XmlTag tag) {
+    private boolean isObjectReference(XmlTag tag) {
         if (tag == null) {
             return false;
         }
 
-        // todo implement
-        return true;
+        PsiReference reference = tag.getReference();
+        if (reference == null) {
+            return false;
+        }
+
+        PsiElement element = reference.resolve();
+        if (element == null || !(element instanceof XmlTag)) {
+            return false;
+        }
+
+        XmlTag xsdElement = (XmlTag) element;
+        XmlAttribute type = xsdElement.getAttribute("type");
+        String typeValue = type.getValue();
+        if (typeValue != null && typeValue.endsWith(":ObjectReferenceType")) {
+            // we probably doesn't have to resolve this reference further
+            return true;
+        }
+
+        return false;
     }
 
     private XmlTag getTag(XmlAttributeValue value) {
