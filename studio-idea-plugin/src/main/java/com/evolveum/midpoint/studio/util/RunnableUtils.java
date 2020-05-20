@@ -90,12 +90,6 @@ public abstract class RunnableUtils {
 
     public static void runWriteActionAndWait(Runnable runnable) {
         ApplicationManager.getApplication().invokeAndWait(() -> {
-           runWriteAction(runnable);
-        });
-    }
-
-    public static void runWriteActionLater(Runnable runnable) {
-        ApplicationManager.getApplication().invokeLaterOnWriteThread(() -> {
             runWriteAction(runnable);
         });
     }
