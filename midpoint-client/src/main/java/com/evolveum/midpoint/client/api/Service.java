@@ -17,5 +17,7 @@ public interface Service {
 
     ExecuteScriptResponseType execute(Object input) throws AuthenticationException;
 
+    TestConnectionResult testConnection() throws AuthenticationException;
+
     PrismContext prismContext();
 }

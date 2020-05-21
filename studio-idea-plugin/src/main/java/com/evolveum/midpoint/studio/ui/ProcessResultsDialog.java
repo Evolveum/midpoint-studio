@@ -142,7 +142,6 @@ public class ProcessResultsDialog extends DialogWrapper {
         };
     }
 
-
     private Action getGenerateAction() {
         return new GenerateAction();
     }

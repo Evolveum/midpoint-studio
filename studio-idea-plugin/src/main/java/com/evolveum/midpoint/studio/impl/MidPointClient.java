@@ -1,9 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.client.api.AuthenticationException;
-import com.evolveum.midpoint.client.api.DeleteOptions;
-import com.evolveum.midpoint.client.api.MessageListener;
-import com.evolveum.midpoint.client.api.Service;
+import com.evolveum.midpoint.client.api.*;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
@@ -250,5 +247,9 @@ public class MidPointClient {
     private PrismParser createParser(InputStream data, PrismContext ctx) {
         ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
         return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
+    public TestConnectionResult testConnection() throws AuthenticationException {
+        return client.testConnection();
     }
 }
