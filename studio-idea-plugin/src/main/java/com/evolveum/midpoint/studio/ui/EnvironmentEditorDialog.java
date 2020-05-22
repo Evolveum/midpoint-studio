@@ -99,7 +99,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         }
 
         String port = proxyPort.getText();
-        if (port != null) {
+        if (StringUtils.isNotEmpty(port)) {
             if (!StringUtils.isNumeric(port)) {
                 infos.add(new ValidationInfo("Proxy port is not a number"));
             } else {
@@ -132,7 +132,10 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         environment.setIgnoreSslErrors(ignoreSslErrors.isSelected());
 
         environment.setProxyServerHost(proxyHost.getText());
-        environment.setProxyServerPort(Integer.parseInt(proxyPort.getText()));
+        String port = proxyPort.getToolTipText();
+        if (StringUtils.isNumeric(port)) {
+            environment.setProxyServerPort(Integer.parseInt(proxyPort.getText()));
+        }
         environment.setProxyServerType((ProxyType) proxyType.getSelectedItem());
         environment.setProxyUsername(proxyUsername.getText());
         environment.setProxyPassword(new String(proxyPassword.getPassword()));
