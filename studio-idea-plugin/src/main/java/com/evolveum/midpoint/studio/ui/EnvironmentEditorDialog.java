@@ -66,7 +66,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
     private Selectable<Environment> selectable;
 
-    public EnvironmentEditorDialog(@NotNull Project project, @Nullable Selectable<Environment> environment) {
+    public EnvironmentEditorDialog(Project project, @Nullable Selectable<Environment> environment) {
         super(false);
 
         this.project = project;
@@ -219,10 +219,10 @@ public class EnvironmentEditorDialog extends DialogWrapper {
     private Action getTestConnectionAction() {
         return new TestConnectionAction() {
 
-            @Override
-            public boolean isEnabled() {
-                return super.isEnabled() && project != null;
-            }
+//            @Override
+//            public boolean isEnabled() {
+//                return super.isEnabled() && project != null;
+//            }
         };
     }
 
