@@ -10,6 +10,7 @@ import com.evolveum.midpoint.studio.util.Selectable;
 import com.intellij.ide.actions.ActionsCollector;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -17,11 +18,11 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogEarthquakeShaker;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
@@ -52,7 +53,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
     private JCheckBox selected;
     private JButton chooseButton;
     private JLabel colorLabel;
-    private JTextField properties;
+    private TextFieldWithBrowseButton properties;
     private JTextField proxyHost;
     private JTextField proxyPort;
     private JComboBox proxyType;
@@ -77,6 +78,9 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         colorPanel.setBorder(JBUI.Borders.empty(3, 3));
         testConnection.setBorder(JBUI.Borders.empty(3, 3));
 
+        properties.addBrowseFolderListener("Select source folder", "Properties file where MidPoint object xml file parameters are stored", project,
+                FileChooserDescriptorFactory.createSingleFileDescriptor("properties"));
+
         if (environment == null) {
             environment = new Selectable<>(new Environment());
             environment.getObject().setAwtColor(MidPointUtils.generateAwtColor());
@@ -88,6 +92,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         fillInFields();
 
         init();
+
         chooseButton.addActionListener(e -> {
 
             Color newColor = JColorChooser.showDialog(null, "Choose a color", colorLabel.getBackground());
