@@ -6,3 +6,4 @@
 * Toolbar menu icons [wip]
 * Upload/Execute of scripts doesn't work
 * Test connection feature for environment configuration validation
+* Finish jira issue submitting (error reporting)

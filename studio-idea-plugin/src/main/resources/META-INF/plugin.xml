@@ -74,7 +74,7 @@
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
-        <errorHandler implementation="com.evolveum.midpoint.studio.impl.ide.MidPointErrorReportSubmitter"/>
+<!--        <errorHandler implementation="com.evolveum.midpoint.studio.impl.ide.error.JiraErrorReporter"/>-->
 
         <!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
 

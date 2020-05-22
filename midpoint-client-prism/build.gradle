@@ -6,8 +6,8 @@ dependencies {
     compile("com.evolveum.midpoint.client:midpoint-client-api:4.2-SNAPSHOT") {
         exclude group: "com.evolveum.midpoint.infra", module: "schema-pure-jaxb"
     }
-    compile "com.squareup.okhttp3:okhttp:4.6.0"
-    compile "com.squareup.okhttp3:logging-interceptor:4.6.0"
+    compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
+    compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
     compile("com.evolveum.midpoint.infra:schema:4.2-SNAPSHOT") {
         exclude group: "org.springframework"
         exclude group: "net.sf.jasperreports"

@@ -45,6 +45,7 @@ dependencies {
     compile "org.apache.commons:commons-lang3:$commonsLang"
     compile "org.knowm.xchart:xchart:$xchartVersion"
     compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
 }
 
 intellij {
