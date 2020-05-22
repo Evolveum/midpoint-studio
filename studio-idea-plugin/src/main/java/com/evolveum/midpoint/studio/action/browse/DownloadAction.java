@@ -154,7 +154,7 @@ public class DownloadAction extends BackgroundAction {
             indicator.setFraction(0d);
 
             if (oids != null) {
-                downloadByOid(client, serializer);
+                downloadByOid(evt.getProject(), client, serializer);
             } else {
                 downloadByQuery(client, serializer);
             }
@@ -165,9 +165,7 @@ public class DownloadAction extends BackgroundAction {
         }
     }
 
-    private void downloadByOid(MidPointClient client, PrismSerializer<String> serializer) {
-        Project project = client.getProject();
-
+    private void downloadByOid(Project project, MidPointClient client, PrismSerializer<String> serializer) {
         List<VirtualFile> files = new ArrayList<>();
 
         for (Pair<String, ObjectTypes> pair : oids) {

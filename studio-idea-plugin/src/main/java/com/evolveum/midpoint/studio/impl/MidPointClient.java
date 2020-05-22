@@ -52,11 +52,13 @@ public class MidPointClient {
 
     private Service client;
 
-    public MidPointClient(@NotNull Project project, @NotNull Environment environment) {
+    public MidPointClient(Project project, @NotNull Environment environment) {
         this.project = project;
         this.environment = environment;
 
-        this.midPointManager = MidPointManager.getInstance(project);
+        if (project != null) {
+            this.midPointManager = MidPointManager.getInstance(project);
+        }
 
         init();
     }
@@ -80,7 +82,7 @@ public class MidPointClient {
 
             factory.messageListener((messageId, type, message) -> {
 
-                if (!midPointManager.getSettings().isPrintRestCommunicationToConsole()) {
+                if (midPointManager == null || !midPointManager.getSettings().isPrintRestCommunicationToConsole()) {
                     return;
                 }
 
@@ -94,7 +96,9 @@ public class MidPointClient {
 
             client = factory.create();
 
-            midPointManager.printToConsole(MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+            if (midPointManager != null) {
+                midPointManager.printToConsole(MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+            }
         } catch (Exception ex) {
             handleGenericException("Couldn't create rest client", ex);
         }
@@ -114,6 +118,12 @@ public class MidPointClient {
         return client.prismContext();
     }
 
+    private void printToConsole(String message) {
+        if (midPointManager != null) {
+            midPointManager.printToConsole(MidPointClient.class, message);
+        }
+    }
+
     public <O extends ObjectType> SearchResultList search(Class<O> type, ObjectQuery query, boolean raw) {
         Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
         if (raw) {
@@ -130,15 +140,14 @@ public class MidPointClient {
 
     private <O extends ObjectType> SearchResultList<O> search(Class<O> type, ObjectQuery query,
                                                               Collection<SelectorOptions<GetOperationOptions>> options) {
-        midPointManager.printToConsole(MidPointClient.class, "Starting objects search for "
-                + type.getSimpleName() + ", " + options);
+        printToConsole("Starting objects search for " + type.getSimpleName() + ", " + options);
 
         SearchResultList<O> result = null;
         try {
             result = (SearchResultList) client.search(ObjectTypes.getObjectType(type).getClassDefinition())
                     .list(query, options);
 
-            midPointManager.printToConsole(MidPointClient.class, "Search done");
+            printToConsole("Search done");
         } catch (Exception ex) {
             handleGenericException("Error occurred while searching objects", ex);
         }
@@ -151,8 +160,7 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> PrismObject<O> get(Class<O> type, String oid, SearchOptions opts) {
-        midPointManager.printToConsole(MidPointClient.class, "Getting object "
-                + type.getSimpleName() + " oid= " + oid + ", " + opts);
+        printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
 
         PrismObject<O> result = null;
         try {
@@ -161,7 +169,7 @@ public class MidPointClient {
             ObjectType o = client.oid(ObjectTypes.getObjectType(type).getClassDefinition(), oid).get(options);
             result = (PrismObject) o.asPrismObject();
 
-            midPointManager.printToConsole(MidPointClient.class, "Get done");
+            printToConsole("Get done");
         } catch (Exception ex) {
             handleGenericException("Error occurred while searching objects", ex);
         }
@@ -170,7 +178,7 @@ public class MidPointClient {
     }
 
     public OperationResult testResource(String oid) {
-        midPointManager.printToConsole(MidPointClient.class, "Starting test resource for " + oid);
+        printToConsole("Starting test resource for " + oid);
 
         try {
             return client.oid(ResourceType.class, oid).testConnection();
@@ -199,7 +207,7 @@ public class MidPointClient {
     }
 
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
-        CredentialsManager cm = CredentialsManager.getInstance(project);
+        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
         Expander expander = new Expander(cm, new EnvironmentProperties(environment));
 
         String expanded = expander.expand(xml);
@@ -209,7 +217,7 @@ public class MidPointClient {
     }
 
     public List<PrismObject<?>> parseObjects(String xml) throws IOException, SchemaException {
-        CredentialsManager cm = CredentialsManager.getInstance(project);
+        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
         Expander expander = new Expander(cm, new EnvironmentProperties(environment));
 
         String expanded = expander.expand(xml);
@@ -219,7 +227,7 @@ public class MidPointClient {
     }
 
     public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
-        CredentialsManager cm = CredentialsManager.getInstance(project);
+        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
         Expander expander = new Expander(cm, new EnvironmentProperties(environment));
 
         try (InputStream is = file.getInputStream()) {
@@ -232,7 +240,7 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> PrismObject<O> parseObject(VirtualFile file) throws IOException, SchemaException {
-        CredentialsManager cm = CredentialsManager.getInstance(project);
+        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
         Expander expander = new Expander(cm, new EnvironmentProperties(environment));
 
         try (InputStream is = file.getInputStream()) {

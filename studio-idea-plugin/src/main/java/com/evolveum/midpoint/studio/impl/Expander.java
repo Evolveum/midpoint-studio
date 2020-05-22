@@ -20,9 +20,10 @@ public class Expander {
     private static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
 
     private CredentialsManager credentialsManager;
+
     private EnvironmentProperties propertyManager;
 
-    public Expander(@NotNull CredentialsManager credentialsManager, @NotNull EnvironmentProperties propertyManager) {
+    public Expander(CredentialsManager credentialsManager, @NotNull EnvironmentProperties propertyManager) {
         this.credentialsManager = credentialsManager;
         this.propertyManager = propertyManager;
     }
@@ -78,6 +79,10 @@ public class Expander {
     }
 
     private String expandKey(String key) {
+        if (credentialsManager == null) {
+            return propertyManager.get(key);
+        }
+
         if (key.startsWith("username:")) {
             Credentials credentials = credentialsManager.get(key.replaceFirst("username:", ""));
             if (credentials == null) {
