@@ -54,6 +54,10 @@ public class MidPointManager extends ManagerBase<MidPointSettings> implements Pr
         this.console = console;
     }
 
+    public void focusConsole() {
+        // todo open midpoint tool window and focus to console
+    }
+
     public void printToConsole(Class clazz, String message) {
         printToConsole(clazz, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
     }
