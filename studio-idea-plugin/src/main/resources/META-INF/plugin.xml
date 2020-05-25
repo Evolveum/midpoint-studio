@@ -90,11 +90,6 @@
 
         <moduleBuilder builderClass="com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder"/>
 
-        <!--        <toolWindow id="MidPoint"-->
-        <!--                    anchor="bottom"-->
-        <!--                    icon="/icons/midpoint.png"-->
-        <!--                    factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>-->
-
         <facet.toolWindow id="MidPoint"
                           facetIdList="MidPointFacet"
                           anchor="bottom"
@@ -103,19 +98,22 @@
 
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
 
-        <toolWindow id="MidPointTrace"
+        <facet.toolWindow id="MidPointTrace"
+                    facetIdList="MidPointFacet"
                     anchor="bottom"
                     order="last"
                     icon="/icons/midpoint.png"
                     factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
 
-        <toolWindow id="TraceLensContext"
+        <facet.toolWindow id="TraceLensContext"
+                    facetIdList="MidPointFacet"
                     anchor="left"
                     order="last"
                     icon="/icons/midpoint.png"
                     factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceLensContextToolWindowFactory"/>
 
-        <toolWindow id="TraceOptions"
+        <facet.toolWindow id="TraceOptions"
+                    facetIdList="MidPointFacet"
                     anchor="right"
                     order="last"
                     icon="/icons/midpoint.png"
