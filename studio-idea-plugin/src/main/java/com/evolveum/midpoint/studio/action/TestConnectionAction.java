@@ -30,6 +30,11 @@ public class TestConnectionAction extends AnAction {
         super.update(e);
 
         Project project = e.getProject();
+        if (project == null) {
+            e.getPresentation().setEnabled(false);
+            return;
+        }
+
         EnvironmentManager em = EnvironmentManager.getInstance(project);
         Environment selected = em.getSelected();
 
