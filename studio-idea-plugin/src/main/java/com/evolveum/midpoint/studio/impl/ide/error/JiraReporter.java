@@ -1,13 +1,15 @@
 package com.evolveum.midpoint.studio.impl.ide.error;
 
 import com.intellij.openapi.diagnostic.SubmittedReportInfo;
-//import okhttp3.Call;
-//import okhttp3.OkHttpClient;
-//import okhttp3.*;
+import okhttp3.*;
 
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
+//import okhttp3.Call;
+//import okhttp3.OkHttpClient;
+//import okhttp3.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -28,21 +30,28 @@ public class JiraReporter {
 
     private String password;
 
-//    private OkHttpClient client;
+    private OkHttpClient client;
+
+    public JiraReporter(String username, String password) {
+        this.username = username;
+        this.password = password;
+
+        init();
+    }
 
     private void init() {
-//        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-//        if (username != null || password != null) {
-//            builder.authenticator((route, response) -> {
-//
-//                String credential = Credentials.basic(username, password);
-//                return response.request().newBuilder()
-//                        .header("Authorization", credential)
-//                        .build();
-//            });
-//        }
-//
-//        client = builder.build();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        if (username != null || password != null) {
+            builder.authenticator((route, response) -> {
+
+                String credential = Credentials.basic(username, password);
+                return response.request().newBuilder()
+                        .header("Authorization", credential)
+                        .build();
+            });
+        }
+
+        client = builder.build();
     }
 
     public SubmittedReportInfo sendFeedback(ReporterError error) {
@@ -87,8 +96,8 @@ public class JiraReporter {
         Map<String, String> params = new HashMap<>();
         params.put(SEARCH_PARAM_NAME, SEARCH_PARAM_VALUE);
 
-//        Request request = build("/search", params).build();
-//        Call call = client.newCall(request);
+        Request request = build("/search", params).build();
+        Call call = client.newCall(request);
 
         return new JiraIssue();
     }
@@ -98,15 +107,15 @@ public class JiraReporter {
         return new JiraIssue();
     }
 
-//    private Request.Builder build(String path, Map<String, String> params) {
-//        HttpUrl.Builder builder = HttpUrl.parse(path).newBuilder();
-//
-//        if (params != null) {
-//            for (Map.Entry<String, String> param : params.entrySet()) {
-//                builder.addQueryParameter(param.getKey(), param.getValue());
-//            }
-//        }
-//
-//        return new Request.Builder().url(builder.build());
-//    }
+    private Request.Builder build(String path, Map<String, String> params) {
+        HttpUrl.Builder builder = HttpUrl.parse(path).newBuilder();
+
+        if (params != null) {
+            for (Map.Entry<String, String> param : params.entrySet()) {
+                builder.addQueryParameter(param.getKey(), param.getValue());
+            }
+        }
+
+        return new Request.Builder().url(builder.build());
+    }
 }

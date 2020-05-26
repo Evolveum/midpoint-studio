@@ -17,15 +17,24 @@ public class JiraFeedbackTask extends Backgroundable {
 
     private ReporterError error;
 
+    private String username;
+
+    private String password;
+
     JiraFeedbackTask(@Nullable Project project,
                      @NotNull String title,
                      boolean canBeCancelled,
                      ReporterError error,
+                     String username,
+                     String password,
                      Consumer<SubmittedReportInfo> callback) {
 
         super(project, title, canBeCancelled);
 
         this.error = error;
+        this.username = username;
+        this.password = password;
+
         this.callback = callback;
     }
 
@@ -33,7 +42,7 @@ public class JiraFeedbackTask extends Backgroundable {
     public void run(@NotNull ProgressIndicator indicator) {
         indicator.setIndeterminate(true);
 
-        JiraReporter reporter = new JiraReporter();
+        JiraReporter reporter = new JiraReporter(username, password);
         callback.consume(reporter.sendFeedback(error));
     }
 }

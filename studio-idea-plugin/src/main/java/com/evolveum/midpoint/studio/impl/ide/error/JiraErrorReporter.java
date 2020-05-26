@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.ide.error;
 
+import com.evolveum.midpoint.studio.ui.JiraCredentialsDialog;
 import com.intellij.diagnostic.IdeaReportingEvent;
 import com.intellij.diagnostic.LogMessage;
 import com.intellij.ide.DataManager;
@@ -21,6 +22,7 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.Consumer;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 
@@ -28,6 +30,10 @@ import java.awt.*;
  * Created by Viliam Repan (lazyman).
  */
 public class JiraErrorReporter extends ErrorReportSubmitter {
+
+    private String username;
+
+    private String password;
 
     @Override
     public boolean submit(@NotNull IdeaLoggingEvent[] events,
@@ -74,7 +80,7 @@ public class JiraErrorReporter extends ErrorReportSubmitter {
         final Project project = CommonDataKeys.PROJECT.getData(dataContext);
 
         JiraFeedbackTask task = new JiraFeedbackTask(project, "Submitting error report...",
-                true, error, new CallbackWithNotification(consumer, project));
+                true, error, username, password, new CallbackWithNotification(consumer, project));
 
         if (project == null) {
             task.run(new EmptyProgressIndicator());
@@ -91,14 +97,20 @@ public class JiraErrorReporter extends ErrorReportSubmitter {
         return "Create Jira Issue";
     }
 
-//    @Override
-//    public @Nullable String getReporterAccount() {
-//        return "";
-//    }
-//
-//    @Override
-//    public void changeReporterAccount(@NotNull Component parentComponent) {
-//        JBPopupFactory factory = JBPopupFactory.getInstance();
-//
-//    }
+    @Override
+    public @Nullable String getReporterAccount() {
+        return username != null ? username : "";
+    }
+
+    @Override
+    public void changeReporterAccount(@NotNull Component parentComponent) {
+        JiraCredentialsDialog dialog = new JiraCredentialsDialog();
+
+        if (!dialog.showAndGet()) {
+            return;
+        }
+
+        username = dialog.getUsername();
+        password = dialog.getPassword();
+    }
 }
