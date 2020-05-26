@@ -17,7 +17,7 @@ import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.impl.browse.Generator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorAction;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
@@ -31,6 +31,7 @@ import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -167,7 +168,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                     ObjectTypes type = (ObjectTypes) userObject;
                     String text = type.getTypeQName().getLocalPart();
 
-                    value = MidPointLocalizationService.getInstance().translate("ObjectType." + text, text);
+                    value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
                 } else if (userObject instanceof ObjectType) {
                     ObjectType ot = (ObjectType) userObject;
                     value = MidPointUtils.getOrigFromPolyString(ot.getName());

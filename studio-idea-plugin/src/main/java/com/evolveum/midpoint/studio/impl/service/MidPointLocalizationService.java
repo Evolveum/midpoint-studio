@@ -1,7 +1,6 @@
-package com.evolveum.midpoint.studio.impl;
+package com.evolveum.midpoint.studio.impl.service;
 
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
+import com.evolveum.midpoint.studio.impl.MidPointException;
 import com.intellij.openapi.diagnostic.Logger;
 
 import java.io.IOException;
@@ -32,11 +31,6 @@ public class MidPointLocalizationService {
     private void init() {
         loadProperties("/localization/MidPoint.properties");
         loadProperties("/localization/schema.properties");
-    }
-
-    public static MidPointLocalizationService getInstance() {
-        Application application = ApplicationManager.getApplication();
-        return application.getComponent(MidPointLocalizationService.class);
     }
 
     private void loadProperties(String resource) {

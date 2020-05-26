@@ -1,12 +1,13 @@
 package com.evolveum.midpoint.studio.action.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.impl.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.DumbAware;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,7 +30,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
         String text = selected.getTypeQName().getLocalPart();
 
-        String value = MidPointLocalizationService.getInstance().translate("ObjectType." + text, text);
+        String value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
         getTemplatePresentation().setText(value);
         e.getPresentation().setText(value);
     }
@@ -91,7 +92,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
             String text = type.getTypeQName().getLocalPart();
 
-            String value = MidPointLocalizationService.getInstance().translate("ObjectType." + text, text);
+            String value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
             getTemplatePresentation().setText(value);
             e.getPresentation().setText(value);
         }

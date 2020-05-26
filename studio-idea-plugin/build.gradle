@@ -73,7 +73,7 @@ intellij {
 }
 
 runPluginVerifier {
-    pluginFileName = "$project.name-$version"
+    pluginFileName = "$intellij.pluginName-$version"
     ides = ["IC-2019.2", "IC-2019.3", "IC-2020.1"]
 }
 
@@ -82,7 +82,3 @@ buildPlugin.configure {
         println "Git describe: " + versionDetails().commitDistance
     }
 }
-
-//runIde {
-//    jvmArgs "-Didea.log.config.file=$project.projectDir/src/test/resources/log4j.xml"
-//}
