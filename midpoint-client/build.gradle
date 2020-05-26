@@ -1,5 +1,4 @@
 plugins {
-    id 'antlr'
     id 'java'
 }
 
@@ -26,14 +25,8 @@ dependencies {
     }
     compile "stax:stax:$staxVersion"
 
-    compile "org.antlr:antlr4-runtime:$antlrVersion"
-    antlr "org.antlr:antlr4:$antlrVersion"
-
     testCompile "org.testng:testng:$testngVersion"
 }
 
-generateGrammarSource {
-    outputDirectory = file("build/generated-src/antlr/main/com/evolveum/midpoint/client/query/parser")
-}
 
 
