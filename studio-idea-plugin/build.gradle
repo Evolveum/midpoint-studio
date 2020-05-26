@@ -43,13 +43,13 @@ dependencies {
 
     compile "de.slackspace:openkeepass:$openkeepass"
     compile "org.apache.commons:commons-lang3:$commonsLang"
-    compile "org.knowm.xchart:xchart:$xchartVersion"
+//    compile "org.knowm.xchart:xchart:$xchartVersion"
     compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
     compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
 }
 
 intellij {
-    version '2020.1'    // 'LATEST-EAP-SNAPSHOT'
+    version '2020.1.1'    // 'LATEST-EAP-SNAPSHOT'
     type 'IC'
     downloadSources true
     pluginName 'MidPoint Studio'
@@ -83,6 +83,6 @@ buildPlugin.configure {
     }
 }
 
-runIde {
-    jvmArgs "-Didea.log.config.file=$project.projectDir/src/test/resources/log4j.xml"
-}
+//runIde {
+//    jvmArgs "-Didea.log.config.file=$project.projectDir/src/test/resources/log4j.xml"
+//}

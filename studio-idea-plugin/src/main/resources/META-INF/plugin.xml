@@ -230,6 +230,11 @@
                 text="Generate Documentation"
                 icon="AllIcons.Actions.Annotate"/>
 
+        <action id="MidPoint.Action.TestAction"
+                class="com.evolveum.midpoint.studio.action.TestAction"
+                text="Test Action"
+                icon="AllIcons.Debugger.Db_set_breakpoint"/>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu">
@@ -296,6 +301,8 @@
         </group>
 
         <group id="MidPoint.Toolbar.Main">
+
+<!--            <reference ref="MidPoint.Action.TestAction"/>-->
 
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>

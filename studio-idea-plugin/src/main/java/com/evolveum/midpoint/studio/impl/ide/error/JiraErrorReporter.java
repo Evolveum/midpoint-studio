@@ -88,6 +88,17 @@ public class JiraErrorReporter extends ErrorReportSubmitter {
     @NotNull
     @Override
     public String getReportActionText() {
-        return "Report error to plugin vendor";
+        return "Create Jira Issue";
     }
+
+//    @Override
+//    public @Nullable String getReporterAccount() {
+//        return "";
+//    }
+//
+//    @Override
+//    public void changeReporterAccount(@NotNull Component parentComponent) {
+//        JBPopupFactory factory = JBPopupFactory.getInstance();
+//
+//    }
 }
