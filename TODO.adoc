@@ -6,4 +6,4 @@
 * Upload/Execute of scripts doesn't work
 * Finish jira issue submitting (error reporting)
 * Cluster tool window for healt checking
-* Operation result table, status success->green status error red and so on
+* Transform components to services

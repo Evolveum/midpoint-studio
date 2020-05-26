@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismSerializer;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.schema.result.OperationResultStatus;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
@@ -25,6 +26,8 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
+import com.intellij.ui.ColoredTableCellRenderer;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.io.IOUtils;
@@ -34,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -59,19 +63,24 @@ public class OperationResultDialog extends DialogWrapper {
         this.panel = new BorderLayoutPanel();
 
         List<TreeTableColumnDefinition<OperationResult, Object>> columns = new ArrayList<>();
-        columns.add(new TreeTableColumnDefinition<>("Operation", 150, r -> r.getOperation().replace("com.evolveum.midpoint", "..")));
-        columns.add(new TreeTableColumnDefinition<>("Status", 50, r -> r.getStatus()));
-        columns.add(new TreeTableColumnDefinition<>("Message", 500, r -> r.getMessage() != null ? r.getMessage() : ""));
-        columns.add(new TreeTableColumnDefinition<>("Context", 150, r -> {
+        columns.add(new TreeTableColumnDefinition<>("Operation", 150,
+                r -> r.getOperation().replace("com.evolveum.midpoint", "..")));
+        columns.add(new TreeTableColumnDefinition<OperationResult, Object>("Status", 50,
+                r -> r.getStatus())
+                .tableCellRenderer(createStatusTableCellRenderer()));
+        columns.add(new TreeTableColumnDefinition<>("Message", 500,
+                r -> r.getMessage() != null ? r.getMessage() : ""));
+        columns.add(new TreeTableColumnDefinition<>("Context", 150,
+                r -> {
 
-            Map<String, Collection<String>> ctx = r.getContext();
+                    Map<String, Collection<String>> ctx = r.getContext();
 
-            StringBuilder sb = new StringBuilder();
-            for (String key : ctx.keySet()) {
-                sb.append(key).append(":").append(StringUtils.join(ctx.get(key), ',')).append('\n');
-            }
-            return sb.toString();
-        }));
+                    StringBuilder sb = new StringBuilder();
+                    for (String key : ctx.keySet()) {
+                        sb.append(key).append(":").append(StringUtils.join(ctx.get(key), ',')).append('\n');
+                    }
+                    return sb.toString();
+                }));
 
         JXTreeTable table = MidPointUtils.createTable(new OperationResultModel(result, columns), (List) columns);
         table.setRootVisible(true);
@@ -82,6 +91,76 @@ public class OperationResultDialog extends DialogWrapper {
         this.panel.addToCenter(new JBScrollPane(table));
 
         init();
+    }
+
+    private TableCellRenderer createStatusTableCellRenderer() {
+        return new ColoredTableCellRenderer() {
+
+            @Override
+            protected void customizeCellRenderer(JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
+                append(value != null ? value.toString() : "");
+
+                if (!(value instanceof OperationResultStatus)) {
+                    return;
+                }
+
+                OperationResultStatus status = (OperationResultStatus) value;
+                switch (status) {
+                    case SUCCESS:
+                    case HANDLED_ERROR:
+                        setForeground(JBColor.GREEN.darker());
+                        break;
+                    case PARTIAL_ERROR:
+                    case FATAL_ERROR:
+                        setForeground(JBColor.RED.darker());
+                        break;
+                    case IN_PROGRESS:
+                        setForeground(JBColor.BLUE.darker());
+                        break;
+                    case NOT_APPLICABLE:
+                    case UNKNOWN:
+                    case WARNING:
+                        setForeground(JBColor.ORANGE.darker());
+                        break;
+
+                }
+            }
+        };
+
+//        return new DefaultTableCellRenderer() {
+//
+//            @Override
+//            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+//
+//                if (!(value instanceof OperationResultStatus)) {
+//                    return c;
+//                }
+//
+//                OperationResultStatus status = (OperationResultStatus) value;
+//                switch (status) {
+//                    case SUCCESS:
+//                    case HANDLED_ERROR:
+//                        c.setForeground(JBColor.GREEN.darker());
+//                        break;
+//                    case PARTIAL_ERROR:
+//                    case FATAL_ERROR:
+//                        c.setForeground(JBColor.RED.darker());
+//                        break;
+//                    case IN_PROGRESS:
+//                        c.setForeground(JBColor.BLUE.darker());
+//                        break;
+//                    case NOT_APPLICABLE:
+//                    case UNKNOWN:
+//                    case WARNING:
+//                        c.setForeground(JBColor.ORANGE.darker());
+//                        break;
+//
+//                }
+//
+//                return c;
+//            }
+//        };
     }
 
     private JComponent initToolbar(JXTreeTable table, OperationResult result) {
