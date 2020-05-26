@@ -2,8 +2,6 @@
 
 * EnvironmentManagerImpl.getSelected() always reads credentials keepass file (full environment), multiple times pre second only to get color
 * MidPointXmlStructureViewBuilderProvider not finished
-* MidPoint Facet (existence) should show/hide MidPoint plugin UI panels/toolbars
 * Toolbar menu icons [wip]
 * Upload/Execute of scripts doesn't work
-* Test connection feature for environment configuration validation
 * Finish jira issue submitting (error reporting)
