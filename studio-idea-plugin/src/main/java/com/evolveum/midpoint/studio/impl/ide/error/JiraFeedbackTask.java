@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.ide.error;
 
+import com.evolveum.midpoint.studio.ui.JiraCredentialsDialog;
 import com.intellij.openapi.diagnostic.SubmittedReportInfo;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task.Backgroundable;
@@ -40,6 +41,12 @@ public class JiraFeedbackTask extends Backgroundable {
 
     @Override
     public void run(@NotNull ProgressIndicator indicator) {
+        JiraCredentialsDialog dialog = new JiraCredentialsDialog();
+
+        if (!dialog.showAndGet()) {
+            return;
+        }
+
         indicator.setIndeterminate(true);
 
         JiraReporter reporter = new JiraReporter(username, password);

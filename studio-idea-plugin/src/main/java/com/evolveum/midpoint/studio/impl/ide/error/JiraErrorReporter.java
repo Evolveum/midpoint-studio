@@ -22,7 +22,6 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.Consumer;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 
@@ -30,10 +29,6 @@ import java.awt.*;
  * Created by Viliam Repan (lazyman).
  */
 public class JiraErrorReporter extends ErrorReportSubmitter {
-
-    private String username;
-
-    private String password;
 
     @Override
     public boolean submit(@NotNull IdeaLoggingEvent[] events,
@@ -79,6 +74,14 @@ public class JiraErrorReporter extends ErrorReportSubmitter {
 
         final Project project = CommonDataKeys.PROJECT.getData(dataContext);
 
+        JiraCredentialsDialog dialog = new JiraCredentialsDialog();
+        if (!dialog.showAndGet()) {
+            return false;
+        }
+
+        String username = dialog.getUsername();
+        String password = dialog.getPassword();
+
         JiraFeedbackTask task = new JiraFeedbackTask(project, "Submitting error report...",
                 true, error, username, password, new CallbackWithNotification(consumer, project));
 
@@ -94,23 +97,6 @@ public class JiraErrorReporter extends ErrorReportSubmitter {
     @NotNull
     @Override
     public String getReportActionText() {
-        return "Create Jira Issue";
-    }
-
-    @Override
-    public @Nullable String getReporterAccount() {
-        return username != null ? username : "";
-    }
-
-    @Override
-    public void changeReporterAccount(@NotNull Component parentComponent) {
-        JiraCredentialsDialog dialog = new JiraCredentialsDialog();
-
-        if (!dialog.showAndGet()) {
-            return;
-        }
-
-        username = dialog.getUsername();
-        password = dialog.getPassword();
+        return "Create Evolveum Jira Issue";
     }
 }
