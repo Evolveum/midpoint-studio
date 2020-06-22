@@ -13,6 +13,7 @@ import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.SystemException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
@@ -156,7 +157,7 @@ public class ServiceFactory {
             params.setDisableCNCheck(true);
         }
 
-        if (proxyServer != null) {
+        if (StringUtils.isNoneEmpty(proxyServer)) {
             HTTPConduit conduit = (HTTPConduit) WebClient.getConfig(client).getConduit();
             HTTPClientPolicy httpClientPolicy = conduit.getClient();
             if (httpClientPolicy == null) {
