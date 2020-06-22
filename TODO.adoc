@@ -7,3 +7,9 @@
 * Finish jira issue submitting (error reporting)
 * Cluster tool window for healt checking
 * Transform components to services
+* Implement action that will allow import one account from resource and then unlink
+* settings for master password not visible in project/module settings
+* where do we store environment username/password? -> regression, they are not stsored in keepass2
+* master password reset
+* what if master password was not set? ask for credentials?
+* resource templates and rethink whole create resource process
