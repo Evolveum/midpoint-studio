@@ -11,9 +11,9 @@ import icons.OpenapiIcons;
  */
 public class MidPointFileTemplateGroupFactory implements FileTemplateGroupDescriptorFactory {
 
-    public static final String MIDPOINT_MAVEN_POM_TEMPLATE = "midpoint-maven-pom.xml";
+    public static final String MIDPOINT_MAVEN_POM_TEMPLATE = "MidPoint Maven Project.xml";
 
-    public static final String MIDPOINT_GIT_IGNORE_TEMPLATE = ".gitignore";
+    public static final String MIDPOINT_GIT_IGNORE_TEMPLATE = "MidPoint Project Git Ignore";
 
     @Override
     public FileTemplateGroupDescriptor getFileTemplatesDescriptor() {
