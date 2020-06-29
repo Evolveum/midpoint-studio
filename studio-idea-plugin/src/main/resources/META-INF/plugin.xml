@@ -178,12 +178,12 @@
 
         <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecute"
                 text="Upload/Execute"
-                icon="AllIcons.Actions.Upload"/>
+                icon="/icons/uploadExecute.svg"/>
 
         <action id="MidPoint.Action.UploadExecuteStopOnError"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
                 text="Upload/Execute (stop on error)"
-                icon="AllIcons.Actions.Upload"/>
+                icon="/icons/uploadExecuteStop.svg"/>
 
         <!-- SERVER SIDE -->
 
@@ -195,14 +195,13 @@
         <action id="MidPoint.Action.UploadTestResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestResource"
                 text="Upload/Test Resource"
-                icon="/icons/upload-test.png"/>
+                icon="/icons/uploadTest.svg"/>
 
         <action id="MidPoint.Action.UploadTestValidateResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestValidateResourceAction"
                 text="Upload/Test/Validate Resource"
-                icon="/icons/upload-test.png"/>
+                icon="/icons/uploadTestValidate.svg"/>
 
-<!--        todo add "raw" pictogram -->
         <action id="MidPoint.Action.DeleteRaw"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
                 text="Delete (raw)"
@@ -211,7 +210,7 @@
         <action id="MidPoint.Action.Delete"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
                 text="Delete (non-raw)"
-                icon="AllIcons.Vcs.Remove"/>
+                icon="/icons/removeRaw.svg"/>
 
         <!-- OTHERS -->
 

@@ -13,3 +13,12 @@
 * master password reset
 * what if master password was not set? ask for credentials?
 * resource templates and rethink whole create resource process
+* make different midpoint versions as distributions and load them via custom classpath
+** user of plugin can then pick midpoint version with everything for himself (proper xsd versions, proper client version, etc.)
+* FeatureUsageTracker.getInstance() can be used probably to track statistics
+** credentials manager needs keyring pwd too often
+* Icons
+** to svg
+*** midpoint logo
+*** logFolder-left (fix)
+*** generate oid action
