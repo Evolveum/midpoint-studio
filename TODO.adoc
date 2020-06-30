@@ -5,7 +5,7 @@
 * Toolbar menu icons [wip]
 * Upload/Execute of scripts doesn't work
 * Finish jira issue submitting (error reporting)
-* Cluster tool window for healt checking
+* Cluster tool window for health checking
 * Transform components to services
 * Implement action that will allow import one account from resource and then unlink
 * settings for master password not visible in project/module settings
@@ -16,9 +16,8 @@
 * make different midpoint versions as distributions and load them via custom classpath
 ** user of plugin can then pick midpoint version with everything for himself (proper xsd versions, proper client version, etc.)
 * FeatureUsageTracker.getInstance() can be used probably to track statistics
-** credentials manager needs keyring pwd too often
+* Credentials manager needs keyring pwd too often
 * Icons
 ** to svg
 *** midpoint logo
-*** logFolder-left (fix)
 *** generate oid action
