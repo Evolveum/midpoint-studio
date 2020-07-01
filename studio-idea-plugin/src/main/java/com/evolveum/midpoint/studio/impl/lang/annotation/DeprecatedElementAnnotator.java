@@ -21,6 +21,10 @@ public class DeprecatedElementAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+        if (element == null || !element.isValid()) {
+            return;
+        }
+
         PsiFile file = element.getContainingFile();
         if (!(file instanceof XmlFile)) {
             return;

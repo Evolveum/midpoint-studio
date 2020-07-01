@@ -65,7 +65,7 @@ public class RefOidAnnotator implements Annotator {
     }
 
     private boolean isObjectReference(XmlTag tag) {
-        if (tag == null) {
+        if (tag == null || !tag.isValid()) {
             return false;
         }
 
