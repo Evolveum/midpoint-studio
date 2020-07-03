@@ -75,7 +75,7 @@ intellij {
 
 runPluginVerifier {
     pluginFileName = "$intellij.pluginName-$version"
-    ides = ["IC-2019.2", "IC-2019.3", "IC-2020.1"]
+    ides = ["IC-2019.2", "IC-2019.3", "IC-2020.1", "IC-LATEST-EAP-SNAPSHOT"]
 }
 
 buildPlugin.configure {

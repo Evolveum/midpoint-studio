@@ -152,7 +152,7 @@ class PluginVerifierRunner extends ConventionTask {
      * @throws IllegalArgumentException if the identifier was not recognized
      */
     static String identifierToDependency(String identifier) {
-        def (type, version) = identifier.split("-")
+        def (type, version) = identifier.split("-", 2)
 
         def dependencyGroup
         def dependencyName
