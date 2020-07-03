@@ -60,8 +60,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
 
-        <projectStructureConfigurableAdder
-                implementation="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurableContributor"/>
+        <projectConfigurable parentId="language" instance="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
+                             id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable" displayName="MidPoint Project Settings"
+                             nonDefaultProject="true"/>
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 

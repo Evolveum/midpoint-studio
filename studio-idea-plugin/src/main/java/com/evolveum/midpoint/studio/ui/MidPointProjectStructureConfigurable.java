@@ -4,7 +4,6 @@ import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ui.configuration.projectRoot.StructureConfigurableContext;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.ui.components.panels.Wrapper;
 import com.intellij.ui.navigation.Place;
@@ -26,13 +25,10 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
     private Project project;
 
-    private StructureConfigurableContext context;
-
     private MidPointSettingsPanel settings;
 
-    public MidPointProjectStructureConfigurable(@NotNull Project project, @NotNull StructureConfigurableContext context) {
+    public MidPointProjectStructureConfigurable(@NotNull Project project) {
         this.project = project;
-        this.context = context;
     }
 
     @NotNull
