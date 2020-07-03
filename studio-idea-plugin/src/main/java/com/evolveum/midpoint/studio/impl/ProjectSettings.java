@@ -5,11 +5,13 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ModuleSettings {
+public class ProjectSettings {
 
     private MidPointSettings midPointSettings = MidPointSettings.createDefaultSettings();
 
     private EnvironmentSettings environmentSettings = EnvironmentSettings.createDefaultSettings();
+
+    private String oldMasterPassword;
 
     private String masterPassword;
 
@@ -37,24 +39,35 @@ public class ModuleSettings {
         this.masterPassword = masterPassword;
     }
 
+    public String getOldMasterPassword() {
+        return oldMasterPassword;
+    }
+
+    public void setOldMasterPassword(String oldMasterPassword) {
+        this.oldMasterPassword = oldMasterPassword;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ModuleSettings that = (ModuleSettings) o;
+        ProjectSettings settings = (ProjectSettings) o;
 
-        if (midPointSettings != null ? !midPointSettings.equals(that.midPointSettings) : that.midPointSettings != null)
+        if (midPointSettings != null ? !midPointSettings.equals(settings.midPointSettings) : settings.midPointSettings != null)
             return false;
-        if (environmentSettings != null ? !environmentSettings.equals(that.environmentSettings) : that.environmentSettings != null)
+        if (environmentSettings != null ? !environmentSettings.equals(settings.environmentSettings) : settings.environmentSettings != null)
             return false;
-        return masterPassword != null ? masterPassword.equals(that.masterPassword) : that.masterPassword == null;
+        if (oldMasterPassword != null ? !oldMasterPassword.equals(settings.oldMasterPassword) : settings.oldMasterPassword != null)
+            return false;
+        return masterPassword != null ? masterPassword.equals(settings.masterPassword) : settings.masterPassword == null;
     }
 
     @Override
     public int hashCode() {
         int result = midPointSettings != null ? midPointSettings.hashCode() : 0;
         result = 31 * result + (environmentSettings != null ? environmentSettings.hashCode() : 0);
+        result = 31 * result + (oldMasterPassword != null ? oldMasterPassword.hashCode() : 0);
         result = 31 * result + (masterPassword != null ? masterPassword.hashCode() : 0);
         return result;
     }

@@ -39,6 +39,54 @@ public class CredentialsManagerImpl implements CredentialsManager {
     }
 
     @Override
+    public void init(String masterPassword) {
+        if (StringUtils.isEmpty(masterPassword)) {
+            return;
+        }
+
+        MidPointSettings settings = MidPointManager.getInstance(project).getSettings();
+        if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
+            return;
+        }
+
+        MidPointUtils.setPassword(settings.getProjectId(), masterPassword);
+
+        refresh(true);
+    }
+
+    @Override
+    public void resetMasterPassword(String oldPassword, String newPassword) {
+        MidPointSettings settings = MidPointManager.getInstance(project).getSettings();
+        if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
+            throw new IllegalStateException("Midpoint setting unavailable");
+        }
+
+        if (StringUtils.isEmpty(newPassword)) {
+            throw new IllegalArgumentException("New password must not be empty");
+        }
+
+        File dbFile = getDatabaseFile();
+        if (!dbFile.exists()) {
+            this.database = createKeePassBuilder(null).build();
+
+            writeDatabase(newPassword);
+        } else {
+            database = KeePassDatabase.getInstance(dbFile).openDatabase(oldPassword);
+            writeDatabase(newPassword);
+        }
+
+        MidPointUtils.setPassword(settings.getProjectId(), newPassword);
+
+        refresh(true);
+    }
+
+    @Override
+    public boolean isAvailable() {
+        String masterPassword = getMasterPassword();
+        return StringUtils.isNoneEmpty(masterPassword);
+    }
+
+    @Override
     public synchronized void refresh() {
         refresh(true);
     }
@@ -162,9 +210,13 @@ public class CredentialsManagerImpl implements CredentialsManager {
     }
 
     private synchronized void writeDatabase() {
-        File file = getDatabaseFile();
-
         String masterPassword = getMasterPassword();
+
+        writeDatabase(masterPassword);
+    }
+
+    private synchronized void writeDatabase(String masterPassword) {
+        File file = getDatabaseFile();
 
         try (OutputStream os = new FileOutputStream(file)) {
             KeePassDatabase.write(database, masterPassword, os);

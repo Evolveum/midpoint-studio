@@ -16,6 +16,12 @@ public interface CredentialsManager {
         return project.getComponent(CredentialsManager.class);
     }
 
+    void init(String masterPassword);
+
+    void resetMasterPassword(String oldPassword, String newPassword);
+
+    boolean isAvailable();
+
     void refresh();
 
     List<Credentials> list();

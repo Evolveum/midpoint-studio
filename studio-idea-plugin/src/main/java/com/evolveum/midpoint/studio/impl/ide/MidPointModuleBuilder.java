@@ -32,7 +32,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.util.ThrowableRunnable;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,7 +55,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
     public static String MODULE_NAME = "MidPoint";
 
-    private ModuleSettings settings = new ModuleSettings();
+    private ProjectSettings settings = new ProjectSettings();
 
     public MidPointModuleBuilder() {
         setName(MODULE_NAME);
@@ -194,14 +193,10 @@ public class MidPointModuleBuilder extends ModuleBuilder {
     @Nullable
     @Override
     public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
-        if (StringUtils.isNotEmpty(settings.getMasterPassword())) {
-            MidPointUtils.setPassword(settings.getMidPointSettings().getProjectId(), settings.getMasterPassword());
-        }
-
         MidPointManager.getInstance(project).setSettings(settings.getMidPointSettings());
         EnvironmentManager.getInstance(project).setSettings(settings.getEnvironmentSettings());
 
-        CredentialsManager.getInstance(project).refresh();
+        CredentialsManager.getInstance(project).init(settings.getMasterPassword());
 
         return super.commitModule(project, model);
     }

@@ -61,7 +61,7 @@
         <applicationService serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
 
         <projectConfigurable parentId="language" instance="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
-                             id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable" displayName="MidPoint Project Settings"
+                             id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable" displayName="MidPoint"
                              nonDefaultProject="true"/>
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>

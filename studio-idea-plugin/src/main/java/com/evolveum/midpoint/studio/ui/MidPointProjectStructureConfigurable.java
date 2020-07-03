@@ -1,7 +1,11 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.studio.impl.CredentialsManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.ProjectSettings;
 import com.intellij.openapi.options.Configurable;
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.ActionCallback;
@@ -9,6 +13,7 @@ import com.intellij.ui.components.panels.Wrapper;
 import com.intellij.ui.navigation.Place;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +30,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
     private Project project;
 
-    private MidPointSettingsPanel settings;
+    private ProjectConfigurationPanel settings;
 
     public MidPointProjectStructureConfigurable(@NotNull Project project) {
         this.project = project;
@@ -52,9 +57,15 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
         JLabel label = new JLabel("<html><body><b>MidPoint settings</b></body></html>", SwingConstants.LEFT);
         root.add(label, BorderLayout.NORTH);
 
-        MidPointManager mm = MidPointManager.getInstance(project);
+        ProjectSettings pSettings = new ProjectSettings();
 
-        settings = new MidPointSettingsPanel(mm.getSettings());
+        MidPointManager mm = MidPointManager.getInstance(project);
+        pSettings.setMidPointSettings(mm.getSettings());
+
+        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        pSettings.setEnvironmentSettings(em.getFullSettings());
+
+        settings = new ProjectConfigurationPanel(pSettings, true);
         settings.setBorder(JBUI.Borders.emptyLeft(10));
 
         Wrapper wrapper = new Wrapper();
@@ -75,9 +86,26 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
     }
 
     @Override
-    public void apply() {
-        MidPointManager mm = MidPointManager.getInstance(project);
-        mm.setSettings(settings.getSettings());
+    public void apply() throws ConfigurationException {
+        if (settings == null) {
+            return;
+        }
+
+        settings.validateData();
+        settings.updateSettings();
+
+        ProjectSettings pSettings = settings.getSettings();
+
+        if (StringUtils.isNotEmpty(pSettings.getMasterPassword())) {
+            try {
+                CredentialsManager.getInstance(project).resetMasterPassword(pSettings.getOldMasterPassword(), pSettings.getMasterPassword());
+            } catch (Exception ex) {
+                throw new ConfigurationException(ex.getMessage());
+            }
+        }
+
+        MidPointManager.getInstance(project).setSettings(pSettings.getMidPointSettings());
+        EnvironmentManager.getInstance(project).setSettings(pSettings.getEnvironmentSettings());
     }
 
     @Override
