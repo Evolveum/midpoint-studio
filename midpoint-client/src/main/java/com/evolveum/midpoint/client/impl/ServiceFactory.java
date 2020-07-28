@@ -133,9 +133,6 @@ public class ServiceFactory {
         List<Provider> providers = (List) Arrays.asList(
                 new com.bea.xml.stream.XMLOutputFactoryBase(),
                 setupProvider(new CompatibilityXmlProvider(DEFAULT_PRISM_CONTEXT), DEFAULT_PRISM_CONTEXT));
-//                setupProvider(new MidpointXmlProvider(), prismContext),
-//                setupProvider(new MidpointJsonProvider<>(), prismContext),
-//                setupProvider(new MidpointYamlProvider<>(), prismContext));
 
         WebClient client;
         if (username != null) {
@@ -179,14 +176,12 @@ public class ServiceFactory {
             }
         }
 
-        client.accept(MediaType.APPLICATION_XML);   // todo add json, yaml
+        client.accept(MediaType.APPLICATION_XML);
         client.type(MediaType.APPLICATION_XML);
 
         ClientConfiguration config = WebClient.getConfig(client);
 
         LoggingFeature logging = new LoggingFeature();
-        logging.setLimit(100);
-//        logging.setPrettyLogging(true);   // todo fix pretty print, doesn't work
         if (messageListener != null) {
             logging.setSender(event -> {
                 String msg = LogMessageFormatter.format(event);
