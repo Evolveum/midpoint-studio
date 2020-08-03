@@ -63,7 +63,7 @@ intellij {
             'maven'
     ]
     patchPluginXml {
-        sinceBuild '192'
+        sinceBuild '193'
         untilBuild '202.*'
         version project.version + '.' + versionDetails().commitDistance
     }
