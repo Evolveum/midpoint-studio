@@ -79,24 +79,16 @@ public class Expander {
     }
 
     private String expandKey(String key) {
-        if (credentialsManager == null) {
-            return propertyManager.get(key);
+        String value = null;
+        if (credentialsManager != null && credentialsManager.isAvailable()) {
+            Credentials credentials = credentialsManager.get(key);
+            if (credentials != null) {
+                value = credentials.getPassword();
+            }
         }
 
-        if (key.startsWith("username:")) {
-            Credentials credentials = credentialsManager.get(key.replaceFirst("username:", ""));
-            if (credentials == null) {
-                return null;
-            }
-
-            return credentials.getUsername();
-        } else if (key.startsWith("password:")) {
-            Credentials credentials = credentialsManager.get(key.replaceFirst("password:", ""));
-            if (credentials == null) {
-                return null;
-            }
-
-            return credentials.getPassword();
+        if (value != null) {
+            return value;
         }
 
         return propertyManager.get(key);
