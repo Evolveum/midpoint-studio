@@ -194,9 +194,10 @@ public class MidPointModuleBuilder extends ModuleBuilder {
     @Override
     public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
         MidPointManager.getInstance(project).setSettings(settings.getMidPointSettings());
-        EnvironmentManager.getInstance(project).setSettings(settings.getEnvironmentSettings());
 
         CredentialsManager.getInstance(project).init(settings.getMasterPassword());
+
+        EnvironmentManager.getInstance(project).setSettings(settings.getEnvironmentSettings());
 
         return super.commitModule(project, model);
     }
