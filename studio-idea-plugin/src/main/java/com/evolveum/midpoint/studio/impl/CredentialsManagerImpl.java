@@ -55,7 +55,7 @@ public class CredentialsManagerImpl implements CredentialsManager {
     }
 
     @Override
-    public void resetMasterPassword(String oldPassword, String newPassword) {
+    public void changeMasterPassword(String oldPassword, String newPassword) {
         MidPointSettings settings = MidPointManager.getInstance(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             throw new IllegalStateException("Midpoint setting unavailable");
@@ -106,7 +106,11 @@ public class CredentialsManagerImpl implements CredentialsManager {
         }
 
         if (dbFile.exists()) {
-            database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
+            try {
+                database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
+            } catch (Exception ex) {
+                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't open credentials database with master password", ex);
+            }
         }
     }
 

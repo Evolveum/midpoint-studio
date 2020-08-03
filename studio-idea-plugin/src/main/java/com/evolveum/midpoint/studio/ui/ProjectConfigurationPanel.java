@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.ProjectSettings;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.options.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,6 +36,18 @@ public class ProjectConfigurationPanel extends JPanel {
     }
 
     public ProjectSettings getSettings() {
+        ProjectSettings settings = new ProjectSettings();
+
+        settings.setMidPointSettings(midpointSettingsPanel.getSettings());
+        settings.setEnvironmentSettings(environmentsPanel.getFullSettings());
+
+        if (password1.getPassword().length > 0) {
+            settings.setMasterPassword(new String(password1.getPassword()));
+        }
+        if (oldPassword.getPassword().length > 0) {
+            settings.setOldMasterPassword(new String(oldPassword.getPassword()));
+        }
+
         return settings;
     }
 
@@ -50,7 +63,11 @@ public class ProjectConfigurationPanel extends JPanel {
     public boolean validateData() throws ConfigurationException {
         String oldPwd = oldPassword.getPassword() != null ? new String(oldPassword.getPassword()) : null;
         if (StringUtils.isNotEmpty(oldPwd)) {
-            // todo validate old pwd against keychain
+            String projectId = settings.getMidPointSettings().getProjectId();
+            String currentPwd = MidPointUtils.getPassword(projectId);
+            if (!Objects.equals(oldPwd, currentPwd)) {
+                throw new ConfigurationException("Old password doesn't match one that is stored in keychain with id " + projectId);
+            }
         }
 
         String pwd1 = password1.getPassword() != null ? new String(password1.getPassword()) : null;

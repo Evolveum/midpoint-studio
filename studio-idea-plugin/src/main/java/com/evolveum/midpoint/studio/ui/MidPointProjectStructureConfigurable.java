@@ -81,8 +81,15 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
             return false;
         }
 
+        ProjectSettings pSettings = new ProjectSettings();
+
         MidPointManager mm = MidPointManager.getInstance(project);
-        return !Objects.equals(mm.getSettings(), settings.getSettings());
+        pSettings.setMidPointSettings(mm.getSettings());
+
+        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        pSettings.setEnvironmentSettings(em.getFullSettings());
+
+        return !Objects.equals(pSettings, settings.getSettings());
     }
 
     @Override
@@ -98,7 +105,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
         if (StringUtils.isNotEmpty(pSettings.getMasterPassword())) {
             try {
-                CredentialsManager.getInstance(project).resetMasterPassword(pSettings.getOldMasterPassword(), pSettings.getMasterPassword());
+                CredentialsManager.getInstance(project).changeMasterPassword(pSettings.getOldMasterPassword(), pSettings.getMasterPassword());
             } catch (Exception ex) {
                 throw new ConfigurationException(ex.getMessage());
             }

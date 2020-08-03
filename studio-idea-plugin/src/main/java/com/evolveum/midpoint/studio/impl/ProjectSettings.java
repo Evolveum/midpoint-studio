@@ -15,6 +15,16 @@ public class ProjectSettings {
 
     private String masterPassword;
 
+    public ProjectSettings() {
+    }
+
+    public ProjectSettings(ProjectSettings settings) {
+        setMidPointSettings(settings.getMidPointSettings());
+        setEnvironmentSettings(settings.getEnvironmentSettings());
+        setOldMasterPassword(settings.getOldMasterPassword());
+        setMasterPassword(settings.getMasterPassword());
+    }
+
     public MidPointSettings getMidPointSettings() {
         return midPointSettings;
     }

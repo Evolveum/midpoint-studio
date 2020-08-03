@@ -18,7 +18,7 @@ public interface CredentialsManager {
 
     void init(String masterPassword);
 
-    void resetMasterPassword(String oldPassword, String newPassword);
+    void changeMasterPassword(String oldPassword, String newPassword);
 
     boolean isAvailable();
 
