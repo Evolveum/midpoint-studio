@@ -1,12 +1,14 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
-import com.evolveum.midpoint.studio.impl.trace.OpNode;
+import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -14,69 +16,84 @@ import java.util.stream.Collectors;
  */
 public class TraceTreeTableModel extends DefaultTreeTableModel {
 
-    private List<TreeTableColumnDefinition> columns;
+    @NotNull private final List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions;
+    @Nullable private final OpNode rootOpNode;
+    @NotNull private final RootTraceTreeTableNode invisibleRootTreeNode;
 
-    public TraceTreeTableModel(List<TreeTableColumnDefinition> columns, List<OpNode> nodes) {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
-        this.columns = columns;
+    @NotNull private final Map<OpNode, RegularTraceTreeTableNode> convertedNodeMap = new HashMap<>();
 
-        List<DefaultMutableTreeTableNode> list = init(nodes);
+    public TraceTreeTableModel(@NotNull List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions,
+            @Nullable OpNode rootOpNode) {
 
-        DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
-        list.forEach(i -> root.add(i));
-        setRoot(root);
-    }
+        this.columnDefinitions = columnDefinitions;
+        this.rootOpNode = rootOpNode;
+        this.invisibleRootTreeNode = new RootTraceTreeTableNode(rootOpNode);
 
-    public TreeTableColumnDefinition getColumn(int index) {
-        return columns.get(index);
-    }
-
-    private List<DefaultMutableTreeTableNode> init(List<OpNode> nodes) {
-        List<DefaultMutableTreeTableNode> list = new ArrayList<>();
-        if (nodes == null) {
-            return list;
+        if (rootOpNode != null) {
+            createNodeMap(rootOpNode);
+            System.out.println("convertedNodeMap: " + convertedNodeMap.size() + " entries");
         }
 
-        for (OpNode node : nodes) {
-            list.add(buildNode(node));
-        }
+        updateParentChildLinks();
 
-        return list;
+        setColumnIdentifiers(getColumnNames());
+        setRoot(invisibleRootTreeNode);
     }
 
-    private DefaultMutableTreeTableNode buildNode(OpNode node) {
-        DefaultMutableTreeTableNode n = new DefaultMutableTreeTableNode(node);
-
-        if (node.getChildren() == null) {
-            return n;
-        }
-
-        for (OpNode child : node.getChildren()) {
-            n.add(buildNode(child));
-        }
-
-        return n;
+    private void createNodeMap(OpNode opNode) {
+        convertedNodeMap.put(opNode, new RegularTraceTreeTableNode(opNode));
+        opNode.getChildren().forEach(this::createNodeMap);
     }
 
-    @Override
-    public int getColumnCount() {
-        return columns.size();
+    public void updateParentChildLinks() {
+        if (rootOpNode == null) {
+            return;
+        }
+
+        invisibleRootTreeNode.clearParentChildLinks();
+        convertedNodeMap.values().forEach(AbstractTraceTreeTableNode::clearParentChildLinks);
+
+        if (rootOpNode.isVisible()) {
+            RegularTraceTreeTableNode realRootTreeNode = convertedNodeMap.get(rootOpNode);
+            updateParentChildLinks(realRootTreeNode);
+            invisibleRootTreeNode.addChild(realRootTreeNode);
+        } else {
+            updateParentChildLinks(invisibleRootTreeNode);
+        }
     }
 
-    @Override
-    public String getColumnName(int column) {
-        return columns.get(column).getHeader();
+    // TODO do better
+    public void fireChange() {
+        setRoot(invisibleRootTreeNode);
+    }
+
+    private void updateParentChildLinks(AbstractTraceTreeTableNode node) {
+        for (OpNode visibleChild : node.getUserObject().getVisibleChildren()) {
+            RegularTraceTreeTableNode visibleTreeTableChild = convertedNodeMap.get(visibleChild);
+            node.addChild(visibleTreeTableChild);
+            updateParentChildLinks(visibleTreeTableChild);
+        }
+    }
+
+    @NotNull
+    private List<String> getColumnNames() {
+        return columnDefinitions.stream()
+                .map(TreeTableColumnDefinition::getHeader)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Object getValueAt(Object node, int column) {
-        DefaultMutableTreeTableNode d = (DefaultMutableTreeTableNode) node;
+        AbstractTraceTreeTableNode d = (AbstractTraceTreeTableNode) node;
         if (d == null || d.getUserObject() == null) {
             return null;
+        } else {
+            return columnDefinitions.get(column).getValue().apply(d.getUserObject());
         }
+    }
 
-        return columns.get(column).getValue().apply(d.getUserObject());
+    @Override
+    public boolean isCellEditable(Object node, int column) {
+        return false;
     }
 }

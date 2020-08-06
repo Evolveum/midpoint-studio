@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.trace;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;

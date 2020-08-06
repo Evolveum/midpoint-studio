@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
-import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LogSegmentType;
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -13,7 +13,6 @@ import com.intellij.ui.components.JBTextArea;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 
-import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,6 +24,7 @@ import java.util.List;
 public class TraceLogsPanel extends BorderLayoutPanel {
 
     private JBTextArea logs;
+    private JBScrollPane logsScrollPane;
     private SimpleCheckboxAction logsWrapText;
     private SimpleCheckboxAction logsShowSegmentSeparators;
 
@@ -53,9 +53,8 @@ public class TraceLogsPanel extends BorderLayoutPanel {
         logsWrapText = new SimpleCheckboxAction("Wrap text") {
 
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void onStateChange() {
                 logs.setLineWrap(isSelected());
-
                 updateTexts();
             }
         };
@@ -63,7 +62,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
         logsShowSegmentSeparators = new SimpleCheckboxAction("Show segment separators") {
 
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void onStateChange() {
                 updateTexts();
             }
         };
@@ -73,7 +72,8 @@ public class TraceLogsPanel extends BorderLayoutPanel {
         add(toolbar.getComponent(), BorderLayout.NORTH);
 
         logs = new JBTextArea();
-        add(new JBScrollPane(logs));
+        logsScrollPane = new JBScrollPane(logs);
+        add(logsScrollPane);
     }
 
     private void updateTexts() {
@@ -83,6 +83,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
         }
 
         logs.setText(sb.toString());
+        logs.setCaretPosition(0);
     }
 
     public void collectLogEntries(StringBuilder sb, OpNode node) {
@@ -92,7 +93,9 @@ public class TraceLogsPanel extends BorderLayoutPanel {
 
         for (LogSegment segment : allSegments) {
             if (logsShowSegmentSeparators.isSelected()) {
-                sb.append("---> Segment #" + segment.segment.getSequenceNumber() + " in " + segment.owner.getOperationQualified() + " (inv: " + segment.owner.getResult().getInvocationId() + ")\n");
+                sb.append("---> Segment #").append(segment.segment.getSequenceNumber()).append(" in ")
+                        .append(segment.owner.getOperationQualified()).append(" (inv: ")
+                        .append(segment.owner.getResult().getInvocationId()).append(")\n");
             }
             for (String entry : segment.segment.getEntry()) {
                 // ugly hacking to normalize line ends

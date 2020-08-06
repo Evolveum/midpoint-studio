@@ -101,6 +101,13 @@
                     icon="/icons/midpoint.png"
                     factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
 
+        <facet.toolWindow id="TraceLog"
+                          facetIdList="MidPointFacet"
+                          anchor="bottom"
+                          order="last"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.LogWindowFactory"/>
+
         <facet.toolWindow id="TraceLensContext"
                     facetIdList="MidPointFacet"
                     anchor="left"

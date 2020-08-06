@@ -66,7 +66,7 @@ public class OperationResultDialog extends DialogWrapper {
         columns.add(new TreeTableColumnDefinition<>("Operation", 150,
                 r -> r.getOperation().replace("com.evolveum.midpoint", "..")));
         columns.add(new TreeTableColumnDefinition<OperationResult, Object>("Status", 50,
-                r -> r.getStatus())
+                r -> String.valueOf(r.getStatus()))
                 .tableCellRenderer(createStatusTableCellRenderer()));
         columns.add(new TreeTableColumnDefinition<>("Message", 500,
                 r -> r.getMessage() != null ? r.getMessage() : ""));

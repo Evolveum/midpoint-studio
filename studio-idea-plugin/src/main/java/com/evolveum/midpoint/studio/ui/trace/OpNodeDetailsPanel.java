@@ -1,10 +1,10 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.trace.Format;
-import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.entry.Node;
@@ -34,7 +34,6 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -43,11 +42,13 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Displays detailed information about given OpNode: Shows operation result and (optional) trace in a tree view.
+ *
  * Created by Viliam Repan (lazyman).
  */
-public class TraceTreePanel extends BorderLayoutPanel {
+public class OpNodeDetailsPanel extends BorderLayoutPanel {
 
-    private static final Logger LOG = Logger.getInstance(TraceTreePanel.class);
+    private static final Logger LOG = Logger.getInstance(OpNodeDetailsPanel.class);
 
     private JXTreeTable variables;
 
@@ -57,7 +58,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
 
     private JBTextArea variablesValue;
 
-    public TraceTreePanel(@NotNull Project project) {
+    public OpNodeDetailsPanel(@NotNull Project project) {
         initLayout();
 
         Node resultNode = TextNode.create("Result", "", null);
@@ -76,38 +77,34 @@ public class TraceTreePanel extends BorderLayoutPanel {
     }
 
     private void nodeChange(OpNode node) {
+        System.out.println("Node change: " + node);
         if (node == null) {
             updateModel(null, null);
-            applySelection(null);
-            return;
+        } else {
+            Node result = new ResultNode(node);
+            Node trace = createTraceNodeTreatingExceptions(node);
+            updateModel(result, trace);
         }
+        applySelection(null);
+    }
 
-        Node result = new ResultNode(node);
-
-        Node trace;
+    private Node createTraceNodeTreatingExceptions(OpNode node) {
         try {
-            trace = createTraceNode(node);
+            return createTraceNode(node);
         } catch (SchemaException ex) {
             LOG.error("Couldn't create trace node", ex);
-
-            trace = TextNode.create("Trace", "Error: " + ex.getMessage(), null);
+            return TextNode.create("Trace", "Error: " + ex.getMessage(), null);
         }
-
-        updateModel(result, trace);
-
-        applySelection(null);
     }
 
     private void applySelection(Node obj) {
         if (obj == null) {
             variablesValue.setText(null);
-            return;
+        } else {
+            Format format = variablesDisplayAs.getFormat();
+            String text = format.format(obj.getObject());
+            variablesValue.setText(text);
         }
-
-        Format format = variablesDisplayAs.getFormat();
-        String text = format.format(obj.getObject());
-
-        variablesValue.setText(text);
     }
 
     private void updateModel(Node result, Node trace) {
@@ -161,7 +158,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
 
     private void variablesSelectionChanged(TreeSelectionEvent e) {
         TreePath path = e.getNewLeadSelectionPath();
-        TreeTableNode node = (TreeTableNode) path.getLastPathComponent();
+        TreeTableNode node = path != null ? (TreeTableNode) path.getLastPathComponent() : null;
 
         Node obj = null;
         if (node instanceof Node) {
@@ -205,7 +202,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
         variablesWrapText = new SimpleCheckboxAction("Wrap text") {
 
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void onStateChange() {
                 variablesValue.setLineWrap(isSelected());
                 variablesValue.invalidate();
             }

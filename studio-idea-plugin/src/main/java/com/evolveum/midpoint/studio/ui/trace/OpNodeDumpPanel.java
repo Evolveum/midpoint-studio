@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
-import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
@@ -27,13 +27,13 @@ import java.util.Locale;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TraceEntryDetailsPanel extends BorderLayoutPanel {
+public class OpNodeDumpPanel extends BorderLayoutPanel {
 
-    private static final Logger LOG = Logger.getInstance(TraceEntryDetailsPanel.class);
+    private static final Logger LOG = Logger.getInstance(OpNodeDumpPanel.class);
 
     private JBTextArea text;
 
-    public TraceEntryDetailsPanel(@NotNull Project project) {
+    public OpNodeDumpPanel(@NotNull Project project) {
         initLayout();
 
         MessageBus bus = project.getMessageBus();

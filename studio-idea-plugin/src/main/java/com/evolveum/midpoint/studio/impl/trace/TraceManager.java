@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.impl.trace;
 
+import com.evolveum.midpoint.schema.traces.OpType;
+import com.evolveum.midpoint.schema.traces.PerformanceCategory;
+import com.evolveum.midpoint.studio.ui.trace.PredefinedOpView;
 import com.evolveum.midpoint.studio.ui.trace.TraceViewEditor;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -11,16 +14,16 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TraceManager {
 
-    private Project project;
+    private final Project project;
 
-    private OpViewType opViewType;
+    private PredefinedOpView opViewType;
 
     private Options options;
 
     public TraceManager(@NotNull Project project) {
         this.project = project;
 
-        this.opViewType = OpViewType.ALL;
+        this.opViewType = PredefinedOpView.ALL;
 
         this.options = createOptions(opViewType);
     }
@@ -29,11 +32,11 @@ public class TraceManager {
         return project.getComponent(TraceManager.class);
     }
 
-    public OpViewType getOpViewType() {
+    public PredefinedOpView getOpViewType() {
         return opViewType;
     }
 
-    public void setOpViewType(OpViewType opViewType) {
+    public void setOpViewType(PredefinedOpView opViewType) {
         this.opViewType = opViewType;
     }
 
@@ -56,11 +59,11 @@ public class TraceManager {
         }
     }
 
-    private Options createOptions(OpViewType opViewType) {
+    private Options createOptions(PredefinedOpView opViewType) {
         Options options = new Options();
 
         for (OpType op : OpType.values()) {
-            if (opViewType.getTypes() == null || opViewType.getTypes().contains(op)) {
+            if (opViewType.getTypes().contains(op)) {
                 options.getTypesToShow().add(op);
             }
         }
@@ -72,8 +75,7 @@ public class TraceManager {
         }
 
         options.setShowAlsoParents(opViewType.isShowAlsoParents());
-        options.setShowPerformanceColumns(opViewType.isShowPerformanceColumns());
-        options.setShowReadWriteColumns(opViewType.isShowReadWriteColumns());
+        options.getColumnsToShow().addAll(opViewType.getColumnsToShow());
 
         return options;
     }
