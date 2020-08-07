@@ -73,7 +73,7 @@ public class ProjectConfigurationPanel extends JPanel {
         String pwd1 = password1.getPassword() != null ? new String(password1.getPassword()) : null;
         String pwd2 = password2.getPassword() != null ? new String(password2.getPassword()) : null;
 
-        if (StringUtils.isAnyEmpty(pwd1, pwd2)) {
+        if (StringUtils.isNoneEmpty(oldPwd) && StringUtils.isAnyEmpty(pwd1, pwd2)) {
             throw new ConfigurationException("Master password not filled in");
         }
 
