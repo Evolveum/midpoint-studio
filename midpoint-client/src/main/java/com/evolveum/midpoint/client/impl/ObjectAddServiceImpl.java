@@ -6,6 +6,7 @@ import com.evolveum.midpoint.client.api.ObjectAddService;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ModelExecuteOptionsType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 
 import javax.ws.rs.core.Response;
@@ -43,7 +44,7 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
 
         Response response;
         String path = ObjectTypes.getRestTypeFromClass(type());
-        if (opts.contains(ModelExecuteOptionsType.F_RAW.getLocalPart()) && object.getOid() != null) {
+        if (object.getOid() != null && StringUtils.isNotEmpty(object.getOid())) {
             path += "/" + object.getOid();
 
             client = client.replacePath(REST_PREFIX + "/" + path).replaceQuery(query.toString());
