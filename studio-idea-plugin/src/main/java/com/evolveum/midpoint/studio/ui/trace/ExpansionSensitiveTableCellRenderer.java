@@ -17,10 +17,8 @@ public class ExpansionSensitiveTableCellRenderer extends DefaultTableCellRendere
             int column) {
         JXTreeTable treeTable = (JXTreeTable) table;
         if (treeTable.isExpanded(row)) {
-            System.out.println("row " + row + " is expanded");
             super.getTableCellRendererComponent(table, "", isSelected, hasFocus, row, column);
         } else {
-            System.out.println("row " + row + " is NOT expanded");
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
         return this;

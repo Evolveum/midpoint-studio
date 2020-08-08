@@ -6,6 +6,7 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.tree.TreePath;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,5 +96,9 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
     @Override
     public boolean isCellEditable(Object node, int column) {
         return false;
+    }
+
+    public void firePathChanged(TreePath path) {
+        modelSupport.fireTreeStructureChanged(path);
     }
 }

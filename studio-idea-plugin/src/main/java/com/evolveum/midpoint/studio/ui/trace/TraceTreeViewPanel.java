@@ -10,7 +10,6 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -20,6 +19,7 @@ import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -28,7 +28,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -37,7 +39,7 @@ public class TraceTreeViewPanel extends JPanel {
 
     private static final Logger LOG = Logger.getInstance(TraceTreeViewPanel.class);
 
-    private JXTreeTable main;
+    private JXTreeTable traceTreeTable;
 
     private TraceTreeTableModel traceTreeTableModel;
 
@@ -75,15 +77,15 @@ public class TraceTreeViewPanel extends JPanel {
 
         traceTreeTableModel = new TraceTreeTableModel(columnDefinitions, rootOpNode);
 
-        main = MidPointUtils.createTable2(traceTreeTableModel, MidPointUtils.createTableColumnModel(columnDefinitions));
-        main.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        main.addTreeSelectionListener(this::mainTableSelectionChanged);
+        traceTreeTable = MidPointUtils.createTable2(traceTreeTableModel, MidPointUtils.createTableColumnModel(columnDefinitions));
+        traceTreeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        traceTreeTable.addTreeSelectionListener(this::traceTreeTableSelectionChanged);
 
         JPanel panel = new BorderLayoutPanel();
         JComponent toolbar = initMainToolbar();
         panel.add(toolbar, BorderLayout.NORTH);
 
-        panel.add(new JBScrollPane(main), BorderLayout.CENTER);
+        panel.add(new JBScrollPane(traceTreeTable), BorderLayout.CENTER);
 
         return panel;
     }
@@ -91,17 +93,73 @@ public class TraceTreeViewPanel extends JPanel {
     private JComponent initMainToolbar() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> main.expandAll());
-        group.add(expandAll);
-
-        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> main.collapseAll());
-        group.add(collapseAll);
+        group.add(MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> traceTreeTable.expandAll()));
+        group.add(MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> traceTreeTable.collapseAll()));
+        group.add(MidPointUtils.createAnAction("Show direct children", null, e -> setChildrenVisible(false)));
+        group.add(MidPointUtils.createAnAction("Show all children", null, e -> setChildrenVisible(true)));
+        group.add(MidPointUtils.createAnAction("Hide selected", null, e -> hideSelected(false)));
+        group.add(MidPointUtils.createAnAction("Hide selected (tree)", null, e -> hideSelected(true)));
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceViewPanelMainToolbar", group, true);
         return resultsActionsToolbar.getComponent();
     }
 
-    private void mainTableSelectionChanged(TreeSelectionEvent e) {
+    private void hideSelected(boolean deep) {
+        List<TreePath> selectedPaths = getSelectedPaths();
+        for (TreePath selectedPath : selectedPaths) {
+            AbstractTraceTreeTableNode selectedTreeNode = (AbstractTraceTreeTableNode) selectedPath.getLastPathComponent();
+            OpNode selectedOpNode = selectedTreeNode.getUserObject();
+            assert selectedOpNode != null;
+            setNodeVisible(selectedOpNode, false, deep);
+        }
+        updateLinksAndRefresh(getParentPaths(selectedPaths));
+    }
+
+    @NotNull
+    private Collection<TreePath> getParentPaths(List<TreePath> selectedPaths) {
+        return selectedPaths.stream()
+                .map(TreePath::getParentPath)
+                .collect(Collectors.toSet());
+    }
+
+    private void setChildrenVisible(boolean deep) {
+        List<TreePath> selectedPaths = getSelectedPaths();
+        for (TreePath selectedPath : selectedPaths) {
+            AbstractTraceTreeTableNode selectedTreeNode = (AbstractTraceTreeTableNode) selectedPath.getLastPathComponent();
+            OpNode selectedOpNode = selectedTreeNode.getUserObject();
+            assert selectedOpNode != null;
+            for (OpNode child : selectedOpNode.getChildren()) {
+                setNodeVisible(child, true, deep);
+            }
+        }
+        updateLinksAndRefresh(selectedPaths);
+    }
+
+    private void updateLinksAndRefresh(Collection<TreePath> changedPaths) {
+        traceTreeTableModel.updateParentChildLinks(); // todo restrict in scope
+        for (TreePath changedPath : changedPaths) {
+            traceTreeTableModel.firePathChanged(changedPath);
+        }
+    }
+
+    private void setNodeVisible(OpNode node, boolean value, boolean deep) {
+        node.setVisible(value);
+        if (deep) {
+            node.getChildren().forEach(child -> setNodeVisible(child, value,true));
+        }
+    }
+
+    @NotNull
+    private List<TreePath> getSelectedPaths() {
+        List<TreePath> selectedPaths = new ArrayList<>();
+        int[] selectedRows = traceTreeTable.getSelectedRows();
+        for (int selectedRow : selectedRows) {
+            selectedPaths.add(traceTreeTable.getPathForRow(selectedRow));
+        }
+        return selectedPaths;
+    }
+
+    private void traceTreeTableSelectionChanged(TreeSelectionEvent e) {
         TreePath path = e.getNewLeadSelectionPath();
         selectedTraceNodeChange(path);
     }
@@ -116,9 +174,9 @@ public class TraceTreeViewPanel extends JPanel {
     }
 
     public void selectNotify() {
-        int index = main.getSelectionModel().getLeadSelectionIndex();
+        int index = traceTreeTable.getSelectionModel().getLeadSelectionIndex();
         if (index >= 0) {
-            TreePath path = main.getPathForRow(index);
+            TreePath path = traceTreeTable.getPathForRow(index);
             selectedTraceNodeChange(path);
         } else {
             notifier.selectedTraceNodeChange(null);
@@ -140,7 +198,7 @@ public class TraceTreeViewPanel extends JPanel {
             traceTreeTableModel.fireChange();
         }
 
-        DefaultTableColumnModelExt realColumnModel = (DefaultTableColumnModelExt) main.getColumnModel();
+        DefaultTableColumnModelExt realColumnModel = (DefaultTableColumnModelExt) traceTreeTable.getColumnModel();
         List<TableColumn> realColumns = realColumnModel.getColumns(true);
         for (int i = 0; i < columnDefinitions.size(); i++) {
             TreeTableColumnDefinition<OpNode, ?> columnDef = columnDefinitions.get(i);
