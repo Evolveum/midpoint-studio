@@ -15,7 +15,7 @@ import static com.evolveum.midpoint.studio.util.MidPointUtils.formatTime;
  */
 public enum TraceTreeViewColumn implements ColumnDefinition<OpNode> {
 
-    OPERATION_NAME("Operation", 500, OpNode::getOperationNameFormatted, null),
+    OPERATION_NAME("Operation", 500, OpNode::getLabel, null),
     CLOCKWORK_STATE("State", 60, OpNode::getClockworkState, null),
     EXECUTION_WAVE("EW", 35, OpNode::getExecutionWave, null),
     STATUS("Status", 100, o -> o.getResult().getStatus().toString(), null),

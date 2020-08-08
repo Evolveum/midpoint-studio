@@ -23,9 +23,14 @@ public class TreeTableColumnDefinition<R, V> {
     private boolean visible = true;
 
     public TreeTableColumnDefinition(String header, int size, Function<R, V> value) {
+        this(header, size, value, null);
+    }
+
+    public TreeTableColumnDefinition(String header, int size, Function<R, V> value, TableCellRenderer tableCellRenderer) {
         this.header = header;
         this.size = size;
         this.value = value;
+        this.tableCellRenderer = tableCellRenderer;
     }
 
     public TreeTableColumnDefinition(ColumnDefinition<R> columnDefinition) {

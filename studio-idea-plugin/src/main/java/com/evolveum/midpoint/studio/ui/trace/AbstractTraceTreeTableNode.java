@@ -98,7 +98,7 @@ public class AbstractTraceTreeTableNode implements TreeTableNode {
     }
 
     public void addChild(RegularTraceTreeTableNode child) {
-        System.out.println("Adding child " + child + " to " + this);
+//        System.out.println("Adding child " + child + " to " + this);
         children.add(child);
         child.setParent(this);
     }

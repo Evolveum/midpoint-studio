@@ -6,6 +6,7 @@ import com.evolveum.midpoint.schema.traces.OpNodeTreeBuilder;
 import com.evolveum.midpoint.schema.traces.TraceParser;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.trace.Options;
+import com.evolveum.midpoint.studio.ui.trace.presentation.PresentationInitializer;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TracingOutputType;
@@ -74,6 +75,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             root = null;
         }
 
+        PresentationInitializer.initialize(root);
         traceTreeViewPanel = new TraceTreeViewPanel(project, root);
         wrapper.setContent(traceTreeViewPanel);
     }

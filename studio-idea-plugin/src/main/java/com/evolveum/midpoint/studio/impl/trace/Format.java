@@ -97,7 +97,12 @@ public enum Format {
             clone.getTrace().clear();
             return clone;
         } else if (obj instanceof PrismPropertyValue) {
-            return ((PrismPropertyValue<?>) obj).getRealValue();
+            PrismPropertyValue<?> ppv = (PrismPropertyValue<?>) obj;
+            if (!ppv.hasValueMetadata()) {
+                return ppv.getRealValue();
+            } else {
+                return ppv;
+            }
         } else if (obj instanceof PrismProperty && ((PrismProperty<?>) obj).size() == 1) {
             return simplify(((PrismProperty<?>) obj).getValues().get(0));
         } else {

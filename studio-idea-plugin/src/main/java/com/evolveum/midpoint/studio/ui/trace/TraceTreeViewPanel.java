@@ -152,7 +152,7 @@ public class TraceTreeViewPanel extends JPanel {
             columnDef.setVisible(visible);
             realColumnExt.setVisible(visible);
 
-            System.out.println("Set visible = " + visible + " for " + identifier + " (" + realColumnExt + ")");
+//            System.out.println("Set visible = " + visible + " for " + identifier + " (" + realColumnExt + ")");
         }
 
         lastOptions = options.clone();

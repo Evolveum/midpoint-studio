@@ -3,15 +3,20 @@ package com.evolveum.midpoint.studio.ui.trace.entry;
 import com.evolveum.midpoint.prism.Item;
 import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
 
 import java.util.Collections;
 
 public class ItemNode extends Node<Item<?, ?>> {
 
     public ItemNode(Item<?, ?> item) throws SchemaException {
+        this("", item);
+    }
+
+    public ItemNode(String prefix, Item<?, ?> item) throws SchemaException {
         super(item);
 
-        setLabel(item.getDefinition() != null ? item.getDefinition().getItemName().getLocalPart() : item.getElementName().getLocalPart());
+        setLabel(prefix + (item.getDefinition() != null ? item.getDefinition().getItemName().getLocalPart() : item.getElementName().getLocalPart()));
         setValue(TraceUtils.prettyPrint(item));
 
         createChildren();
@@ -32,12 +37,15 @@ public class ItemNode extends Node<Item<?, ?>> {
         }
     }
 
-    public static ItemNode create(Item<?, ?> item, Node parent) throws SchemaException {
-        ItemNode node = new ItemNode(item);
+    public static ItemNode create(Item<?, ?> item, AbstractMutableTreeTableNode parent) throws SchemaException {
+        return create("", item, parent);
+    }
+
+    public static ItemNode create(String prefix, Item<?, ?> item, AbstractMutableTreeTableNode parent) throws SchemaException {
+        ItemNode node = new ItemNode(prefix, item);
         if (parent != null) {
             parent.add(node);
         }
-
         return node;
     }
 }
