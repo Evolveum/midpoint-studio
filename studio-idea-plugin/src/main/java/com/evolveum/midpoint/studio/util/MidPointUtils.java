@@ -496,4 +496,19 @@ public class MidPointUtils {
         return new QName(element.getNamespace(), element.getLocalName());
 
     }
+
+    public static boolean isObjectTypeElement(XmlTag tag) {
+        if (tag == null) {
+            return false;
+        }
+
+        QName name = new QName(tag.getNamespace(), tag.getLocalName());
+        for (ObjectTypes type : ObjectTypes.values()) {
+            if (name.equals(type.getElementName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

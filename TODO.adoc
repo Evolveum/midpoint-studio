@@ -7,9 +7,9 @@
 * Transform components to services
 * Implement action that will allow import one account from resource and then unlink
 * Passwords
-** settings for master password not visible in project/module settings
-** where do we store environment username/password? -> regression, they are not stsored in keepass2
-** master password reset
+** `DONE` settings for master password not visible in project/module settings
+** `DONE` where do we store environment username/password? -> regression, they are not stsored in keepass2
+** `DONE` master password reset
 ** what if master password was not set? ask for credentials?
 * resource templates and rethink whole create resource process
 * make different midpoint versions as distributions and load them via custom classpath
