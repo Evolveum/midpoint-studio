@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace.overview;
 
 import com.evolveum.midpoint.schema.traces.operations.TransformationExpressionEvaluationOpNode;
+import com.evolveum.midpoint.studio.ui.trace.Colors;
 import com.evolveum.midpoint.studio.ui.trace.ViewingState;
 import com.evolveum.midpoint.studio.ui.trace.entry.DeltaSetTripleTypeNode;
 import com.evolveum.midpoint.studio.ui.trace.entry.ItemDeltaItemTypeNode;
@@ -24,12 +25,14 @@ public class TransformationExpressionEvaluationOverviewProvider implements Overv
         if (trace != null) {
             for (ExpressionSourceEvaluationTraceType source : trace.getSource()) {
                 ItemDeltaItemTypeNode sourceNode = ItemDeltaItemTypeNode.create("Source: " + source.getName() + " IDI", source.getItemDeltaItem(), root);
+                sourceNode.setBackgroundColor(Colors.INPUT_1_COLOR, true);
                 initialState.addExpandedPath(root, sourceNode);
             }
             for (ExpressionSourceEvaluationTraceType source : trace.getSource()) {
                 if (source.getDeltaSetTriple() != null) {
                     DeltaSetTripleTypeNode sourceNode = DeltaSetTripleTypeNode
                             .create("Source: " + source.getName() + " triple", source.getDeltaSetTriple(), root);
+                    sourceNode.setBackgroundColor(Colors.INPUT_2_COLOR, true);
                     initialState.addExpandedPath(root, sourceNode);
                 }
             }
@@ -38,11 +41,13 @@ public class TransformationExpressionEvaluationOverviewProvider implements Overv
                 int index = root.getChildCount();
                 initialState.setSelectedIndex(index);
                 DeltaSetTripleTypeNode outputNode = DeltaSetTripleTypeNode.create("Output", trace.getOutput(), root);
+                outputNode.setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
                 initialState.addExpandedPath(root, outputNode);
             }
 
             TextNode.create("Evaluation mode", trace.getEvaluationMode(), root);
-            PrismValueNode.create("Evaluator", trace.getExpressionEvaluator(), root);
+            PrismValueNode.create("Evaluator", trace.getExpressionEvaluator(), root)
+                    .setBackgroundColor(Colors.CONFIGURATION_1_COLOR, true);
             TextNode.create("Skipped evaluation", getSkippedEvaluation(trace), root);
             TextNode.create("Context", trace.getContextDescription(), root);
         }

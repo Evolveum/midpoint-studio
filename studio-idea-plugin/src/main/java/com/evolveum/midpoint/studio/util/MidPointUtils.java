@@ -311,12 +311,14 @@ public class MidPointUtils {
     }
 
     @Experimental
-    public static <R> JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel) {
+    public static <R> JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
 
         JXTreeTable table = new JXTreeTable(model) {
             @Override
             protected void resetDefaultTableCellRendererColors(Component renderer, int row, int column) {
-                // disable this functionality
+                if (!disableHack) {
+                    super.resetDefaultTableCellRendererColors(renderer, row, column);
+                }
             }
         };
         table.setAutoCreateColumnsFromModel(false);

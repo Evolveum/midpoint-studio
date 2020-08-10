@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace.overview;
 
 import com.evolveum.midpoint.schema.traces.operations.ItemConsolidationOpNode;
+import com.evolveum.midpoint.studio.ui.trace.Colors;
 import com.evolveum.midpoint.studio.ui.trace.ViewingState;
 import com.evolveum.midpoint.studio.ui.trace.entry.*;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -19,10 +20,15 @@ public class ItemConsolidationOverviewProvider implements OverviewProvider<ItemC
         ItemConsolidationTraceType trace = node.getTrace();
         if (trace != null) {
             DeltaSetTripleTypeNode deltaSetTripleNode = DeltaSetTripleTypeNode.create("Delta set triple", trace.getDeltaSetTriple(), root);
+            deltaSetTripleNode.setBackgroundColor(Colors.INPUT_1_COLOR, true);
             initialState.addExpandedPath(root, deltaSetTripleNode);
 
-            PrismValueNode.create("Existing item", trace.getExistingItem(), root); // todo change to item
-            ItemDeltaTypeListNode.create("A priori delta", trace.getAprioriDelta(), root);
+            PrismValueNode existingItemNode = PrismValueNode.create("Existing item", trace.getExistingItem(), root); // todo change to item
+            existingItemNode.setBackgroundColor(Colors.INPUT_2_COLOR, true);
+
+            ItemDeltaTypeListNode aprioriDeltaNode = ItemDeltaTypeListNode.create("A priori delta", trace.getAprioriDelta(), root);
+            aprioriDeltaNode.setBackgroundColor(Colors.INPUT_3_COLOR, true);
+
             TextNode.create("Equivalence class number", trace.getEquivalenceClassCount(), root);
 
             if (!trace.getResultingDelta().isEmpty()) {
@@ -31,11 +37,13 @@ public class ItemConsolidationOverviewProvider implements OverviewProvider<ItemC
                 ItemDeltaTypeNode resultingDeltaNode = ItemDeltaTypeNode
                         .create("Resulting delta", trace.getResultingDelta().get(0), false, root);
                 initialState.addExpandedPath(root, resultingDeltaNode);
+                resultingDeltaNode.setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
 
                 for (int i = 1; i < trace.getResultingDelta().size(); i++) {
                     ItemDeltaTypeNode resultingDeltaNodeNext = ItemDeltaTypeNode
                             .create("Resulting delta (" + (i+1) + ")", trace.getResultingDelta().get(i), false, root);
                     initialState.addExpandedPath(root, resultingDeltaNodeNext);
+                    resultingDeltaNodeNext.setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
                 }
             }
         }

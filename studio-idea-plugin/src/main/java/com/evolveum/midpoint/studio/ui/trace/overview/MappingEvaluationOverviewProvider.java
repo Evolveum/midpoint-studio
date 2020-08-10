@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace.overview;
 
 import com.evolveum.midpoint.schema.traces.operations.MappingEvaluationOpNode;
+import com.evolveum.midpoint.studio.ui.trace.Colors;
 import com.evolveum.midpoint.studio.ui.trace.ViewingState;
 import com.evolveum.midpoint.studio.ui.trace.entry.DeltaSetTripleTypeNode;
 import com.evolveum.midpoint.studio.ui.trace.entry.ItemDeltaItemTypeNode;
@@ -27,6 +28,7 @@ public class MappingEvaluationOverviewProvider implements OverviewProvider<Mappi
                 ItemDeltaItemTypeNode sourceNode = ItemDeltaItemTypeNode
                         .create("Source: " + source.getName(), source.getItemDeltaItem(), root);
                 initialState.addExpandedPath(root, sourceNode);
+                sourceNode.setBackgroundColor(Colors.INPUT_1_COLOR, true);
             }
 
             if (trace.getOutput() != null) {
@@ -34,14 +36,19 @@ public class MappingEvaluationOverviewProvider implements OverviewProvider<Mappi
                 initialState.setSelectedIndex(index);
                 DeltaSetTripleTypeNode outputNode = DeltaSetTripleTypeNode.create("Output", trace.getOutput(), root);
                 initialState.addExpandedPath(root, outputNode);
+                outputNode.setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
             }
+
+            TextNode.create("Time validity", getTimeValidityInfo(trace), root)
+                    .setBackgroundColor(Colors.OUTPUT_2_COLOR, true);
+            TextNode.create("Condition", getConditionInfo(trace), root)
+                    .setBackgroundColor(Colors.OUTPUT_3_COLOR, true);
 
             TextNode.create("Kind", trace.getMappingKind(), root);
             TextNode.create("Strength", trace.getMapping() != null ? trace.getMapping().getStrength() : null, root);
-            PrismValueNode.create("Mapping", trace.getMapping(), root);
+            PrismValueNode.create("Mapping", trace.getMapping(), root)
+                    .setBackgroundColor(Colors.CONFIGURATION_1_COLOR, true);
             PrismValueNode.create("Text trace", trace.getTextTrace(), root);
-            TextNode.create("Condition", getConditionInfo(trace), root);
-            TextNode.create("Time validity", getTimeValidityInfo(trace), root);
             PrismValueNode.create("Containing object", trace.getContainingObjectRef(), root);
             TextNode.create("Context", node.getContext(), root);
         }

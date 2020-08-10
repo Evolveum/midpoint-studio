@@ -77,7 +77,7 @@ public class TraceTreeViewPanel extends JPanel {
 
         traceTreeTableModel = new TraceTreeTableModel(columnDefinitions, rootOpNode);
 
-        traceTreeTable = MidPointUtils.createTable2(traceTreeTableModel, MidPointUtils.createTableColumnModel(columnDefinitions));
+        traceTreeTable = MidPointUtils.createTable2(traceTreeTableModel, MidPointUtils.createTableColumnModel(columnDefinitions), true);
         traceTreeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         traceTreeTable.addTreeSelectionListener(this::traceTreeTableSelectionChanged);
 

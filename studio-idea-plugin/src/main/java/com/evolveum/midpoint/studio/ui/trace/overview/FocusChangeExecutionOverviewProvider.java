@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace.overview;
 
 import com.evolveum.midpoint.schema.traces.operations.FocusChangeExecutionOpNode;
+import com.evolveum.midpoint.studio.ui.trace.Colors;
 import com.evolveum.midpoint.studio.ui.trace.ViewingState;
 import com.evolveum.midpoint.studio.ui.trace.entry.ItemDeltaTypeNode;
 import com.evolveum.midpoint.studio.ui.trace.entry.ItemNode;
@@ -42,8 +43,11 @@ public class FocusChangeExecutionOverviewProvider implements OverviewProvider<Fo
                 } else {
                     deltaNode = null;
                 }
-                initialState.setSelectedIndex(2);
-                initialState.addExpandedPath(root, deltaNode);
+                if (deltaNode != null) {
+                    initialState.setSelectedIndex(2);
+                    initialState.addExpandedPath(root, deltaNode);
+                    deltaNode.setBackgroundColor(Colors.INPUT_1_COLOR, true);
+                }
             }
             if (odo.getExecutionResult() != null) {
                 TextNode.create("Result", odo.getExecutionResult().getStatus(), root);

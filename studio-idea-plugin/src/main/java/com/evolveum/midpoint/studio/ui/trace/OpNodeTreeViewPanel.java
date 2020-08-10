@@ -24,6 +24,8 @@ import com.intellij.ui.components.JBTextArea;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.decorator.AbstractHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableNode;
@@ -130,9 +132,26 @@ public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
 
         this.variables = MidPointUtils.createTable2(
                 new DefaultTreeTableModel(new DefaultMutableTreeTableNode(), Arrays.asList("Item", "Variable")),
-                MidPointUtils.createTableColumnModel(columns));
+                MidPointUtils.createTableColumnModel(columns), false);
         this.variables.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.variables.addTreeSelectionListener(this::variablesSelectionChanged);
+
+        this.variables.addHighlighter(new AbstractHighlighter() {
+            @Override
+            protected Component doHighlight(Component component, ComponentAdapter adapter) {
+                int row = adapter.convertRowIndexToModel(adapter.row);
+                TreePath pathForRow = variables.getPathForRow(row);
+                Node node = (Node) pathForRow.getLastPathComponent();
+                if (adapter.isSelected()) {
+                    component.setBackground(variables.getSelectionBackground());
+                } else if (node.getBackgroundColor() == null) {
+                    component.setBackground(variables.getBackground());
+                } else {
+                    component.setBackground(node.getBackgroundColor());
+                }
+                return component;
+            }
+        });
 
         TableColumn column = this.variables.getColumnModel().getColumn(1);
         column.setCellRenderer(new ExpansionSensitiveTableCellRenderer());
