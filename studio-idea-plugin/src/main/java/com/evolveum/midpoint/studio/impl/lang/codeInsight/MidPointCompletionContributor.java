@@ -20,7 +20,7 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                         XmlPatterns
                                 .xmlAttributeValue()
                                 .withParent(
-                                        XmlPatterns.xmlAttribute("oid"))), // todo improve
+                                        XmlPatterns.xmlAttribute("oid"))),
                 new OidCompletionProvider());
 
         extend(CompletionType.BASIC,
@@ -50,23 +50,6 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                         )
                 ),
                 new MatchingRuleCompletionProvider());
-
-
-
-//        extend(CompletionType.BASIC,
-//                psiElement().inside(
-//                        XmlPatterns
-//                                .xmlAttributeValue()    //.withValue(string().equalTo(CompletionUtilCore.DUMMY_IDENTIFIER))
-//                                .withParent(XmlPatterns.xmlAttribute("oid")
-//                                        .withParent(XmlPatterns.xmlTag().withName("includeRef")))), // todo improve
-//                new RefOidCompletionProvider());
-
-//        extend(CompletionType.BASIC,
-//                psiElement().inside(
-//                        XmlPatterns
-//                                .xmlAttributeValue().withValue(string().equalTo(CompletionUtilCore.DUMMY_IDENTIFIER))
-//                                .withParent(XmlPatterns.xmlAttribute("type"))),
-//                new RefTypeCompletionProvider());
     }
 
     private XmlTagPattern.Capture commonTag(String localName) {
