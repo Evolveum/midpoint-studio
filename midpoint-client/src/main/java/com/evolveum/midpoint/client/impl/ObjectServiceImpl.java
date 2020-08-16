@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.client.impl;
 
 import com.evolveum.midpoint.client.api.AuthenticationException;
+import com.evolveum.midpoint.client.api.DeleteOptions;
 import com.evolveum.midpoint.client.api.ObjectService;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.schema.GetOperationOptions;
@@ -47,6 +48,13 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
 
         // todo use options
 
+        GetOperationOptions rootOptions = SelectorOptions.findRootOptions(options);
+
+        String query = null;
+        if (GetOperationOptions.isRaw(rootOptions)) {
+            query = "options=raw";
+        }
+
         WebClient client = client();
 
         String path = ObjectTypes.getRestTypeFromClass(type());
@@ -70,7 +78,28 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
 
     @Override
     public void delete() throws ObjectNotFoundException, AuthenticationException {
-        // todo implement
+        delete(new DeleteOptions());
+    }
+
+    @Override
+    public void delete(DeleteOptions options) throws ObjectNotFoundException, AuthenticationException {
+        if (options == null) {
+            options = new DeleteOptions();
+        }
+
+        String opts = null;
+        if (options.raw()) {
+            opts = "options=raw";
+        }
+
+        WebClient client = client();
+
+        String path = ObjectTypes.getRestTypeFromClass(type());
+        client = client.replacePath(REST_PREFIX + "/" + path + "/" + oid).replaceQuery(opts);
+
+        Response response = client.delete();
+
+        validateResponseCode(response);
     }
 
     @Override

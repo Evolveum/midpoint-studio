@@ -104,6 +104,11 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
     }
 
     @Override
+    public boolean isEnvironmentSelected() {
+        return getSettings().getSelected() != null;
+    }
+
+    @Override
     public Environment getSelected() {
         Environment env = getSettings().getSelected();
         return env != null ? buildFullEnvironment(env) : null;
@@ -121,6 +126,7 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
         }
 
         getSettings().setSelectedId(id);
+        settingsUpdated();
 
         messageBus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentChanged(selected, newSelected);
     }
@@ -129,13 +135,13 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
     public String add(Environment env) {
         LOG.debug("Adding environment " + env);
 
-        if (!StringUtils.isAllEmpty(env.getUsername(), env.getPassword())) {
+        if (StringUtils.isNotEmpty(env.getUsername()) || StringUtils.isNotEmpty(env.getPassword())) {
             Credentials credentials = new Credentials(
                     env.getId(), env.getId(), env.getUsername(), env.getPassword(), env.getName());
             credentialsManager.add(credentials);
         }
 
-        if (!StringUtils.isAllEmpty(env.getProxyUsername(), env.getProxyPassword())) {
+        if (StringUtils.isNotEmpty(env.getProxyUsername()) || StringUtils.isNotEmpty(env.getProxyPassword())) {
             Credentials credentials = new Credentials(KEY_PROXY_SUFFIX, env.getId(), env.getProxyUsername(),
                     env.getProxyPassword(), env.getName() + DESCRIPTION_PROXY_SUFFIX);
             credentialsManager.add(credentials);
@@ -155,11 +161,11 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
             return false;
         }
 
-        if (!StringUtils.isAllEmpty(env.getUsername(), env.getPassword())) {
+        if (StringUtils.isNotEmpty(env.getUsername()) || StringUtils.isNotEmpty(env.getPassword())) {
             credentialsManager.delete(env.getId());
         }
 
-        if (!StringUtils.isAllEmpty(env.getProxyUsername(), env.getProxyPassword())) {
+        if (StringUtils.isNotEmpty(env.getProxyUsername()) || StringUtils.isNotEmpty(env.getProxyPassword())) {
             credentialsManager.delete(env.getId() + KEY_PROXY_SUFFIX);
         }
 
@@ -183,5 +189,12 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
         }
 
         return null;
+    }
+
+    @Override
+    public EnvironmentProperties getSelectedEnvironmentProperties() {
+        Environment env = getSelected();
+
+        return new EnvironmentProperties(env);
     }
 }

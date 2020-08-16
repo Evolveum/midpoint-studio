@@ -1,14 +1,12 @@
 package com.evolveum.midpoint.studio.action;
 
-import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.query.InOidFilter;
-import com.evolveum.midpoint.prism.query.ObjectQuery;
-import com.evolveum.midpoint.prism.query.QueryFactory;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.studio.action.browse.DownloadOptions;
-import com.evolveum.midpoint.studio.impl.RestObjectManager;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.diff.actions.CompareFilesAction;
 import com.intellij.diff.chains.DiffRequestChain;
 import com.intellij.diff.chains.SimpleDiffRequestChain;
@@ -46,8 +44,8 @@ public class CompareFileWithServerAction extends CompareFilesAction {
             return true;
         }
 
-        RestObjectManager restObjectManager = RestObjectManager.getInstance(e.getProject());
-        if (restObjectManager.getEnvironment() == null) {
+        EnvironmentManager em = EnvironmentManager.getInstance(e.getProject());
+        if (!em.isEnvironmentSelected()) {
             return false;
         }
 
@@ -69,7 +67,7 @@ public class CompareFileWithServerAction extends CompareFilesAction {
                 }
             }
 
-            if (isAvailable(file, project)) {
+            if (RunnableUtils.executeWithPluginClassloader(() -> isAvailable(file, project))) {
                 return true;
             }
         }
@@ -108,10 +106,13 @@ public class CompareFileWithServerAction extends CompareFilesAction {
     }
 
     private List<PrismObject<?>> parseObjects(Project project, VirtualFile file) {
+        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        Environment env = em.getSelected();
+        MidPointClient client = new MidPointClient(project, env);
+
         List<PrismObject<?>> objects = new ArrayList<>();
         try {
-            RestObjectManager manager = RestObjectManager.getInstance(project);
-            List list = manager.parseObjects(file);
+            List list = client.parseObjects(file);
 
             if (list != null) {
                 objects.addAll(list);
@@ -146,25 +147,38 @@ public class CompareFileWithServerAction extends CompareFilesAction {
     }
 
     private VirtualFile getOtherFile(Project project, VirtualFile file1) {
-        RestObjectManager restObjectManager = RestObjectManager.getInstance(project);
+        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        Environment env = em.getSelected();
+        MidPointClient client = new MidPointClient(project, env);
 
-        PrismObject obj = restObjectManager.parse(file1);
+
+        PrismObject obj = null;
+
+        try {
+            obj = client.parseObject(file1);
+        } catch (Exception ex) {
+            // todo handle exception properly
+            throw new RuntimeException(ex);
+        }
         if (obj == null || StringUtils.isEmpty(obj.getOid())) {
             return null;
         }
 
-        PrismObject other = restObjectManager.get(obj.getCompileTimeClass(), obj.getOid(), new SearchOptions().raw(true));
+        PrismObject other = client.get(obj.getCompileTimeClass(), obj.getOid(), new SearchOptions().raw(true));
 
-        PrismContext ctx = restObjectManager.getPrismContext();
-        QueryFactory qf = ctx.queryFactory();
+        // todo create virtual in memory file
+        return null;
 
-        InOidFilter filter = qf.createInOid(obj.getOid());
-        ObjectQuery query = qf.createQuery(filter);
-
-        // todo don't download as "scratch", just create virtual in memory file...
-        VirtualFile[] files = restObjectManager.download(obj.getCompileTimeClass(), query,
-                new DownloadOptions().raw(true).showOnly(true));
-
-        return files[0];
+//        PrismContext ctx = client.getPrismContext();
+//        QueryFactory qf = ctx.queryFactory();
+//
+//        InOidFilter filter = qf.createInOid(obj.getOid());
+//        ObjectQuery query = qf.createQuery(filter);
+//
+//        // todo don't download as "scratch", just create virtual in memory file...
+//        VirtualFile[] files = restObjectManager.download(obj.getCompileTimeClass(), query,
+//                new DownloadOptions().raw(true).showOnly(true));
+//
+//        return files[0];
     }
 }

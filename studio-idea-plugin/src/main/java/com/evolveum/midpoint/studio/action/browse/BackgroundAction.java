@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.browse;
 
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.UpdateInBackground;
@@ -20,6 +21,10 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
 
     private Task.Backgroundable task;
 
+    private boolean running;
+
+    private boolean canceled;
+
     public BackgroundAction(String taskTitle) {
         this.taskTitle = taskTitle;
     }
@@ -34,6 +39,10 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
         this.taskTitle = taskTitle;
     }
 
+    public String getTaskTitle() {
+        return taskTitle;
+    }
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
         Project project = evt.getProject();
@@ -42,7 +51,15 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
 
             @Override
             public void run(ProgressIndicator indicator) {
-                executeOnBackground(evt, indicator);
+                running = true;
+
+                new RunnableUtils.PluginClasspathRunnable() {
+
+                    @Override
+                    public void runWithPluginClassLoader() {
+                        executeOnBackground(evt, indicator);
+                    }
+                }.run();
             }
 
             @Override
@@ -71,6 +88,8 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
                 super.onFinished();
 
                 BackgroundAction.this.onFinished();
+
+                running = false;
             }
         };
 
@@ -89,7 +108,7 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
     }
 
     protected boolean isEnabled() {
-        return true;
+        return !running;
     }
 
     protected void onThrowable(@NotNull Throwable error) {
@@ -101,10 +120,18 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
     }
 
     protected void onCancel() {
-
+        canceled = true;
     }
 
     protected void onSuccess() {
 
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public boolean isCanceled() {
+        return canceled;
     }
 }

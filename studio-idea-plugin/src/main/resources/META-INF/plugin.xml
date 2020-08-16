@@ -1,26 +1,44 @@
 <idea-plugin>
     <id>com.evolveum.midpoint.studio</id>
     <name>MidPoint Studio</name>
-    <vendor email="midpoint.studio@evolveum.com.com" url="https://evolveum.com.com">evolveum, s.r.o.</vendor>
+    <vendor email="midpoint.studio@evolveum.com" url="https://evolveum.com">evolveum, s.r.o.</vendor>
 
     <description><![CDATA[
         Plugin which enables support for MidPoint configuration files.
+
+        <b>Features</b>
+        <ul>
+            <li>Browse/Upload with raw options for both operations</li>
+            <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
+            <li>XML tags autocompletion, links to documentation</li>
+            <li>Groovy syntax highlighting and groovy code completion</li>
+            <li>Groovy code common variables injection</li>
+            <li>Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
+            <li>Simple OID generator</li>
+            <li>Trace files viewer</li>
+        </ul>
     ]]></description>
 
     <change-notes><![CDATA[
-        TODO change notes asd asddsf sdfgsdf asdfasdfasdf a sf asdf asd fasdf asd
+
+        <h1>Release 4.1</h1>
+        <ul>
+            <li>Initial release of plugin</li>
+            <li>Browse/Upload with raw options for both operations</li>
+            <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
+            <li>XML tags autocompletion, links to documentation</li>
+            <li>Groovy syntax highlighting and groovy code completion</li>
+            <li>Groovy code common variables injection</li>
+            <li>Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
+            <li>Simple OID generator</li>
+        </ul>
+
     ]]></change-notes>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>org.intellij.groovy</depends>
     <depends>org.jetbrains.idea.maven</depends>
-
-    <application-components>
-        <component>
-            <implementation-class>com.evolveum.midpoint.studio.impl.MidPointLocalizationService</implementation-class>
-        </component>
-    </application-components>
 
     <project-components>
         <component>
@@ -31,19 +49,11 @@
             <implementation-class>com.evolveum.midpoint.studio.impl.CredentialsManagerImpl</implementation-class>
         </component>
         <component>
-            <interface-class>com.evolveum.midpoint.studio.impl.FileObjectManager</interface-class>
-            <implementation-class>com.evolveum.midpoint.studio.impl.FileObjectManagerImpl</implementation-class>
-        </component>
-        <component>
-            <implementation-class>com.evolveum.midpoint.studio.impl.PropertyManager</implementation-class>
-        </component>
-        <component>
-            <interface-class>com.evolveum.midpoint.studio.impl.RestObjectManager</interface-class>
-            <implementation-class>com.evolveum.midpoint.studio.impl.RestObjectManagerImpl</implementation-class>
-        </component>
-        <component>
             <interface-class>com.evolveum.midpoint.studio.impl.EnvironmentManager</interface-class>
             <implementation-class>com.evolveum.midpoint.studio.impl.EnvironmentManagerImpl</implementation-class>
+        </component>
+        <component>
+            <implementation-class>com.evolveum.midpoint.studio.impl.trace.TraceManager</implementation-class>
         </component>
         <component>
             <interface-class>com.evolveum.midpoint.studio.impl.metrics.MetricsManager</interface-class>
@@ -52,35 +62,81 @@
     </project-components>
 
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
 
-        <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType" />
+        <projectConfigurable parentId="language" instance="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
+                             id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable" displayName="MidPoint"
+                             nonDefaultProject="true"/>
+
+        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
+
+        <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
-        <xmlStructureViewBuilderProvider
-                implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>
+<!--        <errorHandler implementation="com.evolveum.midpoint.studio.impl.ide.error.JiraErrorReporter"/>-->
+
+        <!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
+
+        <!-- TODO finish implementation -->
+        <!--<xmlStructureViewBuilderProvider
+                implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>-->
 
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.MidPointMultiHostInjector"/>
 
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.MidPointReferenceContributor"/>
 
         <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
+
         <moduleBuilder builderClass="com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder"/>
 
-        <toolWindow id="MidPoint"
-                    anchor="bottom"
-                    icon="/icons/midpoint.png"
-                    factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
+        <facet.toolWindow id="MidPoint"
+                          facetIdList="MidPointFacet"
+                          anchor="bottom"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
 
-<!--        <toolWindow id="NodesToolWindow"-->
-<!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
+
+        <facet.toolWindow id="MidPointTrace"
+                    facetIdList="MidPointFacet"
+                    anchor="bottom"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
+
+        <facet.toolWindow id="TraceLensContext"
+                    facetIdList="MidPointFacet"
+                    anchor="left"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceLensContextToolWindowFactory"/>
+
+        <facet.toolWindow id="TraceOptions"
+                    facetIdList="MidPointFacet"
+                    anchor="right"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceOptionsWindowFactory"/>
+
+        <fileType
+                name="MPTrace"
+                fieldName="INSTANCE"
+                extensions="zip|xml|mptrace"
+                language=""
+                implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
+        <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.trace.MPTraceFileTypeFactory"/>
+
+        <!--        <toolWindow id="NodesToolWindow"-->
+        <!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
 
-        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.RefOidAnnotator"/>
-        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.ResourceTypeAnnotator"/>
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>
+        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.DeprecatedElementAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
@@ -88,9 +144,20 @@
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
-        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.metrics.MetricsEditorProvider"/>
+        <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.metrics.MetricsEditorProvider"/>-->
 
-        <diff.lang.DiffIgnoredRangeProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
+        <diff.lang.DiffIgnoredRangeProvider
+                implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
+
+
+        <!--        <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.lang.MidPointFileTypeFactory"/>-->
+        <!--        <lang.ast.factory language="MidPoint" implementationClass="com.intellij.lang.xml.XmlASTFactory"/>-->
+
+        <!--<stubElementTypeHolder class="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointStubElementTypes" externalIdPrefix="xml."/>
+        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectNameIndex"/>
+        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectOidIndex"/>-->
+
+        <fileBasedIndex implementation="com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
@@ -99,41 +166,168 @@
 
     <actions>
 
+        <!-- MISCELLANEOUS -->
+
         <action id="MidPoint.Action.EditEnvironments"
                 class="com.evolveum.midpoint.studio.action.environment.EditEnvironments"
                 text="Edit Environments..."
                 description="Edit Environments..."
                 icon="AllIcons.Actions.EditSource"/>
 
+        <action id="MidPoint.Action.GenerateRandomOid"
+                class="com.evolveum.midpoint.studio.action.GenerateRandomOid"
+                icon="/icons/random_oid.png"
+                text="Generate Random OID"
+                description="Generate Random OID"/>
+
+        <!-- TRANSFER RELATED -->
+
+        <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecute"
+                text="Upload/Execute"
+                icon="/icons/uploadExecute.svg"/>
+
+        <action id="MidPoint.Action.UploadExecuteStopOnError"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
+                text="Upload/Execute (stop on error)"
+                icon="/icons/uploadExecuteStop.svg"/>
+
+        <!-- SERVER SIDE -->
+
+        <action id="MidPoint.Action.UploadRecompute"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadRecompute"
+                text="Upload/Recompute"
+                icon="AllIcons.Actions.Upload"/>
+
+        <action id="MidPoint.Action.UploadTestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResource"
+                text="Upload/Test Resource"
+                icon="/icons/uploadTest.svg"/>
+
+        <action id="MidPoint.Action.UploadTestValidateResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestValidateResourceAction"
+                text="Upload/Test/Validate Resource"
+                icon="/icons/uploadTestValidate.svg"/>
+
+        <action id="MidPoint.Action.DeleteRaw"
+                class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
+                text="Delete (raw)"
+                icon="/icons/removeRaw.svg"/>
+
+        <action id="MidPoint.Action.Delete"
+                class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
+                text="Delete (non-raw)"
+                icon="AllIcons.Vcs.Remove"/>
+
+        <!-- OTHERS -->
+
+        <action id="MidPoint.Action.TestConnection"
+                class="com.evolveum.midpoint.studio.action.TestConnectionAction"
+                text="Test Connection"
+                icon="AllIcons.Actions.IntentionBulb"/>
+
+        <action id="MidPoint.Action.Documentation"
+                class="com.evolveum.midpoint.studio.action.DocumentationAction"
+                text="Generate Documentation"
+                icon="AllIcons.Actions.Annotate"/>
+
+        <action id="MidPoint.Action.TestAction"
+                class="com.evolveum.midpoint.studio.action.TestAction"
+                text="Test Action"
+                icon="AllIcons.Debugger.Db_set_breakpoint"/>
+
+        <!-- GROUPS -->
+
+        <group id="MidPoint.Group.Menu">
+
+            <group id="MidPoint.Group.Menu.TransferRelated"
+                   text="Update Object Actions"
+                   popup="true"
+                   icon="AllIcons.Actions.ListChanges">
+
+                <reference ref="MidPoint.Action.UploadExecute"/>
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.UploadRecompute"/>
+                <reference ref="MidPoint.Action.UploadTestResource"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.DeleteRaw"/>
+                <reference ref="MidPoint.Action.Delete"/>
+
+            </group>
+
+            <group id="MidPoint.Group.Menu.ServerLog"
+                   text="Server Log"
+                   icon="/icons/serverLog.svg"
+                   popup="true">
+
+                <group id="MidPoint.Group.Menu.ServerLog.ModelLogging"
+                       text="Set Model Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.ModelLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.ModelLoggingGroupAction"/>
+                </group>
+                <group id="MidPoint.Group.Menu.ServerLog.ProvisioningLogging"
+                       text="Set Provisioning Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.ProvisioningLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.ProvisioningLoggingGroupAction"/>
+                </group>
+                <group id="MidPoint.Group.Menu.ServerLog.RepositoryLogging"
+                       text="Set Repository Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.RepositoryLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.RepositoryLoggingGroupAction"/>
+                </group>
+                <group id="MidPoint.Group.Menu.ServerLog.GuiLogging"
+                       text="Set Gui Logging"
+                       popup="true">
+
+                    <group id="MidPoint.Group.Menu.ServerLog.GuiLogging.SetToInfoAction"
+                           class="com.evolveum.midpoint.studio.action.logging.GuiLoggingGroupAction"/>
+                </group>
+
+                <action id="MidPoint.Group.Menu.ServerLog.SetAllToInfo"
+                        text="Set All of These to INFO"
+                        class="com.evolveum.midpoint.studio.action.logging.SetAllToInfoAction"/>
+            </group>
+        </group>
+
         <group id="MidPoint.Toolbar.Main">
 
-            <!-- TODO REMOVE -->
-            <action id="MidPoint.Action.TestAction"
-                    class="com.evolveum.midpoint.studio.action.TestAction"
-                    text="Test Action"
-                    description="Test Action"
-                    icon="AllIcons.Actions.IntentionBulb"/>
+<!--            <reference ref="MidPoint.Action.TestAction"/>-->
+
+            <reference ref="MidPoint.Action.UploadExecute"/>
+            <reference ref="MidPoint.Action.UploadRecompute"/>
+            <reference ref="MidPoint.Action.UploadTestResource"/>
 
             <separator/>
 
-            <action id="MidPointPlugin.Menu.GenerateRandomOid"
-                    class="com.evolveum.midpoint.studio.action.GenerateRandomOid"
-                    icon="/icons/random_oid.png"
-                    text="Generate Random OID"
-                    description="Generate Random OID"/>
+            <reference ref="MidPoint.Action.Delete"/>
+            <reference ref="MidPoint.Action.DeleteRaw"/>
 
-            <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.UploadExecute"
-                    text="Upload/Execute"
-                    icon="AllIcons.Actions.Upload"/>
+            <separator/>
 
-            <action id="MidPoint.Action.UploadRaw" class="com.evolveum.midpoint.studio.action.UploadRaw"
-                    text="Upload Raw"
-                    icon="/icons/upload-raw.png"/>
+            <group id="MidPoint.Toolbar.Others"
+                   text="Other Update Actions"
+                   popup="true"
+                   icon="AllIcons.Actions.ListChanges">
 
-            <action id="MidPoint.Action.UploadTestResource"
-                    class="com.evolveum.midpoint.studio.action.UploadTestResource"
-                    text="Upload/Test Resource"
-                    icon="/icons/upload-test.png"/>
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+            </group>
+
+            <reference ref="MidPoint.Group.Menu.ServerLog"/>
+
+            <reference ref="MidPoint.Action.GenerateRandomOid"/>
 
             <separator/>
 
@@ -143,16 +337,20 @@
             <action id="MidPoint.Action.ComboEnvironmentAction"
                     class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
 
-            <action id="MidPoint.Action.MetricsAction" class="com.evolveum.midpoint.studio.action.EnvironmentMetrics"
+            <!--<action id="MidPoint.Action.MetricsAction" class="com.evolveum.midpoint.studio.action.EnvironmentMetrics"
                     text="Environment Metrics"
-                    icon="AllIcons.Actions.Profile"/>
+                    icon="AllIcons.Actions.Profile"/>-->
+
+            <reference ref="MidPoint.Action.TestConnection"/>
+
+            <reference ref="MidPoint.Action.Documentation"/>
 
             <add-to-group group-id="NavBarToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
         </group>
 
         <!-- todo create icon diff with server, example AllIcons.Actions.diffWithClipboard -->
-        <action id="MidPoint.Action.CompareFileWithServerAction"
+        <!--<action id="MidPoint.Action.CompareFileWithServerAction"
                 class="com.evolveum.midpoint.studio.action.CompareFileWithServerAction"
                 icon="AllIcons.Actions.Diff"/>
 
@@ -163,5 +361,17 @@
             <add-to-group group-id="Diff.KeymapGroup" anchor="last"/>
             <add-to-group group-id="EditorPopupMenu" relative-to-action="CompareClipboardWithSelection" anchor="after"/>
         </group>
+        -->
+
+        <group id="MidPoint.Group.Menu.Editor">
+            <reference ref="MidPoint.Group.Menu"/>
+            <add-to-group anchor="last" group-id="EditorPopupMenu"/>
+        </group>
+        <group id="MidPoint.Group.Menu.NonEditor">
+            <reference ref="MidPoint.Group.Menu"/>
+            <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
+            <add-to-group anchor="last" group-id="StructureViewPopupMenu"/>
+        </group>
+
     </actions>
 </idea-plugin>

@@ -5,9 +5,6 @@ import com.evolveum.midpoint.client.api.ProxyType;
 import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.common.rest.MidpointAbstractProvider;
-import com.evolveum.midpoint.common.rest.MidpointJsonProvider;
-import com.evolveum.midpoint.common.rest.MidpointXmlProvider;
-import com.evolveum.midpoint.common.rest.MidpointYamlProvider;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
@@ -16,6 +13,7 @@ import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.SystemException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
@@ -37,6 +35,29 @@ import java.util.Locale;
  * Created by Viliam Repan (lazyman).
  */
 public class ServiceFactory {
+
+    public static final PrismContext DEFAULT_PRISM_CONTEXT;
+
+    static {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
+        try {
+            Thread.currentThread().setContextClassLoader(ServiceFactory.class.getClassLoader());
+
+            DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
+            // todo create web client just to obtain extension schemas!
+
+            PrismContextFactory factory = new MidPointPrismContextFactory();
+            PrismContext prismContext = factory.createPrismContext();
+            prismContext.initialize();
+
+            DEFAULT_PRISM_CONTEXT = prismContext;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Couldn't initialize prism context", ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
+    }
 
     private String url;
 
@@ -109,19 +130,9 @@ public class ServiceFactory {
     }
 
     public Service create() throws Exception {
-        DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
-        // todo create web client just to obtain extension schemas!
-
-        PrismContextFactory factory = new MidPointPrismContextFactory();
-        PrismContext prismContext = factory.createPrismContext();
-        prismContext.initialize();
-
         List<Provider> providers = (List) Arrays.asList(
                 new com.bea.xml.stream.XMLOutputFactoryBase(),
-                setupProvider(new CompatibilityXmlProvider(prismContext), prismContext));
-//                setupProvider(new MidpointXmlProvider(), prismContext),
-//                setupProvider(new MidpointJsonProvider<>(), prismContext),
-//                setupProvider(new MidpointYamlProvider<>(), prismContext));
+                setupProvider(new CompatibilityXmlProvider(DEFAULT_PRISM_CONTEXT), DEFAULT_PRISM_CONTEXT));
 
         WebClient client;
         if (username != null) {
@@ -143,7 +154,7 @@ public class ServiceFactory {
             params.setDisableCNCheck(true);
         }
 
-        if (proxyServer != null) {
+        if (StringUtils.isNoneEmpty(proxyServer)) {
             HTTPConduit conduit = (HTTPConduit) WebClient.getConfig(client).getConduit();
             HTTPClientPolicy httpClientPolicy = conduit.getClient();
             if (httpClientPolicy == null) {
@@ -165,14 +176,12 @@ public class ServiceFactory {
             }
         }
 
-        client.accept(MediaType.APPLICATION_XML);   // todo add json, yaml
+        client.accept(MediaType.APPLICATION_XML);
         client.type(MediaType.APPLICATION_XML);
 
         ClientConfiguration config = WebClient.getConfig(client);
 
         LoggingFeature logging = new LoggingFeature();
-        logging.setLimit(100);
-//        logging.setPrettyLogging(true);   // todo fix pretty print, doesn't work
         if (messageListener != null) {
             logging.setSender(event -> {
                 String msg = LogMessageFormatter.format(event);
@@ -200,7 +209,7 @@ public class ServiceFactory {
         }
         logging.initialize(config.getEndpoint(), config.getBus());
 
-        ServiceContext context = new ServiceContext(prismContext, client);
+        ServiceContext context = new ServiceContext(DEFAULT_PRISM_CONTEXT, client);
 
         return new ServiceImpl(context);
     }

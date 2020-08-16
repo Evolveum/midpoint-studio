@@ -10,6 +10,8 @@ import java.util.List;
  */
 public interface EnvironmentManager extends Stateful<EnvironmentSettings> {
 
+    String NOTIFICATION_KEY = "Environment";
+
     static EnvironmentManager getInstance(@NotNull Project project) {
         return project.getComponent(EnvironmentManager.class);
     }
@@ -17,6 +19,8 @@ public interface EnvironmentManager extends Stateful<EnvironmentSettings> {
     EnvironmentSettings getFullSettings();
 
     List<Environment> getEnvironments();
+
+    boolean isEnvironmentSelected();
 
     Environment getSelected();
 
@@ -27,4 +31,6 @@ public interface EnvironmentManager extends Stateful<EnvironmentSettings> {
     boolean delete(String id);
 
     Environment get(String id);
+
+    EnvironmentProperties getSelectedEnvironmentProperties();
 }

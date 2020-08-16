@@ -1,7 +1,9 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.studio.impl.ProjectSettings;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.options.ConfigurationException;
-import com.evolveum.midpoint.studio.impl.ModuleSettings;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,23 +18,42 @@ public class ProjectConfigurationPanel extends JPanel {
     private EnvironmentsPanel environmentsPanel;
     private JPasswordField password1;
     private JPasswordField password2;
+    private MidPointSettingsPanel midpointSettingsPanel;
+    private JLabel oldPasswordLabel;
+    private JPasswordField oldPassword;
 
-    private ModuleSettings settings;
+    private ProjectSettings settings;
 
-    public ProjectConfigurationPanel(ModuleSettings settings) {
+    public ProjectConfigurationPanel(ProjectSettings settings, boolean allowMasterPasswordReset) {
         super(new BorderLayout());
 
         this.settings = settings;
 
         add(root, BorderLayout.CENTER);
+
+        oldPasswordLabel.setVisible(allowMasterPasswordReset);
+        oldPassword.setVisible(allowMasterPasswordReset);
     }
 
-    public ModuleSettings getSettings() {
+    public ProjectSettings getSettings() {
+        ProjectSettings settings = new ProjectSettings();
+
+        settings.setMidPointSettings(midpointSettingsPanel.getSettings());
+        settings.setEnvironmentSettings(environmentsPanel.getFullSettings());
+
+        if (password1.getPassword().length > 0) {
+            settings.setMasterPassword(new String(password1.getPassword()));
+        }
+        if (oldPassword.getPassword().length > 0) {
+            settings.setOldMasterPassword(new String(oldPassword.getPassword()));
+        }
+
         return settings;
     }
 
     private void createUIComponents() {
-        environmentsPanel = new EnvironmentsPanel(settings.getEnvironmentSettings());
+        midpointSettingsPanel = new MidPointSettingsPanel(settings.getMidPointSettings());
+        environmentsPanel = new EnvironmentsPanel(null, settings.getEnvironmentSettings());
     }
 
     /**
@@ -40,8 +61,21 @@ public class ProjectConfigurationPanel extends JPanel {
      * @throws ConfigurationException if input is not valid and needs user attention. Exception message will be displayed to user
      */
     public boolean validateData() throws ConfigurationException {
+        String oldPwd = oldPassword.getPassword() != null ? new String(oldPassword.getPassword()) : null;
+        if (StringUtils.isNotEmpty(oldPwd)) {
+            String projectId = settings.getMidPointSettings().getProjectId();
+            String currentPwd = MidPointUtils.getPassword(projectId);
+            if (!Objects.equals(oldPwd, currentPwd)) {
+                throw new ConfigurationException("Old password doesn't match one that is stored in keychain with id " + projectId);
+            }
+        }
+
         String pwd1 = password1.getPassword() != null ? new String(password1.getPassword()) : null;
         String pwd2 = password2.getPassword() != null ? new String(password2.getPassword()) : null;
+
+        if (StringUtils.isNoneEmpty(oldPwd) && StringUtils.isAnyEmpty(pwd1, pwd2)) {
+            throw new ConfigurationException("Master password not filled in");
+        }
 
         if (!Objects.equals(pwd1, pwd2)) {
             throw new ConfigurationException("Master passwords doesn't match");
@@ -52,9 +86,8 @@ public class ProjectConfigurationPanel extends JPanel {
 
     public void updateSettings() {
         settings.setEnvironmentSettings(environmentsPanel.getFullSettings());
-        // settings.setFileObjectSettings(); // todo now it can't be configured via UI
-        // settings.setMidPointSettings();
-
+        settings.setMidPointSettings(midpointSettingsPanel.getSettings());
         settings.setMasterPassword(new String(password1.getPassword()));
+        settings.setOldMasterPassword(new String(oldPassword.getPassword()));
     }
 }

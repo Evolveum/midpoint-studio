@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
+import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
@@ -12,8 +13,17 @@ import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
-import com.evolveum.midpoint.studio.impl.RestObjectManager;
+import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.impl.browse.Generator;
+import com.evolveum.midpoint.studio.impl.browse.GeneratorAction;
+import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
+import com.evolveum.midpoint.studio.impl.browse.ProcessResultsOptions;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
@@ -21,6 +31,8 @@ import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -29,15 +41,20 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import javax.xml.namespace.QName;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,16 +65,11 @@ import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
  */
 public class BrowseToolPanel extends SimpleToolWindowPanel {
 
-    public enum State {
-
-        DONE, SEARCHING, DOWNLOADING, CANCELING
-    }
+    private static final Logger LOG = Logger.getInstance(BrowseToolPanel.class);
 
     private static final String NOTIFICATION_KEY = "MidPoint Browser";
 
     private Project project;
-
-    private State state = State.DONE;
 
     private JBTextArea query;
     private JXTreeTable results;
@@ -65,7 +77,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private ComboObjectTypes objectType;
     private ComboQueryType queryType;
 
-    private AnAction searchAction;
+    private BackgroundAction searchAction;
     private AnAction cancelAction;
     private AnAction pagingAction;
 
@@ -81,6 +93,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private boolean rawDownload = true;
 
     private Paging paging = new Paging();
+
+    private ProcessResultsOptions processResultsOptions = new ProcessResultsOptions();
 
     public BrowseToolPanel(Project project) {
         super(false, true);
@@ -128,7 +142,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         results.add(resultsActionsToolbar.getComponent(), BorderLayout.NORTH);
 
         List<TreeTableColumnDefinition<ObjectType, ?>> columns = new ArrayList<>();
-        columns.add(new TreeTableColumnDefinition<>("Name", 500, o -> MidPointUtils.getOrigFromPolyString(o.getName())));
+        columns.add(new TreeTableColumnDefinition<>("Name", 500, null));
         columns.add(new TreeTableColumnDefinition<>("Display name", 500, o -> {
 
             if (!(o instanceof AbstractRoleType)) {
@@ -141,7 +155,28 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         columns.add(new TreeTableColumnDefinition<>("Oid", 100, o -> o.getOid()));
 
         this.results = MidPointUtils.createTable(new BrowseTableModel(columns), (List) columns);
-        this.results.setTreeCellRenderer(new NodeRenderer());
+        this.results.setTreeCellRenderer(new NodeRenderer() {
+
+            @Override
+            public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected, boolean expanded,
+                                              boolean leaf, int row, boolean hasFocus) {
+                Object node = TreeUtil.getUserObject(value);
+                DefaultMutableTreeTableNode treeNode = (DefaultMutableTreeTableNode) node;
+
+                Object userObject = treeNode.getUserObject();
+                if (userObject instanceof ObjectTypes) {
+                    ObjectTypes type = (ObjectTypes) userObject;
+                    String text = type.getTypeQName().getLocalPart();
+
+                    value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+                } else if (userObject instanceof ObjectType) {
+                    ObjectType ot = (ObjectType) userObject;
+                    value = MidPointUtils.getOrigFromPolyString(ot.getName());
+                }
+
+                super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
+            }
+        });
         this.results.setOpaque(false);
 
         this.results.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -175,7 +210,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             @Override
             public JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
                 JComponent comp = super.createCustomComponent(presentation, place);
-                comp.setBorder(new CompoundBorder(comp.getBorder(), new EmptyBorder(0, 5, 0, 5)));
+                comp.setBorder(new CompoundBorder(comp.getBorder(), JBUI.Borders.empty(0, 5)));
 
                 return comp;
             }
@@ -229,16 +264,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             protected boolean isEnabled() {
                 return isSearchEnabled();
             }
-
-            @Override
-            protected void onThrowable(@NotNull Throwable error) {
-                super.onThrowable(error);
-            }
-
-            @Override
-            protected void onFinished() {
-                state = State.DONE;
-            }
         };
         group.add(searchAction);
 
@@ -253,52 +278,22 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private DefaultActionGroup createResultsActionGroup() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        downloadAction = new BackgroundAction("Download", AllIcons.Actions.Download, "Downloading objects") {
+        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> results.expandAll());
+        group.add(expandAll);
 
-            @Override
-            protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
-                downloadPerformed(evt, false, indicator);
-            }
+        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> results.collapseAll());
+        group.add(collapseAll);
 
-            @Override
-            protected boolean isEnabled() {
-                return isDownloadShowEnabled();
-            }
+        group.add(new Separator());
 
-            @Override
-            protected void onThrowable(@NotNull Throwable error) {
-                // todo
-            }
-
-            @Override
-            protected void onFinished() {
-                state = State.DONE;
-            }
-        };
+        downloadAction = createAnAction("Download", AllIcons.Actions.Download,
+                e -> downloadPerformed(e, false, rawDownload),
+                e -> isDownloadShowEnabled());
         group.add(downloadAction);
 
-        showAction = new BackgroundAction("Show", AllIcons.Actions.Show, "Downloading objects") {
-
-            @Override
-            protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
-                downloadPerformed(evt, true, indicator);
-            }
-
-            @Override
-            protected boolean isEnabled() {
-                return isDownloadShowEnabled();
-            }
-
-            @Override
-            protected void onThrowable(@NotNull Throwable error) {
-                // todo
-            }
-
-            @Override
-            protected void onFinished() {
-                state = State.DONE;
-            }
-        };
+        showAction = createAnAction("Show", AllIcons.Actions.Show,
+                e -> downloadPerformed(e, true, rawDownload),
+                e -> isDownloadShowEnabled());
         group.add(showAction);
 
         CheckboxAction rawSearch = new CheckboxAction("Raw") {
@@ -332,63 +327,78 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void processPerformed(AnActionEvent evt) {
-        ProcessResultsDialog dialog = new ProcessResultsDialog();
-        if (!dialog.showAndGet()) {
-            return;
+        String query = this.query.getText();
+        ComboQueryType.Type queryType = this.queryType.getSelected();
+        ObjectTypes type = this.objectType.getSelected();
+        List<ObjectType> selected = getResultsModel().getSelectedObjects(results);
+
+        ProcessResultsDialog dialog = new ProcessResultsDialog(processResultsOptions, query, queryType, type, selected);
+        dialog.show();
+
+        if (dialog.isOK() || dialog.isGenerate()) {
+            processResultsOptions = dialog.buildOptions();
+
+            performGenerate(selected, processResultsOptions, !dialog.isGenerate());
         }
-
-
-        // todo implement
     }
 
     private void searchPerformed(AnActionEvent evt, ProgressIndicator indicator) {
-        state = State.SEARCHING;
+        LOG.debug("Clearing table");
+        // clear result table
+        updateTableModel(null);
 
-        RestObjectManager rest = RestObjectManager.getInstance(evt.getProject());
+        // load data
+        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        Environment env = em.getSelected();
 
-        String envName = rest.getEnvironment().getName();
-
-        indicator.setText("Searching objects in " + envName + " MidPoint");
-
-        ObjectTypes type = objectType.getSelected();
-        ObjectQuery query = buildQuery(evt.getProject());
+        indicator.setText("Searching objects in environment: " + env.getName());
 
         SearchResultList result = null;
         try {
-            result = rest.search(type.getClassDefinition(), query, rawSearch);
+            LOG.debug("Setting up midpoint client");
+            MidPointClient client = new MidPointClient(evt.getProject(), env);
+
+            ObjectTypes type = objectType.getSelected();
+            ObjectQuery query = buildQuery(client);
+
+            LOG.debug("Starting search");
+            result = client.search(type.getClassDefinition(), query, rawSearch);
         } catch (Exception ex) {
             handleGenericException("Couldn't search objects", ex);
         }
 
+        LOG.debug("Updating table");
+
+        // update result table
         updateTableModel(result);
+
         // todo finish nice paging
         // updatePagingAction(result, query.getOffset());
     }
 
     private void handleGenericException(String message, Exception ex) {
-        MidPointUtils.handleGenericException(project, NOTIFICATION_KEY, message, ex);
+        MidPointUtils.handleGenericException(project, BrowseToolPanel.class, NOTIFICATION_KEY, message, ex);
     }
 
-    private List<String> getSelectedRowsOids() {
-        List<String> selected = new ArrayList<>();
+    private List<Pair<String, ObjectTypes>> getSelectedOids() {
+        List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
 
-        ListSelectionModel selectionModel = results.getSelectionModel();
-        int[] indices = selectionModel.getSelectedIndices();
+        List<ObjectType> objects = getResultsModel().getSelectedObjects(results);
+        objects.forEach(o -> selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass()))));
 
-//        results.getSelectionModel().ge
-
-        //todo fix
         return selected;
     }
 
     private boolean isResultSelected() {
-        return results.getSelectionModel().getSelectedItemsCount() != 0;
+        ExtendedListSelectionModel model = (ExtendedListSelectionModel) results.getSelectionModel();
+        return model.getSelectedItemsCount() != 0;
     }
 
-    private void downloadPerformed(AnActionEvent evt, boolean showOnly, ProgressIndicator indicator) {
-        setState(BrowseToolPanel.State.DOWNLOADING);
+    private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
+        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        Environment env = em.getSelected();
 
-        DownloadAction da = new DownloadAction(null, false) {
+        DownloadAction da = new DownloadAction(env, getResultsModel().getSelectedOids(results), showOnly, rawDownload) {
 
             @Override
             protected void onFinished() {
@@ -404,13 +414,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void cancelPerformed(AnActionEvent evt) {
-        state = State.CANCELING;
-
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
 
             // todo implement
 
-            state = State.DONE;
         });
     }
 
@@ -423,16 +430,20 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             of = metadata.getApproxNumberOfAllResults();
         }
 
-        int selected = getSelectedRowsOids().size();
+        int selected = getResultsModel().getSelectedOids(results).size();
 
         String ofStr = of == null ? "unknown" : Integer.toString(of);
 
         pagingText.setText("From " + from + " to " + to + " of " + ofStr + ". Selected " + selected + " objects");
     }
 
+    private BrowseTableModel getResultsModel() {
+        return (BrowseTableModel) results.getTreeTableModel();
+    }
+
     private void updateTableModel(SearchResultList result) {
-        BrowseTableModel tableModel = (BrowseTableModel) results.getTreeTableModel();
-        tableModel.setData(result.getList());
+        BrowseTableModel tableModel = getResultsModel();
+        tableModel.setData(result != null ? result.getList() : null);
 
         ApplicationManager.getApplication().invokeLater(() -> {
 
@@ -453,32 +464,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private boolean isDownloadShowEnabled() {
-        return state == State.DONE && isResultSelected();
+        return isResultSelected();
     }
 
     private boolean isSearchEnabled() {
-        return state == State.DONE;
+        // todo add condition that we're not currently searching
+        return EnvironmentManager.getInstance(project).isEnvironmentSelected();
     }
 
     private boolean isCancelEnabled() {
-        return state == State.SEARCHING;
+        // todo enable when search is in progress
+        return false;
     }
 
-    public ObjectTypes getObjectType() {
-        return objectType.getSelected();
-    }
-
-    public ObjectQuery getObjectQuery(Project project) {
-        return buildQuery(project);
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public ObjectQuery buildQuery(Project project) {
-        RestObjectManager em = RestObjectManager.getInstance(project);
-        PrismContext ctx = em.getPrismContext();
+    public ObjectQuery buildQuery(MidPointClient client) {
+        PrismContext ctx = client.getPrismContext();
         QueryFactory qf = ctx.queryFactory();
 
         ObjectFilter filter = null;
@@ -568,15 +568,40 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         if (name) {
             PrismPropertyDefinition def = ctx.getSchemaRegistry().findPropertyDefinitionByElementName(ObjectType.F_NAME);
-            QName matchingRule = PrismConstants.POLY_STRING_ORIG_MATCHING_RULE_NAME;
-            List<ObjectFilter> equals = new ArrayList<>();
+            QName matchingRule = PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME;
+            List<ObjectFilter> substrings = new ArrayList<>();
             for (String s : filtered) {
-                equals.add(qf.createEqual(ctx.path(ObjectType.F_NAME), def, matchingRule, ctx, s));
+                substrings.add(SubstringFilterImpl.createSubstring(ctx.path(ObjectType.F_NAME), def, ctx, matchingRule, s, false, false));
             }
-            OrFilter nameOr = qf.createOr(equals);
+            OrFilter nameOr = qf.createOr(substrings);
             or.addCondition(nameOr);
         }
 
         return or;
+    }
+
+    private void performGenerate(List<ObjectType> selected, ProcessResultsOptions options, boolean execute) {
+        GeneratorOptions opts = options.getOptions();
+
+        if (opts.isBatchByOids() && selected.isEmpty()) {
+            return;
+        }
+
+        if (opts.isBatchUsingOriginalQuery() && StringUtils.isEmpty(opts.getOriginalQuery())) {
+            return;
+        }
+
+        Generator generator = options.getGenerator();
+        GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);
+
+        AWTEvent evt = EventQueue.getCurrentEvent();
+        InputEvent ie;
+        if (evt instanceof InputEvent) {
+            ie = (InputEvent) evt;
+        } else {
+            ie = new MouseEvent(this, ActionEvent.ACTION_PERFORMED, System.currentTimeMillis(), 0, 0, 0, 0, false, 0);
+        }
+
+        ActionManager.getInstance().tryToExecute(ga, ie, this, ActionPlaces.UNKNOWN, false);
     }
 }

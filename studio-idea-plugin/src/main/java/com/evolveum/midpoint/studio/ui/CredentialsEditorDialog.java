@@ -35,10 +35,8 @@ public class CredentialsEditorDialog extends DialogWrapper {
         super(false);
         setTitle(credentials == null ? "Add credentials" : "Edit credentials");
 
-        if (credentials == null) {
-            credentials = new Credentials();
-        }
-        this.credentials = credentials;
+        this.credentials = credentials != null ? credentials : new Credentials();
+
         if (environments != null) {
             this.environments.addAll(environments);
         }
@@ -84,6 +82,9 @@ public class CredentialsEditorDialog extends DialogWrapper {
     }
 
     private void fillInFields() {
+        ComboBoxModel model = new ListComboBoxModel(environments);
+        environment.setModel(model);
+
         key.setText(credentials.getKey());
 
         if (credentials.getEnvironment() != null) {
@@ -113,8 +114,7 @@ public class CredentialsEditorDialog extends DialogWrapper {
     }
 
     private void createUIComponents() {
-        ComboBoxModel model = new ListComboBoxModel(environments);
-        environment = new ComboBox(model);
+        environment = new ComboBox();
         environment.setRenderer(new DefaultListCellRenderer() {
 
             @Override

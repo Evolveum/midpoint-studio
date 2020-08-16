@@ -85,7 +85,7 @@ public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
                         CredentialsManager manager = CredentialsManager.getInstance(project);
-                        manager.reinit();
+                        manager.refresh();
 
                         initData();
                     }

@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
+import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
+import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.hints.HintInfo;
 import com.intellij.codeInsight.hints.InlayInfo;
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider;
@@ -7,13 +10,12 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTag;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -31,17 +33,36 @@ public class MidPointInlayParameterHintsProvider implements InlayParameterHintsP
         }
 
         XmlAttributeValue value = (XmlAttributeValue) element;
-//        XmlTag tag = getTag(value);
-//        if (!isObjectTemplateOidRef(tag)) {
-//            return;
-//        }
-
         int offset = inlayOffset(element, false);
 
-        return Arrays.asList(
-                new InlayInfo("vilo", offset, false, true, false),
-                new InlayInfo("jano", inlayOffset(element, true), false, true, true)
-        );
+        XmlAttribute attr = (XmlAttribute) parent;
+        XmlTag tag = attr.getParent();
+        if (MidPointUtils.isObjectTypeElement(tag)) {
+            return Collections.emptyList();
+        }
+
+        // todo implement his inlay parameter hints correctly for oid references
+//        return Arrays.asList(
+//                new InlayInfo("vilo", offset, false, true, false),
+//                new InlayInfo("jano", inlayOffset(element, true), false, true, true)
+//        );
+
+        Collection<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), element.getProject());
+        if (result == null || result.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String label;
+        if (result.size() == 1) {
+            label = result.iterator().next().getName();
+            if (StringUtils.isEmpty(label)) {
+                label = "Name undefined";
+            }
+        } else {
+            label = "Multiple object with same oid";
+        }
+
+        return Arrays.asList(new InlayInfo(label, offset, false, true, false));
     }
 
     private int inlayOffset(PsiElement expr, boolean atEnd) {

@@ -23,5 +23,7 @@ public interface ObjectService<O extends ObjectType> {
 
     void delete() throws ObjectNotFoundException, AuthenticationException;
 
+    void delete(DeleteOptions options) throws ObjectNotFoundException, AuthenticationException;
+
     OperationResult testConnection() throws ObjectNotFoundException, AuthenticationException;
 }

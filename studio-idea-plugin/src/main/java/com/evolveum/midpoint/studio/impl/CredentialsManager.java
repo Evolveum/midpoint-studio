@@ -10,11 +10,19 @@ import java.util.List;
  */
 public interface CredentialsManager {
 
+    String NOTIFICATION_KEY = "Credentials";
+
     static CredentialsManager getInstance(@NotNull Project project) {
         return project.getComponent(CredentialsManager.class);
     }
 
-    void reinit();
+    void init(String masterPassword);
+
+    void changeMasterPassword(String oldPassword, String newPassword);
+
+    boolean isAvailable();
+
+    void refresh();
 
     List<Credentials> list();
 

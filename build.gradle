@@ -1,8 +1,4 @@
 allprojects {
-
-}
-
-subprojects {
     repositories {
         mavenCentral()
         mavenLocal()
@@ -15,5 +11,19 @@ subprojects {
         maven {
             url 'https://nexus.evolveum.com/nexus/content/repositories/snapshots/'
         }
+        maven {
+            url 'https://www.jetbrains.com/intellij-repository/snapshots/'
+        }
     }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    version '4.0.0'
+
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+
+    tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 }

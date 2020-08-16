@@ -1,0 +1,50 @@
+= MidPoint Studio
+:sectnums:
+:toc:
+:toclevels: 4
+:toc-title: Table of Contents
+
+== Overview
+
+Plugin for Intellij Idea to help identity engineers customize https://midpoint.evolveum.com[MidPoint] identity management solution by https://evolveum.com[Evolveum].
+
+== Features
+
+* MidPoint objects manipulation
+** Browse, upload objects
+** Execute tasks, bulk actions
+** Test resources
+* Documentation generator
+* Debugger for Groovy scripts expressions
+* IDE editor capabilities
+** Completions
+** Annotations
+** Reference integrity checks
+** Random OID generator
+** Schema documentation
+** File Templates
+* Support for multiple environments
+* Log browser
+** Local
+** Via SSH
+* Master password encryption for passwords and other secret values
+
+== Development Notes
+
+=== Git Branches
+
+* Development branch is `master`. 
+* Early access preview `eap`
+* Branch used for releases is called `stable`.
+
+=== Logging settings
+
+Intellij Idea logs to file `studio-idea-plugin/build/idea-sandbox/system/log/idea.log`. Logging settings can be changed 
+during runtime via top menu `Help/Debug Log Settings` by adding packages/classes on each line in format:
+
+* `#LOGGER` to log LOGGER (package or class) on DEBUG level
+* `#LOGGER:trace` to log LOGGER (package or class) on TRACE level
+
+== License
+
+Project is licensed under Apache Licence 2.0.

@@ -1,13 +1,19 @@
 package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.client.api.ClientException;
+import com.evolveum.midpoint.client.impl.ServiceFactory;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.client.api.MessageListener;
 import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
+import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -31,12 +37,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
+import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.TreeTableModel;
@@ -44,7 +51,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import javax.xml.namespace.QName;
 import java.awt.Color;
+import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
@@ -62,7 +71,11 @@ public class MidPointUtils {
 
     public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
 
+    private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
+
     private static final Random RANDOM = new Random();
+
+    public static final PrismContext DEFAULT_PRISM_CONTEXT = ServiceFactory.DEFAULT_PRISM_CONTEXT;
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
 
@@ -70,15 +83,6 @@ public class MidPointUtils {
     public static Project getCurrentProject() {
         DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
         return DataKeys.PROJECT.getData(dataContext);
-    }
-
-    public static void createAndPushNotification(String group, String title, String content, NotificationType type,
-                                                 NotificationAction... actions) {
-
-        Notification notification = new Notification(group, title, content, type);
-        Arrays.stream(actions).forEach(a -> notification.addAction(a));
-
-        Notifications.Bus.notify(notification);
     }
 
     public static Color generateAwtColor() {
@@ -192,6 +196,25 @@ public class MidPointUtils {
                 .generateServiceName(MidPointSettings.class.getSimpleName(), key));
     }
 
+    public static void publishException(Project project, Class clazz, String notificationKey, String msg, Exception ex) {
+        MidPointManager mm = MidPointManager.getInstance(project);
+        mm.printToConsole(clazz, msg + ". Reason: " + ex.getMessage());
+
+        publishExceptionNotification(notificationKey, msg, ex);
+    }
+
+    public static void publishExceptionNotification(String key, String message, Exception ex) {
+        String msg = message + ", reason: " + ex.getMessage();
+        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR);
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(msg);
+            LOG.trace(ex);
+        } else {
+            LOG.debug(msg);
+        }
+    }
+
     public static void publishNotification(String key, String title, String content, NotificationType type) {
         publishNotification(key, title, content, type, (NotificationAction[]) null);
     }
@@ -200,17 +223,13 @@ public class MidPointUtils {
                                            NotificationAction... actions) {
         Notification notification = new Notification(key, title, content, type);
         if (actions != null) {
-            Arrays.asList(actions).forEach(a -> {
-
-                if (a != null) {
-                    notification.addAction(a);
-                }
-            });
+            Arrays.stream(actions).filter(a -> a != null).forEach(a -> notification.addAction(a));
         }
+
         Notifications.Bus.notify(notification);
     }
 
-    public static void handleGenericException(Project project, String key, String message, Exception ex) {
+    public static void handleGenericException(Project project, Class clazz, String key, String message, Exception ex) {
         NotificationAction action = null;
         if (ex instanceof ClientException) {
             OperationResult result = ((ClientException) ex).getResult();
@@ -224,7 +243,7 @@ public class MidPointUtils {
 
         if (project != null) {
             MidPointManager manager = MidPointManager.getInstance(project);
-            manager.printToConsole(RestObjectManagerImpl.class, message, ex);
+            manager.printToConsole(clazz, message, ex);
         }
     }
 
@@ -240,6 +259,10 @@ public class MidPointUtils {
         }
 
         return map;
+    }
+
+    public static AnAction createAnAction(String text, Icon icon, Consumer<AnActionEvent> actionPerformed) {
+        return createAnAction(text, icon, actionPerformed, null);
     }
 
     public static AnAction createAnAction(String text, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
@@ -267,22 +290,14 @@ public class MidPointUtils {
         };
     }
 
-    public static boolean isMidPointFacetPresent(Project project) {
-        Module[] modules = ModuleManager.getInstance(project).getModules();
-        if (modules == null || modules.length == 0) {
-            return false;
-        }
-
-        FacetManager facetManager = FacetManager.getInstance(modules[0]);
-        return facetManager.getFacetByType(MidPointFacet.ID) != null;
-    }
-
     public static JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition> columns) {
-        JXTreeTable table = new JXTreeTable(model);
+        JXTreeTable table = new JXTreeTable();
         table.setRootVisible(false);
         table.setEditable(false);
         table.setDragEnabled(false);
         table.setHorizontalScrollEnabled(true);
+        table.setSelectionModel(new ExtendedListSelectionModel(table.getSelectionModel()));        // todo fix
+        table.setTreeTableModel(model);
         table.setLeafIcon(null);
         table.setClosedIcon(null);
         table.setOpenIcon(null);
@@ -304,12 +319,202 @@ public class MidPointUtils {
         return table;
     }
 
+    public static String getName(PrismObject obj) {
+        return obj != null ? getOrigFromPolyString(obj.getName()) : null;
+    }
+
     public static String getOrigFromPolyString(PolyString poly) {
         return poly != null ? poly.getOrig() : null;
     }
 
     public static String getOrigFromPolyString(PolyStringType poly) {
         return poly != null ? poly.getOrig() : null;
+    }
+
+    public static String generateTaskIdentifier() {
+        return System.currentTimeMillis() + ":" + Math.round(Math.random() * 1000000000.0);
+    }
+
+    public static ObjectTypes commonSuperType(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return null;
+        }
+
+        Class<? extends ObjectType> c1 = o1.getClassDefinition();
+        Class<? extends ObjectType> c2 = o2.getClassDefinition();
+
+        Class<? extends ObjectType> s = c1;
+        while (!s.isAssignableFrom(c2)) {
+            s = (Class<? extends ObjectType>) s.getSuperclass();
+        }
+
+        return ObjectTypes.getObjectType(s);
+    }
+
+    public static boolean isAssignableFrom(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return false;
+        }
+
+        return o1.getClassDefinition().isAssignableFrom(o2.getClassDefinition());
+    }
+
+    public static QName getTypeQName(ObjectType obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        return getTypeQName(obj.asPrismObject());
+    }
+
+    public static QName getTypeQName(PrismObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        return ObjectTypes.getObjectType(obj.getCompileTimeClass()).getTypeQName();
+    }
+
+    public static String formatTime(Long time) {
+        if (time == null) {
+            return "";
+        } else {
+            return String.format(Locale.US, "%.1f", time / 1000.0);
+        }
+    }
+
+    public static String formatPercent(Double value) {
+        if (value == null) {
+            return "";
+        } else {
+            return String.format(Locale.US, "%.1f%%", value * 100);
+        }
+    }
+
+    public static XmlTag[] findSubTags(XmlTag tag, QName name) {
+        if (tag == null) {
+            return new XmlTag[0];
+        }
+
+        return tag.findSubTags(name.getLocalPart(), name.getNamespaceURI());
+    }
+
+    public static XmlTag findSubTag(XmlTag tag, QName name) {
+        XmlTag[] tags = findSubTags(tag, name);
+        if (tags != null && tags.length > 0) {
+            return tags[0];
+        }
+
+        return null;
+    }
+
+    public static JPanel createBorderLayoutPanel(JComponent north, JComponent center, JComponent south) {
+        JPanel panel = new BorderLayoutPanel();
+        if (north != null) {
+            panel.add(north, BorderLayout.NORTH);
+        }
+
+        if (center != null) {
+            panel.add(center, BorderLayout.CENTER);
+        }
+
+        if (south != null) {
+            panel.add(south, BorderLayout.SOUTH);
+        }
+
+        return panel;
+    }
+
+//    public static void applyTestResult(VirtualFile file, ExecuteActionServerResponse lastResponse) {
+//        if (file == null) {
+//            return;
+//        }
+//        if (lastResponse.isSuccess()) {
+//            return;
+//        }
+//
+//        try {
+//            file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+//            IMarker m = file.createMarker(IMarker.PROBLEM);
+//            m.setAttribute(IMarker.LINE_NUMBER, 1);
+//            m.setAttribute(IMarker.MESSAGE, "Test resource failed: " + lastResponse.getErrorDescription());
+//            m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+//            m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+//        } catch (CoreException e) {
+//            Console.logError("Couldn't show validation result: " + e.getMessage(), e);
+//        }
+//    }
+//
+//    public static void applyValidationResult(VirtualFile file, String dataOutput) {
+//        if (file == null) {
+//            return;
+//        }
+//
+//        Element root = DOMUtil.parseDocument(dataOutput).getDocumentElement();
+//        Element item = DOMUtil.getChildElement(root, "item");
+//        if (item == null) {
+//            return;
+//        }
+//        Element validationResult = DOMUtil.getChildElement(item, "validationResult");
+//        if (validationResult == null) {
+//            return;
+//        }
+//        List<Element> issues = DOMUtil.getChildElements(validationResult, new QName(Constants.COMMON_NS, "issue"));
+//
+//        try {
+//            file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+//            for (Element issue : issues) {
+//                String severity = getElementText(issue, "severity");
+//                String category = getElementText(issue, "category");
+//                String code = getElementText(issue, "code");
+//                String text = getElementText(issue, "text");
+//                String itemPath = getElementText(issue, "itemPath");
+//                int severityCode;
+//                switch (severity) {
+//                    case "error": severityCode = IMarker.SEVERITY_ERROR; break;
+//                    case "warning": severityCode = IMarker.SEVERITY_WARNING; break;
+//                    default: severityCode = IMarker.SEVERITY_INFO; break;
+//                }
+//                IMarker m = file.createMarker(IMarker.PROBLEM);
+//                m.setAttribute(IMarker.LINE_NUMBER, 1);
+//                m.setAttribute(IMarker.MESSAGE, text);
+//                m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+//                m.setAttribute(IMarker.SEVERITY, severityCode);
+//                m.setAttribute(IMarker.LOCATION, itemPath);
+//            }
+//
+//        } catch (CoreException e) {
+//            Console.logError("Couldn't show validation result: " + e.getMessage(), e);
+//        }
+//    }
+//
+//    private static String getElementText(Element element, String name) {
+//        Element child = DOMUtil.getChildElement(element, name);
+//        return child != null ? child.getTextContent() : null;
+//    }
+
+    public static QName createQName(XmlTag element) {
+        if (element == null) {
+            return null;
+        }
+
+        return new QName(element.getNamespace(), element.getLocalName());
+
+    }
+
+    public static boolean isObjectTypeElement(XmlTag tag) {
+        if (tag == null) {
+            return false;
+        }
+
+        QName name = new QName(tag.getNamespace(), tag.getLocalName());
+        for (ObjectTypes type : ObjectTypes.values()) {
+            if (name.equals(type.getElementName())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static Service buildRestClient(Environment environment, MidPointManager midPointManager)

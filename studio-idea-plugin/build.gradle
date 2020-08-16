@@ -7,19 +7,17 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.4.12"
+    id "org.jetbrains.intellij" version "0.4.21"
+    id "com.palantir.git-version" version "0.12.2"
 }
 
-group 'com.evolveum.midpoint.studio'
-version '4.1-SNAPSHOT'
-
-sourceCompatibility = javaVersion
-targetCompatibility = javaVersion
-
-tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+apply from: "$rootDir/$project.name/verifier.gradle"
 
 dependencies {
-    compile project(':midpoint-client')
+    compile(project(':midpoint-client')) {
+        exclude group: "org.slf4j"
+        exclude group: "ch.qos.logback"
+    }
 
     compile("com.evolveum.midpoint.model:model-common:$midpointVersion") {
         transitive = false
@@ -27,38 +25,61 @@ dependencies {
     compile("com.evolveum.midpoint.model:model-api:$midpointVersion") {
         transitive = false
     }
+    compile("com.evolveum.midpoint.repo:security-api:$midpointVersion") {
+        transitive = false
+    }
     compile("com.evolveum.midpoint.model:notifications-api:$midpointVersion") {
         transitive = false
     }
     compile "com.evolveum.midpoint:midpoint-localization:$midpointVersion"
+    compile("com.evolveum.midpoint:midscribe-core:$midscribeVersion") {
+        exclude group: "org.springframework"
+        exclude group: "net.sf.jasperreports"
+        exclude group: "org.apache.cxf", module: "cxf-rt-wsdl"
+
+        exclude group: "org.slf4j"
+        exclude group: "ch.qos.logback"
+    }
 
     compile "de.slackspace:openkeepass:$openkeepass"
-    compile "net.mikehardy:google-analytics-java7:$analyticsVersion"
     compile "org.apache.commons:commons-lang3:$commonsLang"
-    compile "org.knowm.xchart:xchart:$xchartVersion"
-    compile "com.h2database:h2:$h2Version"
-//    compile "org.slf4j:slf4j-log4j12:1.7.25"
-//    compile 'com.github.adedayo.intellij.sdk:forms_rt:142.1'
+//    compile "org.knowm.xchart:xchart:$xchartVersion"
+    compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
+    compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
 }
 
 intellij {
-    version '2019.3'
+    version '2020.2'    // 'LATEST-EAP-SNAPSHOT'
     type 'IC'
     downloadSources true
     pluginName 'MidPoint Studio'
     updateSinceUntilBuild false
     plugins = [
-            'PsiViewer:193-SNAPSHOT',
+            'PsiViewer:202-SNAPSHOT.3',
+            'com.jetbrains.hackathon.indices.viewer:1.8',
             'java',
             'Groovy',
             'maven'
     ]
     patchPluginXml {
-        sinceBuild '191'
-        untilBuild '193.*'
+        sinceBuild '193'
+        untilBuild '202.*'
+        version project.version + '.' + versionDetails().commitDistance
     }
-//    publishPlugin {
-//        channels System.getenv('IJ_PLUGIN_REPO_CHANNEL')
-//        token System.getenv('IJ_REPO_TOKEN')
-//    }
+    publishPlugin {
+        channels project.channels
+        token System.getenv('studio_intellijPublishToken')
+    }
+}
+
+runPluginVerifier {
+    pluginFileName = "$intellij.pluginName-$version"
+    ides = ["IC-2019.3", "IC-2020.1", "IC-2020.2", "IC-LATEST-EAP-SNAPSHOT"]
+}
+
+buildPlugin.configure {
+    doFirst {
+        println "Git describe: " + versionDetails().commitDistance
+    }
 }

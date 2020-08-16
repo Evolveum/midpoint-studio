@@ -13,6 +13,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -20,6 +24,10 @@ import java.net.URL;
 public class MidPointXmlSchemaProvider extends XmlSchemaProvider {
 
     private static final Logger LOG = Logger.getInstance(MidPointXmlSchemaProvider.class);
+
+    private final Set<String> UNKNOWN = new HashSet<>();
+
+    private final Map<String, XmlFile> SCHEMAS = new HashMap<>();
 
     @Override
     public boolean isAvailable(@NotNull XmlFile file) {
@@ -31,6 +39,23 @@ public class MidPointXmlSchemaProvider extends XmlSchemaProvider {
     public XmlFile getSchema(@NotNull String url, @Nullable Module module, @NotNull PsiFile baseFile) {
         if (url == null) {
             return null;
+        }
+
+        return getSchema(url, baseFile);
+    }
+
+    private synchronized XmlFile getSchema(String url, PsiFile baseFile) {
+        if (url == null) {
+            return null;
+        }
+
+        if (UNKNOWN.contains(url)) {
+            return null;
+        }
+
+        XmlFile schema = SCHEMAS.get(url);
+        if (schema != null) {
+            return schema;
         }
 
         if (!url.startsWith("http://midpoint.evolveum.com")
@@ -47,16 +72,24 @@ public class MidPointXmlSchemaProvider extends XmlSchemaProvider {
 
         URL resource = MidPointXmlSchemaProvider.class.getResource(resourceUrl);
         if (resource == null) {
-            LOG.warn("Couldn't find schema for url '" + url + "', tried '" + resourceUrl + "'");
+            LOG.trace("Couldn't find schema for url '" + url + "', tried '" + resourceUrl + "'");
+            UNKNOWN.add(url);
+
             return null;
         }
 
         VirtualFile fileByURL = VfsUtil.findFileByURL(resource);
         if (fileByURL == null) {
+            UNKNOWN.add(url);
+
             return null;
         }
 
         PsiFile psiFile = PsiManager.getInstance(project).findFile(fileByURL);
-        return (XmlFile) psiFile;
+        schema = (XmlFile) psiFile;
+
+        SCHEMAS.put(url, schema);
+
+        return schema;
     }
 }

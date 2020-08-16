@@ -30,8 +30,9 @@ public class MidPointMultiHostInjector implements MultiHostInjector {
             return;
         }
 
-        registrar.startInjecting(GroovyLanguage.INSTANCE).
-                addPlace(null, null, (PsiLanguageInjectionHost) context, new TextRange(0, context.getTextLength()))
+        registrar
+                .startInjecting(GroovyLanguage.INSTANCE)
+                .addPlace(null, null, (PsiLanguageInjectionHost) context, new TextRange(0, context.getTextLength()))
                 .doneInjecting();
     }
 

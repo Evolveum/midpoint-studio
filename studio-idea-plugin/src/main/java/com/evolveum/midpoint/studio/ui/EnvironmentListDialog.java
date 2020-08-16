@@ -23,7 +23,7 @@ public class EnvironmentListDialog extends DialogWrapper {
         this.project = project;
 
         EnvironmentManager manager = EnvironmentManager.getInstance(project);
-        panel = new EnvironmentsPanel(manager.getFullSettings());
+        panel = new EnvironmentsPanel(project, manager.getFullSettings());
 
         setTitle("Edit Environments");
 

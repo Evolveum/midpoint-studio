@@ -7,13 +7,18 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.actions.ReformatCodeProcessor;
 import com.intellij.codeInsight.template.TemplateManager;
 import com.intellij.codeInsight.template.impl.TemplateImpl;
+import com.intellij.facet.FacetManager;
+import com.intellij.facet.FacetType;
+import com.intellij.facet.FacetTypeRegistry;
 import com.intellij.ide.fileTemplates.FileTemplate;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
@@ -46,9 +51,11 @@ import java.util.regex.Pattern;
  */
 public class MidPointModuleBuilder extends ModuleBuilder {
 
+    public static final String NOTIFICATION_KEY = "Module";
+
     public static String MODULE_NAME = "MidPoint";
 
-    private ModuleSettings settings = new ModuleSettings();
+    private ProjectSettings settings = new ProjectSettings();
 
     public MidPointModuleBuilder() {
         setName(MODULE_NAME);
@@ -88,7 +95,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
             VfsUtil.createDirectories(root.getPath() + "/objects");
             VfsUtil.createDirectories(root.getPath() + "/scratches");
         } catch (IOException ex) {
-            ex.printStackTrace(); // todo handle error
+            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't create directory structure", ex);
         }
 
         // build pom file
@@ -96,21 +103,33 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
         MidPointUtils.runWhenInitialized(project, (DumbAwareRunnable) () -> {
 
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                try {
-                    Properties properties = new Properties();
-                    properties.setProperty("GROUP_ID", root.getName());
-                    properties.setProperty("ARTIFACT_ID", root.getName());
-                    properties.setProperty("VERSION", "0.1-SNAPSHOT");
+            Application am = ApplicationManager.getApplication();
 
-                    createPomFile(project, root, properties);
+            if (!am.isDispatchThread()) {
+                am.invokeLater(() -> WriteAction.run(() -> createProjectFiles(project, root)));
+                return;
+            }
 
-                    createGitIgnoreFile(project, root);
-                } catch (IOException ex) {
-                    ex.printStackTrace();   // todo error handling
-                }
-            });
+            WriteAction.run(() -> createProjectFiles(project, root));
         });
+
+        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
+        FacetManager.getInstance(modifiableRootModel.getModule()).addFacet(facetType, facetType.getDefaultFacetName(), null);
+    }
+
+    private void createProjectFiles(Project project, VirtualFile root) {
+        try {
+            Properties properties = new Properties();
+            properties.setProperty("GROUP_ID", root.getName());
+            properties.setProperty("ARTIFACT_ID", root.getName());
+            properties.setProperty("VERSION", "0.1-SNAPSHOT");
+
+            createPomFile(project, root, properties);
+
+            createGitIgnoreFile(project, root);
+        } catch (IOException ex) {
+            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't create pom.xml file", ex);
+        }
     }
 
     private void createGitIgnoreFile(Project project, VirtualFile root) throws IOException {
@@ -174,15 +193,11 @@ public class MidPointModuleBuilder extends ModuleBuilder {
     @Nullable
     @Override
     public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
-        if (StringUtils.isNotEmpty(settings.getMasterPassword())) {
-            MidPointUtils.setPassword(settings.getMidPointSettings().getProjectId(), settings.getMasterPassword());
-        }
-
         MidPointManager.getInstance(project).setSettings(settings.getMidPointSettings());
-        EnvironmentManager.getInstance(project).setSettings(settings.getEnvironmentSettings());
-        FileObjectManager.getInstance(project).setSettings(settings.getFileObjectSettings());
 
-        CredentialsManager.getInstance(project).reinit();
+        CredentialsManager.getInstance(project).init(settings.getMasterPassword());
+
+        EnvironmentManager.getInstance(project).setSettings(settings.getEnvironmentSettings());
 
         return super.commitModule(project, model);
     }

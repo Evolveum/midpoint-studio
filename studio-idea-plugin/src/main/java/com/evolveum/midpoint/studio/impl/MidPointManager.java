@@ -54,9 +54,8 @@ public class MidPointManager extends ManagerBase<MidPointSettings> implements Pr
         this.console = console;
     }
 
-    @Deprecated
-    public MidPointConsoleView getConsole() {
-        return console;
+    public void focusConsole() {
+        // todo open midpoint tool window and focus to console
     }
 
     public void printToConsole(Class clazz, String message) {
@@ -79,7 +78,7 @@ public class MidPointManager extends ManagerBase<MidPointSettings> implements Pr
         sb.append(DATE_FORMAT.format(new Date()));
         sb.append(' ');
         sb.append(clazz.getSimpleName());
-        sb.append(' ');
+        sb.append(": ");
         if (message != null) {
             sb.append(message);
         }

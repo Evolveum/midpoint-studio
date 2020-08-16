@@ -1,0 +1,28 @@
+= TODO
+
+* EnvironmentManagerImpl.getSelected() always reads credentials keepass file (full environment), multiple times pre second only to get color
+* MidPointXmlStructureViewBuilderProvider not finished
+* Upload/Execute of scripts doesn't work
+* Finish jira issue submitting (error reporting)
+* Transform components to services
+* Implement action that will allow import one account from resource and then unlink
+* Passwords
+** `DONE` settings for master password not visible in project/module settings
+** `DONE` where do we store environment username/password? -> regression, they are not stsored in keepass2
+** `DONE` master password reset
+** what if master password was not set? ask for credentials?
+* resource templates and rethink whole create resource process
+* make different midpoint versions as distributions and load them via custom classpath
+** user of plugin can then pick midpoint version with everything for himself (proper xsd versions, proper client version, etc.)
+* FeatureUsageTracker.getInstance() can be used probably to track statistics
+* Credentials manager needs keyring pwd too often
+* Icons
+** to svg
+*** midpoint logo
+*** generate oid action
+* Some simple UI to setup different monitor probes (per environment). For example, checks like:
+** Task status (running/suspended/closed)
+** Task stalled
+** Nodes in cluster available
+** Livesync task token parsing and validation (for example whether task is not too much behind)
+** Resource going up/down + reason

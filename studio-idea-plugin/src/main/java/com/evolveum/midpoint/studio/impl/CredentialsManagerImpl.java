@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import de.slackspace.openkeepass.KeePassDatabase;
 import de.slackspace.openkeepass.domain.*;
 import org.apache.commons.lang3.StringUtils;
@@ -35,27 +35,87 @@ public class CredentialsManagerImpl implements CredentialsManager {
 
         LOG.info("Initializing " + getClass().getSimpleName());
 
-        reinit();
+        refresh();
     }
 
     @Override
-    public void reinit() {
+    public void init(String masterPassword) {
+        if (StringUtils.isEmpty(masterPassword)) {
+            return;
+        }
+
+        MidPointSettings settings = MidPointManager.getInstance(project).getSettings();
+        if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
+            return;
+        }
+
+        MidPointUtils.setPassword(settings.getProjectId(), masterPassword);
+
+        refresh(true);
+    }
+
+    @Override
+    public void changeMasterPassword(String oldPassword, String newPassword) {
+        MidPointSettings settings = MidPointManager.getInstance(project).getSettings();
+        if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
+            throw new IllegalStateException("Midpoint setting unavailable");
+        }
+
+        if (StringUtils.isEmpty(newPassword)) {
+            throw new IllegalArgumentException("New password must not be empty");
+        }
+
+        File dbFile = getDatabaseFile();
+        if (!dbFile.exists()) {
+            this.database = createKeePassBuilder(null).build();
+
+            writeDatabase(newPassword);
+        } else {
+            database = KeePassDatabase.getInstance(dbFile).openDatabase(oldPassword);
+            writeDatabase(newPassword);
+        }
+
+        MidPointUtils.setPassword(settings.getProjectId(), newPassword);
+
+        refresh(true);
+    }
+
+    @Override
+    public boolean isAvailable() {
+        String masterPassword = getMasterPassword();
+        return StringUtils.isNoneEmpty(masterPassword);
+    }
+
+    @Override
+    public synchronized void refresh() {
+        refresh(true);
+    }
+
+    private void refresh(boolean create) {
+        LOG.debug("Refreshing credentials create=", create);
+
         String masterPassword = getMasterPassword();
         if (StringUtils.isEmpty(masterPassword)) {
             return;
         }
 
         File dbFile = getDatabaseFile();
-        if (!dbFile.exists()) {
+        if (!dbFile.exists() && create) {
             this.database = createKeePassBuilder(null).build();
-            writeDatabase(database);
+            writeDatabase();
         }
 
-        database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
+        if (dbFile.exists()) {
+            try {
+                database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
+            } catch (Exception ex) {
+                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't open credentials database with master password", ex);
+            }
+        }
     }
 
     @Override
-    public List<Credentials> list() {
+    public synchronized List<Credentials> list() {
         Group group = getTopGroup();
         if (group == null) {
             return new ArrayList<>();
@@ -70,7 +130,9 @@ public class CredentialsManagerImpl implements CredentialsManager {
     }
 
     @Override
-    public String add(Credentials credentials) {
+    public synchronized String add(Credentials credentials) {
+        LOG.debug("Adding credentials ", credentials);
+
         Group group = getTopGroup();
         if (group == null) {
             return null;
@@ -90,13 +152,15 @@ public class CredentialsManagerImpl implements CredentialsManager {
 
         group.getEntries().add(entry);
 
-        writeDatabase(database);
+        writeDatabase();
 
         return entry.getTitle();
     }
 
     @Override
-    public boolean delete(String key) {
+    public synchronized boolean delete(String key) {
+        LOG.debug("Deleting credentials with key ", key);
+
         Group group = getTopGroup();
         if (group == null) {
             return false;
@@ -108,13 +172,13 @@ public class CredentialsManagerImpl implements CredentialsManager {
         }
 
         boolean deleted = group.getEntries().remove(entry);
-        writeDatabase(database);
+        writeDatabase();
 
         return deleted;
     }
 
     @Override
-    public Credentials get(String key) {
+    public synchronized Credentials get(String key) {
         Group group = getTopGroup();
         if (group == null) {
             return null;
@@ -149,16 +213,22 @@ public class CredentialsManagerImpl implements CredentialsManager {
         return new File(basePath, CREDENTIALS_FILE_NAME);
     }
 
-    private synchronized void writeDatabase(KeePassFile kpFile) {
-        File file = getDatabaseFile();
-
+    private synchronized void writeDatabase() {
         String masterPassword = getMasterPassword();
 
+        writeDatabase(masterPassword);
+    }
+
+    private synchronized void writeDatabase(String masterPassword) {
+        File file = getDatabaseFile();
+
         try (OutputStream os = new FileOutputStream(file)) {
-            KeePassDatabase.write(kpFile, masterPassword, os);
+            KeePassDatabase.write(database, masterPassword, os);
         } catch (IOException ex) {
-            // todo handle exception correctly
+            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't write credentials", ex);
         }
+
+        refresh(false);
     }
 
     private String getMasterPassword() {
