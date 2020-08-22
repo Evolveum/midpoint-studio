@@ -124,7 +124,7 @@
         <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.trace.MPTraceFileTypeFactory"/>
 
         <!--        <toolWindow id="NodesToolWindow"-->
-        <!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
+        <!--                    factoryClass="com.evolveum.midpoint.studio.ui.metrics.NodesToolWindowFactory"/>-->
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
@@ -140,7 +140,7 @@
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
-        <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.metrics.MetricsEditorProvider"/>
 
 
         <diff.lang.DiffIgnoredRangeProvider
@@ -232,7 +232,27 @@
                 text="Test Action"
                 icon="AllIcons.Debugger.Db_set_breakpoint"/>
 
+        <!-- METRICS -->
+
+        <action id="MidPoint.Action.EnvironmentMetrics"
+                class="com.evolveum.midpoint.studio.action.metrics.EnvironmentMetricsAction"
+                text="Environment Metrics"/>
+
+        <action id="MidPoint.Action.CustomMetrics"
+                class="com.evolveum.midpoint.studio.action.metrics.CustomMetricsAction"
+                text="Custom Metrics"/>
+
         <!-- GROUPS -->
+
+        <group id="MidPoint.Group.Metrics"
+               text="Metrics"
+               popup="true"
+               icon="AllIcons.Actions.Profile">
+
+            <reference ref="MidPoint.Action.EnvironmentMetrics"/>
+            <reference ref="MidPoint.Action.CustomMetrics"/>
+
+        </group>
 
         <group id="MidPoint.Group.Menu">
 
@@ -339,6 +359,8 @@
                     icon="AllIcons.Actions.Profile"/>-->
 
             <reference ref="MidPoint.Action.TestConnection"/>
+
+            <reference ref="MidPoint.Group.Metrics"/>
 
             <reference ref="MidPoint.Action.Documentation"/>
 

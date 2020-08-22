@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.profiler;
+package com.evolveum.midpoint.studio.ui.metrics;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -16,12 +16,13 @@ import java.beans.PropertyChangeListener;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ProfilingEditor implements FileEditor, PossiblyDumbAware {
+public class MetricsEditor implements FileEditor, PossiblyDumbAware {
 
     private Project project;
-    private ProfilingPanel panel = new ProfilingPanel();
 
-    public ProfilingEditor(@NotNull Project project) {
+    private MetricsPanel panel = new MetricsPanel();
+
+    public MetricsEditor(@NotNull Project project) {
         this.project = project;
     }
 
@@ -40,7 +41,7 @@ public class ProfilingEditor implements FileEditor, PossiblyDumbAware {
     @NotNull
     @Override
     public String getName() {
-        return "Profiling";
+        return "Metrics";
     }
 
     @Override
