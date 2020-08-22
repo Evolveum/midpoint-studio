@@ -56,6 +56,8 @@ public class OpNodeDetailsPanel extends OpNodeTreeViewPanel {
 
     @Override
     void updateModel(OpNode node) {
+        super.updateModel(node);
+
         Node result;
         Node trace;
 

@@ -36,13 +36,11 @@ public class ItemConsolidationOverviewProvider implements OverviewProvider<ItemC
                 initialState.setSelectedIndex(index);
                 ItemDeltaTypeNode resultingDeltaNode = ItemDeltaTypeNode
                         .create("Resulting delta", trace.getResultingDelta().get(0), false, root);
-                initialState.addExpandedPath(root, resultingDeltaNode);
                 resultingDeltaNode.setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
 
                 for (int i = 1; i < trace.getResultingDelta().size(); i++) {
                     ItemDeltaTypeNode resultingDeltaNodeNext = ItemDeltaTypeNode
                             .create("Resulting delta (" + (i+1) + ")", trace.getResultingDelta().get(i), false, root);
-                    initialState.addExpandedPath(root, resultingDeltaNodeNext);
                     resultingDeltaNodeNext.setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
                 }
             }

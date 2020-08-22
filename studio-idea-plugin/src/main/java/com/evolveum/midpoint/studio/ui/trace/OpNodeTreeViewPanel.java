@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.trace.Format;
+import com.evolveum.midpoint.studio.impl.trace.FormattingContext;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.entry.Node;
@@ -57,6 +58,8 @@ public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
 
     private JBTextArea variablesValue;
 
+    private OpNode currentOpNode;
+
     public OpNodeTreeViewPanel(@NotNull Project project) {
         initLayout();
         updateModel(null);
@@ -70,18 +73,20 @@ public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
         });
     }
 
-    abstract void updateModel(OpNode node);
+    void updateModel(OpNode node) {
+        this.currentOpNode = node;
+    }
 
     private void nodeChange(OpNode node) {
         updateModel(node);
     }
 
-    void applySelection(Node obj) {
+    void applySelection(Node<?> obj) {
         if (obj == null) {
             variablesValue.setText(null);
         } else {
             Format format = variablesDisplayAs.getFormat();
-            String text = format.format(obj.getObject());
+            String text = format.format(obj.getObject(), new FormattingContext(currentOpNode));
             variablesValue.setText(text);
             variablesValue.setCaretPosition(0);
         }

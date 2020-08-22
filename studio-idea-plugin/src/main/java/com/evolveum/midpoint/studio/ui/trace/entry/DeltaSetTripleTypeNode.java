@@ -5,6 +5,8 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.DeltaSetTripleType;
 import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
 
+import java.util.List;
+
 public class DeltaSetTripleTypeNode extends Node<DeltaSetTripleType> {
 
     public DeltaSetTripleTypeNode(String label, DeltaSetTripleType triple) throws SchemaException {
@@ -20,15 +22,16 @@ public class DeltaSetTripleTypeNode extends Node<DeltaSetTripleType> {
         DeltaSetTripleType triple = getUserObject();
 
         if (triple != null) {
-            for (Object plus : triple.getPlus()) {
-                PrismValueNode.create("Plus", plus, this);
-            }
-            for (Object minus : triple.getMinus()) {
-                PrismValueNode.create("Minus", minus, this);
-            }
-            for (Object zero : triple.getZero()) {
-                PrismValueNode.create("Zero", zero, this);
-            }
+            createNodesForValues(triple.getPlus(), "Plus");
+            createNodesForValues(triple.getMinus(), "Minus");
+            createNodesForValues(triple.getZero(), "Zero");
+        }
+    }
+
+    private void createNodesForValues(List<Object> values, String label) throws SchemaException {
+        int index = 1;
+        for (Object value : values) {
+            PrismValueNode.create(label + " #" + (index++), value, this);
         }
     }
 

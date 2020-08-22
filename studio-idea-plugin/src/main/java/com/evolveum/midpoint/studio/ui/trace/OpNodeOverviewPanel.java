@@ -25,6 +25,8 @@ public class OpNodeOverviewPanel extends OpNodeTreeViewPanel {
     @Override
     void updateModel(OpNode node) {
 
+        super.updateModel(node);
+
         ViewingState initialState = new ViewingState();
 
         DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();

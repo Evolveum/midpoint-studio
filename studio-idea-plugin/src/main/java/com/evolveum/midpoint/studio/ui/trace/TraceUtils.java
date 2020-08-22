@@ -215,4 +215,9 @@ public class TraceUtils {
 //
 //        return false;
     }
+
+    // TODO move to better place + implement correctly
+    public static String getTypeName(ObjectDeltaType delta) {
+        return delta != null && delta.getObjectType() != null ? delta.getObjectType().getLocalPart() : "object";
+    }
 }
