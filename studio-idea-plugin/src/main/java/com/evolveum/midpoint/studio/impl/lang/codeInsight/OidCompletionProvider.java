@@ -48,14 +48,15 @@ public class OidCompletionProvider extends CompletionProvider<CompletionParamete
         PsiElement element = parameters.getPosition();
 
         if (isItObjectTypeOidAttribute(element)) {
-            result.addElement(MidPointUtils.buildLookupElement("Random OID", UUID.randomUUID().toString(), "", 100));
+            result.addElement(MidPointUtils.buildLookupElement("Random OID", UUID.randomUUID().toString(), "", 110));
+            return;
         }
 
         List<OidNameValue> oids = ObjectFileBasedIndexImpl.getAllOidNames(parameters.getEditor().getProject());
         Collections.sort(oids, (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getName(), o2.getName()));
 
         if (!oids.isEmpty()) {
-            oids.forEach(o -> result.addElement(MidPointUtils.buildLookupElement(o.getName(), o.getOid(), "", 110)));
+            oids.forEach(o -> result.addElement(MidPointUtils.buildLookupElement(o.getName(), o.getOid(), "", 100)));
         }
     }
 
