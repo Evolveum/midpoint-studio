@@ -4,6 +4,7 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.scale.JBUIScale;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.knowm.xchart.XChartPanel;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
@@ -16,13 +17,18 @@ import java.awt.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ChartPanel extends JPanel {
+public class ChartPanel extends BorderLayoutPanel {
+
+    private static final int CHART_HEIGHT = 200;
 
     public ChartPanel() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+//        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setAlignmentX(Component.LEFT_ALIGNMENT);
 
         initLayout();
+
+        setOpaque(true);
+        setBackground(Color.RED);
     }
 
     private void initLayout() {
@@ -31,11 +37,12 @@ public class ChartPanel extends JPanel {
         label.setFont(JBUI.Fonts.label().biggerOn(2.0f).asBold());
         label.setBorder(JBUI.Borders.emptyBottom(5));
 
-        add(label);
+        add(label, BorderLayout.NORTH);
 
-        final XYChart chart = new XYChartBuilder().width(600).height(200).xAxisTitle("X").yAxisTitle("Y").build();
+        final XYChart chart = new XYChartBuilder().width(600).height(CHART_HEIGHT).xAxisTitle("X").yAxisTitle("Y").build();
 
         // Customize Chart
+        chart.getStyler().setChartBackgroundColor(JBUI.CurrentTheme.DefaultTabs.background());
         chart.getStyler().setLegendVisible(false);
         chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Area);
 
@@ -46,8 +53,8 @@ public class ChartPanel extends JPanel {
 
         XChartPanel chartPanel = new XChartPanel(chart);
         chartPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        chartPanel.setMaximumSize(new Dimension(5000, 200));
+        chartPanel.setMaximumSize(new Dimension(10000, 200));
 
-        add(chartPanel);
+        add(chartPanel, BorderLayout.CENTER);
     }
 }

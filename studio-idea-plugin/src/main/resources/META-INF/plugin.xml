@@ -60,6 +60,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
 
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.metrics.MetricsServiceImpl"
+                        serviceInterface="com.evolveum.midpoint.studio.impl.metrics.MetricsService"/>
+
         <projectConfigurable parentId="language" instance="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
                              id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable" displayName="MidPoint"
                              nonDefaultProject="true"/>

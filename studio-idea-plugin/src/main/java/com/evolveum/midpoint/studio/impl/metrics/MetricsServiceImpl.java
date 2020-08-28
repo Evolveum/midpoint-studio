@@ -1,36 +1,36 @@
 package com.evolveum.midpoint.studio.impl.metrics;
 
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
-import com.intellij.openapi.components.BaseComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MetricsManagerImpl implements MetricsManager, BaseComponent {
+public class MetricsServiceImpl implements MetricsService, Disposable {
 
     private Project project;
 
     private Map<UUID, MetricsSession> sessions = new HashMap<>();
 
-    public MetricsManagerImpl(@NotNull Project project) {
+    public MetricsServiceImpl(@NotNull Project project) {
         this.project = project;
+
+        init();
     }
 
-    @Override
-    public void initComponent() {
+    private void init() {
         // todo implement
     }
 
     @Override
-    public void disposeComponent() {
+    public void dispose() {
         for (MetricsSession session : sessions.values()) {
             if (session instanceof Disposable) {
                 ((Disposable) session).dispose();
@@ -44,11 +44,13 @@ public class MetricsManagerImpl implements MetricsManager, BaseComponent {
     }
 
     @Override
-    public MetricsSession createSession() {
-        EnvironmentManager envManager = EnvironmentManager.getInstance(project);
-        Environment env = envManager.getSelected();
+    public MetricsSession createSession(Environment environment) {
+        return createSession(environment, null);
+    }
 
-        return new InMemoryMetricsSession(UUID.randomUUID(), env, project);
+    @Override
+    public MetricsSession createSession(Environment environment, List<String> urls) {
+        return new InMemoryMetricsSession(project, UUID.randomUUID(), environment, urls);
     }
 
     @Override

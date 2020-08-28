@@ -20,11 +20,13 @@ import java.util.concurrent.Future;
  */
 public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
+    private Project project;
+
     private UUID id;
 
     private Environment environment;
 
-    private Project project;
+    private List<String> urls;
 
     private List<Node> nodes = new ArrayList<>();
 
@@ -32,10 +34,12 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
     private Map<MetricsWorker, Future> workers = new HashMap();
 
-    public InMemoryMetricsSession(@NotNull UUID id, @NotNull Environment environment, @NotNull Project project) {
+    public InMemoryMetricsSession(@NotNull Project project, @NotNull UUID id, @NotNull Environment environment, List<String> urls) {
+        this.project = project;
+
         this.id = id;
         this.environment = environment;
-        this.project = project;
+        this.urls = urls;
     }
 
     public void dispose() {
@@ -57,6 +61,8 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
         try {
             MidPointManager mm = MidPointManager.getInstance(project);
             Service client = MidPointUtils.buildRestClient(environment, mm);
+
+            // todo if urls != null setup node list from them
 
             List<NodeType> nodes = client.search(NodeType.class).list();
 
