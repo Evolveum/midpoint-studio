@@ -1,6 +1,8 @@
 package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.client.api.ClientException;
+import com.evolveum.midpoint.client.api.MessageListener;
+import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
@@ -8,6 +10,7 @@ import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
@@ -21,6 +24,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
@@ -510,5 +514,32 @@ public class MidPointUtils {
         }
 
         return false;
+    }
+
+    public static Service buildRestClient(Environment environment, MidPointManager midPointManager)
+            throws Exception {
+        ServiceFactory factory = new ServiceFactory();
+        factory
+                .url(environment.getUrl())
+                .username(environment.getUsername())
+                .password(environment.getPassword())
+                .proxyServer(environment.getProxyServerHost())
+                .proxyServerPort(environment.getProxyServerPort())
+                .proxyServerType(environment.getProxyServerType())
+                .proxyUsername(environment.getProxyUsername())
+                .proxyPassword(environment.getProxyPassword())
+                .ignoreSSLErrors(environment.isIgnoreSslErrors());
+
+        factory.messageListener((messageId, type, message) -> {
+
+            ConsoleViewContentType contentType = ConsoleViewContentType.LOG_INFO_OUTPUT;
+            if (MessageListener.MessageType.FAULT == type) {
+                contentType = ConsoleViewContentType.LOG_ERROR_OUTPUT;
+            }
+
+            midPointManager.printToConsole(Service.class, message, null, contentType);
+        });
+
+        return factory.create();
     }
 }

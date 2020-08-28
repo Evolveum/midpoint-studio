@@ -14,12 +14,17 @@ import javax.ws.rs.core.Response;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ServiceImpl implements Service {
+public class ServiceImpl implements Service<WebClient> {
 
     private ServiceContext context;
 
     public ServiceImpl(ServiceContext context) {
         this.context = context;
+    }
+
+    @Override
+    public WebClient getClient() {
+        return context.getClient();
     }
 
     @Override

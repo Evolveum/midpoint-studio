@@ -13,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public class MetricsEditorProvider implements FileEditorProvider, DumbAware {
 
+    public static final String METRICS_FILE_EXTENSION = "mpmetrics";
+
     private static final String EDITOR_TYPE_ID = "metrics-ui";
 
     @Override

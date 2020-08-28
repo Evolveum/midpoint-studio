@@ -7,7 +7,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public interface Service {
+public interface Service<T> {
 
     <O extends ObjectType> SearchService<O> search(Class<O> type);
 
@@ -20,4 +20,6 @@ public interface Service {
     TestConnectionResult testConnection() throws AuthenticationException;
 
     PrismContext prismContext();
+
+    T getClient();
 }
