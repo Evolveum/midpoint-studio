@@ -1,11 +1,17 @@
 package com.evolveum.midpoint.studio.impl.metrics;
 
+import java.awt.*;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class Node {
 
     private int id;
+
+    private boolean enabled;
+
+    private Color color;
 
     private String oid;
 
@@ -50,5 +56,21 @@ public class Node {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 }

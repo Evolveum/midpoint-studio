@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.metrics;
 
+import com.evolveum.midpoint.studio.impl.metrics.MetricsService;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
@@ -19,6 +20,8 @@ import java.beans.PropertyChangeListener;
 public class MetricsEditor implements FileEditor, PossiblyDumbAware {
 
     private Project project;
+
+    private MetricsEditorState state;
 
     private MetricsPanel panel = new MetricsPanel();
 
@@ -46,7 +49,18 @@ public class MetricsEditor implements FileEditor, PossiblyDumbAware {
 
     @Override
     public void setState(@NotNull FileEditorState state) {
+        if (!(state instanceof MetricsEditorState)) {
+            throw new IllegalArgumentException("Invalid state: " + state);
+        }
 
+        this.state = (MetricsEditorState) state;
+
+        if (state == null) {
+            return;
+        }
+
+        MetricsService service = project.getService(MetricsService.class);
+        panel.init(service, this.state.getId());
     }
 
     @Override

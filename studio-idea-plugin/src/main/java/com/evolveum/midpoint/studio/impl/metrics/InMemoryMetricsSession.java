@@ -1,11 +1,21 @@
 package com.evolveum.midpoint.studio.impl.metrics;
 
 import com.evolveum.midpoint.client.api.Service;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.query.ObjectPaging;
+import com.evolveum.midpoint.prism.query.ObjectQuery;
+import com.evolveum.midpoint.prism.query.OrderDirection;
+import com.evolveum.midpoint.prism.query.QueryFactory;
+import com.evolveum.midpoint.schema.GetOperationOptions;
+import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.metrics.MetricsEditorProvider;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -58,32 +68,77 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
     @Override
     public void start() {
+        RunnableUtils.executeWithPluginClassloader(() -> {
+            try {
+                MidPointClient client = new MidPointClient(project, environment);
+                Service service = client.getClient();
+
+                List<Node> nodes = urls == null || urls.isEmpty() ? setupNodeListFromEnvironment(service) : setupNodeListFromUrls(service);
+
+                List<MetricsWorker> workers = new ArrayList<>();
+
+                for (Node node : nodes) {
+                    node.setColor(MidPointUtils.generateAwtColor());
+                    this.nodes.add(node);
+
+                    workers.add(new MetricsWorker(this, project, node));
+                }
+
+                for (MetricsWorker worker : workers) {
+                    Future future = ApplicationManager.getApplication().executeOnPooledThread(worker);
+                    this.workers.put(worker, future);
+                }
+            } catch (Exception ex) {
+                // todo proper error handling
+                throw new RuntimeException(ex);
+            }
+
+            return null;
+        });
+    }
+
+    private List<Node> setupNodeListFromUrls(Service client) {
+        List<Node> result = new ArrayList<>();
+
+        int i = 0;
+        for (String url : urls) {
+            Node n = new Node(i, UUID.randomUUID().toString(), url, url);
+            result.add(n);
+        }
+
+        return result;
+    }
+
+    private List<Node> setupNodeListFromEnvironment(Service client) {
+        List<Node> result = new ArrayList<>();
+
+        Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
+        options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
+
+        List<NodeType> nodes;
         try {
-            MidPointManager mm = MidPointManager.getInstance(project);
-            Service client = MidPointUtils.buildRestClient(environment, mm);
-
-            // todo if urls != null setup node list from them
-
-            List<NodeType> nodes = client.search(NodeType.class).list();
-
-            List<MetricsWorker> workers = new ArrayList<>();
-
-            int i = 0;
-            for (NodeType node : nodes) {
-                Node n = new Node(i, node.getOid(), node.getName().getOrig(), node.getUrl());
-                this.nodes.add(n);
-
-                workers.add(new MetricsWorker(this, project, n));
-            }
-
-            for (MetricsWorker worker : workers) {
-                Future future = ApplicationManager.getApplication().executeOnPooledThread(worker);
-                this.workers.put(worker, future);
-            }
+            nodes = client.search(NodeType.class).list(buildNodesQuery(client), options);
         } catch (Exception ex) {
-            // todo proper error handling
             throw new RuntimeException(ex);
         }
+
+        int i = 0;
+        for (NodeType node : nodes) {
+            Node n = new Node(i, node.getOid(), node.getName().getOrig(), node.getUrl());
+            result.add(n);
+        }
+
+        return result;
+    }
+
+    private ObjectQuery buildNodesQuery(Service service) {
+        PrismContext ctx = service.prismContext();
+        QueryFactory qf = ctx.queryFactory();
+
+        ItemPath path = ctx.path(ObjectType.F_NAME);
+        ObjectPaging paging = qf.createPaging(0, 100, path, OrderDirection.ASCENDING);
+
+        return qf.createQuery(null, paging);
     }
 
     @Override

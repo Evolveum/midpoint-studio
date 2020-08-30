@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.ui.metrics;
 
+import com.evolveum.midpoint.studio.impl.metrics.MetricsService;
+import com.evolveum.midpoint.studio.impl.metrics.MetricsSession;
+import com.evolveum.midpoint.studio.impl.metrics.Node;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
@@ -11,11 +14,15 @@ import com.intellij.util.ui.components.BorderLayoutPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class MetricsPanel extends BorderLayoutPanel {
+
+    private JLabel initializing;
 
     private JBSplitter splitter;
 
@@ -24,6 +31,20 @@ public class MetricsPanel extends BorderLayoutPanel {
     }
 
     private void initLayout() {
+        initializing = new JLabel("Initializing");
+        initializing.setAlignmentX(Component.CENTER_ALIGNMENT);
+        initializing.setAlignmentY(Component.CENTER_ALIGNMENT);
+        add(initializing, BorderLayout.CENTER);
+    }
+
+    public void init(MetricsService metricsService, UUID sessionId) {
+        MetricsSession session = metricsService.getSession(sessionId);
+        if (session == null) {
+            return;
+        }
+
+        remove(initializing);
+
         JComponent toolbar = initMainToolbar();
         add(toolbar, BorderLayout.NORTH);
 
@@ -36,13 +57,12 @@ public class MetricsPanel extends BorderLayoutPanel {
         vertical.setFirstComponent(horizontal);
         vertical.setSecondComponent(initChartsPanel());
 
-        horizontal.setFirstComponent(initNodesPanel());
+        horizontal.setFirstComponent(initNodesPanel(session.listNodes()));
         horizontal.setSecondComponent(initOptionsPanel());
-
     }
 
-    private JPanel initNodesPanel() {
-        NodesPanel panel = new NodesPanel();
+    private JPanel initNodesPanel(List<Node> nodes) {
+        NodesPanel panel = new NodesPanel(nodes);
         return new HeaderDecorator("Nodes", new JBScrollPane(panel));
     }
 

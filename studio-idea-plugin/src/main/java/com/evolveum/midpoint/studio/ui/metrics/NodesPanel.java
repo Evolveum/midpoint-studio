@@ -1,26 +1,31 @@
 package com.evolveum.midpoint.studio.ui.metrics;
 
-import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.impl.metrics.Node;
 import com.intellij.util.ui.JBUI;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class NodesPanel extends JPanel {
 
-    public NodesPanel() {
+    public NodesPanel(java.util.List<Node> nodes) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        initLayout();
+        initLayout(nodes);
     }
 
-    private void initLayout() {
-        add(new NodePanel(MidPointUtils.generateAwtColor(), "https://demo1.evolveum.com/midpoint"));
-        add(new NodePanel(MidPointUtils.generateAwtColor(), "https://demo2.evolveum.com/midpoint"));
-        add(new NodePanel(MidPointUtils.generateAwtColor(), "https://demo3.evolveum.com/midpoint"));
+    private void initLayout(List<Node> nodes) {
+        if (nodes == null) {
+            return;
+        }
+
+        for (Node node : nodes) {
+            add(new NodePanel(node.getColor(), node.getName()));
+        }
     }
 
     private static class NodePanel extends JPanel {

@@ -260,4 +260,8 @@ public class MidPointClient {
     public TestConnectionResult testConnection() throws AuthenticationException {
         return client.testConnection();
     }
+
+    public Service getClient() {
+        return client;
+    }
 }
