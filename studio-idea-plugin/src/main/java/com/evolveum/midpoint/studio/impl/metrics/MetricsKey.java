@@ -5,21 +5,21 @@ package com.evolveum.midpoint.studio.impl.metrics;
  */
 public enum MetricsKey {
 
-    SYSTEM_CPU_USAGE("system.cpu.usage", "CPU Usage", MetricsCategory.SYSTEM),
+    SYSTEM_CPU_USAGE("system.cpu.usage", "System CPU Usage", MetricsCategory.SYSTEM),
 
-    PROCESS_CPU_USAGE("process.cpu.usage", "CPU Usage", MetricsCategory.PROCESS),
+    PROCESS_CPU_USAGE("process.cpu.usage", "Process CPU Usage", MetricsCategory.PROCESS),
 
-    PROCESS_FILES_OPEN("process.files.open", "Files Open", MetricsCategory.PROCESS),
+    PROCESS_FILES_OPEN("process.files.open", "Process Files Open", MetricsCategory.PROCESS),
 
-    JVM_GC_PAUSE("jvm.gc.pause", "GC Pause", MetricsCategory.JVM),
+    JVM_GC_PAUSE("jvm.gc.pause", "JVM GC Pause", MetricsCategory.JVM),
 
-    JVM_MEMORY_COMMITED("jvm.memory.committed", "Memory Commited", MetricsCategory.JVM),
+    JVM_MEMORY_COMMITED("jvm.memory.committed", "JVM Memory Commited", MetricsCategory.JVM),
 
-    JVM_MEMORY_USED("jvm.memory.used", "Memory Used", MetricsCategory.JVM),
+    JVM_MEMORY_USED("jvm.memory.used", "JVM Memory Used", MetricsCategory.JVM),
 
-    JVM_THREADS_LIVE("jvm.threads.live", "Threads Live", MetricsCategory.JVM),
+    JVM_THREADS_LIVE("jvm.threads.live", "JVM Threads Live", MetricsCategory.JVM),
 
-    JVM_THREADS_PEAK("jvm.threads.peak", "Threads Peak", MetricsCategory.JVM);
+    JVM_THREADS_PEAK("jvm.threads.peak", "JVM Threads Peak", MetricsCategory.JVM);
 
     private String key;
 

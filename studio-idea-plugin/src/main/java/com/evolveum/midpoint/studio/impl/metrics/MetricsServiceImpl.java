@@ -50,7 +50,10 @@ public class MetricsServiceImpl implements MetricsService, Disposable {
 
     @Override
     public MetricsSession createSession(Environment environment, List<String> urls) {
-        return new InMemoryMetricsSession(project, UUID.randomUUID(), environment, urls);
+        MetricsSession session = new InMemoryMetricsSession(project, UUID.randomUUID(), environment, urls);
+        sessions.put(session.getId(), session);
+
+        return session;
     }
 
     @Override

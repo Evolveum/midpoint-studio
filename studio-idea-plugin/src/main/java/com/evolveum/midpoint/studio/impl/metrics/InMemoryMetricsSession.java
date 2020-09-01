@@ -44,6 +44,8 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
     private Map<MetricsWorker, Future> workers = new HashMap();
 
+    private MetricsSessionListener listener;
+
     public InMemoryMetricsSession(@NotNull Project project, @NotNull UUID id, @NotNull Environment environment, List<String> urls) {
         this.project = project;
 
@@ -82,6 +84,10 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
                     this.nodes.add(node);
 
                     workers.add(new MetricsWorker(this, project, node));
+                }
+
+                if (listener != null) {
+                    listener.nodesChanged();
                 }
 
                 for (MetricsWorker worker : workers) {
@@ -184,5 +190,15 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
     @Override
     public VirtualFile getFile() {
         return new LightVirtualFile(id.toString() + "." + MetricsEditorProvider.METRICS_FILE_EXTENSION);
+    }
+
+    @Override
+    public MetricsSessionListener getListener() {
+        return listener;
+    }
+
+    @Override
+    public void setListener(MetricsSessionListener listener) {
+        this.listener = listener;
     }
 }

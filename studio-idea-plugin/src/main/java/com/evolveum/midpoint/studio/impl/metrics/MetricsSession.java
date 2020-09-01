@@ -25,4 +25,8 @@ public interface MetricsSession {
     List<Node> listNodes();
 
     VirtualFile getFile();
+
+    void setListener(MetricsSessionListener listener);
+
+    MetricsSessionListener getListener();
 }

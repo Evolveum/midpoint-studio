@@ -28,6 +28,12 @@ public class NodesPanel extends JPanel {
         }
     }
 
+    public void refreshNodes(List<Node> nodes) {
+        removeAll();
+
+        initLayout(nodes);
+    }
+
     private static class NodePanel extends JPanel {
 
         private JCheckBox check;

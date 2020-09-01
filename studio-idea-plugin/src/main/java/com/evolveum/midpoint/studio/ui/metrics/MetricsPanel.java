@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui.metrics;
 
 import com.evolveum.midpoint.studio.impl.metrics.MetricsService;
 import com.evolveum.midpoint.studio.impl.metrics.MetricsSession;
+import com.evolveum.midpoint.studio.impl.metrics.MetricsSessionListener;
 import com.evolveum.midpoint.studio.impl.metrics.Node;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -20,11 +21,17 @@ import java.util.UUID;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MetricsPanel extends BorderLayoutPanel {
+public class MetricsPanel extends BorderLayoutPanel implements MetricsSessionListener {
 
     private JLabel initializing;
 
     private JBSplitter splitter;
+
+    private NodesPanel nodesPanel;
+
+    private ChartsPanel chartsPanel;
+
+    private MetricsSession session;
 
     public MetricsPanel() {
         initLayout();
@@ -38,10 +45,12 @@ public class MetricsPanel extends BorderLayoutPanel {
     }
 
     public void init(MetricsService metricsService, UUID sessionId) {
-        MetricsSession session = metricsService.getSession(sessionId);
+        session = metricsService.getSession(sessionId);
         if (session == null) {
             return;
         }
+
+        session.setListener(this);
 
         remove(initializing);
 
@@ -62,18 +71,18 @@ public class MetricsPanel extends BorderLayoutPanel {
     }
 
     private JPanel initNodesPanel(List<Node> nodes) {
-        NodesPanel panel = new NodesPanel(nodes);
-        return new HeaderDecorator("Nodes", new JBScrollPane(panel));
+        nodesPanel = new NodesPanel(nodes);
+        return new HeaderDecorator("Nodes", new JBScrollPane(nodesPanel));
     }
 
     private JPanel initOptionsPanel() {
         OptionsPanel panel = new OptionsPanel();
-        return new HeaderDecorator("Metrics", new JScrollPane(panel));
+        return new HeaderDecorator("Metrics", new JBScrollPane(panel));
     }
 
     private JPanel initChartsPanel() {
-        ChartsPanel panel = new ChartsPanel();
-        return new HeaderDecorator(" ", panel);
+        chartsPanel = new ChartsPanel();
+        return new HeaderDecorator(" ", chartsPanel);
     }
 
     private JComponent initMainToolbar() {
@@ -90,6 +99,20 @@ public class MetricsPanel extends BorderLayoutPanel {
     }
 
     public void startClicked(AnActionEvent evt) {
+
+    }
+
+    @Override
+    public void nodesChanged() {
+        if (nodesPanel == null || session == null) {
+            return;
+        }
+
+        nodesPanel.refreshNodes(session.listNodes());
+    }
+
+    @Override
+    public void dataPointsChanged() {
 
     }
 }
