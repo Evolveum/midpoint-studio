@@ -62,7 +62,20 @@ public class MappingEvaluationOverviewProvider implements OverviewProvider<Mappi
         if (Boolean.TRUE.equals(trace.isTimeConstraintValid()) && trace.getNextRecomputeTime() == null) {
             return "OK";
         } else {
-            return "Validity: " + trace.isTimeConstraintValid() + ", next recompute: " + trace.getNextRecomputeTime();
+            StringBuilder sb = new StringBuilder();
+            if (trace.isTimeConstraintValid() == null) {
+                sb.append("Validity unknown. ");
+            } else if (trace.isTimeConstraintValid()) {
+                sb.append("Valid. ");
+            } else {
+                sb.append("Invalid. ");
+            }
+            if (trace.getNextRecomputeTime() != null) {
+                sb.append("Next recompute: ").append(trace.getNextRecomputeTime());
+            } else {
+                sb.append("No next recompute.");
+            }
+            return sb.toString();
         }
     }
 }

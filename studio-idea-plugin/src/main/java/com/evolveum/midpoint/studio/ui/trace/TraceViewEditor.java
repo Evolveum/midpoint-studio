@@ -6,6 +6,7 @@ import com.evolveum.midpoint.schema.traces.OpNodeTreeBuilder;
 import com.evolveum.midpoint.schema.traces.TraceParser;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.trace.Options;
+import com.evolveum.midpoint.studio.impl.trace.StudioNameResolver;
 import com.evolveum.midpoint.studio.ui.trace.presentation.PresentationInitializer;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -54,6 +55,8 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
     private void initialize() {
         OpNode root;
 
+        long start = System.currentTimeMillis();
+        System.out.println("Initializing TraceViewEditor");
         try (InputStream is = file.getInputStream()) {
             String extension = file.getExtension();
             boolean isZip = extension != null && extension.equalsIgnoreCase("zip");
@@ -61,21 +64,30 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
             TraceParser parser = new TraceParser(prismContext);
             TracingOutputType tracingOutput = parser.parse(is, isZip, file.getCanonicalPath());
-            List<OpNode> data = new OpNodeTreeBuilder(prismContext).build(tracingOutput);
+            System.out.println("Initializing TraceViewEditor - parsed tracing output: " + (System.currentTimeMillis() - start) + " ms");
+
+            StudioNameResolver nameResolver = new StudioNameResolver(tracingOutput.getDictionary(), file);
+
+            List<OpNode> data = new OpNodeTreeBuilder(prismContext).build(tracingOutput, nameResolver);
             if (data.size() == 1) {
                 root = data.get(0);
             } else {
                 throw new IllegalStateException("Unexpected # of OpNode objects: " + data.size());
             }
+            System.out.println("Initializing TraceViewEditor - built op node tree: " + (System.currentTimeMillis() - start) + " ms");
+
         } catch (Exception ex) {
             MidPointManager mm = MidPointManager.getInstance(project);
             mm.printToConsole(TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
-
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't load file", ex);
+
+            ex.printStackTrace();
             root = null;
         }
 
-        PresentationInitializer.initialize(root);
+        if (root != null) {
+            PresentationInitializer.initialize(root);
+        }
         traceTreeViewPanel = new TraceTreeViewPanel(project, root);
         wrapper.setContent(traceTreeViewPanel);
     }

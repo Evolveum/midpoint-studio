@@ -27,7 +27,6 @@ public class ItemNode extends Node<Item<?, ?>> {
 
         if (item.getValues().size() > 1) {
             for (int i = 0; i < item.getValues().size(); i++) {
-                int index = i;
                 PrismValueNode.create("#" + i, item.getValues().get(i), this);
             }
         } else if (item.getValues().size() == 1) {

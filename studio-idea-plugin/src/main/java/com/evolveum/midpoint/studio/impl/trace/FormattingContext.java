@@ -2,23 +2,17 @@ package com.evolveum.midpoint.studio.impl.trace;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
-import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.PrimitiveXNode;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceDictionaryEntryType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceDictionaryType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TracingOutputType;
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
-import org.apache.commons.collections4.CollectionUtils;
 
 import javax.xml.namespace.QName;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -61,35 +55,19 @@ public class FormattingContext {
         }
     }
 
-    private static class NameResolver {
-
-        Map<String, Set<String>> objectMap = new HashMap<>();
+    // FIXME ugly hack
+    private static class NameResolver extends StudioNameResolver {
 
         public NameResolver(TraceDictionaryType dictionary) {
-            for (TraceDictionaryEntryType entry : dictionary.getEntry()) {
-                PrismObject<?> object = entry != null && entry.getObject() != null ? entry.getObject().getObject() : null;
-                if (object != null) {
-                    Set<String> names = objectMap.computeIfAbsent(object.getOid(), s -> new HashSet<>());
-                    CollectionUtils.addIgnoreNull(names, PolyString.getOrig(object.getName()));
-                }
-            }
+            super(dictionary, null); // todo file
         }
 
         public void resolve(PrismReferenceValue reference) {
             if (reference != null && reference.getOid() != null && reference.getTargetName() == null) {
-                String name = resolveOid(reference.getOid());
+                PolyStringType name = getName(reference.getOid());
                 if (name != null) {
-                    reference.setTargetName(PolyString.fromOrig(name));
+                    reference.setTargetName(name.toPolyString());
                 }
-            }
-        }
-
-        private String resolveOid(String oid) {
-            Set<String> names = objectMap.get(oid);
-            if (names == null || names.isEmpty()) {
-                return null;
-            } else {
-                return String.join(", ", names);
             }
         }
 
@@ -98,9 +76,9 @@ public class FormattingContext {
             if (oidNode instanceof PrimitiveXNode) {
                 String oid = ((PrimitiveXNode<?>) oidNode).getStringValue();
                 if (oid != null) {
-                    String name = resolveOid(oid);
+                    PolyStringType name = getName(oid);
                     if (name != null) {
-                        ((MapXNodeImpl) map).setComment(name);
+                        ((MapXNodeImpl) map).setComment(name.getOrig());
                     }
                 }
             }

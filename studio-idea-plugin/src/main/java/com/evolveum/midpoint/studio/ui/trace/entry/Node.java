@@ -83,19 +83,20 @@ public abstract class Node<T> extends AbstractMutableTreeTableNode {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(getLabel());
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Node)) {
+            return false;
+        }
+        Node<?> node = (Node<?>) o;
+        return Objects.equals(label, node.label) &&
+                Objects.equals(value, node.value);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        } else if (!(obj instanceof Node)) {
-            return false;
-        } else {
-            Node node = (Node) obj;
-            return Objects.equals(getLabel(), node.getLabel());
-        }
+    public int hashCode() {
+        return Objects.hash(label, value);
     }
 }

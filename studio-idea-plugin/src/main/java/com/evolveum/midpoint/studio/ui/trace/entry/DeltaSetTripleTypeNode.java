@@ -29,9 +29,8 @@ public class DeltaSetTripleTypeNode extends Node<DeltaSetTripleType> {
     }
 
     private void createNodesForValues(List<Object> values, String label) throws SchemaException {
-        int index = 1;
         for (Object value : values) {
-            PrismValueNode.create(label + " #" + (index++), value, this);
+            PrismValueNode.create(label, value, this);
         }
     }
 
