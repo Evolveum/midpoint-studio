@@ -40,6 +40,8 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
     private List<Node> nodes = new ArrayList<>();
 
+    private RefreshInterval interval;
+
     private Map<MetricsKey, List<DataPoint>> dataPoints = new HashMap<>();
 
     private Map<MetricsWorker, Future> workers = new HashMap();

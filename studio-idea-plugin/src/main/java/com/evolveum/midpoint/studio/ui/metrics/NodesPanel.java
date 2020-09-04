@@ -24,7 +24,9 @@ public class NodesPanel extends JPanel {
         }
 
         for (Node node : nodes) {
-            add(new NodePanel(node.getColor(), node.getName()));
+            // todo up status
+            
+            add(new NodePanel(node.getColor(), true, node.getName()));
         }
     }
 
@@ -36,9 +38,13 @@ public class NodesPanel extends JPanel {
 
     private static class NodePanel extends JPanel {
 
+        private static final Color UP = Color.BLACK;
+
+        private static final Color DOWN = Color.RED;
+
         private JCheckBox check;
 
-        public NodePanel(Color color, String text) {
+        public NodePanel(Color color, boolean up, String text) {
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
             setBorder(BorderFactory.createCompoundBorder(
@@ -61,6 +67,14 @@ public class NodesPanel extends JPanel {
 
         public String getText() {
             return check.getText();
+        }
+
+        public void setStatus(boolean up) {
+            check.setForeground(up ? UP : DOWN);
+        }
+
+        public boolean getStatus() {
+            return check.getForeground() == UP;
         }
     }
 }
