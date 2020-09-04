@@ -6,6 +6,7 @@ import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceManager;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
+import com.evolveum.midpoint.studio.ui.trace.presentation.AbstractOpNodePresentation;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -17,6 +18,8 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.decorator.AbstractHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jetbrains.annotations.NotNull;
@@ -77,7 +80,33 @@ public class TraceTreeViewPanel extends JPanel {
 
         traceTreeTableModel = new TraceTreeTableModel(columnDefinitions, rootOpNode);
 
-        traceTreeTable = MidPointUtils.createTable2(traceTreeTableModel, MidPointUtils.createTableColumnModel(columnDefinitions), true);
+        traceTreeTable = MidPointUtils.createTable2(traceTreeTableModel, MidPointUtils.createTableColumnModel(columnDefinitions), false);
+
+        traceTreeTable.addHighlighter(new AbstractHighlighter() {
+            @Override
+            protected Component doHighlight(Component component, ComponentAdapter adapter) {
+                int row = adapter.convertRowIndexToModel(adapter.row);
+                TreePath pathForRow = traceTreeTable.getPathForRow(row);
+                AbstractTraceTreeTableNode node = (AbstractTraceTreeTableNode) pathForRow.getLastPathComponent();
+                OpNode opNode = node.getUserObject();
+                if (opNode != null) {
+                    AbstractOpNodePresentation<?> presentation = (AbstractOpNodePresentation<?>) opNode.getPresentation(); // fixme hack
+                    if (adapter.isSelected()) {
+                        component.setBackground(traceTreeTable.getSelectionBackground());
+                    } else {
+                        Color backgroundColor = presentation.getBackgroundColor();
+                        if (backgroundColor != null) {
+                            component.setBackground(backgroundColor);
+                        } else {
+                            component.setBackground(traceTreeTable.getBackground());
+                        }
+                    }
+                }
+                return component;
+            }
+        });
+
+
         traceTreeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         traceTreeTable.addTreeSelectionListener(this::traceTreeTableSelectionChanged);
 

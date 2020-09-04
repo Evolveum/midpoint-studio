@@ -89,7 +89,15 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
         if (d == null || d.getUserObject() == null) {
             return null;
         } else {
-            return columnDefinitions.get(column).getValue().apply(d.getUserObject());
+            Object value = columnDefinitions.get(column).getValue().apply(d.getUserObject());
+            if (value == null) {
+                return "";
+            }
+            if (d.getUserObject().isDisabled() && !DisplayUtil.isHtml(value)) {
+                return DisplayUtil.makeDisabled(value);
+            } else {
+                return value;
+            }
         }
     }
 

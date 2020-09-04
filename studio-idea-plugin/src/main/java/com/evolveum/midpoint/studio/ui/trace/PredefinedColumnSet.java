@@ -16,7 +16,7 @@ import static com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn.ICF
 public enum PredefinedColumnSet {
 
     ALL("All", Arrays.asList(TraceTreeViewColumn.values())),
-    FUNCTIONAL_VIEW("Functional view", Arrays.asList(OPERATION_NAME, CLOCKWORK_STATE, EXECUTION_WAVE, STATUS, MAP_COUNT, REPO_W_COUNT, ICF_W_COUNT)),
+    FUNCTIONAL_VIEW("Functional view", Arrays.asList(OPERATION_NAME, CLOCKWORK_STATE, EXECUTION_WAVE, STATUS, MAP_COUNT, REPO_W_COUNT, ICF_R_COUNT, ICF_W_COUNT)),
     NONE("None", Collections.emptySet());
 
     private final String name;

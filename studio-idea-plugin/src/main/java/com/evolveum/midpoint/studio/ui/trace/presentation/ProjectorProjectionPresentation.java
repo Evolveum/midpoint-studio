@@ -13,8 +13,4 @@ public class ProjectorProjectionPresentation extends AbstractOpNodePresentation<
         super(node);
     }
 
-    @Override
-    public String getLabel() {
-        return "Projector projection: " + getParameter(node.getResult(), "resourceName");
-    }
 }

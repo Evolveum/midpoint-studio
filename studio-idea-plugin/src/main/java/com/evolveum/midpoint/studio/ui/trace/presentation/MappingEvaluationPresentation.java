@@ -11,8 +11,4 @@ public class MappingEvaluationPresentation extends AbstractOpNodePresentation<Ma
         super(node);
     }
 
-    @Override
-    public String getLabel() {
-        return "Mapping: " + node.getMappingInfo();
-    }
 }

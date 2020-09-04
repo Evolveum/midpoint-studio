@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace.presentation;
 
-import com.evolveum.midpoint.schema.traces.operations.FocusChangeExecutionOpNode;
+import com.evolveum.midpoint.schema.traces.operations.FullProjectionLoadOpNode;
 import com.evolveum.midpoint.studio.ui.trace.Colors;
 
 import java.awt.*;
@@ -8,16 +8,16 @@ import java.awt.*;
 /**
  *
  */
-public class FocusChangeExecutionPresentation extends AbstractOpNodePresentation<FocusChangeExecutionOpNode> {
+public class FullProjectionLoadPresentation extends AbstractOpNodePresentation<FullProjectionLoadOpNode> {
 
-    public FocusChangeExecutionPresentation(FocusChangeExecutionOpNode node) {
+    public FullProjectionLoadPresentation(FullProjectionLoadOpNode node) {
         super(node);
     }
 
     @Override
     public Color getBackgroundColor() {
         if (!node.isDisabled()) {
-            return Colors.OUTPUT_1_COLOR;
+            return Colors.INPUT_2_COLOR;
         } else {
             return null;
         }
