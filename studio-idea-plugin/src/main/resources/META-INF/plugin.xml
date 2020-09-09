@@ -123,9 +123,6 @@
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
         <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.trace.MPTraceFileTypeFactory"/>
 
-        <!--        <toolWindow id="NodesToolWindow"-->
-        <!--                    factoryClass="com.evolveum.midpoint.studio.ui.profiler.NodesToolWindowFactory"/>-->
-
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->

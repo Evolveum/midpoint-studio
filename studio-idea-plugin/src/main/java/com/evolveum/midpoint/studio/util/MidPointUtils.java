@@ -98,6 +98,7 @@ public class MidPointUtils {
     public static LookupElementBuilder buildLookupElement(String name, String oid, String source) {
         return LookupElementBuilder.create(oid)
                 .withTailText("(" + name + ")")
+                .withLookupString(name)
                 .withTypeText(source)
                 .withBoldness(true)
                 .withCaseSensitivity(false);

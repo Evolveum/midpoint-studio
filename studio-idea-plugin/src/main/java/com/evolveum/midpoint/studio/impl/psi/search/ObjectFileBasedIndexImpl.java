@@ -76,6 +76,7 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
             out.writeUTF(value.getOid());
             out.writeUTF(value.getName());
             out.writeUTF(value.getType().name());
+            out.writeUTF(value.getSource());
         }
 
         @Override
@@ -83,8 +84,9 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
             String oid = in.readUTF();
             String name = in.readUTF();
             String type = in.readUTF();
+            String source = in.readUTF();
 
-            return new OidNameValue(oid, name, ObjectTypes.valueOf(type));
+            return new OidNameValue(oid, name, ObjectTypes.valueOf(type), source);
         }
     };
 
@@ -109,7 +111,11 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
                             continue;
                         }
 
-                        map.put(o.getOid(), new OidNameValue(o.getOid(), o.getName() != null ? o.getName().getOrig() : null, ObjectTypes.getObjectType(o.getCompileTimeClass())));
+                        map.put(o.getOid(), new OidNameValue(
+                                o.getOid(),
+                                o.getName() != null ? o.getName().getOrig() : null,
+                                ObjectTypes.getObjectType(o.getCompileTimeClass()),
+                                inputData.getFileName()));
                     }
                 } catch (Exception ex) {
                     LOG.trace("Couldn't parse file, reason: " + ex.getMessage());
@@ -163,7 +169,7 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
 
     @Override
     public int getVersion() {
-        return 0;
+        return 1;
     }
 
     private static GlobalSearchScope createFilter(final Project project) {

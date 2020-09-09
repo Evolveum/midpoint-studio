@@ -56,7 +56,7 @@ public class OidCompletionProvider extends CompletionProvider<CompletionParamete
         Collections.sort(oids, (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getName(), o2.getName()));
 
         if (!oids.isEmpty()) {
-            oids.forEach(o -> result.addElement(MidPointUtils.buildLookupElement(o.getName(), o.getOid(), "", 100)));
+            oids.forEach(o -> result.addElement(MidPointUtils.buildLookupElement(o.getName(), o.getOid(), o.getSource(), 100)));
         }
     }
 
