@@ -26,3 +26,8 @@
 ** Nodes in cluster available
 ** Livesync task token parsing and validation (for example whether task is not too much behind)
 ** Resource going up/down + reason
+* Midpoint client
+** midpoint client uploading/downloading stuff should be probably dumb by default
+** no parsing before upload/after download, just upload/download whatever comes, so that user can be sure nothing was messed up on client side
+** there could be some parsing checks afterwards if needed/wanted
+** better API for idea should be created, right now MidPointClient/Service api are just botched together like there's no tomorrow
