@@ -1,11 +1,14 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ScriptExpressionEvaluatorType;
 import com.intellij.lang.injection.MultiHostInjector;
 import com.intellij.lang.injection.MultiHostRegistrar;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLanguageInjectionHost;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlTagValue;
 import com.intellij.psi.xml.XmlText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.groovy.GroovyLanguage;
@@ -25,9 +28,22 @@ public class MidPointMultiHostInjector implements MultiHostInjector {
         }
 
         XmlText text = (XmlText) context;
-        XmlTag tag = text.getParentTag();
-        if (tag == null || !"code".equalsIgnoreCase(tag.getName())) {
+        XmlTag code = text.getParentTag();
+        if (code == null || !"code".equalsIgnoreCase(code.getName())) {
             return;
+        }
+
+        XmlTag script = code.getParentTag();
+        if (script == null || !"script".equalsIgnoreCase(code.getName())) {
+            return;
+        }
+
+        XmlTag language = MidPointUtils.findSubTag(script, ScriptExpressionEvaluatorType.F_LANGUAGE);
+        if (language != null && language.getValue() != null) {
+            XmlTagValue value = language.getValue();
+            if (!"groovy".equals(value.getText())) {
+                return;
+            }
         }
 
         registrar
