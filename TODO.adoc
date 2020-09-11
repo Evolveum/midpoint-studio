@@ -31,3 +31,4 @@
 ** no parsing before upload/after download, just upload/download whatever comes, so that user can be sure nothing was messed up on client side
 ** there could be some parsing checks afterwards if needed/wanted
 ** better API for idea should be created, right now MidPointClient/Service api are just botched together like there's no tomorrow
+* how to import existing eclipse projects?
