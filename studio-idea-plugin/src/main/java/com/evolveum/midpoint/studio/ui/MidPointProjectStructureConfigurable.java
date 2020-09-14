@@ -129,38 +129,38 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 //        });
     }
 
-    private void validateModule() {
-        ModuleManagerEx mm = ModuleManagerEx.getInstanceEx(project);
-        Module[] modules = mm.getModules();
-
-        if (modules == null || modules.length == 0) {
-            return;
-        }
-
-        Module module = modules[0];
-        if (MidPointModuleBuilder.MODULE_NAME.equals(module.getModuleTypeName())) {
-            return;
-        }
-
-        new MidPointModuleBuilder().createProjectFiles(project, project.getBaseDir());
-        
-//        modules[0].setModuleType(MidPointModuleBuilder.MODULE_NAME);
-
-//        MavenProjectsManager.getInstance(project).addManagedFiles(Arrays.asList(project.getBaseDir().findChild("pom.xml")));
-    }
-
-    private void validateFacet() {
-        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-        ModuleManagerEx mm = ModuleManagerEx.getInstanceEx(project);
-        Module[] modules = mm.getModules();
-        if (modules == null || modules.length == 0) {
-            return;
-        }
-        FacetManager fm = FacetManager.getInstance(modules[0]);
-        if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) == null) {
-            fm.addFacet(facetType, facetType.getDefaultFacetName(), null);
-        }
-    }
+//    private void validateModule() {
+//        ModuleManagerEx mm = ModuleManagerEx.getInstanceEx(project);
+//        Module[] modules = mm.getModules();
+//
+//        if (modules == null || modules.length == 0) {
+//            return;
+//        }
+//
+//        Module module = modules[0];
+//        if (MidPointModuleBuilder.MODULE_NAME.equals(module.getModuleTypeName())) {
+//            return;
+//        }
+//
+//        new MidPointModuleBuilder().createProjectFiles(project, project.getBaseDir());
+//
+////        modules[0].setModuleType(MidPointModuleBuilder.MODULE_NAME);
+//
+////        MavenProjectsManager.getInstance(project).addManagedFiles(Arrays.asList(project.getBaseDir().findChild("pom.xml")));
+//    }
+//
+//    private void validateFacet() {
+//        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
+//        ModuleManagerEx mm = ModuleManagerEx.getInstanceEx(project);
+//        Module[] modules = mm.getModules();
+//        if (modules == null || modules.length == 0) {
+//            return;
+//        }
+//        FacetManager fm = FacetManager.getInstance(modules[0]);
+//        if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) == null) {
+//            fm.addFacet(facetType, facetType.getDefaultFacetName(), null);
+//        }
+//    }
 
     @Override
     public ActionCallback navigateTo(@Nullable Place place, boolean requestFocus) {
