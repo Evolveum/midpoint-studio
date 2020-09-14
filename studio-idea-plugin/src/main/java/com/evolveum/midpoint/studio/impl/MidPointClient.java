@@ -37,7 +37,7 @@ import java.util.List;
 
 /**
  * TODO CLEAN THIS WHOLE CLASS AND UNDERLYING CLIENT API, IT'S A MESS.
- *
+ * <p>
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointClient {
@@ -161,7 +161,7 @@ public class MidPointClient {
         MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
     }
 
-    public <O extends ObjectType> String getRaw(Class<O> type, String oid, SearchOptions opts) {
+    public <O extends ObjectType> String getRaw(Class<O> type, String oid, SearchOptions opts) throws ObjectNotFoundException {
         printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
 
         String result = null;
@@ -171,7 +171,7 @@ public class MidPointClient {
             result = client.oid(ObjectTypes.getObjectType(type).getClassDefinition(), oid).getRaw(options);
 
             printToConsole("Get done");
-        } catch (Exception ex) {
+        } catch (AuthenticationException ex) {
             handleGenericException("Error occurred while searching objects", ex);
         }
 

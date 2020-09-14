@@ -4,6 +4,7 @@ import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.intellij.icons.AllIcons;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -24,11 +25,13 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * todo maybe create another refresh (non-raw) action
+ * <p>
  * Created by Viliam Repan (lazyman).
  */
 public class RefreshAction extends BackgroundAction {
 
-    public static final String NOTIFICATION_KEY = "";
+    public static final String NOTIFICATION_KEY = "Refresh Action";
 
     public RefreshAction() {
         super("Refresh From Server", AllIcons.Actions.BuildLoadChanges, "Refresh From Server");
@@ -37,6 +40,10 @@ public class RefreshAction extends BackgroundAction {
     @Override
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
+
+        if (evt.getProject() == null) {
+            return;
+        }
 
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
                 (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
@@ -51,6 +58,10 @@ public class RefreshAction extends BackgroundAction {
 
     @Override
     protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
+        if (evt.getProject() == null) {
+            return;
+        }
+
         EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
@@ -83,13 +94,14 @@ public class RefreshAction extends BackgroundAction {
     }
 
     private void processFiles(AnActionEvent evt, ProgressIndicator indicator, Environment env, List<VirtualFile> files) {
+        MidPointManager mm = MidPointManager.getInstance(evt.getProject());
+
         MidPointClient client = new MidPointClient(evt.getProject(), env);
 
         int skipped = 0;
         int missing = 0;
-        int ambiguous = 0;
-        int reloaded = 0;
-        int failed = 0;
+        AtomicInteger reloaded = new AtomicInteger(0);
+        AtomicInteger failed = new AtomicInteger(0);
 
         int current = 0;
         for (VirtualFile file : files) {
@@ -103,39 +115,49 @@ public class RefreshAction extends BackgroundAction {
             List<MidPointObject> objects = new ArrayList<>();
 
             RunnableUtils.runWriteActionAndWait(() -> {
+                file.refresh(false, false);
+
                 List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
                 objects.addAll(obj);
             });
 
             if (objects.isEmpty()) {
+                skipped++;
+                mm.printToConsole(RefreshAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
                 continue;
             }
 
             List<String> newObjects = new ArrayList<>();
-            try {
-                for (MidPointObject object : objects) {
-                    if (isCanceled()) {
-                        break;
-                    }
 
-                    // todo maybe create another refresh (non-raw) action
+            for (MidPointObject object : objects) {
+                if (isCanceled()) {
+                    break;
+                }
+
+                try {
                     String newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
                     newObjects.add(newObject);
+                } catch (ObjectNotFoundException ex) {
+                    missing++;
+                    mm.printToConsole(RefreshAction.class, "Couldn't find object "
+                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+                } catch (Exception ex) {
+                    failed.incrementAndGet();
+                    mm.printToConsole(RefreshAction.class, "Error getting object"
+                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
-            } catch (Exception ex) {
-                // todo handle
-                ex.printStackTrace();
             }
 
             RunnableUtils.runWriteActionAndWait(() -> {
                 try (Writer writer = new OutputStreamWriter(file.getOutputStream(this), file.getCharset())) {
-                    if (newObjects.size() > 1) {
+                    if (objects.size() > 1) {
                         writer.write(MidPointObjectUtils.OBJECTS_XML_PREFIX);
                         writer.write('\n');
                     }
 
                     for (String obj : newObjects) {
                         writer.write(obj);
+                        reloaded.incrementAndGet();
                     }
 
                     if (objects.size() > 1) {
@@ -143,10 +165,20 @@ public class RefreshAction extends BackgroundAction {
                         writer.write('\n');
                     }
                 } catch (IOException ex) {
-                    // todo handle
-                    ex.printStackTrace();
+                    failed.incrementAndGet();
+
+                    mm.printToConsole(RefreshAction.class, "Failed to write refreshed file " + file.getPath(), ex);
                 }
             });
         }
+
+        NotificationType type = missing > 0 || failed.get() > 0 || skipped > 0 ? NotificationType.WARNING : NotificationType.INFORMATION;
+
+        StringBuilder msg = new StringBuilder();
+        msg.append("Reloaded ").append(reloaded.get()).append(" objects<br/>");
+        msg.append("Missing ").append(missing).append(" objects<br/>");
+        msg.append("Failed to reload ").append(failed.get()).append(" objects<br/>");
+        msg.append("Skipped ").append(skipped).append(" files");
+        MidPointUtils.publishNotification(NOTIFICATION_KEY, "Refresh Action", msg.toString(), type);
     }
 }
