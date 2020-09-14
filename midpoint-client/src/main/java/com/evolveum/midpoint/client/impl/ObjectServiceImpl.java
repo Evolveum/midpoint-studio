@@ -3,6 +3,9 @@ package com.evolveum.midpoint.client.impl;
 import com.evolveum.midpoint.client.api.AuthenticationException;
 import com.evolveum.midpoint.client.api.DeleteOptions;
 import com.evolveum.midpoint.client.api.ObjectService;
+import com.evolveum.midpoint.prism.ParsingContext;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.SelectorOptions;
@@ -10,6 +13,7 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
@@ -18,6 +22,7 @@ import org.apache.commons.lang.Validate;
 import org.apache.cxf.jaxrs.client.WebClient;
 
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -38,10 +43,35 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
     @Override
     public O get() throws ObjectNotFoundException, AuthenticationException {
         return get(null);
+
     }
 
     @Override
     public O get(Collection<SelectorOptions<GetOperationOptions>> options) throws ObjectNotFoundException, AuthenticationException {
+        String obj = getRaw(options);
+        try {
+            ParsingContext parsingContext = prismContext().createParsingContextForCompatibilityMode();
+            PrismParser parser = prismContext().parserFor(obj).language(PrismContext.LANG_XML).context(parsingContext);
+
+            return (O) parser.parse().asObjectable();
+        } catch (SchemaException | IOException ex) {
+            throw new RuntimeException("Couldn't parse object, reason: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public String getRaw() throws ObjectNotFoundException, AuthenticationException {
+        return getRaw(null);
+    }
+
+    @Override
+    public String getRaw(Collection<SelectorOptions<GetOperationOptions>> options) throws ObjectNotFoundException, AuthenticationException {
+        return executeGet(options);
+    }
+
+    private String executeGet(Collection<SelectorOptions<GetOperationOptions>> options)
+            throws ObjectNotFoundException, AuthenticationException {
+
         if (options == null) {
             options = new ArrayList<>();
         }
@@ -68,7 +98,7 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
             throw new SystemException("Unknown response status: " + response.getStatus());
         }
 
-        return response.readEntity(type());
+        return response.readEntity(String.class);
     }
 
     @Override

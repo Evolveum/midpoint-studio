@@ -185,6 +185,11 @@
                 text="Upload/Execute (stop on error)"
                 icon="/icons/uploadExecuteStop.svg"/>
 
+        <action id="MidPoint.Action.Refresh"
+                class="com.evolveum.midpoint.studio.action.transfer.RefreshAction"
+                text="Refresh From Server"
+                icon="AllIcons.Actions.BuildLoadChanges"/>
+
         <!-- SERVER SIDE -->
 
         <action id="MidPoint.Action.UploadRecompute"
@@ -301,6 +306,10 @@
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>
             <reference ref="MidPoint.Action.UploadTestResource"/>
+
+            <separator/>
+
+            <reference ref="MidPoint.Action.Refresh"/>
 
             <separator/>
 

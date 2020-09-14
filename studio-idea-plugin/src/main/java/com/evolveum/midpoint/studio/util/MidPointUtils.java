@@ -22,6 +22,7 @@ import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
 import com.intellij.ide.DataManager;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
@@ -36,6 +37,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -511,5 +514,28 @@ public class MidPointUtils {
         }
 
         return false;
+    }
+
+    public static List<VirtualFile> filterXmlFiles(VirtualFile[] files) {
+        List<VirtualFile> result = new ArrayList<>();
+        if (files == null) {
+            return result;
+        }
+
+        for (VirtualFile selected : files) {
+            if (selected.isDirectory()) {
+                VfsUtilCore.iterateChildrenRecursively(
+                        selected,
+                        file -> XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
+                        file -> {
+                            result.add(file);
+                            return true;
+                        });
+            } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
+                result.add(selected);
+            }
+        }
+
+        return result;
     }
 }

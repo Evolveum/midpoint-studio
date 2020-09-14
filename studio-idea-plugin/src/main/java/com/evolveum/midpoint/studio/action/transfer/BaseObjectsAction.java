@@ -16,7 +16,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +24,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,8 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class BaseObjectsAction extends BackgroundAction {
 
     private static final Logger LOG = Logger.getInstance(BaseObjectsAction.class);
-
-    private static final String XML_EXTENSION = "xml";
 
     private final String notificationKey;
 
@@ -94,24 +90,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             return;
         }
 
-        List<VirtualFile> toProcess = new ArrayList<>();
-        for (VirtualFile selected : selectedFiles) {
-            if (isCanceled()) {
-                return;
-            }
-
-            if (selected.isDirectory()) {
-                VfsUtilCore.iterateChildrenRecursively(
-                        selected,
-                        file -> XML_EXTENSION.equalsIgnoreCase(file.getExtension()),
-                        file -> {
-                            toProcess.add(file);
-                            return true;
-                        });
-            } else if (XML_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
-                toProcess.add(selected);
-            }
-        }
+        List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {
             MidPointUtils.publishNotification(notificationKey, getTaskTitle(),

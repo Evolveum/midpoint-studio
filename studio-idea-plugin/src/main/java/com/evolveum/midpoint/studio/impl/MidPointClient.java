@@ -36,6 +36,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * TODO CLEAN THIS WHOLE CLASS AND UNDERLYING CLIENT API, IT'S A MESS.
+ *
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointClient {
@@ -157,6 +159,23 @@ public class MidPointClient {
 
     private void handleGenericException(String message, Exception ex) {
         MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
+    }
+
+    public <O extends ObjectType> String getRaw(Class<O> type, String oid, SearchOptions opts) {
+        printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
+
+        String result = null;
+        try {
+            Collection<SelectorOptions<GetOperationOptions>> options =
+                    SelectorOptions.createCollection(GetOperationOptions.createRaw());
+            result = client.oid(ObjectTypes.getObjectType(type).getClassDefinition(), oid).getRaw(options);
+
+            printToConsole("Get done");
+        } catch (Exception ex) {
+            handleGenericException("Error occurred while searching objects", ex);
+        }
+
+        return result;
     }
 
     public <O extends ObjectType> PrismObject<O> get(Class<O> type, String oid, SearchOptions opts) {

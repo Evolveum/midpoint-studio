@@ -19,6 +19,10 @@ public interface ObjectService<O extends ObjectType> {
 
     O get(Collection<SelectorOptions<GetOperationOptions>> options) throws ObjectNotFoundException, AuthenticationException;
 
+    String getRaw() throws ObjectNotFoundException, AuthenticationException;
+
+    String getRaw(Collection<SelectorOptions<GetOperationOptions>> options) throws ObjectNotFoundException, AuthenticationException;
+
     void modify(ObjectDelta<O> delta) throws CommonException;
 
     void delete() throws ObjectNotFoundException, AuthenticationException;
