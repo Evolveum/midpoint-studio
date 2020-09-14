@@ -8,12 +8,11 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLanguageInjectionHost;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.psi.xml.XmlTagValue;
 import com.intellij.psi.xml.XmlText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.groovy.GroovyLanguage;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,14 +33,13 @@ public class MidPointMultiHostInjector implements MultiHostInjector {
         }
 
         XmlTag script = code.getParentTag();
-        if (script == null || !"script".equalsIgnoreCase(code.getName())) {
+        if (script == null || !"script".equalsIgnoreCase(script.getName())) {
             return;
         }
 
         XmlTag language = MidPointUtils.findSubTag(script, ScriptExpressionEvaluatorType.F_LANGUAGE);
-        if (language != null && language.getValue() != null) {
-            XmlTagValue value = language.getValue();
-            if (!"groovy".equals(value.getText())) {
+        if (language != null) {
+            if (!"groovy".equals(language.getValue().getText())) {
                 return;
             }
         }
@@ -55,6 +53,6 @@ public class MidPointMultiHostInjector implements MultiHostInjector {
     @NotNull
     @Override
     public List<? extends Class<? extends PsiElement>> elementsToInjectIn() {
-        return Arrays.asList(XmlText.class);
+        return Collections.singletonList(XmlText.class);
     }
 }
