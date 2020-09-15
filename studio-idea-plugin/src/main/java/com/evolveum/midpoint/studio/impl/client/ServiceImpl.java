@@ -1,8 +1,8 @@
-package com.evolveum.midpoint.client.impl;
+package com.evolveum.midpoint.studio.impl.client;
 
-import com.evolveum.midpoint.client.api.*;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.BuildInformationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
@@ -33,12 +33,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public <O extends ObjectType> ObjectAddService<O> add(O object) {
-        return new ObjectAddServiceImpl<>(context, object);
-    }
-
-    @Override
-    public ObjectAddService addRaw(String object) {
+    public ObjectAddService add(MidPointObject object) {
         return new ObjectAddServiceImpl(context, object);
     }
 

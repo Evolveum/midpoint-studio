@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.client.impl;
+package com.evolveum.midpoint.studio.impl.client;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import org.apache.cxf.jaxrs.client.WebClient;

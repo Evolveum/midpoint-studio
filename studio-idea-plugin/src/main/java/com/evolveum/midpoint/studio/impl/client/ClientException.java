@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.client.api;
+package com.evolveum.midpoint.studio.impl.client;
 
 import com.evolveum.midpoint.schema.result.OperationResult;
 

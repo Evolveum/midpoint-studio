@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.client.api;
+package com.evolveum.midpoint.studio.impl.client;
 
 /**
  * Created by Viliam Repan (lazyman).

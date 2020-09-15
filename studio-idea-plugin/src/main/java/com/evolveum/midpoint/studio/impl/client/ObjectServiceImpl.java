@@ -1,8 +1,5 @@
-package com.evolveum.midpoint.client.impl;
+package com.evolveum.midpoint.studio.impl.client;
 
-import com.evolveum.midpoint.client.api.AuthenticationException;
-import com.evolveum.midpoint.client.api.DeleteOptions;
-import com.evolveum.midpoint.client.api.ObjectService;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;

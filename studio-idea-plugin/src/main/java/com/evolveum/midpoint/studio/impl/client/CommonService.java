@@ -1,7 +1,5 @@
-package com.evolveum.midpoint.client.impl;
+package com.evolveum.midpoint.studio.impl.client;
 
-import com.evolveum.midpoint.client.api.AuthenticationException;
-import com.evolveum.midpoint.client.api.ClientException;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;

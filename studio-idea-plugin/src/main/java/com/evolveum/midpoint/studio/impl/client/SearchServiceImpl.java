@@ -1,8 +1,5 @@
-package com.evolveum.midpoint.client.impl;
+package com.evolveum.midpoint.studio.impl.client;
 
-import com.evolveum.midpoint.client.api.AuthenticationException;
-import com.evolveum.midpoint.client.api.ClientException;
-import com.evolveum.midpoint.client.api.SearchService;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.QueryConverter;
 import com.evolveum.midpoint.schema.GetOperationOptions;

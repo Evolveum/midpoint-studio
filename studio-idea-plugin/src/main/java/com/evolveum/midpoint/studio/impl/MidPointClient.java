@@ -1,7 +1,5 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.client.api.*;
-import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
@@ -13,6 +11,7 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.impl.client.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -219,7 +218,7 @@ public class MidPointClient {
     public UploadResponse uploadRaw(MidPointObject obj, List<String> options) throws AuthenticationException {
         UploadResponse response = new UploadResponse();
 
-        String oid = client.addRaw(obj).execute(options);
+        String oid = client.add(obj).execute(options);
         response.setOid(oid);
 
         return response;
@@ -228,7 +227,14 @@ public class MidPointClient {
     public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, List<String> options) throws AuthenticationException {
         UploadResponse response = new UploadResponse();
 
-        String oid = client.add((ObjectType) obj.asObjectable()).execute(options);
+        String content = null; // todo serialize obj
+        MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(obj.getCompileTimeClass()), false);
+        object.setOid(obj.getOid());
+        if (obj.getName() != null) {
+            object.setName(obj.getName().getOrig());
+        }
+
+        String oid = client.add(object).execute(options);
         response.setOid(oid);
 
         return response;

@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.client.impl;
+package com.evolveum.midpoint.studio.impl.client;
 
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;

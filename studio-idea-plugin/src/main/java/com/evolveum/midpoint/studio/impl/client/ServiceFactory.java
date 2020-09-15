@@ -1,8 +1,5 @@
-package com.evolveum.midpoint.client.impl;
+package com.evolveum.midpoint.studio.impl.client;
 
-import com.evolveum.midpoint.client.api.MessageListener;
-import com.evolveum.midpoint.client.api.ProxyType;
-import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.common.rest.MidpointAbstractProvider;
 import com.evolveum.midpoint.prism.PrismContext;

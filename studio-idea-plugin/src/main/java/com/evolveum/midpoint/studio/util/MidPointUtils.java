@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.client.api.ClientException;
-import com.evolveum.midpoint.client.impl.ServiceFactory;
+import com.evolveum.midpoint.studio.impl.client.ClientException;
+import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
