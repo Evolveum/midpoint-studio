@@ -109,7 +109,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         JComponent resultsPanel = initResultsPanel();
 
         OnePixelSplitter split = new OnePixelSplitter(false);
-        split.setProportion(0.3f);
+        split.setProportion(0.4f);
         split.setFirstComponent(queryPanel);
         split.setSecondComponent(resultsPanel);
 
