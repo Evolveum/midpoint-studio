@@ -9,7 +9,7 @@ import java.util.List;
  */
 public interface ObjectAddService<O extends ObjectType> {
 
-    String add() throws AuthenticationException;
+    String execute() throws AuthenticationException;
 
-    String add(List<String> opts) throws AuthenticationException;
+    String execute(List<String> opts) throws AuthenticationException;
 }

@@ -15,6 +15,8 @@ public interface Service {
 
     <O extends ObjectType> ObjectAddService<O> add(O object);
 
+    ObjectAddService addRaw(MidPointObject object);
+
     ExecuteScriptResponseType execute(Object input) throws AuthenticationException;
 
     TestConnectionResult testConnection() throws AuthenticationException;

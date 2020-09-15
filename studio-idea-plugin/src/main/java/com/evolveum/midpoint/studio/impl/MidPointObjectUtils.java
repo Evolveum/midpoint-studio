@@ -1,16 +1,15 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.browse.Constants;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,10 +24,25 @@ public class MidPointObjectUtils {
 
     public static final String OBJECTS_XML_SUFFIX = "</objects>\n";
 
+    public static List<MidPointObject> parseText(String text, String notificationKey) {
+        return parseText(text, null, notificationKey);
+    }
+
     public static List<MidPointObject> parseProjectFile(VirtualFile file, String notificationKey) {
+        try (InputStream is = file.getInputStream()) {
+            String text = IOUtils.toString(is, file.getCharset());
+            return parseText(text, file, notificationKey);
+        } catch (IOException ex) {
+            MidPointUtils.publishExceptionNotification(notificationKey,
+                    "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
+            return null;
+        }
+    }
+
+    private static List<MidPointObject> parseText(String text, VirtualFile file, String notificationKey) {
         try {
-            Document doc = parseProjectFileToDOM(file, notificationKey);
-            List<MidPointObject> objects = parseDocument(doc, file, file.getPath());
+            Document doc = DOMUtil.parseDocument(text);
+            List<MidPointObject> objects = parseDocument(doc, file, file != null ? file.getPath() : null);
 
             if (objects.size() == 1) {
                 objects.get(0).setWholeFile(true);
@@ -41,6 +55,7 @@ public class MidPointObjectUtils {
 
             return new ArrayList<>();
         }
+
     }
 
     public static Document parseProjectFileToDOM(VirtualFile file, String notificationKey) {

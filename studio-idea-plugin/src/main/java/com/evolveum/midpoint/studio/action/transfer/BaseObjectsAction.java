@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
@@ -147,10 +146,10 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         int problemCount = 0;
 
         try {
-            List<PrismObject<?>> objects = client.parseObjects(text);
+            List<MidPointObject> objects = MidPointObjectUtils.parseText(text, notificationKey);
 
             int i = 0;
-            for (PrismObject obj : objects) {
+            for (MidPointObject obj : objects) {
                 i++;
 
                 indicator.setFraction(i / objects.size());
@@ -179,7 +178,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         return problemCount;
     }
 
-    public abstract <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, PrismObject<O> obj) throws Exception;
+    public abstract <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception;
 
     protected ProcessObjectResult validateOperationResult(AnActionEvent evt, OperationResult result, String operation, String objectName) {
         boolean problem = result != null && !result.isSuccess();

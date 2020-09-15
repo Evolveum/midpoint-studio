@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.studio.impl.browse.BulkActionGenerator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -18,19 +18,17 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 public class UploadRecompute extends UploadExecute {
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, PrismObject<O> obj) throws Exception {
+    public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception {
         ProcessObjectResult por = super.processObject(evt, client, obj);
         OperationResult uploadResult = por.result();
 
         if (uploadResult != null && !uploadResult.isSuccess()) {
-            printProblem(evt.getProject(), "Skippint recomputation for " + MidPointUtils.getName(obj) + ", there was a problem with upload");
+            printProblem(evt.getProject(), "Skipping recomputation for " + obj.getName() + ", there was a problem with upload");
 
             return por;
         }
 
-        if (!MidPointUtils.isAssignableFrom(ObjectTypes.FOCUS_TYPE,
-                ObjectTypes.getObjectType(obj.getCompileTimeClass()))) {
-
+        if (!MidPointUtils.isAssignableFrom(ObjectTypes.FOCUS_TYPE, obj.getType())) {
             return por;
         }
 
@@ -42,6 +40,6 @@ public class UploadRecompute extends UploadExecute {
         OperationResultType res = response.getResult();
         OperationResult executionResult = OperationResult.createOperationResult(res);
 
-        return validateOperationResult(evt, executionResult, "recompute", MidPointUtils.getName(obj));
+        return validateOperationResult(evt, executionResult, "recompute", obj.getName());
     }
 }

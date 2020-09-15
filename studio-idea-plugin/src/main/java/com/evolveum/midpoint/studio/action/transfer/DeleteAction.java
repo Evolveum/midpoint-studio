@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.client.api.DeleteOptions;
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
@@ -16,8 +16,8 @@ public class DeleteAction extends BaseObjectsAction {
     }
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, PrismObject<O> obj) throws Exception {
-        client.delete(obj.getCompileTimeClass(), obj.getOid(), createOptions());
+    public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception {
+        client.delete(obj.getType().getClassDefinition(), obj.getOid(), createOptions());
 
         return new ProcessObjectResult(null);
     }

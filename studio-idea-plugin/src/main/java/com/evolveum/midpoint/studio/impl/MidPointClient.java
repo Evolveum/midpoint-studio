@@ -216,10 +216,19 @@ public class MidPointClient {
         return client.execute(object);
     }
 
+    public UploadResponse uploadRaw(MidPointObject obj, List<String> options) throws AuthenticationException {
+        UploadResponse response = new UploadResponse();
+
+        String oid = client.addRaw(obj).execute(options);
+        response.setOid(oid);
+
+        return response;
+    }
+
     public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, List<String> options) throws AuthenticationException {
         UploadResponse response = new UploadResponse();
 
-        String oid = client.add((ObjectType) obj.asObjectable()).add(options);
+        String oid = client.add((ObjectType) obj.asObjectable()).execute(options);
         response.setOid(oid);
 
         return response;

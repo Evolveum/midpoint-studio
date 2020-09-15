@@ -38,6 +38,11 @@ public class ServiceImpl implements Service {
     }
 
     @Override
+    public ObjectAddService addRaw(String object) {
+        return new ObjectAddServiceImpl(context, object);
+    }
+
+    @Override
     public PrismContext prismContext() {
         return context.getPrismContext();
     }
