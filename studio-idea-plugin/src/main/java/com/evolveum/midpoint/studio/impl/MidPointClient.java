@@ -1,9 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.prism.ParsingContext;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismParser;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.RetrieveOption;
@@ -227,15 +224,21 @@ public class MidPointClient {
     public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, List<String> options) throws AuthenticationException {
         UploadResponse response = new UploadResponse();
 
-        String content = null; // todo serialize obj
-        MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(obj.getCompileTimeClass()), false);
-        object.setOid(obj.getOid());
-        if (obj.getName() != null) {
-            object.setName(obj.getName().getOrig());
-        }
+        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML);
 
-        String oid = client.add(object).execute(options);
-        response.setOid(oid);
+        try {
+            String content = serializer.serialize(obj.getValue(), obj.getElementName().asSingleName());
+            MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(obj.getCompileTimeClass()), false);
+            object.setOid(obj.getOid());
+            if (obj.getName() != null) {
+                object.setName(obj.getName().getOrig());
+            }
+
+            String oid = client.add(object).execute(options);
+            response.setOid(oid);
+        } catch (SchemaException ex) {
+            throw new RuntimeException("Couldn't serialize prism object, reason: " + ex.getMessage(), ex);
+        }
 
         return response;
     }
