@@ -176,35 +176,39 @@ public class ServiceFactory {
         client.accept(MediaType.APPLICATION_XML);
         client.type(MediaType.APPLICATION_XML);
 
-        ClientConfiguration config = WebClient.getConfig(client);
-
         LoggingFeature logging = new LoggingFeature();
-        if (messageListener != null) {
-            logging.setSender(event -> {
-                String msg = LogMessageFormatter.format(event);
+        logging.setSender(event -> {
+            if (messageListener == null) {
+                return;
+            }
 
-                MessageListener.MessageType type;
-                switch (event.getType()) {
-                    case REQ_IN:
-                    case REQ_OUT:
-                        type = MessageListener.MessageType.REQUEST;
-                        break;
-                    case RESP_IN:
-                    case RESP_OUT:
-                        type = MessageListener.MessageType.RESPONSE;
-                        break;
-                    case FAULT_IN:
-                    case FAULT_OUT:
-                        type = MessageListener.MessageType.FAULT;
-                        break;
-                    default:
-                        type = null;
-                }
+            String msg = LogMessageFormatter.format(event);
 
-                messageListener.handleMessage(event.getMessageId(), type, msg);
-            });
+            MessageListener.MessageType type;
+            switch (event.getType()) {
+                case REQ_IN:
+                case REQ_OUT:
+                    type = MessageListener.MessageType.REQUEST;
+                    break;
+                case RESP_IN:
+                case RESP_OUT:
+                    type = MessageListener.MessageType.RESPONSE;
+                    break;
+                case FAULT_IN:
+                case FAULT_OUT:
+                    type = MessageListener.MessageType.FAULT;
+                    break;
+                default:
+                    type = null;
+            }
+
+            messageListener.handleMessage(event.getMessageId(), type, msg);
+        });
+
+        ClientConfiguration config = WebClient.getConfig(client);
+        if (config.getBus().getFeatures().isEmpty()) {
+            config.getBus().setFeatures(Arrays.asList(logging));
         }
-        logging.initialize(config.getEndpoint(), config.getBus());
 
         ServiceContext context = new ServiceContext(DEFAULT_PRISM_CONTEXT, client);
 

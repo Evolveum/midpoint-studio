@@ -50,8 +50,13 @@ public class MidPointObjectUtils {
 
             return objects;
         } catch (RuntimeException ex) {
-            MidPointUtils.publishExceptionNotification(notificationKey,
-                    "Couldn't parse file " + (file != null ? file.getName() : null), ex);
+            String msg;
+            if (file != null) {
+                msg = "Couldn't parse file " + file.getName();
+            } else {
+                msg = "Couldn't parse text '" + StringUtils.abbreviate(text, 10) +  "'";
+            }
+            MidPointUtils.publishExceptionNotification(notificationKey, msg, ex);
 
             return new ArrayList<>();
         }

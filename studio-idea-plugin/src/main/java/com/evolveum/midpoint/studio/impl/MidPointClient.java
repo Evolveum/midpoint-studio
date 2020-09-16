@@ -216,6 +216,9 @@ public class MidPointClient {
         UploadResponse response = new UploadResponse();
 
         String oid = client.add(obj).execute(options);
+        if (oid == null && obj.getOid() != null) {
+            oid = obj.getOid();
+        }
         response.setOid(oid);
 
         return response;

@@ -53,6 +53,10 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
 
         validateResponse(response);
 
+        if (!response.hasEntity()) {
+            return null;
+        }
+
         return response.readEntity(String.class);
     }
 }
