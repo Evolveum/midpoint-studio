@@ -188,7 +188,7 @@
         <action id="MidPoint.Action.Refresh"
                 class="com.evolveum.midpoint.studio.action.transfer.RefreshAction"
                 text="Refresh From Server"
-                icon="AllIcons.Actions.BuildLoadChanges"/>
+                icon="/icons/buildLoadChanges.svg"/>
 
         <!-- SERVER SIDE -->
 
