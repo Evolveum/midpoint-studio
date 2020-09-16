@@ -14,11 +14,6 @@ plugins {
 apply from: "$rootDir/$project.name/verifier.gradle"
 
 dependencies {
-    compile(project(':midpoint-client')) {
-        exclude group: "org.slf4j"
-        exclude group: "ch.qos.logback"
-    }
-
     compile("com.evolveum.midpoint.model:model-common:$midpointVersion") {
         transitive = false
     }
@@ -47,6 +42,33 @@ dependencies {
     compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
     compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
     compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
+
+    // dependencies form midpoint-client, todo cleanup
+
+    compile("com.evolveum.midpoint.model:model-impl:$midpointVersion") {
+        transitive = false
+    }
+    compile("com.evolveum.midpoint.infra:common:$midpointVersion") {
+        exclude group: "org.springframework"
+        exclude group: "net.sf.jasperreports"
+        exclude group: "org.apache.cxf", module: "cxf-rt-wsdl"
+        exclude group: "org.slf4j"
+        exclude group: "ch.qos.logback"
+    }
+    compile("org.springframework:spring-core:$springVersion") {
+        transitive = false
+    }
+
+    // from model client
+    compile "org.apache.cxf:cxf-core:$cxfVersion"
+    compile "org.apache.cxf:cxf-rt-frontend-jaxrs:$cxfVersion"
+    compile "org.apache.cxf:cxf-rt-rs-extension-providers:$cxfVersion"
+    compile "org.apache.cxf:cxf-rt-rs-client:$cxfVersion"
+    compile "org.apache.cxf:cxf-rt-features-logging:$cxfVersion"
+    compile("org.apache.cxf:cxf-rt-wsdl:$cxfVersion") {
+        transitive = false
+    }
+    compile "stax:stax:$staxVersion"
 }
 
 intellij {

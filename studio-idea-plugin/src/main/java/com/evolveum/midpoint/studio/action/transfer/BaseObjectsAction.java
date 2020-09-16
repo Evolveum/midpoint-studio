@@ -130,7 +130,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                     int problems = processText(evt, mm, indicator, client, xml);
                     count.addAndGet(problems);
                 } catch (IOException ex) {
-                    publishException(mm, "Exception occurred when loading file " + file.getName(), ex);
+                    publishException(mm, "Exception occurred when loading file '" + file.getName() + "'", ex);
                 }
             });
         }
@@ -166,7 +166,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 } catch (Exception ex) {
                     problemCount++;
 
-                    publishException(mm, "Exception occurred during " + operation + " of " + obj.getName() + "(" + obj.getOid() + ")", ex);
+                    publishException(mm, "Exception occurred during " + operation + " of '" + obj.getName() + "(" + obj.getOid() + ")'", ex);
                 }
             }
         } catch (Exception ex) {
@@ -214,7 +214,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     protected void printSuccess(Project project, String operation, String objectName) {
         MidPointManager mm = MidPointManager.getInstance(project);
 
-        mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " " + objectName + " finished");
+        mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " '" + objectName + "' finished");
     }
 
     protected String getOperation() {
