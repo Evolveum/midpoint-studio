@@ -55,7 +55,7 @@ public class ServiceImpl implements Service {
 
         OkHttpClient client = context.getClient();
         try (Response response = client.newCall(req).execute()) {
-            CommonService.validateResponse(response);
+            context.validateResponse(response);
 
             String body = response.body().string();
             PrismParser parser = context.getParser(body);
@@ -77,7 +77,7 @@ public class ServiceImpl implements Service {
 
         OkHttpClient client = context.getClient();
         try (Response response = client.newCall(req).execute()) {
-            CommonService.validateResponse(response);
+            context.validateResponse(response);
 
             String body = response.body().string();
             // body to NodeType

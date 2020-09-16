@@ -4,11 +4,16 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -34,29 +39,36 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
             opts = new ArrayList<>();
         }
 
-        StringBuilder query = new StringBuilder();
-        opts.forEach(o -> query.append("options=").append(o).append("&"));
+        Map<String, String> options = new HashMap<>();
+        opts.forEach(o -> options.put("options", o));
 
-        OkHttpClient client = client();
+        String path = "/" + ObjectTypes.getRestTypeFromClass(type());
 
-        Response response;
-        String path = ObjectTypes.getRestTypeFromClass(type());
+        Request.Builder builder;
         if (object.getOid() != null && StringUtils.isNotEmpty(object.getOid())) {
             path += "/" + object.getOid();
 
-            client = client.replacePath(REST_PREFIX + "/" + path).replaceQuery(query.toString());
-            response = client.put(object.getContent());
+            builder = context().build(path, options)
+                    .put(RequestBody.create(object.getContent(), ServiceContext.APPLICATION_XML));
         } else {
-            client = client.replacePath(REST_PREFIX + "/" + path).replaceQuery(query.toString());
-            response = client.post(object.getContent());
+            builder = context().build(path, options)
+                    .post(RequestBody.create(object.getContent(), ServiceContext.APPLICATION_XML));
         }
 
-        validateResponse(response);
+        Request req = builder.build();
 
-        if (!response.hasEntity()) {
-            return null;
+        OkHttpClient client = context().getClient();
+        try (okhttp3.Response response = client.newCall(req).execute()) {
+            validateResponse(response);
+
+            ResponseBody body = response.body();
+            if (body != null) {
+                return body.string();
+            }
+        } catch (IOException ex) {
+            // todo handle exception
+            ex.printStackTrace();
         }
-
-        return response.readEntity(String.class);
+        return null;
     }
 }

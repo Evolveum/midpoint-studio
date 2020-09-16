@@ -11,9 +11,7 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -23,6 +21,8 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -75,28 +75,29 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
         }
 
         // todo use options
-
-        GetOperationOptions rootOptions = SelectorOptions.findRootOptions(options);
-
-        String query = null;
-        if (GetOperationOptions.isRaw(rootOptions)) {
-            query = "options=raw";
-        }
-
-        OkHttpClient client = client();
-
-        String path = ObjectTypes.getRestTypeFromClass(type());
-        client.replacePath(REST_PREFIX + "/" + path + "/" + oid);
-
-        Response response = client.get();
-
-        validateResponseCode(response);
-
-        if (Response.Status.OK.getStatusCode() != response.getStatus()) {
-            throw new SystemException("Unknown response status: " + response.getStatus());
-        }
-
-        return response.readEntity(String.class);
+        // todo
+        return null;
+//        GetOperationOptions rootOptions = SelectorOptions.findRootOptions(options);
+//
+//        String query = null;
+//        if (GetOperationOptions.isRaw(rootOptions)) {
+//            query = "options=raw";
+//        }
+//
+//        OkHttpClient client = client();
+//
+//        String path = ObjectTypes.getRestTypeFromClass(type());
+//        client.replacePath(REST_PREFIX + "/" + path + "/" + oid);
+//
+//        Response response = client.get();
+//
+//        validateResponseCode(response);
+//
+//        if (Response.Status.OK.getStatusCode() != response.getStatus()) {
+//            throw new SystemException("Unknown response status: " + response.getStatus());
+//        }
+//
+//        return response.readEntity(String.class);
     }
 
     @Override
@@ -110,27 +111,30 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
     }
 
     @Override
-    public void delete(DeleteOptions options) throws ObjectNotFoundException, AuthenticationException {
-        if (options == null) {
-            options = new DeleteOptions();
+    public void delete(DeleteOptions opts) throws ObjectNotFoundException, AuthenticationException {
+        if (opts == null) {
+            opts = new DeleteOptions();
         }
 
-        String opts = null;
-        if (options.raw()) {
-            opts = "options=raw";
+        Map<String, String> options = new HashMap<>();
+        if (opts.raw()) {
+            options.put("options", "raw");
         }
 
         String path = ObjectTypes.getRestTypeFromClass(type());
-        Request.Builder builder = context().build("/" + path + "/" + oid, opts)
+
+        Request.Builder builder = context().build("/" + path + "/" + oid, options)
                 .delete();
 
         Request req = builder.build();
 
-        OkHttpClient client = getClient();
+        OkHttpClient client = context().getClient();
         try (okhttp3.Response response = client.newCall(req).execute()) {
             validateResponseCode(response);
-        } catch (Exception ex) {
-            // todo handle
+
+        } catch (IOException ex) {
+            // todo handle exception
+            ex.printStackTrace();
         }
     }
 
@@ -140,30 +144,32 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
             throw new IllegalStateException("Can't call testConnection operation on non ResourceType object");
         }
 
-        OkHttpClient client = client();
-
-        String path = ObjectTypes.getRestTypeFromClass(type());
-        client.replacePath(REST_PREFIX + "/" + path + "/" + oid + "/test");
-
-        Response response = client.post(null);
-
-        validateResponseCode(response);
-
-        if (Response.Status.OK.getStatusCode() != response.getStatus()) {
-            throw new SystemException("Unknown response status: " + response.getStatus());
-        }
-
-        OperationResultType res = response.readEntity(OperationResultType.class);
-        return res != null ? OperationResult.createOperationResult(res) : null;
+        return null;
+        // todo
+//        OkHttpClient client = client();
+//
+//        String path = ObjectTypes.getRestTypeFromClass(type());
+//        client.replacePath(REST_PREFIX + "/" + path + "/" + oid + "/test");
+//
+//        Response response = client.post(null);
+//
+//        validateResponseCode(response);
+//
+//        if (Response.Status.OK.getStatusCode() != response.getStatus()) {
+//            throw new SystemException("Unknown response status: " + response.getStatus());
+//        }
+//
+//        OperationResultType res = response.readEntity(OperationResultType.class);
+//        return res != null ? OperationResult.createOperationResult(res) : null;
     }
 
-    private void validateResponseCode(Response response) throws ObjectNotFoundException, AuthenticationException {
-        if (Response.Status.NOT_FOUND.getStatusCode() == response.getStatus()) {
+    private void validateResponseCode(okhttp3.Response response) throws ObjectNotFoundException, AuthenticationException {
+        if (Response.Status.NOT_FOUND.getStatusCode() == response.code()) {
             throw new ObjectNotFoundException("Cannot get object with oid '" + oid + "'. Object doesn't exist");
         }
 
-        if (Response.Status.UNAUTHORIZED.getStatusCode() == response.getStatus()) {
-            throw new AuthenticationException(response.getStatusInfo().getReasonPhrase());
+        if (Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
+            throw new AuthenticationException(Response.Status.fromStatusCode(response.code()).getReasonPhrase());
         }
     }
 }

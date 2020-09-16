@@ -4,10 +4,9 @@ import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismSerializer;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
+import okhttp3.*;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -70,5 +69,30 @@ public class ServiceContext {
     public PrismParser getParser(String entity) {
         ParsingContext parsingContext = prismContext.createParsingContextForCompatibilityMode();
         return prismContext.parserFor(entity).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
+    public void validateResponse(Response response) throws AuthenticationException {
+        int code = response.code();
+        String reason = javax.ws.rs.core.Response.Status.fromStatusCode(response.code()).getReasonPhrase();
+
+        if (javax.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
+            throw new AuthenticationException(reason);
+        }
+
+        if (!response.isSuccessful()) {
+            OperationResult result = null;
+            try {
+                ResponseBody body = response.body();
+                if (body != null) {
+                    PrismParser parser = getParser(body.string());
+
+                    OperationResultType resultType = parser.parseRealValue(OperationResultType.class);
+                    result = resultType != null ? OperationResult.createOperationResult(resultType) : null;
+                }
+            } catch (Exception ex) {
+            }
+
+            throw new ClientException("Unknown response status: " + code + ", reason: " + reason, result);
+        }
     }
 }

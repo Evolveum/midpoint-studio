@@ -1,12 +1,9 @@
 package com.evolveum.midpoint.studio.impl.client;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import okhttp3.OkHttpClient;
-
-import javax.ws.rs.core.Response;
+import okhttp3.Response;
 
 
 /**
@@ -39,22 +36,7 @@ public abstract class CommonService<O extends ObjectType> {
         return context.getClient();
     }
 
-    public static void validateResponse(okhttp3.Response response) throws AuthenticationException {
-        Response.StatusType info = response.getStatusInfo();
-
-        if (Response.Status.UNAUTHORIZED.getStatusCode() == info.getStatusCode()) {
-            throw new AuthenticationException(info.getReasonPhrase());
-        }
-
-        if (!Response.Status.Family.SUCCESSFUL.equals(info.getFamily())) {
-            OperationResult result = null;
-            try {
-                OperationResultType resultType = response.readEntity(OperationResultType.class);
-                result = resultType != null ? OperationResult.createOperationResult(resultType) : null;
-            } catch (Exception ex) {
-            }
-
-            throw new ClientException("Unknown response status: " + info.getStatusCode() + ", reason: " + info.getReasonPhrase(), result);
-        }
+    public void validateResponse(Response response) throws AuthenticationException {
+        context.validateResponse(response);
     }
 }

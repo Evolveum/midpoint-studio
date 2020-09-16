@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.impl.client;
 
 import com.evolveum.midpoint.common.LocalizationService;
-import com.evolveum.midpoint.common.rest.MidpointAbstractProvider;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
@@ -9,13 +8,11 @@ import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.CommonException;
-import com.evolveum.midpoint.util.exception.SystemException;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -188,18 +185,6 @@ public class ServiceFactory {
         ServiceContext context = new ServiceContext(url, DEFAULT_PRISM_CONTEXT, builder.build());
 
         return new ServiceImpl(context);
-    }
-
-    private MidpointAbstractProvider setupProvider(MidpointAbstractProvider provider, PrismContext prismContext) {
-
-        try {
-            FieldUtils.writeField(provider, "prismContext", prismContext, true);
-            FieldUtils.writeField(provider, "localizationService", new LocalizationServiceImpl(), true);
-        } catch (Exception ex) {
-            throw new SystemException(ex);
-        }
-
-        return provider;
     }
 
     private static class LocalizationServiceImpl implements LocalizationService {
