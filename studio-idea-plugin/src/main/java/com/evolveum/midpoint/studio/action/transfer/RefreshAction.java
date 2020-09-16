@@ -137,12 +137,18 @@ public class RefreshAction extends BackgroundAction {
                 try {
                     String newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
                     newObjects.add(newObject);
+
+                    reloaded.incrementAndGet();
                 } catch (ObjectNotFoundException ex) {
                     missing++;
+                    newObjects.add(object.getContent());
+
                     mm.printToConsole(RefreshAction.class, "Couldn't find object "
                             + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
+                    newObjects.add(object.getContent());
+
                     mm.printToConsole(RefreshAction.class, "Error getting object"
                             + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
@@ -157,7 +163,6 @@ public class RefreshAction extends BackgroundAction {
 
                     for (String obj : newObjects) {
                         writer.write(obj);
-                        reloaded.incrementAndGet();
                     }
 
                     if (objects.size() > 1) {
