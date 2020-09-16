@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
+import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -34,7 +35,7 @@ public class RefreshAction extends BackgroundAction {
     public static final String NOTIFICATION_KEY = "Refresh Action";
 
     public RefreshAction() {
-        super("Refresh From Server", AllIcons.Actions.BuildLoadChanges, "Refresh From Server");
+        super("Refresh From Server", MidPointIcons.ACTION_BUILD_LOAD_CHANGES, "Refresh From Server");
     }
 
     @Override

@@ -12,4 +12,6 @@ public class MidPointIcons {
     public static final Icon ACTION_MIDPOINT = IconLoader.findIcon("/icons/midpoint.png");
 
     public static final Icon ACTION_RANDOM_OID = IconLoader.findIcon("/icons/random_oid.png");
+
+    public static final Icon ACTION_BUILD_LOAD_CHANGES = IconLoader.findIcon("/icons/buildLoadChanges.svg");
 }
