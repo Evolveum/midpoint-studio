@@ -10,22 +10,20 @@ import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.SystemException;
+import okhttp3.Credentials;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.cxf.configuration.jsse.TLSClientParameters;
-import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
-import org.apache.cxf.ext.logging.LoggingFeature;
-import org.apache.cxf.ext.logging.event.LogMessageFormatter;
-import org.apache.cxf.jaxrs.client.ClientConfiguration;
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.apache.cxf.transport.http.HTTPConduit;
-import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
-import javax.xml.ws.Provider;
-import java.util.Arrays;
-import java.util.List;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.Locale;
 
 /**
@@ -127,90 +125,67 @@ public class ServiceFactory {
     }
 
     public Service create() throws Exception {
-        List<Provider> providers = (List) Arrays.asList(
-                new com.bea.xml.stream.XMLOutputFactoryBase(),
-                setupProvider(new CompatibilityXmlProvider(DEFAULT_PRISM_CONTEXT), DEFAULT_PRISM_CONTEXT));
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        if (username != null || password != null) {
+            builder.authenticator((route, response) -> {
 
-        WebClient client;
-        if (username != null) {
-            client = WebClient.create(url, providers, username, password, null);
-        } else {
-            client = WebClient.create(url, providers);
+                String credential = Credentials.basic(username, password);
+                return response.request().newBuilder()
+                        .header("Authorization", credential)
+                        .build();
+            });
         }
 
         if (ignoreSSLErrors) {
-            HTTPConduit conduit = WebClient.getConfig(client).getHttpConduit();
+            X509TrustManager tm = new EmptyTrustManager();
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{tm}, null);
+            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
-            TLSClientParameters params = conduit.getTlsClientParameters();
-            if (params == null) {
-                params = new TLSClientParameters();
-                conduit.setTlsClientParameters(params);
-            }
-
-            params.setTrustManagers(new TrustManager[]{new EmptyTrustManager()});
-            params.setDisableCNCheck(true);
+            builder.sslSocketFactory(sslSocketFactory, tm);
+            builder.hostnameVerifier((hostname, session) -> true);
         }
 
-        if (StringUtils.isNoneEmpty(proxyServer)) {
-            HTTPConduit conduit = (HTTPConduit) WebClient.getConfig(client).getConduit();
-            HTTPClientPolicy httpClientPolicy = conduit.getClient();
-            if (httpClientPolicy == null) {
-                httpClientPolicy = new HTTPClientPolicy();
-                conduit.setClient(httpClientPolicy);
-            }
-            httpClientPolicy.setProxyServer(proxyServer);
-            httpClientPolicy.setProxyServerPort(proxyServerPort);
-            httpClientPolicy.setProxyServerType(proxyServerType.getType());
+        if (StringUtils.isNotEmpty(proxyServer)) {
+            Proxy proxy = new Proxy(proxyServerType.getType(), new InetSocketAddress(proxyServer, proxyServerPort));
+            builder.proxy(proxy);
 
-            if (proxyUsername != null) {
-                ProxyAuthorizationPolicy proxyAuthorization = conduit.getProxyAuthorization();
-                if (proxyAuthorization == null) {
-                    proxyAuthorization = new ProxyAuthorizationPolicy();
-                    conduit.setProxyAuthorization(proxyAuthorization);
-                }
-                proxyAuthorization.setUserName(proxyUsername);
-                proxyAuthorization.setPassword(proxyPassword);
+            if (proxyUsername != null || proxyPassword != null) {
+                builder.proxyAuthenticator((route, response) -> {
+
+                    String credential = Credentials.basic(proxyUsername, proxyPassword);
+                    return response.request().newBuilder()
+                            .header("Proxy-Authorization", credential)
+                            .build();
+                });
             }
         }
 
-        client.accept(MediaType.APPLICATION_XML);
-        client.type(MediaType.APPLICATION_XML);
+        builder.addInterceptor(chain -> {
 
-        LoggingFeature logging = new LoggingFeature();
-        logging.setSender(event -> {
-            if (messageListener == null) {
-                return;
-            }
+            Request request = chain.request();
+            Request newRequest;
 
-            String msg = LogMessageFormatter.format(event);
+            newRequest = request.newBuilder()
+                    .addHeader("Accept", MediaType.APPLICATION_XML)
+                    .addHeader("Content-Type", MediaType.APPLICATION_XML)
+                    .build();
 
-            MessageListener.MessageType type;
-            switch (event.getType()) {
-                case REQ_IN:
-                case REQ_OUT:
-                    type = MessageListener.MessageType.REQUEST;
-                    break;
-                case RESP_IN:
-                case RESP_OUT:
-                    type = MessageListener.MessageType.RESPONSE;
-                    break;
-                case FAULT_IN:
-                case FAULT_OUT:
-                    type = MessageListener.MessageType.FAULT;
-                    break;
-                default:
-                    type = null;
-            }
-
-            messageListener.handleMessage(event.getMessageId(), type, msg);
+            return chain.proceed(newRequest);
         });
 
-        ClientConfiguration config = WebClient.getConfig(client);
-        if (config.getBus().getFeatures().isEmpty()) {
-            config.getBus().setFeatures(Arrays.asList(logging));
-        }
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(
+                message -> {
+                    if (messageListener == null) {
+                        return;
+                    }
 
-        ServiceContext context = new ServiceContext(DEFAULT_PRISM_CONTEXT, client);
+                    messageListener.handleMessage(message);
+                });
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        builder.addInterceptor(logging);
+
+        ServiceContext context = new ServiceContext(url, DEFAULT_PRISM_CONTEXT, builder.build());
 
         return new ServiceImpl(context);
     }

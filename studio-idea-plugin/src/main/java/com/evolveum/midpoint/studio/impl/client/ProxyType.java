@@ -1,23 +1,23 @@
 package com.evolveum.midpoint.studio.impl.client;
 
-import org.apache.cxf.transports.http.configuration.ProxyServerType;
+import java.net.Proxy;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public enum ProxyType {
 
-    HTTP(ProxyServerType.HTTP),
+    HTTP(Proxy.Type.HTTP),
 
-    SOCKS(ProxyServerType.SOCKS);
+    SOCKS(Proxy.Type.SOCKS);
 
-    private ProxyServerType type;
+    private Proxy.Type type;
 
-    ProxyType(ProxyServerType type) {
+    ProxyType(Proxy.Type type) {
         this.type = type;
     }
 
-    public ProxyServerType getType() {
+    public Proxy.Type getType() {
         return type;
     }
 }

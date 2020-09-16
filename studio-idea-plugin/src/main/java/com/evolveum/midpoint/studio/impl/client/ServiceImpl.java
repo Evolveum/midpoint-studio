@@ -1,15 +1,17 @@
 package com.evolveum.midpoint.studio.impl.client;
 
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.BuildInformationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import org.apache.cxf.jaxrs.client.WebClient;
-
-import javax.ws.rs.core.Response;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -44,29 +46,44 @@ public class ServiceImpl implements Service {
 
     @Override
     public ExecuteScriptResponseType execute(Object input) throws AuthenticationException {
-        WebClient client = context.getClient();
+        String content = null; // todo convert
 
-        client = client.replacePath(CommonService.REST_PREFIX + "/rpc/executeScript");
-        Response response = client.post(input);
+        Request.Builder builder = context.build("/rpc/executeScript")
+                .post(RequestBody.create(content, ServiceContext.APPLICATION_XML));
 
-        CommonService.validateResponse(response);
+        Request req = builder.build();
 
-        return response.readEntity(ExecuteScriptResponseType.class);
+        OkHttpClient client = context.getClient();
+        try (Response response = client.newCall(req).execute()) {
+            CommonService.validateResponse(response);
+
+            String body = response.body().string();
+            PrismParser parser = context.getParser(body);
+            return parser.parseRealValue(ExecuteScriptResponseType.class);
+            // body to ExecuteScriptResponseType
+        } catch (Exception ex) {
+            // todo
+        }
+        // todo
+        return null;
     }
 
     @Override
     public TestConnectionResult testConnection() throws AuthenticationException {
-        String path = "/" + ObjectTypes.NODE.getRestType() + "/current";
+        Request.Builder builder = context.build("/" + ObjectTypes.NODE.getRestType() + "/current")
+                .get();
 
-        WebClient client = context.getClient();
-        client = client.replacePath(CommonService.REST_PREFIX + path);
+        Request req = builder.build();
 
-        try {
-            Response response = client.get();
-
+        OkHttpClient client = context.getClient();
+        try (Response response = client.newCall(req).execute()) {
             CommonService.validateResponse(response);
 
-            NodeType node = response.readEntity(NodeType.class);
+            String body = response.body().string();
+            // body to NodeType
+
+            // todo
+            NodeType node = null;//response.readEntity(NodeType.class);
             BuildInformationType build = node.getBuild();
 
             return new TestConnectionResult(true, build.getVersion(), build.getRevision());

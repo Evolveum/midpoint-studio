@@ -5,10 +5,5 @@ package com.evolveum.midpoint.studio.impl.client;
  */
 public interface MessageListener {
 
-    enum MessageType {
-
-        REQUEST, RESPONSE, FAULT;
-    }
-
-    void handleMessage(String messageId, MessageType type, String message);
+    void handleMessage(String message);
 }

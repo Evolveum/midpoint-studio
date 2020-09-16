@@ -78,18 +78,13 @@ public class MidPointClient {
                     .proxyPassword(environment.getProxyPassword())
                     .ignoreSSLErrors(environment.isIgnoreSslErrors());
 
-            factory.messageListener((messageId, type, message) -> {
+            factory.messageListener((message) -> {
 
                 if (midPointManager == null || !midPointManager.getSettings().isPrintRestCommunicationToConsole()) {
                     return;
                 }
 
-                ConsoleViewContentType contentType = ConsoleViewContentType.LOG_INFO_OUTPUT;
-                if (MessageListener.MessageType.FAULT == type) {
-                    contentType = ConsoleViewContentType.LOG_ERROR_OUTPUT;
-                }
-
-                midPointManager.printToConsole(MidPointClient.class, message, null, contentType);
+                midPointManager.printToConsole(MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
             });
 
             client = factory.create();

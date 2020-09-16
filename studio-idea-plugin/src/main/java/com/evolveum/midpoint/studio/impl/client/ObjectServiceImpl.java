@@ -15,8 +15,9 @@ import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.apache.commons.lang.Validate;
-import org.apache.cxf.jaxrs.client.WebClient;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -82,7 +83,7 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
             query = "options=raw";
         }
 
-        WebClient client = client();
+        OkHttpClient client = client();
 
         String path = ObjectTypes.getRestTypeFromClass(type());
         client.replacePath(REST_PREFIX + "/" + path + "/" + oid);
@@ -119,14 +120,18 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
             opts = "options=raw";
         }
 
-        WebClient client = client();
-
         String path = ObjectTypes.getRestTypeFromClass(type());
-        client = client.replacePath(REST_PREFIX + "/" + path + "/" + oid).replaceQuery(opts);
+        Request.Builder builder = context().build("/" + path + "/" + oid, opts)
+                .delete();
 
-        Response response = client.delete();
+        Request req = builder.build();
 
-        validateResponseCode(response);
+        OkHttpClient client = getClient();
+        try (okhttp3.Response response = client.newCall(req).execute()) {
+            validateResponseCode(response);
+        } catch (Exception ex) {
+            // todo handle
+        }
     }
 
     @Override
@@ -135,7 +140,7 @@ public class ObjectServiceImpl<O extends ObjectType> extends CommonService<O> im
             throw new IllegalStateException("Can't call testConnection operation on non ResourceType object");
         }
 
-        WebClient client = client();
+        OkHttpClient client = client();
 
         String path = ObjectTypes.getRestTypeFromClass(type());
         client.replacePath(REST_PREFIX + "/" + path + "/" + oid + "/test");

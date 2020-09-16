@@ -51,24 +51,24 @@ dependencies {
     compile("com.evolveum.midpoint.infra:common:$midpointVersion") {
         exclude group: "org.springframework"
         exclude group: "net.sf.jasperreports"
-        exclude group: "org.apache.cxf", module: "cxf-rt-wsdl"
+        exclude group: "org.apache.cxf"
         exclude group: "org.slf4j"
         exclude group: "ch.qos.logback"
     }
-    compile("org.springframework:spring-core:$springVersion") {
-        transitive = false
-    }
 
-    // from model client
-    compile "org.apache.cxf:cxf-core:$cxfVersion"
-    compile "org.apache.cxf:cxf-rt-frontend-jaxrs:$cxfVersion"
-    compile "org.apache.cxf:cxf-rt-rs-extension-providers:$cxfVersion"
-    compile "org.apache.cxf:cxf-rt-rs-client:$cxfVersion"
-    compile "org.apache.cxf:cxf-rt-features-logging:$cxfVersion"
-    compile("org.apache.cxf:cxf-rt-wsdl:$cxfVersion") {
+    compile "stax:stax:$staxVersion"
+
+//    compile("com.evolveum.midpoint.infra:schema:4.2-SNAPSHOT") {
+//        exclude group: "org.springframework"
+//        exclude group: "net.sf.jasperreports"
+//        exclude group: "org.apache.cxf"
+//    }
+
+    runtime "org.glassfish.jaxb:jaxb-runtime:2.3.2" // needed because of NamespacePrefixMapper class
+    runtime("org.springframework:spring-core:5.0.7.RELEASE") {
+        // needed because of DebugDumpable impl uses spring ReflectionUtils class
         transitive = false
     }
-    compile "stax:stax:$staxVersion"
 }
 
 intellij {

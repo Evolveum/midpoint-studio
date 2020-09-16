@@ -11,7 +11,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectListType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
-import org.apache.cxf.jaxrs.client.WebClient;
+import okhttp3.OkHttpClient;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -51,20 +51,21 @@ public class SearchServiceImpl<O extends ObjectType> extends CommonService<O> im
             QueryConverter converter = prismContext().getQueryConverter();
             QueryType queryType = converter.createQueryType(query);
 
-            WebClient client = client();
+            OkHttpClient client = client();
 
             // todo options
 
-            String path = ObjectTypes.getRestTypeFromClass(type()) + "/search";
-            client.replacePath(REST_PREFIX + "/" + path);
-
-            Response response = client.post(queryType);
-            validateResponse(response);
-
-            ObjectListType list = response.readEntity(ObjectListType.class);
-            // todo implement
-
-            return new SearchResultList<>((List<O>) list.getObject());
+//            String path = ObjectTypes.getRestTypeFromClass(type()) + "/search";
+//            client.replacePath(REST_PREFIX + "/" + path);
+//
+//            Response response = client.post(queryType);
+//            validateResponse(response);
+//
+//            ObjectListType list = response.readEntity(ObjectListType.class);
+//            // todo implement
+//
+//            return new SearchResultList<>((List<O>) list.getObject());
+            return null;
         } catch (SchemaException ex) {
             throw new ClientException("Couldn't create query", ex);
         }

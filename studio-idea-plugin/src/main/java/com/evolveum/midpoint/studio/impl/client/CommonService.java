@@ -4,16 +4,15 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
-import org.apache.cxf.jaxrs.client.WebClient;
+import okhttp3.OkHttpClient;
 
 import javax.ws.rs.core.Response;
+
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public abstract class CommonService<O extends ObjectType> {
-
-    public static final String REST_PREFIX = "/ws/rest";
 
     private ServiceContext context;
 
@@ -24,6 +23,10 @@ public abstract class CommonService<O extends ObjectType> {
         this.type = type;
     }
 
+    public ServiceContext context() {
+        return this.context;
+    }
+
     public Class<O> type() {
         return type;
     }
@@ -32,11 +35,11 @@ public abstract class CommonService<O extends ObjectType> {
         return context.getPrismContext();
     }
 
-    protected WebClient client() {
+    protected OkHttpClient client() {
         return context.getClient();
     }
 
-    public static void validateResponse(Response response) throws AuthenticationException {
+    public static void validateResponse(okhttp3.Response response) throws AuthenticationException {
         Response.StatusType info = response.getStatusInfo();
 
         if (Response.Status.UNAUTHORIZED.getStatusCode() == info.getStatusCode()) {

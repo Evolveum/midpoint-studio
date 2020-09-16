@@ -3,8 +3,8 @@ package com.evolveum.midpoint.studio.impl.client;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxrs.client.WebClient;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class ObjectAddServiceImpl<O extends ObjectType> extends CommonService<O>
         StringBuilder query = new StringBuilder();
         opts.forEach(o -> query.append("options=").append(o).append("&"));
 
-        WebClient client = client();
+        OkHttpClient client = client();
 
         Response response;
         String path = ObjectTypes.getRestTypeFromClass(type());
