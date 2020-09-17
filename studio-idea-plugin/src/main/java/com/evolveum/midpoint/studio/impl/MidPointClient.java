@@ -15,7 +15,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -137,8 +136,7 @@ public class MidPointClient {
 
         SearchResultList<O> result = null;
         try {
-            result = (SearchResultList) client.search(ObjectTypes.getObjectType(type).getClassDefinition())
-                    .list(query, options);
+            result = (SearchResultList) client.list(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
 
             printToConsole("Search done");
         } catch (Exception ex) {
@@ -159,10 +157,10 @@ public class MidPointClient {
         try {
             Collection<SelectorOptions<GetOperationOptions>> options =
                     SelectorOptions.createCollection(GetOperationOptions.createRaw());
-            result = client.oid(ObjectTypes.getObjectType(type).getClassDefinition(), oid).getRaw(options);
+            result = client.getRaw(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
 
             printToConsole("Get done");
-        } catch (AuthenticationException ex) {
+        } catch (Exception ex) {
             handleGenericException("Error occurred while searching objects", ex);
         }
 
@@ -176,7 +174,7 @@ public class MidPointClient {
         try {
             Collection<SelectorOptions<GetOperationOptions>> options =
                     SelectorOptions.createCollection(GetOperationOptions.createRaw());
-            ObjectType o = client.oid(ObjectTypes.getObjectType(type).getClassDefinition(), oid).get(options);
+            ObjectType o = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
             result = (PrismObject) o.asPrismObject();
 
             printToConsole("Get done");
@@ -191,7 +189,7 @@ public class MidPointClient {
         printToConsole("Starting test resource for " + oid);
 
         try {
-            return client.oid(ResourceType.class, oid).testConnection();
+            return client.testResourceConnection(oid);
         } catch (Exception ex) {
             handleGenericException("Error occurred while testing resource", ex);
         }
@@ -199,18 +197,18 @@ public class MidPointClient {
         return null;
     }
 
-    public <O extends ObjectType> void delete(Class<O> type, String oid, DeleteOptions options) throws AuthenticationException, ObjectNotFoundException {
-        client.oid(type, oid).delete(options);
+    public <O extends ObjectType> void delete(Class<O> type, String oid, DeleteOptions options) throws AuthenticationException, ObjectNotFoundException, IOException {
+        client.delete(type, oid, options);
     }
 
-    public ExecuteScriptResponseType execute(Object object) throws AuthenticationException {
+    public ExecuteScriptResponseType execute(String object) throws IOException, SchemaException, AuthenticationException {
         return client.execute(object);
     }
 
-    public UploadResponse uploadRaw(MidPointObject obj, List<String> options) throws AuthenticationException {
+    public UploadResponse uploadRaw(MidPointObject obj, List<String> options) throws IOException, AuthenticationException {
         UploadResponse response = new UploadResponse();
 
-        String oid = client.add(obj).execute(options);
+        String oid = client.add(obj, options);
         if (oid == null && obj.getOid() != null) {
             oid = obj.getOid();
         }
@@ -219,24 +217,20 @@ public class MidPointClient {
         return response;
     }
 
-    public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, List<String> options) throws AuthenticationException {
+    public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, List<String> options) throws SchemaException, IOException, AuthenticationException {
         UploadResponse response = new UploadResponse();
 
         PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML);
 
-        try {
-            String content = serializer.serialize(obj.getValue(), obj.getElementName().asSingleName());
-            MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(obj.getCompileTimeClass()), false);
-            object.setOid(obj.getOid());
-            if (obj.getName() != null) {
-                object.setName(obj.getName().getOrig());
-            }
-
-            String oid = client.add(object).execute(options);
-            response.setOid(oid);
-        } catch (SchemaException ex) {
-            throw new RuntimeException("Couldn't serialize prism object, reason: " + ex.getMessage(), ex);
+        String content = serializer.serialize(obj.getValue(), obj.getElementName().asSingleName());
+        MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(obj.getCompileTimeClass()), false);
+        object.setOid(obj.getOid());
+        if (obj.getName() != null) {
+            object.setName(obj.getName().getOrig());
         }
+
+        String oid = client.add(object, options);
+        response.setOid(oid);
 
         return response;
     }
@@ -292,7 +286,7 @@ public class MidPointClient {
         return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
     }
 
-    public TestConnectionResult testConnection() throws AuthenticationException {
-        return client.testConnection();
+    public TestConnectionResult testConnection() {
+        return client.testServiceConnection();
     }
 }

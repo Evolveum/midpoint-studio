@@ -32,4 +32,7 @@
 ** there could be some parsing checks afterwards if needed/wanted
 ** better API for idea should be created, right now MidPointClient/Service api are just botched together like there's no tomorrow
 * how to import existing eclipse projects?
-* move components to services!
+* update okhttp client parsing in serviceimpl to use something like MidpointAbstractProvider with LocalizationService
+    * after move from cxf to okhttp this was removed and not replaced by anything
+    * also parsing will not work correctly probably for specific objects
+* better error message for resource upload when there's wrong connectorRef (returns error 500)

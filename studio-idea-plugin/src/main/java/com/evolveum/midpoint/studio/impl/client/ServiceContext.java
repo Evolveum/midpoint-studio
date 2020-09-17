@@ -1,16 +1,22 @@
 package com.evolveum.midpoint.studio.impl.client;
 
-import com.evolveum.midpoint.prism.ParsingContext;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismParser;
-import com.evolveum.midpoint.prism.PrismSerializer;
+import com.evolveum.midpoint.common.LocalizationService;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.util.LocalizableMessage;
+import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import okhttp3.*;
 
+import javax.xml.namespace.QName;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -57,8 +63,45 @@ public class ServiceContext {
         return new Request.Builder().url(builder.build());
     }
 
-    public PrismSerializer<String> getSerializer() {
-        return prismContext.xmlSerializer();
+    public String serialize(Object object) throws SchemaException {
+        final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
+
+        PrismSerializer<String> serializer = prismContext.xmlSerializer()
+                .options(SerializationOptions.createSerializeReferenceNames());
+
+        String result;
+        if (object instanceof ObjectType) {
+            ObjectType ot = (ObjectType) object;
+            result = serializer.serialize(ot.asPrismObject());
+        } else if (object instanceof PrismObject) {
+            result = serializer.serialize((PrismObject<?>) object);
+        } else if (object instanceof OperationResult) {
+            LocalizationService localizationService = new LocalizationServiceImpl();
+            Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
+            OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
+            result = serializer.serializeAnyData(operationResultType, fakeQName);
+        } else {
+            result = serializer.serializeAnyData(object, fakeQName);
+        }
+
+        return result;
+    }
+
+    public <T> T parse(String text, Class<T> type) throws SchemaException, IOException {
+        return parse(new ByteArrayInputStream(text.getBytes()), type);
+    }
+
+    public <T> T parse(InputStream is, Class<T> type) throws SchemaException, IOException {
+        PrismParser parser = getParser(is);
+
+        T object;
+        if (PrismObject.class.isAssignableFrom(type)) {
+            object = (T) parser.parse();
+        } else {
+            object = parser.parseRealValue(type);
+        }
+
+        return object;
     }
 
     public PrismParser getParser(InputStream entityStream) {

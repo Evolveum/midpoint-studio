@@ -1,13 +1,9 @@
 package com.evolveum.midpoint.studio.impl.client;
 
-import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.util.DOMUtilSettings;
-import com.evolveum.midpoint.util.LocalizableMessage;
-import com.evolveum.midpoint.util.exception.CommonException;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -21,7 +17,6 @@ import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.util.Locale;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -123,8 +118,15 @@ public class ServiceFactory {
 
     public Service create() throws Exception {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.followSslRedirects(false);
+        builder.followRedirects(false);
+
         if (username != null || password != null) {
             builder.authenticator((route, response) -> {
+
+                if (response.request().header("Authorization") != null) {
+                    return null; // Give up, we've already failed to authenticate.
+                }
 
                 String credential = Credentials.basic(username, password);
                 return response.request().newBuilder()
@@ -185,49 +187,5 @@ public class ServiceFactory {
         ServiceContext context = new ServiceContext(url, DEFAULT_PRISM_CONTEXT, builder.build());
 
         return new ServiceImpl(context);
-    }
-
-    private static class LocalizationServiceImpl implements LocalizationService {
-
-        @Override
-        public String translate(LocalizableMessage msg, Locale locale, String defaultMessage) {
-            String translated = translate(msg, locale);
-            return translated != null ? translated : defaultMessage;
-        }
-
-        @Override
-        public String translate(PolyString polyString, Locale locale, boolean allowOrig) {
-            String def = allowOrig ? polyString.getOrig() : null;
-            return translate(polyString.getOrig(), new Object[]{}, locale, def);
-        }
-
-        @Override
-        public Locale getDefaultLocale() {
-            return Locale.getDefault();
-        }
-
-        @Override
-        public String translate(String key, Object[] params, Locale locale) {
-            return translate(key, params, locale, null);
-        }
-
-        @Override
-        public String translate(String key, Object[] params, Locale locale, String defaultMessage) {
-            if (defaultMessage != null) {
-                return defaultMessage;
-            }
-
-            return key;
-        }
-
-        @Override
-        public String translate(LocalizableMessage msg, Locale locale) {
-            return msg != null ? msg.getFallbackMessage() : null;
-        }
-
-        @Override
-        public <T extends CommonException> T translate(T e) {
-            return e;
-        }
     }
 }
