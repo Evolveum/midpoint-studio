@@ -254,6 +254,10 @@
 
                 <separator/>
 
+                <reference ref="MidPoint.Action.Refresh"/>
+
+                <separator/>
+
                 <reference ref="MidPoint.Action.DeleteRaw"/>
                 <reference ref="MidPoint.Action.Delete"/>
 
