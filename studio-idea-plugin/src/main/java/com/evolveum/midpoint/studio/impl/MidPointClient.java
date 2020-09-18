@@ -235,6 +235,10 @@ public class MidPointClient {
         return response;
     }
 
+    public String serialize(Object obj) throws SchemaException {
+        return client.context().serialize(obj);
+    }
+
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
         CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
         Expander expander = new Expander(cm, new EnvironmentProperties(environment));

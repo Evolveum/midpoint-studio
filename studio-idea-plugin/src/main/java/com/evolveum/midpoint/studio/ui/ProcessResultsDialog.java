@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
 import com.evolveum.midpoint.studio.util.LocalizedRenderer;
@@ -70,14 +69,12 @@ public class ProcessResultsDialog extends DialogWrapper {
     private JPanel root;
 
     private String query;
-    private ComboQueryType.Type queryType;
     private ObjectTypes type;
     private List<ObjectType> selected;
 
     private ProcessResultsOptions options;
 
-    public ProcessResultsDialog(@NotNull ProcessResultsOptions options, String query,
-                                ComboQueryType.Type queryType, ObjectTypes type, List<ObjectType> selected) {
+    public ProcessResultsDialog(@NotNull ProcessResultsOptions options, String query, ObjectTypes type, List<ObjectType> selected) {
         super(false);
         setTitle("Process results");
 
@@ -86,7 +83,6 @@ public class ProcessResultsDialog extends DialogWrapper {
 
         this.options = options;
         this.query = query;
-        this.queryType = queryType;
         this.type = type;
         this.selected = selected;
 

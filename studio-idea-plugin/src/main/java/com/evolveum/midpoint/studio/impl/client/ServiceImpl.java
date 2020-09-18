@@ -39,6 +39,11 @@ public class ServiceImpl implements Service {
     }
 
     @Override
+    public ServiceContext context() {
+        return context;
+    }
+
+    @Override
     public PrismContext prismContext() {
         return context.getPrismContext();
     }

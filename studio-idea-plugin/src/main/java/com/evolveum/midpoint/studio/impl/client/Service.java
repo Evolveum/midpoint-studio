@@ -60,6 +60,8 @@ public interface Service {
     OperationResult testResourceConnection(String oid)
             throws ObjectNotFoundException, AuthenticationException, IOException, SchemaException;
 
+    ServiceContext context();
+
     TestConnectionResult testServiceConnection();
 
     PrismContext prismContext();
