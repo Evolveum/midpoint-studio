@@ -99,8 +99,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
         }
 
         // build pom file
-        final Project project = modifiableRootModel.getProject();
-
+        Project project = modifiableRootModel.getProject();
         MidPointUtils.runWhenInitialized(project, (DumbAwareRunnable) () -> {
 
             Application am = ApplicationManager.getApplication();
@@ -112,12 +111,13 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
             WriteAction.run(() -> createProjectFiles(project, root));
         });
+        createProjectFiles(project, root);
 
         FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
         FacetManager.getInstance(modifiableRootModel.getModule()).addFacet(facetType, facetType.getDefaultFacetName(), null);
     }
 
-    private void createProjectFiles(Project project, VirtualFile root) {
+    public void createProjectFiles(Project project, VirtualFile root) {
         try {
             Properties properties = new Properties();
             properties.setProperty("GROUP_ID", root.getName());

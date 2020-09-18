@@ -109,7 +109,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         JComponent resultsPanel = initResultsPanel();
 
         OnePixelSplitter split = new OnePixelSplitter(false);
-        split.setProportion(0.3f);
+        split.setProportion(0.4f);
         split.setFirstComponent(queryPanel);
         split.setSecondComponent(resultsPanel);
 
@@ -496,18 +496,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             case QUERY_XML:
                 filter = parseFilter(ctx);
                 break;
-            case QUERY_SIMPLE:
-                filter = parseSimpleFilter(ctx);
         }
 
         ItemPath path = ctx.path(ObjectType.F_NAME);
         ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(), path, OrderDirection.ASCENDING);
 
         return qf.createQuery(filter, paging);
-    }
-
-    private ObjectFilter parseSimpleFilter(PrismContext ctx) {
-        return null;
     }
 
     private ObjectFilter parseFilter(PrismContext ctx) {

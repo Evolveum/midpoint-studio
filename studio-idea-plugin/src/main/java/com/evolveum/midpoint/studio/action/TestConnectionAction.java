@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.action;
 
-import com.evolveum.midpoint.client.api.TestConnectionResult;
+import com.evolveum.midpoint.studio.impl.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;

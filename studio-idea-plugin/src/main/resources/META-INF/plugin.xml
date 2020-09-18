@@ -126,9 +126,6 @@
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
         <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.trace.MPTraceFileTypeFactory"/>
 
-        <!--        <toolWindow id="NodesToolWindow"-->
-        <!--                    factoryClass="com.evolveum.midpoint.studio.ui.metrics.NodesToolWindowFactory"/>-->
-
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
@@ -190,6 +187,11 @@
                 class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
                 text="Upload/Execute (stop on error)"
                 icon="/icons/uploadExecuteStop.svg"/>
+
+        <action id="MidPoint.Action.Refresh"
+                class="com.evolveum.midpoint.studio.action.transfer.RefreshAction"
+                text="Refresh From Server"
+                icon="/icons/buildLoadChanges.svg"/>
 
         <!-- SERVER SIDE -->
 
@@ -275,6 +277,10 @@
 
                 <separator/>
 
+                <reference ref="MidPoint.Action.Refresh"/>
+
+                <separator/>
+
                 <reference ref="MidPoint.Action.DeleteRaw"/>
                 <reference ref="MidPoint.Action.Delete"/>
 
@@ -327,6 +333,10 @@
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>
             <reference ref="MidPoint.Action.UploadTestResource"/>
+
+            <separator/>
+
+            <reference ref="MidPoint.Action.Refresh"/>
 
             <separator/>
 

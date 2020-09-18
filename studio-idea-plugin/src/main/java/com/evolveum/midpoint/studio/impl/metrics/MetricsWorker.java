@@ -1,13 +1,10 @@
 package com.evolveum.midpoint.studio.impl.metrics;
 
-import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.client.Service;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.project.Project;
-import org.apache.cxf.jaxrs.client.WebClient;
-
-import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -22,7 +19,7 @@ public class MetricsWorker implements Runnable {
 
     private boolean stop;
 
-    private Service<WebClient> service;
+    private Service service;
 
     public MetricsWorker(MetricsSession session, Project project, Node node) {
         this.session = session;
@@ -57,13 +54,13 @@ public class MetricsWorker implements Runnable {
                     service = MidPointUtils.buildRestClient(env, MidPointManager.getInstance(project));
                 }
 
-                WebClient client = service.getClient();
-                for (MetricsKey key : MetricsKey.values()) {
-                    WebClient c = client.path("/actuator/metrics/" + key.getKey());
-                    Map data = c.get(Map.class);
-
-                    System.out.println(data);
-                }
+//                WebClient client = service.getClient();
+//                for (MetricsKey key : MetricsKey.values()) {
+//                    WebClient c = client.path("/actuator/metrics/" + key.getKey());
+//                    Map data = c.get(Map.class);
+//
+//                    System.out.println(data);
+//                }
 // todo continue :)
 //                client = client.path("/")
 

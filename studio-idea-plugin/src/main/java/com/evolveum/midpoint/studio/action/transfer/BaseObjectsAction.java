@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
@@ -16,7 +15,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +23,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,8 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class BaseObjectsAction extends BackgroundAction {
 
     private static final Logger LOG = Logger.getInstance(BaseObjectsAction.class);
-
-    private static final String XML_EXTENSION = "xml";
 
     private final String notificationKey;
 
@@ -94,24 +89,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             return;
         }
 
-        List<VirtualFile> toProcess = new ArrayList<>();
-        for (VirtualFile selected : selectedFiles) {
-            if (isCanceled()) {
-                return;
-            }
-
-            if (selected.isDirectory()) {
-                VfsUtilCore.iterateChildrenRecursively(
-                        selected,
-                        file -> XML_EXTENSION.equalsIgnoreCase(file.getExtension()),
-                        file -> {
-                            toProcess.add(file);
-                            return true;
-                        });
-            } else if (XML_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
-                toProcess.add(selected);
-            }
-        }
+        List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {
             MidPointUtils.publishNotification(notificationKey, getTaskTitle(),
@@ -152,7 +130,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                     int problems = processText(evt, mm, indicator, client, xml);
                     count.addAndGet(problems);
                 } catch (IOException ex) {
-                    publishException(mm, "Exception occurred when loading file " + file.getName(), ex);
+                    publishException(mm, "Exception occurred when loading file '" + file.getName() + "'", ex);
                 }
             });
         }
@@ -168,10 +146,10 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         int problemCount = 0;
 
         try {
-            List<PrismObject<?>> objects = client.parseObjects(text);
+            List<MidPointObject> objects = MidPointObjectUtils.parseText(text, notificationKey);
 
             int i = 0;
-            for (PrismObject obj : objects) {
+            for (MidPointObject obj : objects) {
                 i++;
 
                 indicator.setFraction(i / objects.size());
@@ -188,7 +166,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 } catch (Exception ex) {
                     problemCount++;
 
-                    publishException(mm, "Exception occurred during " + operation + " of " + obj.getName() + "(" + obj.getOid() + ")", ex);
+                    publishException(mm, "Exception occurred during " + operation + " of '" + obj.getName() + "(" + obj.getOid() + ")'", ex);
                 }
             }
         } catch (Exception ex) {
@@ -200,7 +178,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         return problemCount;
     }
 
-    public abstract <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, PrismObject<O> obj) throws Exception;
+    public abstract <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception;
 
     protected ProcessObjectResult validateOperationResult(AnActionEvent evt, OperationResult result, String operation, String objectName) {
         boolean problem = result != null && !result.isSuccess();
@@ -236,7 +214,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     protected void printSuccess(Project project, String operation, String objectName) {
         MidPointManager mm = MidPointManager.getInstance(project);
 
-        mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " " + objectName + " finished");
+        mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " '" + objectName + "' finished");
     }
 
     protected String getOperation() {

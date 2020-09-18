@@ -1,19 +1,15 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.client.api.ClientException;
-import com.evolveum.midpoint.client.api.MessageListener;
-import com.evolveum.midpoint.client.api.Service;
-import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
-import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
+import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.client.ClientException;
+import com.evolveum.midpoint.studio.impl.client.Service;
+import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -26,6 +22,7 @@ import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.ide.DataManager;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
@@ -40,6 +37,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -102,6 +101,7 @@ public class MidPointUtils {
     public static LookupElementBuilder buildLookupElement(String name, String oid, String source) {
         return LookupElementBuilder.create(oid)
                 .withTailText("(" + name + ")")
+                .withLookupString(name)
                 .withTypeText(source)
                 .withBoldness(true)
                 .withCaseSensitivity(false);
@@ -516,6 +516,29 @@ public class MidPointUtils {
         return false;
     }
 
+    public static List<VirtualFile> filterXmlFiles(VirtualFile[] files) {
+        List<VirtualFile> result = new ArrayList<>();
+        if (files == null) {
+            return result;
+        }
+
+        for (VirtualFile selected : files) {
+            if (selected.isDirectory()) {
+                VfsUtilCore.iterateChildrenRecursively(
+                        selected,
+                        file -> XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
+                        file -> {
+                            result.add(file);
+                            return true;
+                        });
+            } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
+                result.add(selected);
+            }
+        }
+
+        return result;
+    }
+
     public static Service buildRestClient(Environment environment, MidPointManager midPointManager)
             throws Exception {
         ServiceFactory factory = new ServiceFactory();
@@ -530,16 +553,21 @@ public class MidPointUtils {
                 .proxyPassword(environment.getProxyPassword())
                 .ignoreSSLErrors(environment.isIgnoreSslErrors());
 
-        factory.messageListener((messageId, type, message) -> {
+        factory.messageListener((message) -> {
 
-            ConsoleViewContentType contentType = ConsoleViewContentType.LOG_INFO_OUTPUT;
-            if (MessageListener.MessageType.FAULT == type) {
-                contentType = ConsoleViewContentType.LOG_ERROR_OUTPUT;
+            if (midPointManager == null || !midPointManager.getSettings().isPrintRestCommunicationToConsole()) {
+                return;
             }
 
-            midPointManager.printToConsole(Service.class, message, null, contentType);
+            midPointManager.printToConsole(MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
         });
 
-        return factory.create();
+        Service service =  factory.create();
+
+        if (midPointManager != null) {
+            midPointManager.printToConsole(MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+        }
+
+        return service;
     }
 }

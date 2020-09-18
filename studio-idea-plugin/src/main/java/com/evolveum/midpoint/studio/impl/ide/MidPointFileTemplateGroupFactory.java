@@ -13,7 +13,7 @@ public class MidPointFileTemplateGroupFactory implements FileTemplateGroupDescri
 
     public static final String MIDPOINT_MAVEN_POM_TEMPLATE = "MidPoint Maven Project.xml";
 
-    public static final String MIDPOINT_GIT_IGNORE_TEMPLATE = "MidPoint Project Git Ignore";
+    public static final String MIDPOINT_GIT_IGNORE_TEMPLATE = "MidPoint Git Ignore.git";
 
     @Override
     public FileTemplateGroupDescriptor getFileTemplatesDescriptor() {

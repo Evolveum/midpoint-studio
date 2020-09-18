@@ -1,5 +1,3 @@
-include 'midpoint-client'
 include 'midpoint-client-prism'
-include 'midpoint-client-cmd'
 include 'studio-idea-plugin'
 

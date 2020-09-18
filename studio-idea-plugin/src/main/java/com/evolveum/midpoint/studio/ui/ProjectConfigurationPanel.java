@@ -73,7 +73,7 @@ public class ProjectConfigurationPanel extends JPanel {
         String pwd1 = password1.getPassword() != null ? new String(password1.getPassword()) : null;
         String pwd2 = password2.getPassword() != null ? new String(password2.getPassword()) : null;
 
-        if (StringUtils.isNoneEmpty(oldPwd) && StringUtils.isAnyEmpty(pwd1, pwd2)) {
+        if (StringUtils.isNotEmpty(oldPwd) && StringUtils.isAnyEmpty(pwd1, pwd2)) {
             throw new ConfigurationException("Master password not filled in");
         }
 
@@ -89,5 +89,11 @@ public class ProjectConfigurationPanel extends JPanel {
         settings.setMidPointSettings(midpointSettingsPanel.getSettings());
         settings.setMasterPassword(new String(password1.getPassword()));
         settings.setOldMasterPassword(new String(oldPassword.getPassword()));
+    }
+
+    public void clearPasswords() {
+        oldPassword.setText("");
+        password1.setText("");
+        password2.setText("");
     }
 }

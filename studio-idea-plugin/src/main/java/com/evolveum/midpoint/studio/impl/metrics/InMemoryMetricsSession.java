@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.impl.metrics;
 
-import com.evolveum.midpoint.client.api.Service;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.ObjectPaging;
@@ -11,6 +10,7 @@ import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.client.Service;
 import com.evolveum.midpoint.studio.ui.metrics.MetricsEditorProvider;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -125,7 +125,7 @@ public class InMemoryMetricsSession implements MetricsSession, Disposable {
 
         List<NodeType> nodes;
         try {
-            nodes = client.search(NodeType.class).list(buildNodesQuery(client), options);
+            nodes = client.list(NodeType.class, buildNodesQuery(client), options);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
