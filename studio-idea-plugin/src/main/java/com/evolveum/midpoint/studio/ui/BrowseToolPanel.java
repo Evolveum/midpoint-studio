@@ -17,15 +17,18 @@ import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.impl.browse.Generator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorAction;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
 import com.evolveum.midpoint.studio.impl.browse.ProcessResultsOptions;
+import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.prism.xml.ns._public.query_3.QueryType;
+import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
@@ -332,7 +335,39 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         ObjectTypes type = this.objectType.getSelected();
         List<ObjectType> selected = getResultsModel().getSelectedObjects(results);
 
-        ProcessResultsDialog dialog = new ProcessResultsDialog(processResultsOptions, query, queryType, type, selected);
+        if (ComboQueryType.Type.QUERY_XML != queryType && StringUtils.isNotEmpty(query)) {
+            // translate query
+            EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+            Environment env = em.getSelected();
+
+            try {
+                LOG.debug("Setting up midpoint client");
+                MidPointClient client = new MidPointClient(evt.getProject(), env);
+
+                LOG.debug("Translating object query");
+                ObjectQuery objectQuery = buildQuery(client);
+
+                PrismContext ctx = client.getPrismContext();
+                QueryConverter converter = ctx.getQueryConverter();
+                QueryType q = converter.createQueryType(objectQuery);
+
+                SearchFilterType filter = q.getFilter();
+
+                RunnableUtils.PluginClassCallable<String> callable = new RunnableUtils.PluginClassCallable<>() {
+
+                    @Override
+                    public String callWithPluginClassLoader() throws Exception {
+                        return ctx.serializerFor(PrismContext.LANG_XML).serialize(filter.getFilterClauseAsRootXNode());
+                    }
+                };
+
+                query = callable.call();
+            } catch (Exception ex) {
+                handleGenericException("Couldn't serialize query", ex);
+            }
+        }
+
+        ProcessResultsDialog dialog = new ProcessResultsDialog(processResultsOptions, query, type, selected);
         dialog.show();
 
         if (dialog.isOK() || dialog.isGenerate()) {

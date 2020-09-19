@@ -13,7 +13,7 @@ public interface EnvironmentManager extends Stateful<EnvironmentSettings> {
     String NOTIFICATION_KEY = "Environment";
 
     static EnvironmentManager getInstance(@NotNull Project project) {
-        return project.getComponent(EnvironmentManager.class);
+        return project.getService(EnvironmentManager.class);
     }
 
     EnvironmentSettings getFullSettings();

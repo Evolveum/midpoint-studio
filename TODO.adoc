@@ -2,9 +2,9 @@
 
 * EnvironmentManagerImpl.getSelected() always reads credentials keepass file (full environment), multiple times pre second only to get color
 * MidPointXmlStructureViewBuilderProvider not finished
-* Upload/Execute of scripts doesn't work
+* `DONE` Upload/Execute of scripts doesn't work
 * Finish jira issue submitting (error reporting)
-* Transform components to services
+*  `DONE`Transform components to services
 * Implement action that will allow import one account from resource and then unlink
 * Passwords
 ** `DONE` settings for master password not visible in project/module settings
@@ -27,12 +27,13 @@
 ** Livesync task token parsing and validation (for example whether task is not too much behind)
 ** Resource going up/down + reason
 * Midpoint client
-** midpoint client uploading/downloading stuff should be probably dumb by default
-** no parsing before upload/after download, just upload/download whatever comes, so that user can be sure nothing was messed up on client side
+** `DONE` midpoint client uploading/downloading stuff should be probably dumb by default
+** `DONE` no parsing before upload/after download, just upload/download whatever comes, so that user can be sure nothing was messed up on client side
 ** there could be some parsing checks afterwards if needed/wanted
-** better API for idea should be created, right now MidPointClient/Service api are just botched together like there's no tomorrow
+** `DONE` better API for idea should be created, right now MidPointClient/Service api are just botched together like there's no tomorrow
 * how to import existing eclipse projects?
-* update okhttp client parsing in serviceimpl to use something like MidpointAbstractProvider with LocalizationService
-    * after move from cxf to okhttp this was removed and not replaced by anything
-    * also parsing will not work correctly probably for specific objects
+* `DONE` update okhttp client parsing in serviceimpl to use something like MidpointAbstractProvider with LocalizationService
+    * `DONE` after move from cxf to okhttp this was removed and not replaced by anything
+    * `DONE` also parsing will not work correctly probably for specific objects
 * better error message for resource upload when there's wrong connectorRef (returns error 500)
+* encrypted properties UI improvements, dialog should be different as for environment username/password editor probably, review, rethink

@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.studio.ui.MidPointConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
@@ -21,7 +20,7 @@ import java.util.Date;
 @State(
         name = "MidPointManager", storages = @Storage(value = "midpoint.xml")
 )
-public class MidPointManager extends ManagerBase<MidPointSettings> implements ProjectComponent {
+public class MidPointManager extends ManagerBase<MidPointSettings> {
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
@@ -36,18 +35,8 @@ public class MidPointManager extends ManagerBase<MidPointSettings> implements Pr
         return MidPointSettings.createDefaultSettings();
     }
 
-    @Override
-    public void projectOpened() {
-
-    }
-
-    @Override
-    public void projectClosed() {
-
-    }
-
     public static MidPointManager getInstance(@NotNull Project project) {
-        return project.getComponent(MidPointManager.class);
+        return project.getService(MidPointManager.class);
     }
 
     public void setConsole(MidPointConsoleView console) {

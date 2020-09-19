@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.studio.impl.MidPointFacetType;
+import com.evolveum.midpoint.studio.impl.client.ClientException;
+import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
@@ -20,6 +23,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
+import com.intellij.facet.FacetManager;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.highlighter.XmlFileType;
@@ -34,6 +38,8 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
@@ -526,9 +532,11 @@ public class MidPointUtils {
             if (selected.isDirectory()) {
                 VfsUtilCore.iterateChildrenRecursively(
                         selected,
-                        file -> XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
+                        file -> file.isDirectory() || XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
                         file -> {
-                            result.add(file);
+                            if (!file.isDirectory()) {
+                                result.add(file);
+                            }
                             return true;
                         });
             } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
@@ -537,6 +545,16 @@ public class MidPointUtils {
         }
 
         return result;
+    }
+
+    public static boolean hasMidPointFacet(@NotNull Project project) {
+        ModuleManager mm = ModuleManager.getInstance(project);
+        Module[] modules = mm.getModules();
+        if (modules == null || modules.length == 0) {
+            return false;
+        }
+        FacetManager fm = FacetManager.getInstance(modules[0]);
+        return fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null;
     }
 
     public static Service buildRestClient(Environment environment, MidPointManager midPointManager)

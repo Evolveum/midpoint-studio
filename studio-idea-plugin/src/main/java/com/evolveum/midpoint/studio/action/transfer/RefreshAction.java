@@ -6,7 +6,6 @@ import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
-import com.intellij.icons.AllIcons;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -43,6 +42,12 @@ public class RefreshAction extends BackgroundAction {
         super.update(evt);
 
         if (evt.getProject() == null) {
+            return;
+        }
+
+        boolean hasFacet = MidPointUtils.hasMidPointFacet(evt.getProject());
+        if (!hasFacet) {
+            evt.getPresentation().setVisible(false);
             return;
         }
 

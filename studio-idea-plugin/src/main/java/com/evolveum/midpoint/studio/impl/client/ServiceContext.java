@@ -63,11 +63,15 @@ public class ServiceContext {
         return new Request.Builder().url(builder.build());
     }
 
+    public PrismSerializer<String> getSerializer() {
+        return prismContext.xmlSerializer()
+                .options(SerializationOptions.createSerializeReferenceNames());
+    }
+
     public String serialize(Object object) throws SchemaException {
         final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
 
-        PrismSerializer<String> serializer = prismContext.xmlSerializer()
-                .options(SerializationOptions.createSerializeReferenceNames());
+        PrismSerializer<String> serializer = getSerializer();
 
         String result;
         if (object instanceof ObjectType) {

@@ -35,6 +35,12 @@ public class TestConnectionAction extends AnAction {
             return;
         }
 
+        boolean hasFacet = MidPointUtils.hasMidPointFacet(e.getProject());
+        if (!hasFacet) {
+            e.getPresentation().setEnabled(false);
+            return;
+        }
+
         EnvironmentManager em = EnvironmentManager.getInstance(project);
         Environment selected = em.getSelected();
 
