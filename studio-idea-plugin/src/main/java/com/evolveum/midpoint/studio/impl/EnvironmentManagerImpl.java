@@ -26,13 +26,14 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
 
     private MessageBus messageBus;
 
-    private CredentialsManager credentialsManager;
-
-    public EnvironmentManagerImpl(@NotNull Project project, @NotNull CredentialsManager credentialsManager) {
+    public EnvironmentManagerImpl(@NotNull Project project) {
         super(project, EnvironmentSettings.class);
 
         this.messageBus = project.getMessageBus();
-        this.credentialsManager = credentialsManager;
+    }
+
+    private CredentialsManager getCredentialsManager() {
+        return getProject().getService(CredentialsManager.class);
     }
 
     @Override
@@ -88,13 +89,13 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
     private Environment buildFullEnvironment(Environment env) {
         Environment copy = new Environment(env);
 
-        Credentials credentials = credentialsManager.get(copy.getId());
+        Credentials credentials = getCredentialsManager().get(copy.getId());
         if (credentials != null) {
             copy.setUsername(credentials.getUsername());
             copy.setPassword(credentials.getPassword());
         }
 
-        credentials = credentialsManager.get(copy.getId() + KEY_PROXY_SUFFIX);
+        credentials = getCredentialsManager().get(copy.getId() + KEY_PROXY_SUFFIX);
         if (credentials != null) {
             copy.setProxyUsername(credentials.getUsername());
             copy.setProxyPassword(credentials.getPassword());
@@ -138,13 +139,13 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
         if (StringUtils.isNotEmpty(env.getUsername()) || StringUtils.isNotEmpty(env.getPassword())) {
             Credentials credentials = new Credentials(
                     env.getId(), env.getId(), env.getUsername(), env.getPassword(), env.getName());
-            credentialsManager.add(credentials);
+            getCredentialsManager().add(credentials);
         }
 
         if (StringUtils.isNotEmpty(env.getProxyUsername()) || StringUtils.isNotEmpty(env.getProxyPassword())) {
             Credentials credentials = new Credentials(KEY_PROXY_SUFFIX, env.getId(), env.getProxyUsername(),
                     env.getProxyPassword(), env.getName() + DESCRIPTION_PROXY_SUFFIX);
-            credentialsManager.add(credentials);
+            getCredentialsManager().add(credentials);
         }
 
         getSettings().getEnvironments().add(env);
@@ -162,11 +163,11 @@ public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> imp
         }
 
         if (StringUtils.isNotEmpty(env.getUsername()) || StringUtils.isNotEmpty(env.getPassword())) {
-            credentialsManager.delete(env.getId());
+            getCredentialsManager().delete(env.getId());
         }
 
         if (StringUtils.isNotEmpty(env.getProxyUsername()) || StringUtils.isNotEmpty(env.getProxyPassword())) {
-            credentialsManager.delete(env.getId() + KEY_PROXY_SUFFIX);
+            getCredentialsManager().delete(env.getId() + KEY_PROXY_SUFFIX);
         }
 
         getSettings().getEnvironments().remove(env);

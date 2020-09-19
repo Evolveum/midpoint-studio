@@ -7,7 +7,6 @@ import com.intellij.facet.FacetType;
 import com.intellij.facet.FacetTypeRegistry;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.impl.ModuleManagerEx;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
@@ -130,7 +129,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
     }
 
 //    private void validateModule() {
-//        ModuleManagerEx mm = ModuleManagerEx.getInstanceEx(project);
+//        ModuleManager mm = ModuleManager.getInstance(project);
 //        Module[] modules = mm.getModules();
 //
 //        if (modules == null || modules.length == 0) {
@@ -151,7 +150,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 //
 //    private void validateFacet() {
 //        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-//        ModuleManagerEx mm = ModuleManagerEx.getInstanceEx(project);
+//        ModuleManagerEmm = ModuleManager.getInstance(project);
 //        Module[] modules = mm.getModules();
 //        if (modules == null || modules.length == 0) {
 //            return;

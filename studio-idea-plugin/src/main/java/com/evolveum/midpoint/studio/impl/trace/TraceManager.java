@@ -26,7 +26,7 @@ public class TraceManager {
     }
 
     public static TraceManager getInstance(@NotNull Project project) {
-        return project.getComponent(TraceManager.class);
+        return project.getService(TraceManager.class);
     }
 
     public OpViewType getOpViewType() {
