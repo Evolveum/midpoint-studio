@@ -530,9 +530,11 @@ public class MidPointUtils {
             if (selected.isDirectory()) {
                 VfsUtilCore.iterateChildrenRecursively(
                         selected,
-                        file -> XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
+                        file -> file.isDirectory() || XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
                         file -> {
-                            result.add(file);
+                            if (!file.isDirectory()) {
+                                result.add(file);
+                            }
                             return true;
                         });
             } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {

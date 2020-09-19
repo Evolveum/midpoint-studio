@@ -4,7 +4,7 @@
 * MidPointXmlStructureViewBuilderProvider not finished
 * `DONE` Upload/Execute of scripts doesn't work
 * Finish jira issue submitting (error reporting)
-* Transform components to services
+*  `DONE`Transform components to services
 * Implement action that will allow import one account from resource and then unlink
 * Passwords
 ** `DONE` settings for master password not visible in project/module settings
