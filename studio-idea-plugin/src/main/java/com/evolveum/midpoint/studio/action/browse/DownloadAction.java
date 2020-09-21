@@ -100,7 +100,9 @@ public class DownloadAction extends BackgroundAction {
                 file = FileUtils.createScratchFile(project, environment);
 
                 out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
-                out.write(MidPointObjectUtils.OBJECTS_XML_PREFIX);
+                if (oids.size() > 1) {
+                    out.write(MidPointObjectUtils.OBJECTS_XML_PREFIX);
+                }
 
                 if (oids != null) {
                     showByOid(client, serializer, out);
@@ -108,7 +110,9 @@ public class DownloadAction extends BackgroundAction {
                     showByQuery(client, serializer, out);
                 }
 
-                out.write(MidPointObjectUtils.OBJECTS_XML_SUFFIX);
+                if (oids.size() > 1) {
+                    out.write(MidPointObjectUtils.OBJECTS_XML_SUFFIX);
+                }
 
                 openFile(project, file);
             } catch (Exception ex) {
