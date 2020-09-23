@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TraceManager {
+public class TraceService {
 
     private Project project;
 
@@ -17,7 +17,7 @@ public class TraceManager {
 
     private Options options;
 
-    public TraceManager(@NotNull Project project) {
+    public TraceService(@NotNull Project project) {
         this.project = project;
 
         this.opViewType = OpViewType.ALL;
@@ -25,8 +25,8 @@ public class TraceManager {
         this.options = createOptions(opViewType);
     }
 
-    public static TraceManager getInstance(@NotNull Project project) {
-        return project.getService(TraceManager.class);
+    public static TraceService getInstance(@NotNull Project project) {
+        return project.getService(TraceService.class);
     }
 
     public OpViewType getOpViewType() {

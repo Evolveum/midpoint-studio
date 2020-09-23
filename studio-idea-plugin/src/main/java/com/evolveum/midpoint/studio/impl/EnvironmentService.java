@@ -8,12 +8,12 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public interface EnvironmentManager extends Stateful<EnvironmentSettings> {
+public interface EnvironmentService extends Stateful<EnvironmentSettings> {
 
     String NOTIFICATION_KEY = "Environment";
 
-    static EnvironmentManager getInstance(@NotNull Project project) {
-        return project.getService(EnvironmentManager.class);
+    static EnvironmentService getInstance(@NotNull Project project) {
+        return project.getService(EnvironmentService.class);
     }
 
     EnvironmentSettings getFullSettings();

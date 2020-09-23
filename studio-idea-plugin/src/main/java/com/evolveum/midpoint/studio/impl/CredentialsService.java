@@ -8,12 +8,12 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public interface CredentialsManager {
+public interface CredentialsService {
 
     String NOTIFICATION_KEY = "Credentials";
 
-    static CredentialsManager getInstance(@NotNull Project project) {
-        return project.getService(CredentialsManager.class);
+    static CredentialsService getInstance(@NotNull Project project) {
+        return project.getService(CredentialsService.class);
     }
 
     void init(String masterPassword);

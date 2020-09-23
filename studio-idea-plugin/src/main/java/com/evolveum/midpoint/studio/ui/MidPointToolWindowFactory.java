@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -59,7 +59,7 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
                 new DefaultActionGroup(consoleView.createConsoleActions()), false);
         root.add(toolbar.getComponent(), BorderLayout.WEST);
 
-        MidPointManager.getInstance(project).setConsole(consoleView);
+        MidPointService.getInstance(project).setConsole(consoleView);
 
         return ContentFactory.SERVICE.getInstance()
                 .createContent(root, "Console", false);
@@ -68,7 +68,7 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
     private Content buildCredentials(Project project) {
         JPanel root = new JPanel(new BorderLayout());
 
-        EnvironmentManager environmentManager = EnvironmentManager.getInstance(project);
+        EnvironmentService environmentManager = EnvironmentService.getInstance(project);
 
         CredentialsPanel credentialsPanel = new CredentialsPanel(project, environmentManager);
         root.add(credentialsPanel, BorderLayout.CENTER);

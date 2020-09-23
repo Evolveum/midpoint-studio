@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
-import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceParser;
@@ -59,7 +59,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             data = parser.parse(is, isZip);
             start = parser.getStartTimestamp();
         } catch (Exception ex) {
-            MidPointManager mm = MidPointManager.getInstance(project);
+            MidPointService mm = MidPointService.getInstance(project);
             mm.printToConsole(TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
 
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't load file", ex);

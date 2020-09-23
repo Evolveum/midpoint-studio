@@ -18,9 +18,9 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class CredentialsManagerImpl implements CredentialsManager {
+public class CredentialsServiceImpl implements CredentialsService {
 
-    private static final Logger LOG = Logger.getInstance(CredentialsManagerImpl.class);
+    private static final Logger LOG = Logger.getInstance(CredentialsServiceImpl.class);
 
     private static final String CREDENTIALS_FILE_NAME = "credentials.kdbx";
 
@@ -30,7 +30,7 @@ public class CredentialsManagerImpl implements CredentialsManager {
 
     private KeePassFile database;
 
-    public CredentialsManagerImpl(@NotNull Project project) {
+    public CredentialsServiceImpl(@NotNull Project project) {
         this.project = project;
 
         LOG.info("Initializing " + getClass().getSimpleName());
@@ -44,7 +44,7 @@ public class CredentialsManagerImpl implements CredentialsManager {
             return;
         }
 
-        MidPointSettings settings = MidPointManager.getInstance(project).getSettings();
+        MidPointSettings settings = MidPointService.getInstance(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             return;
         }
@@ -56,7 +56,7 @@ public class CredentialsManagerImpl implements CredentialsManager {
 
     @Override
     public void changeMasterPassword(String oldPassword, String newPassword) {
-        MidPointSettings settings = MidPointManager.getInstance(project).getSettings();
+        MidPointSettings settings = MidPointService.getInstance(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             throw new IllegalStateException("Midpoint setting unavailable");
         }
@@ -232,7 +232,7 @@ public class CredentialsManagerImpl implements CredentialsManager {
     }
 
     private String getMasterPassword() {
-        MidPointSettings settings = MidPointManager.getInstance(project).getSettings();
+        MidPointSettings settings = MidPointService.getInstance(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             return null;
         }

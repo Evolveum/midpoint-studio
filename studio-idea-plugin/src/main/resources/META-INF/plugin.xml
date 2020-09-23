@@ -43,15 +43,15 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointManager"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.CredentialsManagerImpl"
-                        serviceInterface="com.evolveum.midpoint.studio.impl.CredentialsManager"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.CredentialsServiceImpl"
+                        serviceInterface="com.evolveum.midpoint.studio.impl.CredentialsService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EnvironmentManagerImpl"
-                        serviceInterface="com.evolveum.midpoint.studio.impl.EnvironmentManager"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EnvironmentServiceImpl"
+                        serviceInterface="com.evolveum.midpoint.studio.impl.EnvironmentService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.trace.TraceManager"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.trace.TraceService"/>
 
         <projectConfigurable parentId="language" instance="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
                              id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable" displayName="MidPoint"

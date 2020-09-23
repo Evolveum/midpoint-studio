@@ -4,7 +4,7 @@ import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.PerformanceCategory;
-import com.evolveum.midpoint.studio.impl.trace.TraceManager;
+import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -68,7 +68,7 @@ public class TraceViewPanel extends JPanel {
 
         initLayout(bus, startTimestamp);
 
-        TraceManager tm = TraceManager.getInstance(project);
+        TraceService tm = TraceService.getInstance(project);
         applyOptions(tm.getOptions());
     }
 

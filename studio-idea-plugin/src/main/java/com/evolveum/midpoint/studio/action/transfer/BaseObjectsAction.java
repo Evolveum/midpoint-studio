@@ -46,12 +46,12 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
     @Override
     protected void executeOnBackground(AnActionEvent e, ProgressIndicator indicator) {
-        MidPointManager mm = MidPointManager.getInstance(e.getProject());
+        MidPointService mm = MidPointService.getInstance(e.getProject());
         mm.printToConsole(getClass(), "Initializing " + operation + " action");
 
         LOG.debug("Setting up MidPoint client");
 
-        EnvironmentManager em = EnvironmentManager.getInstance(e.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(e.getProject());
         Environment env = em.getSelected();
         MidPointClient client = new MidPointClient(e.getProject(), env);
 
@@ -124,13 +124,13 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         MidPointUtils.publishNotification(notificationKey, title, sb.toString(), type);
     }
 
-    private void publishException(MidPointManager mm, String msg, Exception ex) {
+    private void publishException(MidPointService mm, String msg, Exception ex) {
         mm.printToConsole(getClass(), msg + ". Reason: " + ex.getMessage());
 
         MidPointUtils.publishExceptionNotification(notificationKey, msg, ex);
     }
 
-    private void processFiles(AnActionEvent evt, MidPointManager mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
+    private void processFiles(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
         AtomicInteger problemsCount = new AtomicInteger(0);
         int filesCount = 0;
         AtomicInteger failedFilesCount = new AtomicInteger(0);
@@ -158,7 +158,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         showNotificationAfterFinish(filesCount, failedFilesCount.get(), problemsCount.get());
     }
 
-    private int processText(AnActionEvent evt, MidPointManager mm, ProgressIndicator indicator, MidPointClient client, String text) {
+    private int processText(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, String text) {
         indicator.setIndeterminate(false);
 
         int problemCount = 0;
@@ -210,13 +210,13 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     }
 
     protected void printProblem(Project project, String message) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
 
         mm.printToConsole(getClass(), message);
     }
 
     protected void printAndNotifyProblem(Project project, String operation, String objectName, OperationResult result, Exception ex) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
 
         String msg = StringUtils.capitalize(operation) + " status of " + objectName + " was " + result.getStatus();
         mm.printToConsole(getClass(), msg);
@@ -230,7 +230,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     }
 
     protected void printSuccess(Project project, String operation, String objectName) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
 
         mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " '" + objectName + "' finished");
     }

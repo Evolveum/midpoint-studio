@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.action;
 
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.ShowExceptionNotificationAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -41,7 +41,7 @@ public class TestConnectionAction extends AnAction {
             return;
         }
 
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         Environment selected = em.getSelected();
 
         e.getPresentation().setEnabled(selected != null);
@@ -50,7 +50,7 @@ public class TestConnectionAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         Environment selected = em.getSelected();
 
         Task.Backgroundable task = new Task.Backgroundable(e.getProject(), "Testing connection for '" + selected.getName() + "'") {

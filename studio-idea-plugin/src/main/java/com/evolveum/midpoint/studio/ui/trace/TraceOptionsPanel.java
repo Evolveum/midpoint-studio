@@ -25,7 +25,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
     private static final Logger LOG = Logger.getInstance(TraceOptionsPanel.class);
 
-    private TraceManager traceManager;
+    private TraceService traceManager;
 
     private Map<OpType, JCheckBox> eventChecks = new HashMap<>();
 
@@ -42,7 +42,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
     private JCheckBox readWriteColumns;
 
     public TraceOptionsPanel(Project project) {
-        this.traceManager = TraceManager.getInstance(project);
+        this.traceManager = TraceService.getInstance(project);
 
         initLayout();
     }

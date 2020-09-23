@@ -13,10 +13,10 @@ import java.io.Serializable;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public abstract class ManagerBase<T extends Serializable>
+public abstract class ServiceBase<T extends Serializable>
         implements PersistentStateComponent<T>, ModificationTracker, Stateful<T> {
 
-    private static final Logger LOG = Logger.getInstance(ManagerBase.class);
+    private static final Logger LOG = Logger.getInstance(ServiceBase.class);
 
     private Project project;
 
@@ -25,7 +25,7 @@ public abstract class ManagerBase<T extends Serializable>
 
     private long modificationCount;
 
-    public ManagerBase(Project project, Class<T> settingsClass) {
+    public ServiceBase(Project project, Class<T> settingsClass) {
         LOG.info("Initializing " + getClass().getSimpleName());
         this.project = project;
         this.settingsClass = settingsClass;

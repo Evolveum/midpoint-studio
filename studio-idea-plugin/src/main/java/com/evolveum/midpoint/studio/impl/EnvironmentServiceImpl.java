@@ -16,24 +16,24 @@ import java.util.*;
 @State(
         name = "EnvironmentManager", storages = @Storage(value = "midpoint.xml")
 )
-public class EnvironmentManagerImpl extends ManagerBase<EnvironmentSettings> implements EnvironmentManager {
+public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> implements EnvironmentService {
 
     private static final String KEY_PROXY_SUFFIX = "proxy";
 
     private static final String DESCRIPTION_PROXY_SUFFIX = " (proxy)";
 
-    private static final Logger LOG = Logger.getInstance(EnvironmentManagerImpl.class);
+    private static final Logger LOG = Logger.getInstance(EnvironmentServiceImpl.class);
 
     private MessageBus messageBus;
 
-    public EnvironmentManagerImpl(@NotNull Project project) {
+    public EnvironmentServiceImpl(@NotNull Project project) {
         super(project, EnvironmentSettings.class);
 
         this.messageBus = project.getMessageBus();
     }
 
-    private CredentialsManager getCredentialsManager() {
-        return getProject().getService(CredentialsManager.class);
+    private CredentialsService getCredentialsManager() {
+        return getProject().getService(CredentialsService.class);
     }
 
     @Override

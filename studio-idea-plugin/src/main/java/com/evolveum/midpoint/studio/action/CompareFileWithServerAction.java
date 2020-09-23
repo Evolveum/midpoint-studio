@@ -3,7 +3,7 @@ package com.evolveum.midpoint.studio.action;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -44,7 +44,7 @@ public class CompareFileWithServerAction extends CompareFilesAction {
             return true;
         }
 
-        EnvironmentManager em = EnvironmentManager.getInstance(e.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(e.getProject());
         if (!em.isEnvironmentSelected()) {
             return false;
         }
@@ -106,7 +106,7 @@ public class CompareFileWithServerAction extends CompareFilesAction {
     }
 
     private List<PrismObject<?>> parseObjects(Project project, VirtualFile file) {
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         Environment env = em.getSelected();
         MidPointClient client = new MidPointClient(project, env);
 
@@ -147,7 +147,7 @@ public class CompareFileWithServerAction extends CompareFilesAction {
     }
 
     private VirtualFile getOtherFile(Project project, VirtualFile file1) {
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         Environment env = em.getSelected();
         MidPointClient client = new MidPointClient(project, env);
 

@@ -56,7 +56,7 @@ public class RefreshAction extends BackgroundAction {
 
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
-        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
 
         boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
         evt.getPresentation().setEnabled(enabled);
@@ -68,7 +68,7 @@ public class RefreshAction extends BackgroundAction {
             return;
         }
 
-        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
@@ -100,7 +100,7 @@ public class RefreshAction extends BackgroundAction {
     }
 
     private void processFiles(AnActionEvent evt, ProgressIndicator indicator, Environment env, List<VirtualFile> files) {
-        MidPointManager mm = MidPointManager.getInstance(evt.getProject());
+        MidPointService mm = MidPointService.getInstance(evt.getProject());
 
         MidPointClient client = new MidPointClient(evt.getProject(), env);
 

@@ -19,11 +19,11 @@ public class Expander {
 
     private static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
 
-    private CredentialsManager credentialsManager;
+    private CredentialsService credentialsManager;
 
     private EnvironmentProperties propertyManager;
 
-    public Expander(CredentialsManager credentialsManager, @NotNull EnvironmentProperties propertyManager) {
+    public Expander(CredentialsService credentialsManager, @NotNull EnvironmentProperties propertyManager) {
         this.credentialsManager = credentialsManager;
         this.propertyManager = propertyManager;
     }

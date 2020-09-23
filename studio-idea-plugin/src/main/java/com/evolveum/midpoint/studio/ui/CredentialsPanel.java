@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.Credentials;
-import com.evolveum.midpoint.studio.impl.CredentialsManager;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.CredentialsService;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -20,9 +20,9 @@ import java.util.ArrayList;
 public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
 
     private Project project;
-    private EnvironmentManager environmentManager;
+    private EnvironmentService environmentManager;
 
-    public CredentialsPanel(@NotNull Project project, @NotNull EnvironmentManager environmentManager) {
+    public CredentialsPanel(@NotNull Project project, @NotNull EnvironmentService environmentManager) {
         super(new CredentialsModel(), new ArrayList<>(), null);
 
         this.project = project;
@@ -34,7 +34,7 @@ public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
     }
 
     private void initData() {
-        CredentialsManager manager = CredentialsManager.getInstance(project);
+        CredentialsService manager = CredentialsService.getInstance(project);
         getData().clear();
         getData().addAll(manager.list());
     }
@@ -47,7 +47,7 @@ public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
 
     @Override
     protected boolean removeItem(Credentials o) {
-        CredentialsManager manager = CredentialsManager.getInstance(project);
+        CredentialsService manager = CredentialsService.getInstance(project);
         return manager.delete(o.getKey());
     }
 
@@ -66,7 +66,7 @@ public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
 
         Credentials updated = dialog.getCredentials();
 
-        CredentialsManager manager = CredentialsManager.getInstance(project);
+        CredentialsService manager = CredentialsService.getInstance(project);
         if (credentials == null) {
             // adding
             manager.add(updated);
@@ -84,7 +84,7 @@ public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
 
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
-                        CredentialsManager manager = CredentialsManager.getInstance(project);
+                        CredentialsService manager = CredentialsService.getInstance(project);
                         manager.refresh();
 
                         initData();

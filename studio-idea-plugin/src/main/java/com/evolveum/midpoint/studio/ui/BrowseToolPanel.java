@@ -15,7 +15,7 @@ import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
 import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.browse.Generator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorAction;
@@ -337,7 +337,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         if (ComboQueryType.Type.QUERY_XML != queryType && StringUtils.isNotEmpty(query)) {
             // translate query
-            EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+            EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
             Environment env = em.getSelected();
 
             try {
@@ -383,7 +383,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         updateTableModel(null);
 
         // load data
-        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
         indicator.setText("Searching objects in environment: " + env.getName());
@@ -430,7 +430,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
-        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
         DownloadAction da = new DownloadAction(env, getResultsModel().getSelectedOids(results), showOnly, rawDownload) {
@@ -504,7 +504,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private boolean isSearchEnabled() {
         // todo add condition that we're not currently searching
-        return EnvironmentManager.getInstance(project).isEnvironmentSelected();
+        return EnvironmentService.getInstance(project).isEnvironmentSelected();
     }
 
     private boolean isCancelEnabled() {

@@ -20,13 +20,13 @@ import java.util.Date;
 @State(
         name = "MidPointManager", storages = @Storage(value = "midpoint.xml")
 )
-public class MidPointManager extends ManagerBase<MidPointSettings> {
+public class MidPointService extends ServiceBase<MidPointSettings> {
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     private MidPointConsoleView console;
 
-    public MidPointManager(@NotNull Project project) {
+    public MidPointService(@NotNull Project project) {
         super(project, MidPointSettings.class);
     }
 
@@ -35,8 +35,8 @@ public class MidPointManager extends ManagerBase<MidPointSettings> {
         return MidPointSettings.createDefaultSettings();
     }
 
-    public static MidPointManager getInstance(@NotNull Project project) {
-        return project.getService(MidPointManager.class);
+    public static MidPointService getInstance(@NotNull Project project) {
+        return project.getService(MidPointService.class);
     }
 
     public void setConsole(MidPointConsoleView console) {

@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.studio.impl.MidPointFacetType;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.client.ClientException;
 import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
@@ -9,7 +10,6 @@ import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
@@ -200,7 +200,7 @@ public class MidPointUtils {
     }
 
     public static void publishException(Project project, Class clazz, String notificationKey, String msg, Exception ex) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
         mm.printToConsole(clazz, msg + ". Reason: " + ex.getMessage());
 
         publishExceptionNotification(notificationKey, msg, ex);
@@ -245,7 +245,7 @@ public class MidPointUtils {
                 message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
 
         if (project != null) {
-            MidPointManager manager = MidPointManager.getInstance(project);
+            MidPointService manager = MidPointService.getInstance(project);
             manager.printToConsole(clazz, message, ex);
         }
     }

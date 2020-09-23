@@ -45,7 +45,7 @@ public class MidPointClient {
 
     private Environment environment;
 
-    private MidPointManager midPointManager;
+    private MidPointService midPointManager;
 
     private Service client;
 
@@ -54,7 +54,7 @@ public class MidPointClient {
         this.environment = environment;
 
         if (project != null) {
-            this.midPointManager = MidPointManager.getInstance(project);
+            this.midPointManager = MidPointService.getInstance(project);
         }
 
         init();
@@ -207,7 +207,7 @@ public class MidPointClient {
 
     public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand) throws IOException, AuthenticationException {
         if (expand) {
-            CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
+            CredentialsService cm = project != null ? CredentialsService.getInstance(project) : null;
             Expander expander = new Expander(cm, new EnvironmentProperties(environment));
 
             String expanded = expander.expand(obj.getContent());
@@ -250,7 +250,7 @@ public class MidPointClient {
     }
 
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
-        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
+        CredentialsService cm = project != null ? CredentialsService.getInstance(project) : null;
         Expander expander = new Expander(cm, new EnvironmentProperties(environment));
 
         String expanded = expander.expand(xml);
@@ -260,7 +260,7 @@ public class MidPointClient {
     }
 
     public List<PrismObject<?>> parseObjects(String xml) throws IOException, SchemaException {
-        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
+        CredentialsService cm = project != null ? CredentialsService.getInstance(project) : null;
         Expander expander = new Expander(cm, new EnvironmentProperties(environment));
 
         String expanded = expander.expand(xml);
@@ -270,7 +270,7 @@ public class MidPointClient {
     }
 
     public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
-        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
+        CredentialsService cm = project != null ? CredentialsService.getInstance(project) : null;
         Expander expander = new Expander(cm, new EnvironmentProperties(environment));
 
         try (InputStream is = file.getInputStream()) {
@@ -283,7 +283,7 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> PrismObject<O> parseObject(VirtualFile file) throws IOException, SchemaException {
-        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
+        CredentialsService cm = project != null ? CredentialsService.getInstance(project) : null;
         Expander expander = new Expander(cm, new EnvironmentProperties(environment));
 
         try (InputStream is = file.getInputStream()) {
