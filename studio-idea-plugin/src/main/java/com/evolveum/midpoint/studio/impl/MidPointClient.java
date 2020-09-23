@@ -205,7 +205,17 @@ public class MidPointClient {
         return client.execute(object);
     }
 
-    public UploadResponse uploadRaw(MidPointObject obj, List<String> options) throws IOException, AuthenticationException {
+    public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand) throws IOException, AuthenticationException {
+        if (expand) {
+            CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
+            Expander expander = new Expander(cm, new EnvironmentProperties(environment));
+
+            String expanded = expander.expand(obj.getContent());
+
+            obj = MidPointObject.copy(obj);
+            obj.setContent(expanded);
+        }
+
         UploadResponse response = new UploadResponse();
 
         String oid = client.add(obj, options);

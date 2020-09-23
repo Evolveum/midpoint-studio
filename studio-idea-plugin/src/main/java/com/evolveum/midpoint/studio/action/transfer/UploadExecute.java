@@ -22,7 +22,7 @@ public class UploadExecute extends BaseObjectsAction {
 
     @Override
     public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception {
-        UploadResponse resp = client.uploadRaw(obj, buildAddOptions(obj));
+        UploadResponse resp = client.uploadRaw(obj, buildAddOptions(obj), true);
         OperationResult result = resp.getResult();
 
         return validateOperationResult(evt, result, getOperation(), obj.getName());

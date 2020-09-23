@@ -91,6 +91,12 @@ public class Expander {
             return value;
         }
 
-        return propertyManager.get(key);
+        value = propertyManager.get(key);
+
+        if (value == null) {
+            throw new IllegalStateException("Couldn't translate key '" + key + "'");
+        }
+
+        return value;
     }
 }

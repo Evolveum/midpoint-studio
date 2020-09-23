@@ -71,9 +71,8 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
             if (!StringUtils.isEmpty(text)) {
                 int problemCount = processText(e, mm, indicator, client, text);
-                if (problemCount != 0) {
-                    showNotificationAfterFinish(problemCount);
-                }
+
+                showNotificationAfterFinish(0, 0, problemCount);
             } else {
                 MidPointUtils.publishNotification(notificationKey, "Error", "Text is empty", NotificationType.ERROR);
             }
@@ -100,13 +99,29 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         processFiles(e, mm, indicator, client, toProcess);
     }
 
-    private void showNotificationAfterFinish(int problemCount) {
-        if (problemCount == 0) {
-            MidPointUtils.publishNotification(notificationKey, "Success", getTaskTitle() + " finished", NotificationType.INFORMATION);
+    private void showNotificationAfterFinish(int filesCount, int failedFilesCount, int problemCount) {
+        NotificationType type;
+        String title;
+        StringBuilder sb = new StringBuilder();
+
+        if (failedFilesCount == 0 && problemCount == 0) {
+            type = NotificationType.INFORMATION;
+            title = "Success";
+
+            sb.append(getTaskTitle() + " finished.");
         } else {
-            MidPointUtils.publishNotification(notificationKey, "Warning",
-                    "There were " + problemCount + " problems during '" + getTaskTitle() + "'", NotificationType.WARNING);
+            type = NotificationType.WARNING;
+            title = "Warning";
+
+            sb.append("There were problems during '" + getTaskTitle() + "'");
         }
+
+        sb.append("<br/>");
+        sb.append("Files processed: ").append(filesCount).append("<br/>");
+        sb.append("Failed to process: ").append(failedFilesCount).append(" files<br/>");
+        sb.append("Failed to process: ").append(problemCount).append(" objects<br/>");
+
+        MidPointUtils.publishNotification(notificationKey, title, sb.toString(), type);
     }
 
     private void publishException(MidPointManager mm, String msg, Exception ex) {
@@ -116,28 +131,31 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     }
 
     private void processFiles(AnActionEvent evt, MidPointManager mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
-        AtomicInteger count = new AtomicInteger(0);
+        AtomicInteger problemsCount = new AtomicInteger(0);
+        int filesCount = 0;
+        AtomicInteger failedFilesCount = new AtomicInteger(0);
 
         for (VirtualFile file : files) {
             if (isCanceled()) {
                 break;
             }
 
+            filesCount++;
+
             RunnableUtils.runWriteActionAndWait(() -> {
                 try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                     String xml = IOUtils.toString(in);
 
                     int problems = processText(evt, mm, indicator, client, xml);
-                    count.addAndGet(problems);
+                    problemsCount.addAndGet(problems);
                 } catch (IOException ex) {
+                    failedFilesCount.incrementAndGet();
                     publishException(mm, "Exception occurred when loading file '" + file.getName() + "'", ex);
                 }
             });
         }
 
-        if (count.get() > 0) {
-            showNotificationAfterFinish(count.get());
-        }
+        showNotificationAfterFinish(filesCount, failedFilesCount.get(), problemsCount.get());
     }
 
     private int processText(AnActionEvent evt, MidPointManager mm, ProgressIndicator indicator, MidPointClient client, String text) {
