@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
-import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.trace.Format;
@@ -145,7 +144,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
     }
 
     private void variableDisplayAsChanged(Format format) {
-        ExtendedListSelectionModel ext = (ExtendedListSelectionModel) variables.getSelectionModel();
+        ListSelectionModel ext = variables.getSelectionModel();
         int[] indices = ext.getSelectedIndices();
         if (indices == null || indices.length == 0) {
             applySelection(null);

@@ -13,7 +13,6 @@ import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
-import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
@@ -425,7 +424,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private boolean isResultSelected() {
-        ExtendedListSelectionModel model = (ExtendedListSelectionModel) results.getSelectionModel();
+        ListSelectionModel model = results.getSelectionModel();
         return model.getSelectedItemsCount() != 0;
     }
 

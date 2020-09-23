@@ -1,17 +1,16 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.studio.impl.MidPointFacetType;
-import com.evolveum.midpoint.studio.impl.MidPointService;
-import com.evolveum.midpoint.studio.impl.client.ClientException;
-import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
+import com.evolveum.midpoint.studio.impl.MidPointFacetType;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
+import com.evolveum.midpoint.studio.impl.client.ClientException;
+import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -299,7 +298,6 @@ public class MidPointUtils {
         table.setEditable(false);
         table.setDragEnabled(false);
         table.setHorizontalScrollEnabled(true);
-        table.setSelectionModel(new ExtendedListSelectionModel(table.getSelectionModel()));        // todo fix
         table.setTreeTableModel(model);
         table.setLeafIcon(null);
         table.setClosedIcon(null);
