@@ -8,9 +8,6 @@ import com.evolveum.prism.xml.ns._public.types_3.HashedDataType;
 import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.project.Project;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -135,20 +132,5 @@ public class TraceUtils {
 
     public static String prettyPrint(List<PrismValue> values) {
         return values.stream().map(value -> prettyPrint(value)).collect(Collectors.joining("; "));
-    }
-
-    public static boolean shouldBeVisible(Project project) {
-        return true;
-        // todo finish - window factories - tool window visibility should be checked not only on startup
-
-//        FileEditorManager fem = FileEditorManager.getInstance(project);
-//
-//        for (FileEditor editor : fem.getAllEditors()) {
-//            if (editor instanceof TraceViewEditor) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
     }
 }

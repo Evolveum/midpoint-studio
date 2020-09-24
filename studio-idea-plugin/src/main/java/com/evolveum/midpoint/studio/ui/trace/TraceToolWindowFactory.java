@@ -59,11 +59,6 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     @Override
-    public boolean shouldBeAvailable(@NotNull Project project) {
-        return TraceUtils.shouldBeVisible(project);
-    }
-
-    @Override
     public boolean isDoNotActivateOnStart() {
         return false;
     }

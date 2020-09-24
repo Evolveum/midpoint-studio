@@ -1,81 +1,34 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.Credentials;
 import com.evolveum.midpoint.studio.impl.CredentialsService;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.AddEditRemovePanel;
-import org.apache.commons.lang3.StringUtils;
+import com.intellij.ui.components.JBTabbedPane;
+import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
+public class CredentialsPanel extends BorderLayoutPanel {
 
-    private Project project;
-    private EnvironmentService environmentManager;
-
-    public CredentialsPanel(@NotNull Project project, @NotNull EnvironmentService environmentManager) {
-        super(new CredentialsModel(), new ArrayList<>(), null);
-
-        this.project = project;
-        this.environmentManager = environmentManager;
-
-        initData();
-
-        getTable().setShowColumns(true);
+    public CredentialsPanel(Project project) {
+        initLayout(project);
     }
 
-    private void initData() {
-        CredentialsService manager = CredentialsService.getInstance(project);
-        getData().clear();
-        getData().addAll(manager.list());
-    }
+    private void initLayout(Project project) {
+        JBTabbedPane tabbedPane = new JBTabbedPane();
+        tabbedPane.setTabComponentInsets(new Insets(0, 0, 0, 0));
 
-    @Nullable
-    @Override
-    protected Credentials addItem() {
-        return doAddOrEdit(null);
-    }
+        add(tabbedPane, BorderLayout.CENTER);
 
-    @Override
-    protected boolean removeItem(Credentials o) {
-        CredentialsService manager = CredentialsService.getInstance(project);
-        return manager.delete(o.getKey());
-    }
-
-    @Nullable
-    @Override
-    protected Credentials editItem(Credentials o) {
-        return doAddOrEdit(o);
-    }
-
-    @Nullable
-    private Credentials doAddOrEdit(Credentials credentials) {
-        CredentialsEditorDialog dialog = new CredentialsEditorDialog(credentials, environmentManager.getEnvironments());
-        if (!dialog.showAndGet()) {
-            return null;
-        }
-
-        Credentials updated = dialog.getCredentials();
-
-        CredentialsService manager = CredentialsService.getInstance(project);
-        if (credentials == null) {
-            // adding
-            manager.add(updated);
-        } else {
-            // editing
-            manager.delete(credentials.getKey());
-        }
-
-        return updated;
+        tabbedPane.addTab("Properties", new EncryptedPropertiesPanel(project));
+        tabbedPane.addTab("Environments", new JPanel());
     }
 
     public AnAction[] createConsoleActions() {
@@ -84,47 +37,16 @@ public class CredentialsPanel extends AddEditRemovePanel<Credentials> {
 
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
-                        CredentialsService manager = CredentialsService.getInstance(project);
+                        CredentialsService manager = CredentialsService.getInstance(e.getProject());
                         manager.refresh();
 
-                        initData();
+                        refreshUi();
                     }
                 }
         };
     }
 
-    private static class CredentialsModel extends TableModel<Credentials> {
-
-        private static final String[] COLUMN_NAMES = {"Key", "Username", "Password", "Description"};
-
-        @Override
-        public int getColumnCount() {
-            return COLUMN_NAMES.length;
-        }
-
-        @Nullable
-        @Override
-        public String getColumnName(int i) {
-            return COLUMN_NAMES[i];
-        }
-
-        @Override
-        public Object getField(Credentials credentials, int i) {
-            switch (i) {
-                case 0:
-                    return credentials.getKey();
-                case 1:
-                    return credentials.getUsername();
-                case 2:
-                    if (credentials.getPassword() == null) {
-                        return null;
-                    }
-                    return StringUtils.repeat("*", credentials.getPassword().length());
-                case 3:
-                    return credentials.getDescription();
-                default:
-                    return null;
-            }
-        }
+    private void refreshUi() {
+        // todo implement
     }
 }
