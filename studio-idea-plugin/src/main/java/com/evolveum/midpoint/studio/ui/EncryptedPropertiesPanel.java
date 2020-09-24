@@ -1,13 +1,19 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.EncryptedProperty;
+import com.evolveum.midpoint.studio.impl.EncryptionService;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AddEditRemovePanel;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -16,28 +22,23 @@ public class EncryptedPropertiesPanel extends AddEditRemovePanel<EncryptedProper
 
     private Project project;
 
-    public EncryptedPropertiesPanel(Project project) {
-        super(new EncryptedPropertiesModel(), new ArrayList<>(), null);
+    private EnvironmentService environmentService;
+
+    public EncryptedPropertiesPanel(@NotNull Project project, @NotNull EnvironmentService environmentService) {
+        super(new EncryptedPropertyModel(environmentService), new ArrayList<>(), null);
 
         this.project = project;
-
-        setPreferredSize(new Dimension(150, 100));
-        getTable().setShowColumns(true);
+        this.environmentService = environmentService;
 
         initData();
+
+        getTable().setShowColumns(true);
     }
 
     private void initData() {
-        List<EncryptedProperty> properties = new ArrayList<>();
-
-        // todo fill in
-
-        setData(properties);
-    }
-
-    @Override
-    protected boolean removeItem(EncryptedProperty environment) {
-        return getData().remove(environment);
+        EncryptionService manager = EncryptionService.getInstance(project);
+        getData().clear();
+        getData().addAll(manager.list(EncryptedProperty.class));
     }
 
     @Nullable
@@ -46,55 +47,57 @@ public class EncryptedPropertiesPanel extends AddEditRemovePanel<EncryptedProper
         return doAddOrEdit(null);
     }
 
+    @Override
+    protected boolean removeItem(EncryptedProperty o) {
+        EncryptionService manager = EncryptionService.getInstance(project);
+        return manager.delete(o.getKey());
+    }
+
     @Nullable
     @Override
-    protected EncryptedProperty editItem(EncryptedProperty environment) {
-        return doAddOrEdit(environment);
+    protected EncryptedProperty editItem(EncryptedProperty o) {
+        return doAddOrEdit(o);
     }
 
     @Nullable
-    private EncryptedProperty doAddOrEdit(@Nullable EncryptedProperty environment) {
-//        EnvironmentEditorDialog dialog = new EnvironmentEditorDialog(project, environment);
-//        if (!dialog.showAndGet()) {
-//            return null;
-//        }
-//
-//        Selectable<Environment> env = dialog.getEnvironment();
-//        if (!env.isSelected()) {
-//            return env;
-//        }
-//
-//        for (Selectable<Environment> e : getData()) {
-//            if (e.equals(env)) {
-//                continue;
-//            }
-//
-//            e.setSelected(false);
-//        }
+    private EncryptedProperty doAddOrEdit(EncryptedProperty property) {
+        EncryptedPropertyEditorDialog dialog = new EncryptedPropertyEditorDialog(property, environmentService.getEnvironments());
+        if (!dialog.showAndGet()) {
+            return null;
+        }
 
-        return environment;
+        EncryptedProperty updated = dialog.getEncryptedProperty();
+
+        EncryptionService manager = EncryptionService.getInstance(project);
+        manager.add(updated);
+
+        return updated;
     }
 
-//    public EnvironmentSettings getFullSettings() {
-//        EnvironmentSettings settings = new EnvironmentSettings();
-//
-//        List<Environment> envts = new ArrayList<>();
-//        getData().forEach(s -> envts.add(s.getObject()));
-//        settings.setEnvironments(envts);
-//
-//        for (EncryptedProperty e : getData()) {
-//            if (e.isSelected()) {
-//                settings.setSelectedId(e.getObject().getId());
-//                break;
-//            }
-//        }
-//
-//        return settings;
-//    }
+    public AnAction[] createConsoleActions() {
+        return new AnAction[]{
+                new AnAction("Refresh", "Refresh", AllIcons.Actions.Refresh) {
 
-    private static class EncryptedPropertiesModel extends TableModel<EncryptedProperty> {
+                    @Override
+                    public void actionPerformed(@NotNull AnActionEvent e) {
+                        EncryptionService manager = EncryptionService.getInstance(project);
+                        manager.refresh();
+
+                        initData();
+                    }
+                }
+        };
+    }
+
+    private static class EncryptedPropertyModel extends TableModel<EncryptedProperty> {
 
         private static final String[] COLUMN_NAMES = {"Key", "Environment", "Value", "Description"};
+
+        private EnvironmentService environmentService;
+
+        public EncryptedPropertyModel(EnvironmentService environmentService) {
+            this.environmentService = environmentService;
+        }
 
         @Override
         public int getColumnCount() {
@@ -113,9 +116,22 @@ public class EncryptedPropertiesPanel extends AddEditRemovePanel<EncryptedProper
                 case 0:
                     return property.getKey();
                 case 1:
-                    return property.getEnvironment();
+                    if (StringUtils.isNotEmpty(property.getEnvironment())) {
+                        Environment env = environmentService.get(property.getEnvironment());
+                        if (env != null) {
+                            return env.getName();
+                        }
+
+                        return property.getEnvironment();
+                    }
+
+                    return EncryptedPropertyEditorDialog.ALL_ENVIRONMENTS;
                 case 2:
-                    return property.getValue();
+                    if (property.getValue() == null) {
+                        return null;
+                    }
+
+                    return StringUtils.abbreviate(StringUtils.repeat("*", property.getValue().length()), 15);
                 case 3:
                     return property.getDescription();
                 default:

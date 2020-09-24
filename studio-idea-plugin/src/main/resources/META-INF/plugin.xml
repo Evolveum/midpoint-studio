@@ -45,8 +45,8 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.CredentialsServiceImpl"
-                        serviceInterface="com.evolveum.midpoint.studio.impl.CredentialsService"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
+                        serviceInterface="com.evolveum.midpoint.studio.impl.EncryptionService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EnvironmentServiceImpl"
                         serviceInterface="com.evolveum.midpoint.studio.impl.EnvironmentService"/>

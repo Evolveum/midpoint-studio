@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.Credentials;
+import com.evolveum.midpoint.studio.impl.EncryptedProperty;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -19,23 +19,25 @@ import java.util.Objects;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class CredentialsEditorDialog extends DialogWrapper {
+public class EncryptedPropertyEditorDialog extends DialogWrapper {
 
-    private Credentials credentials;
+    public static final String ALL_ENVIRONMENTS = "All Environments";
+
+    private EncryptedProperty property;
+
     private List<Environment> environments = new ArrayList<>();
 
     private JTextField key;
-    private JTextField username;
-    private JPasswordField password;
+    private JTextField password;
     private JTextArea description;
     private JPanel root;
     private JComboBox environment;
 
-    public CredentialsEditorDialog(@Nullable Credentials credentials, List<Environment> environments) {
+    public EncryptedPropertyEditorDialog(@Nullable EncryptedProperty property, List<Environment> environments) {
         super(false);
-        setTitle(credentials == null ? "Add credentials" : "Edit credentials");
+        setTitle(property == null ? "Add Encrypted Property" : "Edit Encrypted Property");
 
-        this.credentials = credentials != null ? credentials : new Credentials();
+        this.property = property != null ? property : new EncryptedProperty();
 
         if (environments != null) {
             this.environments.addAll(environments);
@@ -58,8 +60,8 @@ public class CredentialsEditorDialog extends DialogWrapper {
         return key;
     }
 
-    public Credentials getCredentials() {
-        return credentials;
+    public EncryptedProperty getEncryptedProperty() {
+        return property;
     }
 
     @NotNull
@@ -76,41 +78,43 @@ public class CredentialsEditorDialog extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        fillCredentials();
+        populateProperty();
 
         super.doOKAction();
     }
 
     private void fillInFields() {
-        ComboBoxModel model = new ListComboBoxModel(environments);
+        List<Environment> list = new ArrayList<>();
+        list.add(null);
+        list.addAll(environments);
+
+        ComboBoxModel model = new ListComboBoxModel(list);
         environment.setModel(model);
 
-        key.setText(credentials.getKey());
+        key.setText(property.getKey());
 
-        if (credentials.getEnvironment() != null) {
+        if (property.getEnvironment() != null) {
             Environment env = null;
             for (Environment e : environments) {
-                if (Objects.equals(e.getId(), credentials.getEnvironment())) {
+                if (Objects.equals(e.getId(), property.getEnvironment())) {
                     env = e;
                 }
             }
             environment.setSelectedItem(env);
         }
 
-        username.setText(credentials.getUsername());
-        password.setText(credentials.getPassword());
-        description.setText(credentials.getDescription());
+        password.setText(property.getValue());
+        description.setText(property.getDescription());
     }
 
-    private void fillCredentials() {
-        credentials.setKey(key.getText());
+    private void populateProperty() {
+        property.setKey(key.getText());
 
         Environment env = (Environment) environment.getSelectedItem();
-        credentials.setEnvironment(env != null ? env.getId() : null);
+        property.setEnvironment(env != null ? env.getId() : null);
 
-        credentials.setUsername(username.getText());
-        credentials.setPassword(new String(password.getPassword()));
-        credentials.setDescription(description.getText());
+        property.setValue(password.getText());
+        property.setDescription(description.getText());
     }
 
     private void createUIComponents() {
@@ -122,7 +126,7 @@ public class CredentialsEditorDialog extends DialogWrapper {
                 if (value instanceof Environment) {
                     value = ((Environment) value).getName();
                 } else if (value == null) {
-                    value = "All Environments";
+                    value = ALL_ENVIRONMENTS;
                 }
 
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);

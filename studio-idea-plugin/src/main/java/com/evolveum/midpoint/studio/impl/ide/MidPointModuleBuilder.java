@@ -194,7 +194,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
     public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
         MidPointService.getInstance(project).setSettings(settings.getMidPointSettings());
 
-        CredentialsService.getInstance(project).init(settings.getMasterPassword());
+        EncryptionService.getInstance(project).init(settings.getMasterPassword());
 
         EnvironmentService.getInstance(project).setSettings(settings.getEnvironmentSettings());
 

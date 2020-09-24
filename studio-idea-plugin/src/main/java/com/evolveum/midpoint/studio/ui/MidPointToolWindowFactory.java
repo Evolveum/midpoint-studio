@@ -13,7 +13,6 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
-import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -38,11 +37,8 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
         Content consoleContent = buildConsole(project);
         contentManager.addContent(consoleContent);
 
-        Content credentialsContent = buildCredentials(project);
-        contentManager.addContent(credentialsContent);
-
-        Content credentialsContent2 = buildCredentials2(project);
-        contentManager.addContent(credentialsContent2);
+        Content propertiesContent = buildEncryptedProperties(project);
+        contentManager.addContent(propertiesContent);
     }
 
     private Content buildBrowser(Project project) {
@@ -69,33 +65,19 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
                 .createContent(root, "Console", false);
     }
 
-    private Content buildCredentials(Project project) {
+    private Content buildEncryptedProperties(Project project) {
         JPanel root = new JPanel(new BorderLayout());
 
         EnvironmentService environmentManager = EnvironmentService.getInstance(project);
 
-        EnvironmentCredentials credentialsPanel = new EnvironmentCredentials(project, environmentManager);
-        root.add(credentialsPanel, BorderLayout.CENTER);
+        EncryptedPropertiesPanel propertiesPanel = new EncryptedPropertiesPanel(project, environmentManager);
+        root.add(propertiesPanel, BorderLayout.CENTER);
 
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("CredentialsActions",
-                new DefaultActionGroup(credentialsPanel.createConsoleActions()), false);
+        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("EncryptedPropertiesActions",
+                new DefaultActionGroup(propertiesPanel.createConsoleActions()), false);
         root.add(toolbar.getComponent(), BorderLayout.WEST);
 
-        return ContentFactory.SERVICE.getInstance().createContent(root, "Credentials", false);
-    }
-
-    private Content buildCredentials2(Project project) {
-        JPanel root = new JPanel(new BorderLayout());
-
-        CredentialsPanel credentialsPanel = new CredentialsPanel(project);
-        credentialsPanel.setBorder(JBUI.Borders.customLine(JBUI.CurrentTheme.DefaultTabs.borderColor(), 0, 1, 1, 1));
-        root.add(credentialsPanel, BorderLayout.CENTER);
-
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("CredentialsActions2",
-                new DefaultActionGroup(credentialsPanel.createConsoleActions()), false);
-        root.add(toolbar.getComponent(), BorderLayout.WEST);
-
-        return ContentFactory.SERVICE.getInstance().createContent(root, "Credentials2", false);
+        return ContentFactory.SERVICE.getInstance().createContent(root, "Encrypted Properties", false);
     }
 
     @Override

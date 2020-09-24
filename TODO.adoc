@@ -36,4 +36,4 @@
     * `DONE` after move from cxf to okhttp this was removed and not replaced by anything
     * `DONE` also parsing will not work correctly probably for specific objects
 * better error message for resource upload when there's wrong connectorRef (returns error 500)
-* encrypted properties UI improvements, dialog should be different as for environment username/password editor probably, review, rethink
+* new action "patch" or update operation which can use ObjectDeltaType

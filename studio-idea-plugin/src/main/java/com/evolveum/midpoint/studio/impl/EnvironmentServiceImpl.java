@@ -32,8 +32,8 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
         this.messageBus = project.getMessageBus();
     }
 
-    private CredentialsService getCredentialsManager() {
-        return getProject().getService(CredentialsService.class);
+    private EncryptionService getEncryptionService() {
+        return getProject().getService(EncryptionService.class);
     }
 
     @Override
@@ -89,13 +89,15 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
     private Environment buildFullEnvironment(Environment env) {
         Environment copy = new Environment(env);
 
-        Credentials credentials = getCredentialsManager().get(copy.getId());
+        EncryptionService service = getEncryptionService();
+
+        EncryptedCredentials credentials = service.get(copy.getId(), EncryptedCredentials.class);
         if (credentials != null) {
             copy.setUsername(credentials.getUsername());
             copy.setPassword(credentials.getPassword());
         }
 
-        credentials = getCredentialsManager().get(copy.getId() + KEY_PROXY_SUFFIX);
+        credentials = service.get(copy.getId() + KEY_PROXY_SUFFIX, EncryptedCredentials.class);
         if (credentials != null) {
             copy.setProxyUsername(credentials.getUsername());
             copy.setProxyPassword(credentials.getPassword());
@@ -137,15 +139,15 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
         LOG.debug("Adding environment " + env);
 
         if (StringUtils.isNotEmpty(env.getUsername()) || StringUtils.isNotEmpty(env.getPassword())) {
-            Credentials credentials = new Credentials(
+            EncryptedCredentials credentials = new EncryptedCredentials(
                     env.getId(), env.getId(), env.getUsername(), env.getPassword(), env.getName());
-            getCredentialsManager().add(credentials);
+            getEncryptionService().add(credentials);
         }
 
         if (StringUtils.isNotEmpty(env.getProxyUsername()) || StringUtils.isNotEmpty(env.getProxyPassword())) {
-            Credentials credentials = new Credentials(KEY_PROXY_SUFFIX, env.getId(), env.getProxyUsername(),
+            EncryptedCredentials credentials = new EncryptedCredentials(KEY_PROXY_SUFFIX, env.getId(), env.getProxyUsername(),
                     env.getProxyPassword(), env.getName() + DESCRIPTION_PROXY_SUFFIX);
-            getCredentialsManager().add(credentials);
+            getEncryptionService().add(credentials);
         }
 
         getSettings().getEnvironments().add(env);
@@ -163,11 +165,11 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
         }
 
         if (StringUtils.isNotEmpty(env.getUsername()) || StringUtils.isNotEmpty(env.getPassword())) {
-            getCredentialsManager().delete(env.getId());
+            getEncryptionService().delete(env.getId());
         }
 
         if (StringUtils.isNotEmpty(env.getProxyUsername()) || StringUtils.isNotEmpty(env.getProxyPassword())) {
-            getCredentialsManager().delete(env.getId() + KEY_PROXY_SUFFIX);
+            getEncryptionService().delete(env.getId() + KEY_PROXY_SUFFIX);
         }
 
         getSettings().getEnvironments().remove(env);

@@ -8,12 +8,12 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public interface CredentialsService {
+public interface EncryptionService {
 
     String NOTIFICATION_KEY = "Credentials";
 
-    static CredentialsService getInstance(@NotNull Project project) {
-        return project.getService(CredentialsService.class);
+    static EncryptionService getInstance(@NotNull Project project) {
+        return project.getService(EncryptionService.class);
     }
 
     void init(String masterPassword);
@@ -24,11 +24,15 @@ public interface CredentialsService {
 
     void refresh();
 
-    List<Credentials> list();
+    <T extends EncryptedObject> List<T> list(Class<T> type);
 
-    String add(Credentials credentials);
+    List<EncryptedObject> list();
+
+    String add(EncryptedObject property);
 
     boolean delete(String key);
 
-    Credentials get(String key);
+    EncryptedObject get(String key);
+
+    <T extends EncryptedObject> T get(String key, Class<T> type);
 }

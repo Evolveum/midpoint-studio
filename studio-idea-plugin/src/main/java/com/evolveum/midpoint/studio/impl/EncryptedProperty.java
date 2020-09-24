@@ -1,34 +1,31 @@
 package com.evolveum.midpoint.studio.impl;
 
-import java.io.Serializable;
+import de.slackspace.openkeepass.domain.Entry;
+import de.slackspace.openkeepass.domain.EntryBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class EncryptedProperty implements Serializable {
-
-    private String key;
-
-    private String environment;
+public class EncryptedProperty extends EncryptedObject {
 
     private String value;
 
-    private String description;
-
-    public String getKey() {
-        return key;
+    public EncryptedProperty() {
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public EncryptedProperty(Entry entry) {
+        super(entry);
+
+        if (StringUtils.isNotEmpty(entry.getPassword())) {
+            value = entry.getPassword();
+        }
     }
 
-    public String getEnvironment() {
-        return environment;
-    }
+    public EncryptedProperty(String key, String environment, String value, String description) {
+        super(key, environment, description);
 
-    public void setEnvironment(String environment) {
-        this.environment = environment;
+        this.value = value;
     }
 
     public String getValue() {
@@ -39,33 +36,28 @@ public class EncryptedProperty implements Serializable {
         this.value = value;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
-        EncryptedProperty that = (EncryptedProperty) o;
+        EncryptedProperty property = (EncryptedProperty) o;
 
-        if (key != null ? !key.equals(that.key) : that.key != null) return false;
-        if (environment != null ? !environment.equals(that.environment) : that.environment != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-        return description != null ? description.equals(that.description) : that.description == null;
+        return value != null ? value.equals(property.value) : property.value == null;
     }
 
     @Override
     public int hashCode() {
-        int result = key != null ? key.hashCode() : 0;
-        result = 31 * result + (environment != null ? environment.hashCode() : 0);
+        int result = super.hashCode();
         result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
         return result;
+    }
+
+    public EntryBuilder buildEntry() {
+        EntryBuilder builder = super.buildEntry();
+        builder.password(value);
+
+        return builder;
     }
 }

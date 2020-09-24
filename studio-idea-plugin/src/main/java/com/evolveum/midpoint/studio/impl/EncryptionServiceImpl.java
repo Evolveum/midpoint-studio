@@ -18,9 +18,9 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class CredentialsServiceImpl implements CredentialsService {
+public class EncryptionServiceImpl implements EncryptionService {
 
-    private static final Logger LOG = Logger.getInstance(CredentialsServiceImpl.class);
+    private static final Logger LOG = Logger.getInstance(EncryptionServiceImpl.class);
 
     private static final String CREDENTIALS_FILE_NAME = "credentials.kdbx";
 
@@ -30,7 +30,7 @@ public class CredentialsServiceImpl implements CredentialsService {
 
     private KeePassFile database;
 
-    public CredentialsServiceImpl(@NotNull Project project) {
+    public EncryptionServiceImpl(@NotNull Project project) {
         this.project = project;
 
         LOG.info("Initializing " + getClass().getSimpleName());
@@ -115,22 +115,32 @@ public class CredentialsServiceImpl implements CredentialsService {
     }
 
     @Override
-    public synchronized List<Credentials> list() {
+    public List<EncryptedObject> list() {
+        return list(EncryptedObject.class);
+    }
+
+    @Override
+    public synchronized <T extends EncryptedObject> List<T> list(@NotNull Class<T> type) {
         Group group = getTopGroup();
         if (group == null) {
             return new ArrayList<>();
         }
 
-        List<Credentials> list = new ArrayList<>();
+        List<T> list = new ArrayList<>();
         for (Entry entry : group.getEntries()) {
-            list.add(createCredentials(entry));
+            EncryptedProperty property = createCredentials(entry);
+            if (type.isAssignableFrom(property.getClass())) {
+                continue;
+            }
+
+            list.add((T) property);
         }
 
         return list;
     }
 
     @Override
-    public synchronized String add(Credentials credentials) {
+    public synchronized String add(EncryptedObject credentials) {
         LOG.debug("Adding credentials ", credentials);
 
         Group group = getTopGroup();
@@ -138,12 +148,7 @@ public class CredentialsServiceImpl implements CredentialsService {
             return null;
         }
 
-        Entry entry = new EntryBuilder()
-                .title(credentials.getKey())
-                .username(credentials.getUsername())
-                .password(credentials.getPassword())
-                .notes(credentials.getDescription())
-                .build();
+        Entry entry = credentials.buildEntry().build();
 
         Entry existing = group.getEntryByTitle(entry.getTitle());
         if (existing != null) {
@@ -178,14 +183,28 @@ public class CredentialsServiceImpl implements CredentialsService {
     }
 
     @Override
-    public synchronized Credentials get(String key) {
+    public <T extends EncryptedObject> T get(@NotNull String key, @NotNull Class<T> type) {
         Group group = getTopGroup();
         if (group == null) {
             return null;
         }
 
         Entry entry = group.getEntryByTitle(key);
-        return entry != null ? createCredentials(entry) : null;
+        if (entry == null) {
+            return null;
+        }
+
+        EncryptedProperty property = createCredentials(entry);
+        if (type.isAssignableFrom(property.getClass())) {
+            return null;
+        }
+
+        return (T) property;
+    }
+
+    @Override
+    public synchronized EncryptedObject get(@NotNull String key) {
+        return get(key, EncryptedObject.class);
     }
 
     private Group getTopGroup() {
@@ -240,11 +259,25 @@ public class CredentialsServiceImpl implements CredentialsService {
         return MidPointUtils.getPassword(settings.getProjectId());
     }
 
-    private Credentials createCredentials(Entry entry) {
-        return new Credentials(entry.getTitle(),
-                entry.getUrl(),
-                entry.getUsername(),
-                entry.getPassword(),
-                entry.getNotes());
+    private EncryptedProperty createCredentials(Entry entry) {
+        try {
+            String title = entry.getTitle();
+            Class<? extends EncryptedProperty> type = EncryptedProperty.class;
+            if (title != null && title.matches("(?i)[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}")) {
+                // we'll guess default type as credentials when title contains UUID. This is just for backwards compatibility
+                type = EncryptedCredentials.class;
+            }
+
+            List<String> tags = entry.getTags();
+            if (tags != null && tags.size() > 0) {
+                String t = tags.get(0);
+
+                type = (Class) getClass().getClassLoader().loadClass(t);
+            }
+
+            return type.getConstructor(Entry.class).newInstance(entry);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 }

@@ -104,7 +104,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         String title;
         StringBuilder sb = new StringBuilder();
 
-        if (failedFilesCount == 0 && failedObjects == 0) {
+        if (failedFilesCount == 0 && failedObjects == 0 && successObjects > 0) {
             type = NotificationType.INFORMATION;
             title = "Success";
 

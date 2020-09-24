@@ -102,7 +102,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
         if (StringUtils.isNotEmpty(pSettings.getMasterPassword())) {
             try {
-                CredentialsService.getInstance(project).changeMasterPassword(pSettings.getOldMasterPassword(), pSettings.getMasterPassword());
+                EncryptionService.getInstance(project).changeMasterPassword(pSettings.getOldMasterPassword(), pSettings.getMasterPassword());
             } catch (Exception ex) {
                 throw new ConfigurationException(ex.getMessage());
             }
