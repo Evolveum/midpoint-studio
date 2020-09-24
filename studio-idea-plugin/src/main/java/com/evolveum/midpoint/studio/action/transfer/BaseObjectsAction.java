@@ -70,9 +70,9 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             });
 
             if (!StringUtils.isEmpty(text)) {
-                int problemCount = processText(e, mm, indicator, client, text);
+                ProcessState state = processText(e, mm, indicator, client, text);
 
-                showNotificationAfterFinish(0, 0, problemCount);
+                showNotificationAfterFinish(0, 0, state.success, state.fail);
             } else {
                 MidPointUtils.publishNotification(notificationKey, "Error", "Text is empty", NotificationType.ERROR);
             }
@@ -99,12 +99,12 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         processFiles(e, mm, indicator, client, toProcess);
     }
 
-    private void showNotificationAfterFinish(int filesCount, int failedFilesCount, int problemCount) {
+    private void showNotificationAfterFinish(int filesCount, int failedFilesCount, int successObjects, int failedObjects) {
         NotificationType type;
         String title;
         StringBuilder sb = new StringBuilder();
 
-        if (failedFilesCount == 0 && problemCount == 0) {
+        if (failedFilesCount == 0 && failedObjects == 0) {
             type = NotificationType.INFORMATION;
             title = "Success";
 
@@ -117,9 +117,10 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         }
 
         sb.append("<br/>");
+        sb.append("Processed: ").append(successObjects).append(" objects<br/>");
+        sb.append("Failed to process: ").append(failedObjects).append(" objects <br/>");
         sb.append("Files processed: ").append(filesCount).append("<br/>");
         sb.append("Failed to process: ").append(failedFilesCount).append(" files<br/>");
-        sb.append("Failed to process: ").append(problemCount).append(" objects<br/>");
 
         MidPointUtils.publishNotification(notificationKey, title, sb.toString(), type);
     }
@@ -131,7 +132,8 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     }
 
     private void processFiles(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
-        AtomicInteger problemsCount = new AtomicInteger(0);
+        AtomicInteger success = new AtomicInteger(0);
+        AtomicInteger fail = new AtomicInteger(0);
         int filesCount = 0;
         AtomicInteger failedFilesCount = new AtomicInteger(0);
 
@@ -146,8 +148,9 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                     String xml = IOUtils.toString(in);
 
-                    int problems = processText(evt, mm, indicator, client, xml);
-                    problemsCount.addAndGet(problems);
+                    ProcessState state = processText(evt, mm, indicator, client, xml);
+                    success.addAndGet(state.success);
+                    fail.addAndGet(state.fail);
                 } catch (IOException ex) {
                     failedFilesCount.incrementAndGet();
                     publishException(mm, "Exception occurred when loading file '" + file.getName() + "'", ex);
@@ -155,13 +158,13 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             });
         }
 
-        showNotificationAfterFinish(filesCount, failedFilesCount.get(), problemsCount.get());
+        showNotificationAfterFinish(filesCount, failedFilesCount.get(), success.get(), fail.get());
     }
 
-    private int processText(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, String text) {
+    private ProcessState processText(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, String text) {
         indicator.setIndeterminate(false);
 
-        int problemCount = 0;
+        ProcessState state = new ProcessState();
 
         try {
             List<MidPointObject> objects = MidPointObjectUtils.parseText(text, notificationKey);
@@ -175,25 +178,27 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 try {
                     ProcessObjectResult processResult = processObject(evt, client, obj);
                     if (processResult.problem()) {
-                        problemCount++;
+                        state.fail++;
+                    } else {
+                        state.success++;
                     }
 
                     if (!processResult.shouldContinue()) {
                         break;
                     }
                 } catch (Exception ex) {
-                    problemCount++;
+                    state.fail++;
 
                     publishException(mm, "Exception occurred during " + operation + " of '" + obj.getName() + "(" + obj.getOid() + ")'", ex);
                 }
             }
         } catch (Exception ex) {
-            problemCount++;
+            state.fail++;
 
             publishException(mm, "Exception occurred during " + operation, ex);
         }
 
-        return problemCount;
+        return state;
     }
 
     public abstract <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception;
@@ -237,5 +242,12 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
     protected String getOperation() {
         return operation;
+    }
+
+    private static class ProcessState {
+
+        private int success;
+
+        private int fail;
     }
 }

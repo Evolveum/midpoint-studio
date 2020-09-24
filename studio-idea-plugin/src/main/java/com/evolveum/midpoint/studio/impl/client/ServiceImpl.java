@@ -293,8 +293,8 @@ public class ServiceImpl implements Service {
 
         String path = "/" + ObjectTypes.RESOURCE.getRestType() + "/" + oid + "/test";
 
-        Request.Builder builder = context.build("/" + path + "/" + oid)
-                .post(RequestBody.create((String) null, ServiceContext.APPLICATION_XML));
+        Request.Builder builder = context.build(path)
+                .post(RequestBody.create("", ServiceContext.APPLICATION_XML));
 
         Request req = builder.build();
 
