@@ -37,3 +37,7 @@
     * `DONE` also parsing will not work correctly probably for specific objects
 * better error message for resource upload when there's wrong connectorRef (returns error 500)
 * new action "patch" or update operation which can use ObjectDeltaType
+* "Samples" toolbar action button
+** shows somehow indexed midpoint-samples for simple search
+* paging for browse panel
+* import project from eclipse
