@@ -128,12 +128,10 @@ public class EncryptionServiceImpl implements EncryptionService {
 
         List<T> list = new ArrayList<>();
         for (Entry entry : group.getEntries()) {
-            EncryptedProperty property = createCredentials(entry);
-            if (type.isAssignableFrom(property.getClass())) {
-                continue;
+            EncryptedObject property = createCredentials(entry);
+            if (property.getClass().isAssignableFrom(type)) {
+                list.add((T) property);
             }
-
-            list.add((T) property);
         }
 
         return list;
@@ -194,12 +192,12 @@ public class EncryptionServiceImpl implements EncryptionService {
             return null;
         }
 
-        EncryptedProperty property = createCredentials(entry);
-        if (type.isAssignableFrom(property.getClass())) {
-            return null;
+        EncryptedObject property = createCredentials(entry);
+        if (property.getClass().isAssignableFrom(type)) {
+            return (T) property;
         }
 
-        return (T) property;
+        return null;
     }
 
     @Override
@@ -259,13 +257,15 @@ public class EncryptionServiceImpl implements EncryptionService {
         return MidPointUtils.getPassword(settings.getProjectId());
     }
 
-    private EncryptedProperty createCredentials(Entry entry) {
+    private EncryptedObject createCredentials(Entry entry) {
         try {
             String title = entry.getTitle();
-            Class<? extends EncryptedProperty> type = EncryptedProperty.class;
+            Class<? extends EncryptedObject> type;
             if (title != null && title.matches("(?i)[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}")) {
                 // we'll guess default type as credentials when title contains UUID. This is just for backwards compatibility
                 type = EncryptedCredentials.class;
+            } else {
+                type = EncryptedProperty.class;
             }
 
             List<String> tags = entry.getTags();
