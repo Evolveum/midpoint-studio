@@ -71,7 +71,7 @@ public class EncryptionServiceImpl implements EncryptionService {
 
             writeDatabase(newPassword);
         } else {
-            database = KeePassDatabase.getInstance(dbFile).openDatabase(oldPassword);
+            this.database = KeePassDatabase.getInstance(dbFile).openDatabase(oldPassword);
             writeDatabase(newPassword);
         }
 
@@ -234,6 +234,8 @@ public class EncryptionServiceImpl implements EncryptionService {
         String masterPassword = getMasterPassword();
 
         writeDatabase(masterPassword);
+
+        refresh(false);
     }
 
     private synchronized void writeDatabase(String masterPassword) {
@@ -244,8 +246,6 @@ public class EncryptionServiceImpl implements EncryptionService {
         } catch (IOException ex) {
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't write credentials", ex);
         }
-
-        refresh(false);
     }
 
     private String getMasterPassword() {
