@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -528,7 +529,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 filter = createFilter(ctx, true, true);
                 break;
             case QUERY_XML:
-                filter = parseFilter(ctx);
+                filter = parseFilter(client);
                 break;
         }
 
@@ -538,30 +539,23 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         return qf.createQuery(filter, paging);
     }
 
-    private ObjectFilter parseFilter(PrismContext ctx) {
+    private ObjectFilter parseFilter(MidPointClient client) {
         String text = query.getText();
         if (StringUtils.isEmpty(text)) {
             return null;
         }
 
-//        try {
-//            Unmarshaller unmarshaller = MidPointClientUtils.createUnmarshaller();
-//            Object obj = unmarshaller.unmarshal(new ByteArrayInputStream(text.getBytes()));
-//            if (obj instanceof JAXBElement) {
-//                obj = ((JAXBElement) obj).getValue();
-//            }
-//
-//            if (obj instanceof SearchFilterType) {
-//                return (SearchFilterType) obj;
-//            }
-//
-//            throw new IllegalStateException("Unknown type '" + obj.getClass().getName() + "'");
-//        } catch (Exception ex) {
-//            // todo error handling
-//            throw new RuntimeException(ex);
-//        }
+        ObjectTypes type = objectType.getSelected();
 
-        return null;
+        try {
+            PrismParser parser = client.createParser(text);
+            SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
+
+            return client.getPrismContext().getQueryConverter().parseFilter(filterType, type.getClassDefinition());
+        } catch (Exception ex) {
+            // todo error handling
+            throw new RuntimeException(ex);
+        }
     }
 
     private ObjectFilter createFilter(PrismContext ctx, boolean oid, boolean name) {

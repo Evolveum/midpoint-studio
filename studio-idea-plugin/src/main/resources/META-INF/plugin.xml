@@ -76,8 +76,6 @@
 
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.MidPointMultiHostInjector"/>
 
-        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.MidPointReferenceContributor"/>
-
         <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
 
         <moduleBuilder builderClass="com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder"/>
@@ -135,8 +133,9 @@
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
-        <!--        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>-->
+        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
 
+        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
 
         <annotator language="XML"
