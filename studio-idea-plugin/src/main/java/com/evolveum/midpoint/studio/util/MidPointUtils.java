@@ -47,6 +47,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
@@ -633,5 +634,12 @@ public class MidPointUtils {
                                 XmlPatterns.xmlAttribute("oid").withParent(
                                         XmlPatterns.xmlTag().withNamespace(SchemaConstantsGenerated.NS_COMMON)
                                                 .withName(NAMES)))).accepts(element);
+    }
+
+    public static JBScrollPane borderlessScrollPane(@NotNull JComponent component) {
+        JBScrollPane pane = new JBScrollPane(component);
+        pane.setBorder(null);
+
+        return pane;
     }
 }

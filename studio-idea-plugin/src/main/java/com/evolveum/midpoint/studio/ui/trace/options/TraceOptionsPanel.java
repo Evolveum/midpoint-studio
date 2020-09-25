@@ -2,9 +2,11 @@ package com.evolveum.midpoint.studio.ui.trace.options;
 
 import com.evolveum.midpoint.schema.traces.OpType;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
-import com.evolveum.midpoint.studio.impl.trace.*;
+import com.evolveum.midpoint.studio.impl.trace.Options;
+import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
 import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
@@ -12,7 +14,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
@@ -77,13 +78,15 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
     private void initLayout() {
         createToolbar();
 
-        JPanel root = new BorderLayoutPanel();
+        JPanel root = new JPanel();
+        root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+        root.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         createOpTypesPanel(root);
         createCategoriesPanel(root);
         createColumnsPanel(root);
 
-        add(new JBScrollPane(root));
+        add(MidPointUtils.borderlessScrollPane(root));
 
         viewTypeChanged(viewTypeComboboxAction.getOpView());
     }
@@ -119,9 +122,10 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         opTypesPanel.setBorder(JBUI.Borders.empty(5));
 
         predefinedOpTypesBox = new ComboBox<>(PredefinedOpTypeSet.values());
+        predefinedOpTypesBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         predefinedOpTypesBox.addActionListener(e -> {
             PredefinedOpTypeSet predefinedSet = (PredefinedOpTypeSet) predefinedOpTypesBox.getSelectedItem();
-            System.out.println("Buhahaha " + predefinedSet);
+            LOG.info("Buhahaha " + predefinedSet);
             if (predefinedSet != null) {
                 opTypesChecks.forEach((opType, checkBox) -> checkBox.setSelected(predefinedSet.contains(opType)));
             }
@@ -144,9 +148,10 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         categories.setBorder(JBUI.Borders.empty(5));
 
         predefinedCategoriesBox = new ComboBox<>(PredefinedPerformanceCategoriesSet.values());
+        predefinedCategoriesBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         predefinedCategoriesBox.addActionListener(e -> {
             PredefinedPerformanceCategoriesSet predefinedSet = (PredefinedPerformanceCategoriesSet) predefinedCategoriesBox.getSelectedItem();
-            System.out.println("Buhahaha " + predefinedSet);
+            LOG.info("Buhahaha " + predefinedSet);
             if (predefinedSet != null) {
                 categoriesChecks.forEach((category, checkBox) -> checkBox.setSelected(predefinedSet.contains(category)));
                 alsoParentsCheck.setSelected(predefinedSet.isShowParents());
@@ -174,9 +179,10 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         columnsPanel.setBorder(JBUI.Borders.empty(5));
 
         predefinedColumnsBox = new ComboBox<>(PredefinedColumnSet.values());
+        predefinedColumnsBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         predefinedColumnsBox.addActionListener(e -> {
             PredefinedColumnSet predefinedSet = (PredefinedColumnSet) predefinedColumnsBox.getSelectedItem();
-            System.out.println("Buhahaha " + predefinedSet);
+            LOG.info("Buhahaha " + predefinedSet);
             if (predefinedSet != null) {
                 columnsChecks.forEach((column, checkBox) -> checkBox.setSelected(predefinedSet.contains(column)));
             }
@@ -199,6 +205,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         JPanel panel = new JPanel();
         panel.setBorder(JBUI.Borders.emptyLeft(5));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         return panel;
     }

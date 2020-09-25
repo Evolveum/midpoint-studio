@@ -193,7 +193,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         left.add(toolbar.getComponent(), BorderLayout.NORTH);
 
         variablesValue = new JBTextArea();
-        left.add(new JBScrollPane(variablesValue), BorderLayout.CENTER);
+        left.add(MidPointUtils.borderlessScrollPane(variablesValue), BorderLayout.CENTER);
     }
 
     private JComponent initMainToolbar() {

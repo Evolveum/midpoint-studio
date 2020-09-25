@@ -7,6 +7,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceDictionaryEntryType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceDictionaryType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -21,6 +22,8 @@ import java.util.Set;
 
 @Experimental
 public class StudioNameResolver implements OpNodeTreeBuilder.NameResolver {
+
+    private static final Logger LOG = Logger.getInstance(StudioNameResolver.class);
 
     private static final String NAMES_FILE = "names.txt";
 
@@ -38,7 +41,7 @@ public class StudioNameResolver implements OpNodeTreeBuilder.NameResolver {
     private void readFromFile(VirtualFile file) {
         VirtualFile namesFile = file.getParent().findChild(NAMES_FILE);
         if (namesFile != null && namesFile.exists()) {
-            System.out.println("Reading names from " + namesFile);
+            LOG.info("Reading names from " + namesFile);
             try {
                 readFromStream(namesFile.getInputStream());
             } catch (IOException e) {
@@ -49,7 +52,7 @@ public class StudioNameResolver implements OpNodeTreeBuilder.NameResolver {
 
     private void readFromStream(InputStream stream) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-        for (;;) {
+        for (; ; ) {
             String line = br.readLine();
             if (line == null) {
                 break;
@@ -60,7 +63,7 @@ public class StudioNameResolver implements OpNodeTreeBuilder.NameResolver {
             }
             int sep = line.indexOf(';');
             if (sep < 0) {
-                System.out.println("Ignoring: " + line);
+                LOG.info("Ignoring: " + line);
                 continue;
             }
             String oid = line.substring(0, sep);

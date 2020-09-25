@@ -7,7 +7,7 @@ import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LogSegmentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.ui.AnActionButton;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import com.intellij.util.messages.MessageBus;
@@ -23,6 +23,8 @@ import java.util.List;
  * Created by Viliam Repan (lazyman).
  */
 public class TraceLogsPanel extends BorderLayoutPanel {
+
+    private static final Logger LOG = Logger.getInstance(TraceLogsPanel.class);
 
     private JBTextArea logs;
     private SimpleCheckboxAction currentOpOnly;
@@ -112,28 +114,29 @@ public class TraceLogsPanel extends BorderLayoutPanel {
             collectLogEntries(sb, currentOpNode, loadFully);
         }
 
-        System.out.println("Log prepared in " + (System.currentTimeMillis() - start) + " ms");
+        LOG.info("Log prepared in " + (System.currentTimeMillis() - start) + " ms");
         logs.setText(sb.toString());
         logs.setCaretPosition(0);
-        System.out.println("All done. In " + (System.currentTimeMillis() - start) + " ms");
+        LOG.info("All done. In " + (System.currentTimeMillis() - start) + " ms");
     }
 
     public void collectLogEntries(StringBuilder sb, OpNode node, boolean loadFully) {
         long start = System.currentTimeMillis();
 
-        System.out.println("collectLogEntries started for " + node);
+        LOG.info("collectLogEntries started for " + node);
 
         java.util.List<LogSegment> allSegments = new ArrayList<>();
         collectLogSegments(allSegments, node);
-        System.out.println("Collect log segments finished: " + (System.currentTimeMillis() - start) + " ms after start; " + allSegments.size() + " segments");
+        LOG.info("Collect log segments finished: " + (System.currentTimeMillis() - start) + " ms after start; " + allSegments.size() + " segments");
 
         allSegments.sort(Comparator.comparing(seg -> seg.segment.getSequenceNumber()));
 
-        System.out.println("Collect log segments sorted: " + (System.currentTimeMillis() - start) + " ms after start");
+        LOG.info("Collect log segments sorted: " + (System.currentTimeMillis() - start) + " ms after start");
 
         fullyLoaded = true;
 
-        main: for (LogSegment segment : allSegments) {
+        main:
+        for (LogSegment segment : allSegments) {
             if (logsShowSegmentSeparators.isSelected()) {
                 sb.append("---> Segment #").append(segment.segment.getSequenceNumber()).append(" in ")
                         .append(segment.owner.getOperationQualified()).append(" (inv: ")
@@ -154,7 +157,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
             }
         }
 
-        System.out.println("Content prepared: " + (System.currentTimeMillis() - start) + " ms after start; " + sb.length()
+        LOG.info("Content prepared: " + (System.currentTimeMillis() - start) + " ms after start; " + sb.length()
                 + " chars. Fully loaded: " + fullyLoaded);
     }
 

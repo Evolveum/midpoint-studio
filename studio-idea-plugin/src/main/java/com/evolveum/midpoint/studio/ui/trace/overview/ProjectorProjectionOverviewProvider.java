@@ -11,6 +11,7 @@ import com.evolveum.midpoint.studio.ui.trace.entry.PrismValueNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
+import com.intellij.openapi.diagnostic.Logger;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import java.util.List;
@@ -21,10 +22,12 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
  *
  */
 public class ProjectorProjectionOverviewProvider implements OverviewProvider<ProjectorProjectionOpNode> {
+    
+    private static final Logger LOG = Logger.getInstance(ProjectorProjectionOverviewProvider.class);
 
     @Override
     public void provideOverview(ProjectorProjectionOpNode node, DefaultMutableTreeTableNode root,
-            ViewingState initialState) throws SchemaException {
+                                ViewingState initialState) throws SchemaException {
 
         ProjectorComponentTraceType trace = node.getTrace();
         if (trace != null) {
@@ -140,18 +143,18 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
     private ResourceShadowDiscriminator getRsdGuessed(ProjectorProjectionOpNode node) {
         List<String> qualifiers = node.getResult().getQualifier();
         if (qualifiers.size() != 1) {
-            System.out.println("Wrong # of qualifiers: " + qualifiers);
+            LOG.info("Wrong # of qualifiers: " + qualifiers);
             return null;
         }
         // e.g. "INITIAL.e0p0.10000000-0000-0000-0000-000000000004.ACCOUNT.default"
         String[] parts = qualifiers.get(0).split("\\.");
         if (parts.length != 5) {
-            System.out.println("Wrong # of parts: " + qualifiers);
+            LOG.info("Wrong # of parts: " + qualifiers);
         }
         try {
             return new ResourceShadowDiscriminator(parts[2], ShadowKindType.fromValue(parts[3]), parts[4], null, false);
         } catch (Throwable t) {
-            System.out.println("Exception: " + t);
+            LOG.info("Exception: " + t);
             return null;
         }
     }

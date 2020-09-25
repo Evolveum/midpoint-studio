@@ -15,6 +15,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.TracingOutputType;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
@@ -35,6 +36,8 @@ import java.util.List;
  * Created by Viliam Repan (lazyman).
  */
 public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
+
+    private static final Logger LOG = Logger.getInstance(TraceViewEditor.class);
 
     public static final String NOTIFICATION_KEY = "Trace View";
 
@@ -57,7 +60,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
         OpNode root;
 
         long start = System.currentTimeMillis();
-        System.out.println("Initializing TraceViewEditor");
+        LOG.info("Initializing TraceViewEditor");
         try (InputStream is = file.getInputStream()) {
             String extension = file.getExtension();
             boolean isZip = extension != null && extension.equalsIgnoreCase("zip");
@@ -65,7 +68,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
             TraceParser parser = new TraceParser(prismContext);
             TracingOutputType tracingOutput = parser.parse(is, isZip, file.getCanonicalPath());
-            System.out.println("Initializing TraceViewEditor - parsed tracing output: " + (System.currentTimeMillis() - start) + " ms");
+            LOG.info("Initializing TraceViewEditor - parsed tracing output: " + (System.currentTimeMillis() - start) + " ms");
 
             StudioNameResolver nameResolver = new StudioNameResolver(tracingOutput.getDictionary(), file);
 
@@ -75,7 +78,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             } else {
                 throw new IllegalStateException("Unexpected # of OpNode objects: " + data.size());
             }
-            System.out.println("Initializing TraceViewEditor - built op node tree: " + (System.currentTimeMillis() - start) + " ms");
+            LOG.info("Initializing TraceViewEditor - built op node tree: " + (System.currentTimeMillis() - start) + " ms");
 
         } catch (Exception ex) {
             MidPointService mm = MidPointService.getInstance(project);

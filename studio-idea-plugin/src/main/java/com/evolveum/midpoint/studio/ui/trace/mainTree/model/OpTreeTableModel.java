@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.DisplayUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
+import com.intellij.openapi.diagnostic.Logger;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,14 +21,20 @@ import java.util.stream.Collectors;
  */
 public class OpTreeTableModel extends DefaultTreeTableModel {
 
-    @NotNull private final List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions;
-    @Nullable private final OpNode rootOpNode;
-    @NotNull private final RootOpTreeTableNode invisibleRootTreeNode;
+    private static final Logger LOG = Logger.getInstance(OpTreeTableModel.class);
 
-    @NotNull private final Map<OpNode, RegularOpTreeTableNode> convertedNodeMap = new HashMap<>();
+    @NotNull
+    private final List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions;
+    @Nullable
+    private final OpNode rootOpNode;
+    @NotNull
+    private final RootOpTreeTableNode invisibleRootTreeNode;
+
+    @NotNull
+    private final Map<OpNode, RegularOpTreeTableNode> convertedNodeMap = new HashMap<>();
 
     public OpTreeTableModel(@NotNull List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions,
-            @Nullable OpNode rootOpNode) {
+                            @Nullable OpNode rootOpNode) {
 
         this.columnDefinitions = columnDefinitions;
         this.rootOpNode = rootOpNode;
@@ -35,7 +42,7 @@ public class OpTreeTableModel extends DefaultTreeTableModel {
 
         if (rootOpNode != null) {
             createNodeMap(rootOpNode);
-            System.out.println("convertedNodeMap: " + convertedNodeMap.size() + " entries");
+            LOG.info("convertedNodeMap: " + convertedNodeMap.size() + " entries");
         }
 
         updateParentChildLinks();

@@ -107,7 +107,7 @@ public class OpResultRawPanel extends BorderLayoutPanel {
             }
             PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
             String xml = ctx.xmlSerializer().serializeRealValue(resultToShow, new QName("operationResult"));
-            System.out.println("Raw OpNode serialized in " + (System.currentTimeMillis() - start) + " ms; children = " + showChildren.isSelected());
+            LOG.info("Raw OpNode serialized in " + (System.currentTimeMillis() - start) + " ms; children = " + showChildren.isSelected());
             return xml;
         } catch (Exception ex) {
             LOG.error("Couldn't serialize value", ex);
@@ -120,7 +120,7 @@ public class OpResultRawPanel extends BorderLayoutPanel {
         try {
             PropertyUtils.copyProperties(shallowClone, original);
         } catch (Throwable t) {
-            System.out.println("Couldn't clone operation result, returning original");
+            LOG.info("Couldn't clone operation result, returning original");
             t.printStackTrace();
             return original;
         }
