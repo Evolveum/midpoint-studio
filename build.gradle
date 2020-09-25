@@ -20,7 +20,7 @@ allprojects {
 subprojects {
     apply plugin: 'java'
 
-    version '4.0.0'
+    version '4.1'
 
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
