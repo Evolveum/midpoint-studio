@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
-import com.evolveum.midpoint.studio.impl.trace.TraceManager;
+import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -21,7 +21,7 @@ public class TraceGraphPanel extends BorderLayoutPanel {
 
     private static final Logger LOG = Logger.getInstance(TraceGraphPanel.class);
 
-    private final TraceManager traceManager;
+    private final TraceService traceManager;
 
     private JCheckBox showFocusCurrent;
     private JCheckBox showProjectionCurrent;
@@ -29,7 +29,7 @@ public class TraceGraphPanel extends BorderLayoutPanel {
     private JCheckBox skipDisabledNodes;
 
     public TraceGraphPanel(Project project) {
-        this.traceManager = TraceManager.getInstance(project);
+        this.traceManager = TraceService.getInstance(project);
 
 
         initLayout();

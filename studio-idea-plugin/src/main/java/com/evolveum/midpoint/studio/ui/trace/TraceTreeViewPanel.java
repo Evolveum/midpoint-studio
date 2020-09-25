@@ -3,7 +3,7 @@ package com.evolveum.midpoint.studio.ui.trace;
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.Options;
-import com.evolveum.midpoint.studio.impl.trace.TraceManager;
+import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
 import com.evolveum.midpoint.studio.ui.trace.presentation.AbstractOpNodePresentation;
@@ -64,7 +64,7 @@ public class TraceTreeViewPanel extends JPanel {
 
         initLayout();
 
-        TraceManager tm = TraceManager.getInstance(project);
+        TraceService tm = TraceService.getInstance(project);
         applyOptions(tm.getOptions());
     }
 

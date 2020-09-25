@@ -1,44 +1,17 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
-import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
-import com.evolveum.midpoint.studio.impl.trace.Format;
-import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
-import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.entry.Node;
 import com.evolveum.midpoint.studio.ui.trace.entry.ResultNode;
 import com.evolveum.midpoint.studio.ui.trace.entry.TextNode;
 import com.evolveum.midpoint.studio.ui.trace.entry.TraceNode;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceType;
-import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.CheckboxAction;
-import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.JBSplitter;
-import com.intellij.ui.OnePixelSplitter;
-import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.components.JBTextArea;
-import com.intellij.util.messages.MessageBus;
-import com.intellij.util.ui.components.BorderLayoutPanel;
-import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
-import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

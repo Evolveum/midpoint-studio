@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
-import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.trace.Format;
@@ -211,7 +210,7 @@ public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
 
     private class FormatComboboxAction extends ComboBoxAction {
 
-        private Format format = Format.AUTO;
+        private Format format = Format.XML_SIMPLIFIED;
 
         @NotNull
         @Override
@@ -246,7 +245,7 @@ public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
         }
 
         public Format getFormat() {
-            return format != null ? format : Format.AUTO;
+            return format != null ? format : Format.XML_SIMPLIFIED;
         }
     }
 
