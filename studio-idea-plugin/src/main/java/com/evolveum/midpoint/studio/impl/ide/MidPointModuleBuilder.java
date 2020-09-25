@@ -32,7 +32,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -111,7 +110,6 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
             WriteAction.run(() -> createProjectFiles(project, root));
         });
-        createProjectFiles(project, root);
 
         FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
         FacetManager.getInstance(modifiableRootModel.getModule()).addFacet(facetType, facetType.getDefaultFacetName(), null);
@@ -193,11 +191,11 @@ public class MidPointModuleBuilder extends ModuleBuilder {
     @Nullable
     @Override
     public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
-        MidPointManager.getInstance(project).setSettings(settings.getMidPointSettings());
+        MidPointService.getInstance(project).setSettings(settings.getMidPointSettings());
 
-        CredentialsManager.getInstance(project).init(settings.getMasterPassword());
+        EncryptionService.getInstance(project).init(settings.getMasterPassword());
 
-        EnvironmentManager.getInstance(project).setSettings(settings.getEnvironmentSettings());
+        EnvironmentService.getInstance(project).setSettings(settings.getEnvironmentSettings());
 
         return super.commitModule(project, model);
     }

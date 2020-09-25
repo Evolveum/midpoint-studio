@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -13,9 +14,8 @@ import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
-import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.browse.Generator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorAction;
@@ -337,7 +337,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         if (ComboQueryType.Type.QUERY_XML != queryType && StringUtils.isNotEmpty(query)) {
             // translate query
-            EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+            EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
             Environment env = em.getSelected();
 
             try {
@@ -383,7 +383,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         updateTableModel(null);
 
         // load data
-        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
         indicator.setText("Searching objects in environment: " + env.getName());
@@ -425,12 +425,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private boolean isResultSelected() {
-        ExtendedListSelectionModel model = (ExtendedListSelectionModel) results.getSelectionModel();
+        ListSelectionModel model = results.getSelectionModel();
         return model.getSelectedItemsCount() != 0;
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
-        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
         DownloadAction da = new DownloadAction(env, getResultsModel().getSelectedOids(results), showOnly, rawDownload) {
@@ -504,7 +504,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private boolean isSearchEnabled() {
         // todo add condition that we're not currently searching
-        return EnvironmentManager.getInstance(project).isEnvironmentSelected();
+        return EnvironmentService.getInstance(project).isEnvironmentSelected();
     }
 
     private boolean isCancelEnabled() {
@@ -529,7 +529,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 filter = createFilter(ctx, true, true);
                 break;
             case QUERY_XML:
-                filter = parseFilter(ctx);
+                filter = parseFilter(client);
                 break;
         }
 
@@ -539,30 +539,23 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         return qf.createQuery(filter, paging);
     }
 
-    private ObjectFilter parseFilter(PrismContext ctx) {
+    private ObjectFilter parseFilter(MidPointClient client) {
         String text = query.getText();
         if (StringUtils.isEmpty(text)) {
             return null;
         }
 
-//        try {
-//            Unmarshaller unmarshaller = MidPointClientUtils.createUnmarshaller();
-//            Object obj = unmarshaller.unmarshal(new ByteArrayInputStream(text.getBytes()));
-//            if (obj instanceof JAXBElement) {
-//                obj = ((JAXBElement) obj).getValue();
-//            }
-//
-//            if (obj instanceof SearchFilterType) {
-//                return (SearchFilterType) obj;
-//            }
-//
-//            throw new IllegalStateException("Unknown type '" + obj.getClass().getName() + "'");
-//        } catch (Exception ex) {
-//            // todo error handling
-//            throw new RuntimeException(ex);
-//        }
+        ObjectTypes type = objectType.getSelected();
 
-        return null;
+        try {
+            PrismParser parser = client.createParser(text);
+            SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
+
+            return client.getPrismContext().getQueryConverter().parseFilter(filterType, type.getClassDefinition());
+        } catch (Exception ex) {
+            // todo error handling
+            throw new RuntimeException(ex);
+        }
     }
 
     private ObjectFilter createFilter(PrismContext ctx, boolean oid, boolean name) {

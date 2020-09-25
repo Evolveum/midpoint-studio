@@ -6,9 +6,9 @@ import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.schema.result.OperationResultStatus;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -66,7 +66,7 @@ public class OperationResultDialog extends DialogWrapper {
         columns.add(new TreeTableColumnDefinition<>("Operation", 150,
                 r -> r.getOperation().replace("com.evolveum.midpoint", "..")));
         columns.add(new TreeTableColumnDefinition<OperationResult, Object>("Status", 50,
-                r -> r.getStatus())
+                r -> String.valueOf(r.getStatus()))
                 .tableCellRenderer(createStatusTableCellRenderer()));
         columns.add(new TreeTableColumnDefinition<>("Message", 500,
                 r -> r.getMessage() != null ? r.getMessage() : ""));
@@ -210,9 +210,9 @@ public class OperationResultDialog extends DialogWrapper {
     }
 
     private void saveResult(final Project project, ProgressIndicator indicator, final VirtualFileWrapper fileWrapper, OperationResult result) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
 
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         Environment environment = em.getSelected();
 
         RunnableUtils.runWriteActionAndWait(() -> {

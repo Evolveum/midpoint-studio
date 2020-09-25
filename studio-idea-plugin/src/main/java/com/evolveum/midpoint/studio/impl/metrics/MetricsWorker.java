@@ -1,9 +1,7 @@
 package com.evolveum.midpoint.studio.impl.metrics;
 
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
 import com.evolveum.midpoint.studio.impl.client.Service;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.project.Project;
 
 /**
@@ -51,7 +49,7 @@ public class MetricsWorker implements Runnable {
                     Environment env = new Environment(session.getEnvironment());
                     env.setUrl(node.getUrl());
 
-                    service = MidPointUtils.buildRestClient(env, MidPointManager.getInstance(project));
+//                    service = MidPointUtils.buildRestClient(env, MidPointManager.getInstance(project));
                 }
 
 //                WebClient client = service.getClient();

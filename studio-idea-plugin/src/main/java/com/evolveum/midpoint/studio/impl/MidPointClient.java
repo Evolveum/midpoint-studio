@@ -45,16 +45,23 @@ public class MidPointClient {
 
     private Environment environment;
 
-    private MidPointManager midPointManager;
+    private MidPointService midPointManager;
 
     private Service client;
 
+    private boolean suppressNotifications;
+
     public MidPointClient(Project project, @NotNull Environment environment) {
+        this(project, environment, false);
+    }
+
+    public MidPointClient(Project project, @NotNull Environment environment, boolean suppressNotifications) {
         this.project = project;
         this.environment = environment;
+        this.suppressNotifications = suppressNotifications;
 
         if (project != null) {
-            this.midPointManager = MidPointManager.getInstance(project);
+            this.midPointManager = MidPointService.getInstance(project);
         }
 
         init();
@@ -65,7 +72,32 @@ public class MidPointClient {
         long time = System.currentTimeMillis();
 
         try {
-            client = MidPointUtils.buildRestClient(environment, midPointManager);
+            ServiceFactory factory = new ServiceFactory();
+            factory
+                    .url(environment.getUrl())
+                    .username(environment.getUsername())
+                    .password(environment.getPassword())
+                    .proxyServer(environment.getProxyServerHost())
+                    .proxyServerPort(environment.getProxyServerPort())
+                    .proxyServerType(environment.getProxyServerType())
+                    .proxyUsername(environment.getProxyUsername())
+                    .proxyPassword(environment.getProxyPassword())
+                    .ignoreSSLErrors(environment.isIgnoreSslErrors());
+
+            factory.messageListener((message) -> {
+
+                if (midPointManager == null || !midPointManager.getSettings().isPrintRestCommunicationToConsole()) {
+                    return;
+                }
+
+                midPointManager.printToConsole(MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+            });
+
+            client = factory.create();
+
+            if (midPointManager != null) {
+                midPointManager.printToConsole(MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+            }
         } catch (Exception ex) {
             handleGenericException("Couldn't create rest client", ex);
         }
@@ -122,7 +154,9 @@ public class MidPointClient {
     }
 
     private void handleGenericException(String message, Exception ex) {
-        MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
+        if (!suppressNotifications) {
+            MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
+        }
     }
 
     public <O extends ObjectType> String getRaw(Class<O> type, String oid, SearchOptions opts) throws ObjectNotFoundException {
@@ -180,7 +214,17 @@ public class MidPointClient {
         return client.execute(object);
     }
 
-    public UploadResponse uploadRaw(MidPointObject obj, List<String> options) throws IOException, AuthenticationException {
+    public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand) throws IOException, AuthenticationException {
+        if (expand) {
+            EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
+            Expander expander = new Expander(environment, cm);
+
+            String expanded = expander.expand(obj.getContent());
+
+            obj = MidPointObject.copy(obj);
+            obj.setContent(expanded);
+        }
+
         UploadResponse response = new UploadResponse();
 
         String oid = client.add(obj, options);
@@ -215,54 +259,63 @@ public class MidPointClient {
     }
 
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
-        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
-        Expander expander = new Expander(cm, new EnvironmentProperties(environment));
+        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
+        Expander expander = new Expander(environment, cm);
 
         String expanded = expander.expand(xml);
 
-        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()), getPrismContext());
+        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()));
         return parser.parse();
     }
 
     public List<PrismObject<?>> parseObjects(String xml) throws IOException, SchemaException {
-        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
-        Expander expander = new Expander(cm, new EnvironmentProperties(environment));
+        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
+        Expander expander = new Expander(environment, cm);
 
         String expanded = expander.expand(xml);
 
-        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()), getPrismContext());
+        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()));
         return parser.parseObjects();
     }
 
     public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
-        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
-        Expander expander = new Expander(cm, new EnvironmentProperties(environment));
+        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
+        Expander expander = new Expander(environment, cm);
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
             InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
 
-            PrismParser parser = createParser(expanded, getPrismContext());
+            PrismParser parser = createParser(expanded);
             return parser.parseObjects();
         }
     }
 
     public <O extends ObjectType> PrismObject<O> parseObject(VirtualFile file) throws IOException, SchemaException {
-        CredentialsManager cm = project != null ? CredentialsManager.getInstance(project) : null;
-        Expander expander = new Expander(cm, new EnvironmentProperties(environment));
+        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
+        Expander expander = new Expander(environment, cm);
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
             InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
 
-            PrismParser parser = createParser(expanded, getPrismContext());
+            PrismParser parser = createParser(expanded);
             return parser.parse();
         }
     }
 
-    private PrismParser createParser(InputStream data, PrismContext ctx) {
+    public PrismParser createParser(InputStream data) {
+        PrismContext ctx = getPrismContext();
+
         ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
         return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
+    public PrismParser createParser(String xml) {
+        PrismContext ctx = getPrismContext();
+
+        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
+        return ctx.parserFor(xml).language(PrismContext.LANG_XML).context(parsingContext);
     }
 
     public TestConnectionResult testConnection() {

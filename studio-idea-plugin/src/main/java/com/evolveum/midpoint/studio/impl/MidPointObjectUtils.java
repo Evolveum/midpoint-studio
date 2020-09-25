@@ -33,8 +33,10 @@ public class MidPointObjectUtils {
             String text = IOUtils.toString(is, file.getCharset());
             return parseText(text, file, notificationKey);
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(notificationKey,
-                    "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
+            if (notificationKey != null) {
+                MidPointUtils.publishExceptionNotification(notificationKey,
+                        "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
+            }
             return null;
         }
     }
@@ -54,9 +56,12 @@ public class MidPointObjectUtils {
             if (file != null) {
                 msg = "Couldn't parse file " + file.getName();
             } else {
-                msg = "Couldn't parse text '" + StringUtils.abbreviate(text, 10) +  "'";
+                msg = "Couldn't parse text '" + StringUtils.abbreviate(text, 10) + "'";
             }
-            MidPointUtils.publishExceptionNotification(notificationKey, msg, ex);
+
+            if (notificationKey != null) {
+                MidPointUtils.publishExceptionNotification(notificationKey, msg, ex);
+            }
 
             return new ArrayList<>();
         }
@@ -67,8 +72,11 @@ public class MidPointObjectUtils {
         try (InputStream is = file.getInputStream()) {
             return DOMUtil.parse(is);
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(notificationKey,
-                    "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
+            if (notificationKey != null) {
+                MidPointUtils.publishExceptionNotification(notificationKey,
+                        "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
+            }
+
             return null;
         }
     }

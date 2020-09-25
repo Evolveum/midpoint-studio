@@ -84,8 +84,12 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             return;
         }
 
-        XmlTag[] parameters = function.findSubTags("parameter", SchemaConstantsGenerated.NS_COMMON);
+        XmlTag[] parameters = function.findSubTags(ExpressionType.F_PARAMETER.getLocalPart(), SchemaConstantsGenerated.NS_COMMON);
 
+        addParameters(parameters, aClass, processor, state);
+    }
+
+    private void addParameters(XmlTag[] parameters, PsiClass aClass, PsiScopeProcessor processor, ResolveState state) {
         PsiManager psiManager = PsiManager.getInstance(aClass.getProject());
 
         for (XmlTag parameter : parameters) {
@@ -119,8 +123,20 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             return;
         }
 
-        XmlTag[] sources = expression.findSubTags("source", SchemaConstantsGenerated.NS_COMMON);
+        XmlTag expressionParent = expression.getParentTag();
+        if (expressionParent == null) {
+            return;
+        }
 
+        XmlTag[] sources = expressionParent.findSubTags(MappingType.F_SOURCE.getLocalPart(), SchemaConstantsGenerated.NS_COMMON);
+        addSources(sources, aClass, processor, state);
+
+        XmlTag[] parameters = expression.findSubTags(ExpressionType.F_PARAMETER.getLocalPart(), SchemaConstantsGenerated.NS_COMMON);
+
+        addParameters(parameters, aClass, processor, state);
+    }
+
+    private void addSources(XmlTag[] sources, PsiClass aClass, PsiScopeProcessor processor, ResolveState state) {
         PsiManager psiManager = PsiManager.getInstance(aClass.getProject());
 
         for (XmlTag source : sources) {

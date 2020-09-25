@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.ui.DocumentationDialog;
 import com.evolveum.midscribe.generator.GenerateOptions;
@@ -20,7 +20,7 @@ public class DocumentationAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
-        MidPointManager mm = MidPointManager.getInstance(evt.getProject());
+        MidPointService mm = MidPointService.getInstance(evt.getProject());
         MidPointSettings settings = mm.getSettings();
 
         DocGeneratorOptions opts = settings.getDocGeneratorOptions();

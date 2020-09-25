@@ -36,6 +36,24 @@ public class MidPointObject {
         this.executable = executable;
     }
 
+    public static MidPointObject copy(MidPointObject object) {
+        if (object == null) {
+            return null;
+        }
+
+        MidPointObject o = new MidPointObject(object.getContent(), object.getType(), object.isExecutable());
+        o.file = object.file;
+        o.objectIndex = object.objectIndex;
+        o.displayName = object.displayName;
+        o.root = object.root;
+        o.last = object.last;
+        o.wholeFile = object.wholeFile;
+        o.oid = object.oid;
+        o.name = object.name;
+
+        return o;
+    }
+
     public String getContent() {
         return content;
     }

@@ -3,21 +3,85 @@ package com.evolveum.midpoint.studio.ui.trace;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.util.PrismPrettyPrinter;
 import com.evolveum.midpoint.util.PrettyPrinter;
-import com.evolveum.prism.xml.ns._public.types_3.EncryptedDataType;
-import com.evolveum.prism.xml.ns._public.types_3.HashedDataType;
-import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
-import com.evolveum.prism.xml.ns._public.types_3.RawType;
+import com.evolveum.prism.xml.ns._public.types_3.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TraceUtils {
 
     private static final Logger LOG = Logger.getInstance(TraceUtils.class);
+
+    public static String prettyPrint(Object object) {
+        if (object instanceof ItemDeltaItemType) {
+            return prettyPrint((ItemDeltaItemType) object);
+        } else if (object instanceof ItemDeltaType) {
+            return prettyPrint((ItemDeltaType) object);
+        } else if (object instanceof DeltaSetTripleType) {
+            return prettyPrint((DeltaSetTripleType) object);
+        } else if (object instanceof Collection) {
+            return prettyPrintCollection((Collection<?>) object);
+        } else if (object instanceof RawType) {
+            return ((RawType) object).extractString(); // TODO metadata
+        } else if (object instanceof PrismValue) {
+            return prettyPrint((PrismValue) object);
+        } else if (object instanceof Item) {
+            return prettyPrint((Item) object);
+        } else {
+            return String.valueOf(object);
+        }
+    }
+
+    public static String prettyPrint(ItemDeltaType itemDelta) {
+        return prettyPrint(itemDelta, true);
+    }
+
+    public static String prettyPrint(ItemDeltaType itemDelta, boolean showPath) {
+        if (itemDelta != null) {
+            return (showPath ? itemDelta.getPath() + " " : "") +
+                    itemDelta.getModificationType() + " " + prettyPrintCollection(itemDelta.getValue());
+        } else {
+            return "";
+        }
+    }
+
+    public static String prettyPrint(ItemDeltaItemType itemDeltaItem) {
+        if (itemDeltaItem != null) {
+            return "Old: " + prettyPrint(itemDeltaItem.getOldItem()) + ", Delta: " + prettyPrint(itemDeltaItem.getDelta());
+        } else {
+            return "";
+        }
+    }
+
+    public static String prettyPrint(DeltaSetTripleType triple) {
+        StringBuilder sb = new StringBuilder();
+        if (triple != null) {
+            List<String> components = new ArrayList<>();
+            addSet(components, "Plus", triple.getPlus());
+            addSet(components, "Minus", triple.getMinus());
+            addSet(components, "Zero", triple.getZero());
+            sb.append(String.join("; ", components));
+        }
+        return sb.toString();
+    }
+
+    private static void addSet(List<String> components, String label, List<Object> objects) {
+        if (!objects.isEmpty()) {
+            components.add(label + ": " + prettyPrintCollection(objects));
+        }
+    }
+
+    public static String prettyPrintCollection(Collection<?> objects) {
+        List<String> pretty = new ArrayList<>();
+        for (Object object : objects) {
+            pretty.add(prettyPrint(object));
+        }
+        return String.join(", ", pretty);
+    }
 
     public static String prettyPrint(PrismValue prismValue) {
         if (prismValue instanceof PrismPropertyValue) {
@@ -133,9 +197,9 @@ public class TraceUtils {
         }
     }
 
-    public static String prettyPrint(List<PrismValue> values) {
-        return values.stream().map(value -> prettyPrint(value)).collect(Collectors.joining("; "));
-    }
+//    public static String prettyPrint(List<PrismValue> values) {
+//        return values.stream().map(value -> prettyPrint(value)).collect(Collectors.joining("; "));
+//    }
 
     public static boolean shouldBeVisible(Project project) {
         return true;
@@ -150,5 +214,13 @@ public class TraceUtils {
 //        }
 //
 //        return false;
+    }
+
+    // TODO move to better place + implement correctly
+    public static String getTypeName(ObjectDeltaType delta) {
+        return delta != null && delta.getObjectType() != null ? delta.getObjectType().getLocalPart() : "object";
+    }
+    public static String prettyPrint(List<PrismValue> values) {
+        return values.stream().map(value -> prettyPrint(value)).collect(Collectors.joining("; "));
     }
 }

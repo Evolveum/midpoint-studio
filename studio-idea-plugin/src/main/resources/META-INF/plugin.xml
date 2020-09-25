@@ -41,23 +41,26 @@
     <depends>org.jetbrains.idea.maven</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
+        <applicationService
+                serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointManager"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.CredentialsManagerImpl"
-                        serviceInterface="com.evolveum.midpoint.studio.impl.CredentialsManager"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
+                        serviceInterface="com.evolveum.midpoint.studio.impl.EncryptionService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EnvironmentManagerImpl"
-                        serviceInterface="com.evolveum.midpoint.studio.impl.EnvironmentManager"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EnvironmentServiceImpl"
+                        serviceInterface="com.evolveum.midpoint.studio.impl.EnvironmentService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.trace.TraceManager"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.trace.TraceService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.metrics.MetricsServiceImpl"
                         serviceInterface="com.evolveum.midpoint.studio.impl.metrics.MetricsService"/>
 
-        <projectConfigurable parentId="language" instance="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
-                             id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable" displayName="MidPoint"
+        <projectConfigurable parentId="language"
+                             instance="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
+                             id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
+                             displayName="MidPoint"
                              nonDefaultProject="true"/>
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
@@ -66,7 +69,7 @@
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
-<!--        <errorHandler implementation="com.evolveum.midpoint.studio.impl.ide.error.JiraErrorReporter"/>-->
+        <!--        <errorHandler implementation="com.evolveum.midpoint.studio.impl.ide.error.JiraErrorReporter"/>-->
 
         <!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
 
@@ -75,8 +78,6 @@
                 implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>-->
 
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.MidPointMultiHostInjector"/>
-
-        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.MidPointReferenceContributor"/>
 
         <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
 
@@ -91,25 +92,39 @@
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
 
         <facet.toolWindow id="MidPointTrace"
-                    facetIdList="MidPointFacet"
-                    anchor="bottom"
-                    order="last"
-                    icon="/icons/midpoint.png"
-                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
+                          facetIdList="MidPointFacet"
+                          anchor="bottom"
+                          order="last"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
+
+        <facet.toolWindow id="TraceLog"
+                          facetIdList="MidPointFacet"
+                          anchor="bottom"
+                          order="last"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.log.LogWindowFactory"/>
 
         <facet.toolWindow id="TraceLensContext"
-                    facetIdList="MidPointFacet"
-                    anchor="left"
-                    order="last"
-                    icon="/icons/midpoint.png"
-                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceLensContextToolWindowFactory"/>
+                          facetIdList="MidPointFacet"
+                          anchor="left"
+                          order="last"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.lensContext.TraceLensContextToolWindowFactory"/>
 
         <facet.toolWindow id="TraceOptions"
+                          facetIdList="MidPointFacet"
+                          anchor="right"
+                          order="last"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsWindowFactory"/>
+
+        <facet.toolWindow id="TraceGraph"
                     facetIdList="MidPointFacet"
                     anchor="right"
                     order="last"
                     icon="/icons/midpoint.png"
-                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceOptionsWindowFactory"/>
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
 
         <fileType
                 name="MPTrace"
@@ -121,11 +136,17 @@
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
+        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
+
+        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
 
-        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>
-        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>
-        <annotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.DeprecatedElementAnnotator"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.DeprecatedElementAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
@@ -138,10 +159,6 @@
 
         <diff.lang.DiffIgnoredRangeProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
-
-
-        <!--        <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.lang.MidPointFileTypeFactory"/>-->
-        <!--        <lang.ast.factory language="MidPoint" implementationClass="com.intellij.lang.xml.XmlASTFactory"/>-->
 
         <!--<stubElementTypeHolder class="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointStubElementTypes" externalIdPrefix="xml."/>
         <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectNameIndex"/>
@@ -321,7 +338,7 @@
 
         <group id="MidPoint.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
-<!--            <reference ref="MidPoint.Action.TestAction"/>-->
+            <!--            <reference ref="MidPoint.Action.TestAction"/>-->
 
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>

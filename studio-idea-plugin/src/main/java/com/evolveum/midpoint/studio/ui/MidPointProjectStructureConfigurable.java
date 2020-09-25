@@ -1,12 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder;
-import com.intellij.facet.FacetManager;
-import com.intellij.facet.FacetType;
-import com.intellij.facet.FacetTypeRegistry;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
@@ -20,11 +14,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -64,10 +56,10 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
         ProjectSettings pSettings = new ProjectSettings();
 
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
         pSettings.setMidPointSettings(mm.getSettings());
 
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         pSettings.setEnvironmentSettings(em.getFullSettings());
 
         settings = new ProjectConfigurationPanel(pSettings, true);
@@ -88,10 +80,10 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
         ProjectSettings pSettings = new ProjectSettings();
 
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
         pSettings.setMidPointSettings(mm.getSettings());
 
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         pSettings.setEnvironmentSettings(em.getFullSettings());
 
         return !Objects.equals(pSettings, settings.getSettings());
@@ -110,14 +102,14 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
         if (StringUtils.isNotEmpty(pSettings.getMasterPassword())) {
             try {
-                CredentialsManager.getInstance(project).changeMasterPassword(pSettings.getOldMasterPassword(), pSettings.getMasterPassword());
+                EncryptionService.getInstance(project).changeMasterPassword(pSettings.getOldMasterPassword(), pSettings.getMasterPassword());
             } catch (Exception ex) {
                 throw new ConfigurationException(ex.getMessage());
             }
         }
 
-        MidPointManager.getInstance(project).setSettings(pSettings.getMidPointSettings());
-        EnvironmentManager.getInstance(project).setSettings(pSettings.getEnvironmentSettings());
+        MidPointService.getInstance(project).setSettings(pSettings.getMidPointSettings());
+        EnvironmentService.getInstance(project).setSettings(pSettings.getEnvironmentSettings());
 
         settings.clearPasswords();
 

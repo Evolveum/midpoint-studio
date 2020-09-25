@@ -29,6 +29,10 @@ Plugin for Intellij Idea to help identity engineers customize https://midpoint.e
 ** Via SSH
 * Master password encryption for passwords and other secret values
 
+== Documentation
+
+Documentation is available https://docs.evolveum.com/midpoint/studio/[here].
+
 == Installation
 
 It's available in jetbrains plugin store https://plugins.jetbrains.com/plugin/13809-midpoint-studio[here] only as `Nightly`.

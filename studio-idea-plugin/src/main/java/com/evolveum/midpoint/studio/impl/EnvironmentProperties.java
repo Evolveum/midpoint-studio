@@ -45,7 +45,7 @@ public class EnvironmentProperties {
         try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             properties.load(reader);
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(EnvironmentManager.NOTIFICATION_KEY,
+            MidPointUtils.publishExceptionNotification(EnvironmentService.NOTIFICATION_KEY,
                     "Couldn't load environment properties", ex);
         }
 

@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.studio.ui.trace.singleOp.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -18,49 +19,61 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ContentManager contentManager = toolWindow.getContentManager();
 
+        Content overviewContent = buildTraceOverview(project);
+        contentManager.addContent(overviewContent);
+        contentManager.setSelectedContent(overviewContent);
+
         Content variablesContent = buildTraceTree(project);
         contentManager.addContent(variablesContent);
-        contentManager.setSelectedContent(variablesContent);
 
-        Content logsContent = buildLogs(project);
-        contentManager.addContent(logsContent);
+        Content tracePerformanceInformation = buildTracePerformance(project);
+        contentManager.addContent(tracePerformanceInformation);
 
         Content traceEntryDetails = buildTraceEntryDetails(project);
         contentManager.addContent(traceEntryDetails);
 
         Content traceEntryDetailsRaw = buildTraceEntryDetailsRaw(project);
         contentManager.addContent(traceEntryDetailsRaw);
+
+        Content operationResultRaw = buildOperationResultRaw(project);
+        contentManager.addContent(operationResultRaw);
     }
 
     private Content buildTraceEntryDetails(Project project) {
-        TraceEntryDetailsPanel panel = new TraceEntryDetailsPanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entry Details", false);
+        OpDumpPanel panel = new OpDumpPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(panel, "Operation Details", false);
     }
 
     private Content buildTraceEntryDetailsRaw(Project project) {
-        TraceEntryDetailsRawPanel panel = new TraceEntryDetailsRawPanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entry Details Raw", false);
+        OpTraceRawPanel panel = new OpTraceRawPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entries Raw", false);
+    }
+
+    private Content buildOperationResultRaw(Project project) {
+        OpResultRawPanel panel = new OpResultRawPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(panel, "Operation Raw", false);
     }
 
     private Content buildTraceTree(Project project) {
-        TraceTreePanel variables = new TraceTreePanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(variables, "Trace Tree", false);
+        OpDetailsTreePanel variables = new OpDetailsTreePanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(variables, "Tree View", false);
     }
 
-    private Content buildLogs(Project project) {
-        TraceLogsPanel logs = new TraceLogsPanel(project.getMessageBus());
-        return ContentFactory.SERVICE.getInstance().createContent(logs, "Logs", false);
+    private Content buildTraceOverview(Project project) {
+        OpOverviewTreePanel variables = new OpOverviewTreePanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(variables, "Overview", false);
+    }
+
+    private Content buildTracePerformance(Project project) {
+        OpPerformancePanel perfInformation = new OpPerformancePanel(project.getMessageBus());
+        //return new HeaderDecorator("Trace Performance Information", new JBScrollPane(perfInformation));
+        return ContentFactory.SERVICE.getInstance().createContent(perfInformation, "Performance Information", false);
     }
 
     @Override
     public void init(ToolWindow window) {
         window.setStripeTitle("Trace");
         window.setTitle("Trace");
-    }
-
-    @Override
-    public boolean shouldBeAvailable(@NotNull Project project) {
-        return TraceUtils.shouldBeVisible(project);
     }
 
     @Override

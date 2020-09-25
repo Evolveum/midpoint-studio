@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.environment;
 
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
@@ -8,7 +9,6 @@ import com.intellij.ui.components.panels.NonOpaquePanel;
 import com.intellij.util.ui.JBUI;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,7 +30,7 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
             return;
         }
 
-        EnvironmentManager envManager = EnvironmentManager.getInstance(e.getProject());
+        EnvironmentService envManager = EnvironmentService.getInstance(e.getProject());
 
         Environment env = envManager.getSelected();
 
@@ -68,7 +68,7 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
         DefaultActionGroup group = new DefaultActionGroup();
 
         Project project = MidPointUtils.getCurrentProject();
-        EnvironmentManager manager = EnvironmentManager.getInstance(project);
+        EnvironmentService manager = EnvironmentService.getInstance(project);
 
         for (Environment env : manager.getEnvironments()) {
             group.add(new SelectEnvironment(env));

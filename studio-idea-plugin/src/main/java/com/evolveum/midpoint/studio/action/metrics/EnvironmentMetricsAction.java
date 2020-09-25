@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.action.metrics;
 
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.metrics.MetricsService;
 import com.evolveum.midpoint.studio.impl.metrics.MetricsSession;
 import com.evolveum.midpoint.studio.ui.metrics.MetricsEditor;
@@ -29,7 +29,7 @@ public class EnvironmentMetricsAction extends AnAction {
             return;
         }
 
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         Environment selected = em.getSelected();
 
         e.getPresentation().setEnabled(selected != null);
@@ -42,7 +42,7 @@ public class EnvironmentMetricsAction extends AnAction {
             return;
         }
 
-        EnvironmentManager em = EnvironmentManager.getInstance(e.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(e.getProject());
         Environment env = em.getSelected();
 
         MetricsService service = project.getService(MetricsService.class);

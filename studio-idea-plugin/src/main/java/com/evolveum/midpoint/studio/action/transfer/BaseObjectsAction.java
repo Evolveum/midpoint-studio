@@ -46,12 +46,12 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
     @Override
     protected void executeOnBackground(AnActionEvent e, ProgressIndicator indicator) {
-        MidPointManager mm = MidPointManager.getInstance(e.getProject());
+        MidPointService mm = MidPointService.getInstance(e.getProject());
         mm.printToConsole(getClass(), "Initializing " + operation + " action");
 
         LOG.debug("Setting up MidPoint client");
 
-        EnvironmentManager em = EnvironmentManager.getInstance(e.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(e.getProject());
         Environment env = em.getSelected();
         MidPointClient client = new MidPointClient(e.getProject(), env);
 
@@ -70,10 +70,9 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             });
 
             if (!StringUtils.isEmpty(text)) {
-                int problemCount = processText(e, mm, indicator, client, text);
-                if (problemCount != 0) {
-                    showNotificationAfterFinish(problemCount);
-                }
+                ProcessState state = processText(e, mm, indicator, client, text);
+
+                showNotificationAfterFinish(0, 0, state.success, state.fail);
             } else {
                 MidPointUtils.publishNotification(notificationKey, "Error", "Text is empty", NotificationType.ERROR);
             }
@@ -100,50 +99,72 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         processFiles(e, mm, indicator, client, toProcess);
     }
 
-    private void showNotificationAfterFinish(int problemCount) {
-        if (problemCount == 0) {
-            MidPointUtils.publishNotification(notificationKey, "Success", getTaskTitle() + " finished", NotificationType.INFORMATION);
+    private void showNotificationAfterFinish(int filesCount, int failedFilesCount, int successObjects, int failedObjects) {
+        NotificationType type;
+        String title;
+        StringBuilder sb = new StringBuilder();
+
+        if (failedFilesCount == 0 && failedObjects == 0 && successObjects > 0) {
+            type = NotificationType.INFORMATION;
+            title = "Success";
+
+            sb.append(getTaskTitle() + " finished.");
         } else {
-            MidPointUtils.publishNotification(notificationKey, "Warning",
-                    "There were " + problemCount + " problems during '" + getTaskTitle() + "'", NotificationType.WARNING);
+            type = NotificationType.WARNING;
+            title = "Warning";
+
+            sb.append("There were problems during '" + getTaskTitle() + "'");
         }
+
+        sb.append("<br/>");
+        sb.append("Processed: ").append(successObjects).append(" objects<br/>");
+        sb.append("Failed to process: ").append(failedObjects).append(" objects <br/>");
+        sb.append("Files processed: ").append(filesCount).append("<br/>");
+        sb.append("Failed to process: ").append(failedFilesCount).append(" files<br/>");
+
+        MidPointUtils.publishNotification(notificationKey, title, sb.toString(), type);
     }
 
-    private void publishException(MidPointManager mm, String msg, Exception ex) {
+    private void publishException(MidPointService mm, String msg, Exception ex) {
         mm.printToConsole(getClass(), msg + ". Reason: " + ex.getMessage());
 
         MidPointUtils.publishExceptionNotification(notificationKey, msg, ex);
     }
 
-    private void processFiles(AnActionEvent evt, MidPointManager mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
-        AtomicInteger count = new AtomicInteger(0);
+    private void processFiles(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
+        AtomicInteger success = new AtomicInteger(0);
+        AtomicInteger fail = new AtomicInteger(0);
+        int filesCount = 0;
+        AtomicInteger failedFilesCount = new AtomicInteger(0);
 
         for (VirtualFile file : files) {
             if (isCanceled()) {
                 break;
             }
 
+            filesCount++;
+
             RunnableUtils.runWriteActionAndWait(() -> {
                 try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                     String xml = IOUtils.toString(in);
 
-                    int problems = processText(evt, mm, indicator, client, xml);
-                    count.addAndGet(problems);
+                    ProcessState state = processText(evt, mm, indicator, client, xml);
+                    success.addAndGet(state.success);
+                    fail.addAndGet(state.fail);
                 } catch (IOException ex) {
+                    failedFilesCount.incrementAndGet();
                     publishException(mm, "Exception occurred when loading file '" + file.getName() + "'", ex);
                 }
             });
         }
 
-        if (count.get() > 0) {
-            showNotificationAfterFinish(count.get());
-        }
+        showNotificationAfterFinish(filesCount, failedFilesCount.get(), success.get(), fail.get());
     }
 
-    private int processText(AnActionEvent evt, MidPointManager mm, ProgressIndicator indicator, MidPointClient client, String text) {
+    private ProcessState processText(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, String text) {
         indicator.setIndeterminate(false);
 
-        int problemCount = 0;
+        ProcessState state = new ProcessState();
 
         try {
             List<MidPointObject> objects = MidPointObjectUtils.parseText(text, notificationKey);
@@ -157,25 +178,27 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 try {
                     ProcessObjectResult processResult = processObject(evt, client, obj);
                     if (processResult.problem()) {
-                        problemCount++;
+                        state.fail++;
+                    } else {
+                        state.success++;
                     }
 
                     if (!processResult.shouldContinue()) {
                         break;
                     }
                 } catch (Exception ex) {
-                    problemCount++;
+                    state.fail++;
 
                     publishException(mm, "Exception occurred during " + operation + " of '" + obj.getName() + "(" + obj.getOid() + ")'", ex);
                 }
             }
         } catch (Exception ex) {
-            problemCount++;
+            state.fail++;
 
             publishException(mm, "Exception occurred during " + operation, ex);
         }
 
-        return problemCount;
+        return state;
     }
 
     public abstract <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception;
@@ -192,13 +215,13 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     }
 
     protected void printProblem(Project project, String message) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
 
         mm.printToConsole(getClass(), message);
     }
 
     protected void printAndNotifyProblem(Project project, String operation, String objectName, OperationResult result, Exception ex) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
 
         String msg = StringUtils.capitalize(operation) + " status of " + objectName + " was " + result.getStatus();
         mm.printToConsole(getClass(), msg);
@@ -212,12 +235,19 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     }
 
     protected void printSuccess(Project project, String operation, String objectName) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
 
         mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " '" + objectName + "' finished");
     }
 
     protected String getOperation() {
         return operation;
+    }
+
+    private static class ProcessState {
+
+        private int success;
+
+        private int fail;
     }
 }

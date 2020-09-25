@@ -47,7 +47,7 @@ public class MidPointInlayParameterHintsProvider implements InlayParameterHintsP
 //                new InlayInfo("jano", inlayOffset(element, true), false, true, true)
 //        );
 
-        Collection<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), element.getProject());
+        List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), element.getProject());
         if (result == null || result.isEmpty()) {
             return Collections.emptyList();
         }

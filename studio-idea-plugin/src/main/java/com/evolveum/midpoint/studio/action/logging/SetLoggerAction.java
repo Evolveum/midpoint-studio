@@ -38,12 +38,12 @@ public class SetLoggerAction extends BackgroundAction {
             return;
         }
 
-        MidPointManager mm = MidPointManager.getInstance(e.getProject());
+        MidPointService mm = MidPointService.getInstance(e.getProject());
         mm.printToConsole(getClass(), "Initializing action");
 
         LOG.debug("Setting up MidPoint client");
 
-        EnvironmentManager em = EnvironmentManager.getInstance(e.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(e.getProject());
         Environment env = em.getSelected();
         MidPointClient client = new MidPointClient(e.getProject(), env);
 

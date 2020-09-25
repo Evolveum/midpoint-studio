@@ -1,19 +1,19 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.studio.impl.MidPointFacetType;
-import com.evolveum.midpoint.studio.impl.client.ClientException;
-import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.MidPointFacetType;
+import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.impl.client.ClientException;
-import com.evolveum.midpoint.studio.impl.client.Service;
 import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
@@ -45,11 +45,17 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.XmlPatterns;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
+import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.table.TableColumnModelExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
 
@@ -58,11 +64,14 @@ import javax.swing.table.TableColumn;
 import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.awt.*;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -82,6 +91,21 @@ public class MidPointUtils {
     public static final PrismContext DEFAULT_PRISM_CONTEXT = ServiceFactory.DEFAULT_PRISM_CONTEXT;
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
+
+    private static final String[] NAMES;
+
+    static {
+        List<String> names = new ArrayList<>();
+        for (ObjectTypes t : ObjectTypes.values()) {
+            if (t.getClassDefinition() == null || Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
+                continue;
+            }
+
+            names.add(t.getElementName().getLocalPart());
+        }
+
+        NAMES = names.toArray(new String[names.size()]);
+    }
 
     @Deprecated
     public static Project getCurrentProject() {
@@ -202,7 +226,7 @@ public class MidPointUtils {
     }
 
     public static void publishException(Project project, Class clazz, String notificationKey, String msg, Exception ex) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
         mm.printToConsole(clazz, msg + ". Reason: " + ex.getMessage());
 
         publishExceptionNotification(notificationKey, msg, ex);
@@ -243,11 +267,13 @@ public class MidPointUtils {
             }
         }
 
-        MidPointUtils.publishNotification(key, "Error",
-                message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
+        if (key != null) {
+            MidPointUtils.publishNotification(key, "Error",
+                    message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
+        }
 
         if (project != null) {
-            MidPointManager manager = MidPointManager.getInstance(project);
+            MidPointService manager = MidPointService.getInstance(project);
             manager.printToConsole(clazz, message, ex);
         }
     }
@@ -295,33 +321,63 @@ public class MidPointUtils {
         };
     }
 
-    public static JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition> columns) {
+    public static <R> JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition<R, ?>> columns) {
         JXTreeTable table = new JXTreeTable();
         table.setRootVisible(false);
         table.setEditable(false);
         table.setDragEnabled(false);
         table.setHorizontalScrollEnabled(true);
-        table.setSelectionModel(new ExtendedListSelectionModel(table.getSelectionModel()));        // todo fix
         table.setTreeTableModel(model);
         table.setLeafIcon(null);
         table.setClosedIcon(null);
         table.setOpenIcon(null);
 
         if (columns != null) {
-            for (int i = 0; i < columns.size(); i++) {
-                TreeTableColumnDefinition def = columns.get(i);
-
-                TableColumn column = table.getColumnModel().getColumn(i);
-                column.setPreferredWidth(def.getSize());
-                if (def.getTableCellRenderer() != null) {
-                    column.setCellRenderer(def.getTableCellRenderer());
-                }
-            }
+            applyColumnDefinitions(columns, table);
         }
 
         table.packAll();
 
         return table;
+    }
+
+    @Experimental
+    public static <R> JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
+
+        JXTreeTable table = new JXTreeTable(model) {
+            @Override
+            protected void resetDefaultTableCellRendererColors(Component renderer, int row, int column) {
+                if (!disableHack) {
+                    super.resetDefaultTableCellRendererColors(renderer, row, column);
+                }
+            }
+        };
+        table.setAutoCreateColumnsFromModel(false);
+        table.setColumnModel(columnModel);
+        table.setRootVisible(false);
+        table.setEditable(false);
+        table.setDragEnabled(false);
+        table.setHorizontalScrollEnabled(true);
+        table.setSelectionModel(table.getSelectionModel());        // todo fix
+        table.setLeafIcon(null);
+        table.setClosedIcon(null);
+        table.setOpenIcon(null);
+
+        table.packAll();
+
+        return table;
+    }
+
+    private static <R> void applyColumnDefinitions(List<TreeTableColumnDefinition<R, ?>> columnDefinitions, JXTreeTable table) {
+        for (int i = 0; i < columnDefinitions.size(); i++) {
+            TreeTableColumnDefinition<R, ?> columnDef = columnDefinitions.get(i);
+
+            TableColumn column = table.getColumnModel().getColumn(i);
+            column.setPreferredWidth(columnDef.getSize());
+            if (columnDef.getTableCellRenderer() != null) {
+                column.setCellRenderer(columnDef.getTableCellRenderer());
+            }
+        }
     }
 
     public static String getName(PrismObject obj) {
@@ -507,6 +563,20 @@ public class MidPointUtils {
 
     }
 
+    public static <R> TableColumnModelExt createTableColumnModel(List<TreeTableColumnDefinition<R, ?>> columnDefinitions) {
+        TableColumnModelExt model = new DefaultTableColumnModelExt();
+        int index = 0;
+        for (TreeTableColumnDefinition<R, ?> columnDefinition : columnDefinitions) {
+            TableColumnExt column = new TableColumnExt(index++, columnDefinition.getSize(),
+                    columnDefinition.getTableCellRenderer(), null);
+            column.setIdentifier(columnDefinition.getHeader());
+            column.setEditable(false);
+            column.setTitle(columnDefinition.getHeader());
+            model.addColumn(column);
+        }
+        return model;
+    }
+
     public static boolean isObjectTypeElement(XmlTag tag) {
         if (tag == null) {
             return false;
@@ -557,35 +627,20 @@ public class MidPointUtils {
         return fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null;
     }
 
-    public static Service buildRestClient(Environment environment, MidPointManager midPointManager)
-            throws Exception {
-        ServiceFactory factory = new ServiceFactory();
-        factory
-                .url(environment.getUrl())
-                .username(environment.getUsername())
-                .password(environment.getPassword())
-                .proxyServer(environment.getProxyServerHost())
-                .proxyServerPort(environment.getProxyServerPort())
-                .proxyServerType(environment.getProxyServerType())
-                .proxyUsername(environment.getProxyUsername())
-                .proxyPassword(environment.getProxyPassword())
-                .ignoreSSLErrors(environment.isIgnoreSslErrors());
+    public static boolean isItObjectTypeOidAttribute(PsiElement element) {
+        return psiElement().inside(
+                XmlPatterns
+                        .xmlAttributeValue()
+                        .withParent(
+                                XmlPatterns.xmlAttribute("oid").withParent(
+                                        XmlPatterns.xmlTag().withNamespace(SchemaConstantsGenerated.NS_COMMON)
+                                                .withName(NAMES)))).accepts(element);
+    }
 
-        factory.messageListener((message) -> {
+    public static JBScrollPane borderlessScrollPane(@NotNull JComponent component) {
+        JBScrollPane pane = new JBScrollPane(component);
+        pane.setBorder(null);
 
-            if (midPointManager == null || !midPointManager.getSettings().isPrintRestCommunicationToConsole()) {
-                return;
-            }
-
-            midPointManager.printToConsole(MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
-        });
-
-        Service service =  factory.create();
-
-        if (midPointManager != null) {
-            midPointManager.printToConsole(MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
-        }
-
-        return service;
+        return pane;
     }
 }
