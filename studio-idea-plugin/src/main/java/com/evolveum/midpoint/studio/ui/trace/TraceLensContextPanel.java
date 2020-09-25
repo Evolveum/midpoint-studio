@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
-import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.lens.LensContextNode;
 import com.evolveum.midpoint.studio.ui.trace.lens.PrismNode;

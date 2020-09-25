@@ -13,6 +13,7 @@ import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.impl.client.ClientException;
 import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
@@ -50,6 +51,9 @@ import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
+import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.table.TableColumnModelExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
 
@@ -315,7 +319,7 @@ public class MidPointUtils {
         };
     }
 
-    public static JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition> columns) {
+    public static <R> JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition<R, ?>> columns) {
         JXTreeTable table = new JXTreeTable();
         table.setRootVisible(false);
         table.setEditable(false);
@@ -327,20 +331,51 @@ public class MidPointUtils {
         table.setOpenIcon(null);
 
         if (columns != null) {
-            for (int i = 0; i < columns.size(); i++) {
-                TreeTableColumnDefinition def = columns.get(i);
-
-                TableColumn column = table.getColumnModel().getColumn(i);
-                column.setPreferredWidth(def.getSize());
-                if (def.getTableCellRenderer() != null) {
-                    column.setCellRenderer(def.getTableCellRenderer());
-                }
-            }
+            applyColumnDefinitions(columns, table);
         }
 
         table.packAll();
 
         return table;
+    }
+
+    @Experimental
+    public static <R> JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
+
+        JXTreeTable table = new JXTreeTable(model) {
+            @Override
+            protected void resetDefaultTableCellRendererColors(Component renderer, int row, int column) {
+                if (!disableHack) {
+                    super.resetDefaultTableCellRendererColors(renderer, row, column);
+                }
+            }
+        };
+        table.setAutoCreateColumnsFromModel(false);
+        table.setColumnModel(columnModel);
+        table.setRootVisible(false);
+        table.setEditable(false);
+        table.setDragEnabled(false);
+        table.setHorizontalScrollEnabled(true);
+        table.setSelectionModel(table.getSelectionModel());        // todo fix
+        table.setLeafIcon(null);
+        table.setClosedIcon(null);
+        table.setOpenIcon(null);
+
+        table.packAll();
+
+        return table;
+    }
+
+    private static <R> void applyColumnDefinitions(List<TreeTableColumnDefinition<R, ?>> columnDefinitions, JXTreeTable table) {
+        for (int i = 0; i < columnDefinitions.size(); i++) {
+            TreeTableColumnDefinition<R, ?> columnDef = columnDefinitions.get(i);
+
+            TableColumn column = table.getColumnModel().getColumn(i);
+            column.setPreferredWidth(columnDef.getSize());
+            if (columnDef.getTableCellRenderer() != null) {
+                column.setCellRenderer(columnDef.getTableCellRenderer());
+            }
+        }
     }
 
     public static String getName(PrismObject obj) {
@@ -524,6 +559,20 @@ public class MidPointUtils {
 
         return new QName(element.getNamespace(), element.getLocalName());
 
+    }
+
+    public static <R> TableColumnModelExt createTableColumnModel(List<TreeTableColumnDefinition<R, ?>> columnDefinitions) {
+        TableColumnModelExt model = new DefaultTableColumnModelExt();
+        int index = 0;
+        for (TreeTableColumnDefinition<R, ?> columnDefinition : columnDefinitions) {
+            TableColumnExt column = new TableColumnExt(index++, columnDefinition.getSize(),
+                    columnDefinition.getTableCellRenderer(), null);
+            column.setIdentifier(columnDefinition.getHeader());
+            column.setEditable(false);
+            column.setTitle(columnDefinition.getHeader());
+            model.addColumn(column);
+        }
+        return model;
     }
 
     public static boolean isObjectTypeElement(XmlTag tag) {

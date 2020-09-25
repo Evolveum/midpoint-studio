@@ -18,38 +18,55 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ContentManager contentManager = toolWindow.getContentManager();
 
+        Content overviewContent = buildTraceOverview(project);
+        contentManager.addContent(overviewContent);
+        contentManager.setSelectedContent(overviewContent);
+
         Content variablesContent = buildTraceTree(project);
         contentManager.addContent(variablesContent);
-        contentManager.setSelectedContent(variablesContent);
 
-        Content logsContent = buildLogs(project);
-        contentManager.addContent(logsContent);
+        Content tracePerformanceInformation = buildTracePerformance(project);
+        contentManager.addContent(tracePerformanceInformation);
 
         Content traceEntryDetails = buildTraceEntryDetails(project);
         contentManager.addContent(traceEntryDetails);
 
         Content traceEntryDetailsRaw = buildTraceEntryDetailsRaw(project);
         contentManager.addContent(traceEntryDetailsRaw);
+
+        Content operationResultRaw = buildOperationResultRaw(project);
+        contentManager.addContent(operationResultRaw);
     }
 
     private Content buildTraceEntryDetails(Project project) {
-        TraceEntryDetailsPanel panel = new TraceEntryDetailsPanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entry Details", false);
+        OpNodeDumpPanel panel = new OpNodeDumpPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(panel, "Operation Details", false);
     }
 
     private Content buildTraceEntryDetailsRaw(Project project) {
-        TraceEntryDetailsRawPanel panel = new TraceEntryDetailsRawPanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entry Details Raw", false);
+        OpNodeTraceRawPanel panel = new OpNodeTraceRawPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entries Raw", false);
+    }
+
+    private Content buildOperationResultRaw(Project project) {
+        OpNodeOperationResultRawPanel panel = new OpNodeOperationResultRawPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(panel, "Operation Raw", false);
     }
 
     private Content buildTraceTree(Project project) {
-        TraceTreePanel variables = new TraceTreePanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(variables, "Trace Tree", false);
+        OpNodeDetailsPanel variables = new OpNodeDetailsPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(variables, "Tree View", false);
     }
 
-    private Content buildLogs(Project project) {
-        TraceLogsPanel logs = new TraceLogsPanel(project.getMessageBus());
-        return ContentFactory.SERVICE.getInstance().createContent(logs, "Logs", false);
+    private Content buildTraceOverview(Project project) {
+        OpNodeOverviewPanel variables = new OpNodeOverviewPanel(project);
+        return ContentFactory.SERVICE.getInstance().createContent(variables, "Overview", false);
+    }
+
+    private Content buildTracePerformance(Project project) {
+        OpNodePerformancePanel perfInformation = new OpNodePerformancePanel(project.getMessageBus());
+        //return new HeaderDecorator("Trace Performance Information", new JBScrollPane(perfInformation));
+        return ContentFactory.SERVICE.getInstance().createContent(perfInformation, "Performance Information", false);
     }
 
     @Override

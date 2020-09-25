@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.studio.impl.trace.OpNode;
+import com.evolveum.midpoint.schema.traces.OpNode;
 import com.intellij.util.messages.Topic;
 
 /**

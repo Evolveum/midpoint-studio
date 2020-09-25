@@ -1,18 +1,15 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.trace.Format;
-import com.evolveum.midpoint.studio.impl.trace.OpNode;
+import com.evolveum.midpoint.studio.impl.trace.FormattingContext;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.entry.Node;
-import com.evolveum.midpoint.studio.ui.trace.entry.ResultNode;
-import com.evolveum.midpoint.studio.ui.trace.entry.TextNode;
-import com.evolveum.midpoint.studio.ui.trace.entry.TraceNode;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceType;
+import com.evolveum.midpoint.util.MiscUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
@@ -27,14 +24,16 @@ import com.intellij.ui.components.JBTextArea;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.decorator.AbstractHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeSelectionEvent;
+import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
@@ -42,11 +41,13 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Displays detailed information about given OpNode: Shows operation result and (optional) trace in a tree view.
+ *
  * Created by Viliam Repan (lazyman).
  */
-public class TraceTreePanel extends BorderLayoutPanel {
+public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
 
-    private static final Logger LOG = Logger.getInstance(TraceTreePanel.class);
+    private static final Logger LOG = Logger.getInstance(OpNodeTreeViewPanel.class);
 
     private JXTreeTable variables;
 
@@ -56,14 +57,11 @@ public class TraceTreePanel extends BorderLayoutPanel {
 
     private JBTextArea variablesValue;
 
-    public TraceTreePanel(@NotNull Project project) {
+    private OpNode currentOpNode;
+
+    public OpNodeTreeViewPanel(@NotNull Project project) {
         initLayout();
-
-        Node resultNode = TextNode.create("Result", "", null);
-        Node traceNode = TextNode.create("Trace", "", null);
-
-        updateModel(resultNode, traceNode);
-
+        updateModel(null);
         MessageBus bus = project.getMessageBus();
         bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
 
@@ -74,73 +72,30 @@ public class TraceTreePanel extends BorderLayoutPanel {
         });
     }
 
-    private void nodeChange(OpNode node) {
-        if (node == null) {
-            updateModel(null, null);
-            applySelection(null);
-            return;
-        }
-
-        Node result = new ResultNode(node);
-
-        Node trace;
-        try {
-            trace = createTraceNode(node);
-        } catch (SchemaException ex) {
-            LOG.error("Couldn't create trace node", ex);
-
-            trace = TextNode.create("Trace", "Error: " + ex.getMessage(), null);
-        }
-
-        updateModel(result, trace);
-
-        applySelection(null);
+    void updateModel(OpNode node) {
+        this.currentOpNode = node;
     }
 
-    private void applySelection(Node obj) {
+    private void nodeChange(OpNode node) {
+        updateModel(node);
+    }
+
+    void applySelection(Node<?> obj) {
         if (obj == null) {
             variablesValue.setText(null);
-            return;
+        } else {
+            Format format = variablesDisplayAs.getFormat();
+            String text = format.format(obj.getObject(), new FormattingContext(currentOpNode));
+            variablesValue.setText(text);
+            variablesValue.setCaretPosition(0);
         }
-
-        Format format = variablesDisplayAs.getFormat();
-        String text = format.format(obj.getObject());
-
-        variablesValue.setText(text);
     }
 
-    private void updateModel(Node result, Node trace) {
-        DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
-        if (result != null) {
-            root.add(result);
-        }
-        if (trace != null) {
-            root.add(trace);
-        }
-
+    void updateTreeModel(DefaultMutableTreeTableNode newRoot) {
         DefaultTreeTableModel model = (DefaultTreeTableModel) variables.getTreeTableModel();
-        model.setRoot(root);
+        model.setRoot(newRoot);
 
         this.variables.invalidate();
-    }
-
-    private Node createTraceNode(OpNode opNode) throws SchemaException {
-        List<TraceType> traces = opNode.getResult().getTrace();
-        if (traces.isEmpty()) {
-            return TextNode.create("Trace", "(none)", null);
-        } else if (traces.size() == 1) {
-            return createTraceNode(traces.get(0), null);
-        } else {
-            TextNode rv = TextNode.create("Trace", "Number: " + traces.size(), null);
-            for (TraceType trace : traces) {
-                createTraceNode(trace, rv);
-            }
-            return rv;
-        }
-    }
-
-    private Node createTraceNode(TraceType trace, TextNode parent) throws SchemaException {
-        return TraceNode.create(trace, parent);
     }
 
     private void variableDisplayAsChanged(Format format) {
@@ -160,7 +115,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
 
     private void variablesSelectionChanged(TreeSelectionEvent e) {
         TreePath path = e.getNewLeadSelectionPath();
-        TreeTableNode node = (TreeTableNode) path.getLastPathComponent();
+        TreeTableNode node = path != null ? (TreeTableNode) path.getLastPathComponent() : null;
 
         Node obj = null;
         if (node instanceof Node) {
@@ -174,14 +129,36 @@ public class TraceTreePanel extends BorderLayoutPanel {
         JBSplitter splitter = new OnePixelSplitter(false);
         add(splitter, BorderLayout.CENTER);
 
-        List<TreeTableColumnDefinition> columns = new ArrayList<>();
+        List<TreeTableColumnDefinition<String, ?>> columns = new ArrayList<>();
 
-        columns.add(new TreeTableColumnDefinition<String, String>("Item", 150, o -> null));
-        columns.add(new TreeTableColumnDefinition<String, String>("Variable", 400, o -> null));
+        columns.add(new TreeTableColumnDefinition<>("Item", 150, o -> null));
+        columns.add(new TreeTableColumnDefinition<>("Variable", 400, o -> null, new ExpansionSensitiveTableCellRenderer()));
 
-        this.variables = MidPointUtils.createTable(new DefaultTreeTableModel(new DefaultMutableTreeTableNode(), Arrays.asList("Item", "Variable")), null);
+        this.variables = MidPointUtils.createTable2(
+                new DefaultTreeTableModel(new DefaultMutableTreeTableNode(), Arrays.asList("Item", "Variable")),
+                MidPointUtils.createTableColumnModel(columns), false);
         this.variables.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.variables.addTreeSelectionListener(e -> variablesSelectionChanged(e));
+        this.variables.addTreeSelectionListener(this::variablesSelectionChanged);
+
+        this.variables.addHighlighter(new AbstractHighlighter() {
+            @Override
+            protected Component doHighlight(Component component, ComponentAdapter adapter) {
+                int row = adapter.convertRowIndexToModel(adapter.row);
+                TreePath pathForRow = variables.getPathForRow(row);
+                Node node = (Node) pathForRow.getLastPathComponent();
+                if (adapter.isSelected()) {
+                    component.setBackground(variables.getSelectionBackground());
+                } else if (node.getBackgroundColor() == null) {
+                    component.setBackground(variables.getBackground());
+                } else {
+                    component.setBackground(node.getBackgroundColor());
+                }
+                return component;
+            }
+        });
+
+        TableColumn column = this.variables.getColumnModel().getColumn(1);
+        column.setCellRenderer(new ExpansionSensitiveTableCellRenderer());
 
         JComponent mainToolbar = initMainToolbar();
 
@@ -204,7 +181,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
         variablesWrapText = new SimpleCheckboxAction("Wrap text") {
 
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void onStateChange() {
                 variablesValue.setLineWrap(isSelected());
                 variablesValue.invalidate();
             }
@@ -231,9 +208,9 @@ public class TraceTreePanel extends BorderLayoutPanel {
         return resultsActionsToolbar.getComponent();
     }
 
-    private static class FormatComboboxAction extends ComboBoxAction {
+    private class FormatComboboxAction extends ComboBoxAction {
 
-        private Format format = Format.AUTO;
+        private Format format = Format.XML_SIMPLIFIED;
 
         @NotNull
         @Override
@@ -245,7 +222,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
 
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
-                        FormatComboboxAction.this.setFormat(this.getFormat());
+                        OpNodeTreeViewPanel.FormatComboboxAction.this.setFormat(this.getFormat());
                     }
                 });
             }
@@ -260,6 +237,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
             String text = getFormat().getDisplayName();
             getTemplatePresentation().setText(text);
             e.getPresentation().setText(text);
+            variablesValue.setCaretPosition(0);
         }
 
         public void setFormat(Format format) {
@@ -267,7 +245,7 @@ public class TraceTreePanel extends BorderLayoutPanel {
         }
 
         public Format getFormat() {
-            return format != null ? format : Format.AUTO;
+            return format != null ? format : Format.XML_SIMPLIFIED;
         }
     }
 
@@ -284,4 +262,19 @@ public class TraceTreePanel extends BorderLayoutPanel {
             return format;
         }
     }
+
+    void setViewingState(ViewingState viewingState) {
+
+        SwingUtilities.invokeLater(() -> {
+            variables.collapseAll();
+            Integer selectedIndex = viewingState.getSelectedIndex();
+            if (selectedIndex != null) {
+                variables.setRowSelectionInterval(selectedIndex, selectedIndex);
+            }
+            for (TreePath treePath : MiscUtil.emptyIfNull(viewingState.getExpandedPaths())) {
+                variables.expandPath(treePath);
+            }
+        });
+    }
+
 }

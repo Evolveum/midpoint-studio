@@ -264,7 +264,7 @@ public class MidPointClient {
 
         String expanded = expander.expand(xml);
 
-        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()), getPrismContext());
+        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()));
         return parser.parse();
     }
 
@@ -274,7 +274,7 @@ public class MidPointClient {
 
         String expanded = expander.expand(xml);
 
-        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()), getPrismContext());
+        PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()));
         return parser.parseObjects();
     }
 
@@ -286,7 +286,7 @@ public class MidPointClient {
             Charset charset = file.getCharset();
             InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
 
-            PrismParser parser = createParser(expanded, getPrismContext());
+            PrismParser parser = createParser(expanded);
             return parser.parseObjects();
         }
     }
@@ -299,14 +299,23 @@ public class MidPointClient {
             Charset charset = file.getCharset();
             InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
 
-            PrismParser parser = createParser(expanded, getPrismContext());
+            PrismParser parser = createParser(expanded);
             return parser.parse();
         }
     }
 
-    private PrismParser createParser(InputStream data, PrismContext ctx) {
+    public PrismParser createParser(InputStream data) {
+        PrismContext ctx = getPrismContext();
+
         ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
         return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
+    public PrismParser createParser(String xml) {
+        PrismContext ctx = getPrismContext();
+
+        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
+        return ctx.parserFor(xml).language(PrismContext.LANG_XML).context(parsingContext);
     }
 
     public TestConnectionResult testConnection() {

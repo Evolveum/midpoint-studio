@@ -1,11 +1,16 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.schema.traces.OpNodeTreeBuilder;
+import com.evolveum.midpoint.schema.traces.TraceParser;
 import com.evolveum.midpoint.studio.impl.MidPointService;
-import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.Options;
-import com.evolveum.midpoint.studio.impl.trace.TraceParser;
+import com.evolveum.midpoint.studio.impl.trace.StudioNameResolver;
+import com.evolveum.midpoint.studio.ui.trace.presentation.PresentationInitializer;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.TracingOutputType;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
@@ -23,7 +28,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,7 +43,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
     private Wrapper wrapper = new Wrapper();
 
-    private TraceViewPanel traceViewPanel;
+    private TraceTreeViewPanel traceTreeViewPanel;
 
     public TraceViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.project = project;
@@ -49,29 +53,48 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
     }
 
     private void initialize() {
-        List<OpNode> data = new ArrayList<>();
-        long start = 0;
+        OpNode root;
 
+        long start = System.currentTimeMillis();
+        System.out.println("Initializing TraceViewEditor");
         try (InputStream is = file.getInputStream()) {
-            boolean isZip = file.getExtension().equalsIgnoreCase("zip");
+            String extension = file.getExtension();
+            boolean isZip = extension != null && extension.equalsIgnoreCase("zip");
 
-            TraceParser parser = new TraceParser();
-            data = parser.parse(is, isZip);
-            start = parser.getStartTimestamp();
+            PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+            TraceParser parser = new TraceParser(prismContext);
+            TracingOutputType tracingOutput = parser.parse(is, isZip, file.getCanonicalPath());
+            System.out.println("Initializing TraceViewEditor - parsed tracing output: " + (System.currentTimeMillis() - start) + " ms");
+
+            StudioNameResolver nameResolver = new StudioNameResolver(tracingOutput.getDictionary(), file);
+
+            List<OpNode> data = new OpNodeTreeBuilder(prismContext).build(tracingOutput, nameResolver);
+            if (data.size() == 1) {
+                root = data.get(0);
+            } else {
+                throw new IllegalStateException("Unexpected # of OpNode objects: " + data.size());
+            }
+            System.out.println("Initializing TraceViewEditor - built op node tree: " + (System.currentTimeMillis() - start) + " ms");
+
         } catch (Exception ex) {
             MidPointService mm = MidPointService.getInstance(project);
             mm.printToConsole(TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
-
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't load file", ex);
+
+            ex.printStackTrace();
+            root = null;
         }
 
-        traceViewPanel = new TraceViewPanel(project, data, start);
-        wrapper.setContent(traceViewPanel);
+        if (root != null) {
+            PresentationInitializer.initialize(root);
+        }
+        traceTreeViewPanel = new TraceTreeViewPanel(project, root);
+        wrapper.setContent(traceTreeViewPanel);
     }
 
     public void applyOptions(Options options) {
-        if (traceViewPanel != null) {
-            traceViewPanel.applyOptions(options);
+        if (traceTreeViewPanel != null) {
+            traceTreeViewPanel.applyOptions(options);
         }
     }
 
@@ -110,15 +133,15 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
     @Override
     public void selectNotify() {
-        if (traceViewPanel != null) {
-            traceViewPanel.selectNotify();
+        if (traceTreeViewPanel != null) {
+            traceTreeViewPanel.selectNotify();
         }
     }
 
     @Override
     public void deselectNotify() {
-        if (traceViewPanel != null) {
-            traceViewPanel.deselectNotify();
+        if (traceTreeViewPanel != null) {
+            traceTreeViewPanel.deselectNotify();
         }
     }
 
