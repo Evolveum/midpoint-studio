@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.util;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.MidPointFacetType;
@@ -42,6 +43,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.XmlPatterns;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -55,11 +58,14 @@ import javax.swing.table.TableColumn;
 import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.awt.*;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -79,6 +85,21 @@ public class MidPointUtils {
     public static final PrismContext DEFAULT_PRISM_CONTEXT = ServiceFactory.DEFAULT_PRISM_CONTEXT;
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
+
+    private static final String[] NAMES;
+
+    static {
+        List<String> names = new ArrayList<>();
+        for (ObjectTypes t : ObjectTypes.values()) {
+            if (t.getClassDefinition() == null || Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
+                continue;
+            }
+
+            names.add(t.getElementName().getLocalPart());
+        }
+
+        NAMES = names.toArray(new String[names.size()]);
+    }
 
     @Deprecated
     public static Project getCurrentProject() {
@@ -240,8 +261,10 @@ public class MidPointUtils {
             }
         }
 
-        MidPointUtils.publishNotification(key, "Error",
-                message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
+        if (key != null) {
+            MidPointUtils.publishNotification(key, "Error",
+                    message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
+        }
 
         if (project != null) {
             MidPointService manager = MidPointService.getInstance(project);
@@ -551,5 +574,15 @@ public class MidPointUtils {
         }
         FacetManager fm = FacetManager.getInstance(modules[0]);
         return fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null;
+    }
+
+    public static boolean isItObjectTypeOidAttribute(PsiElement element) {
+        return psiElement().inside(
+                XmlPatterns
+                        .xmlAttributeValue()
+                        .withParent(
+                                XmlPatterns.xmlAttribute("oid").withParent(
+                                        XmlPatterns.xmlTag().withNamespace(SchemaConstantsGenerated.NS_COMMON)
+                                                .withName(NAMES)))).accepts(element);
     }
 }

@@ -49,9 +49,16 @@ public class MidPointClient {
 
     private Service client;
 
+    private boolean suppressNotifications;
+
     public MidPointClient(Project project, @NotNull Environment environment) {
+        this(project, environment, false);
+    }
+
+    public MidPointClient(Project project, @NotNull Environment environment, boolean suppressNotifications) {
         this.project = project;
         this.environment = environment;
+        this.suppressNotifications = suppressNotifications;
 
         if (project != null) {
             this.midPointManager = MidPointService.getInstance(project);
@@ -147,7 +154,9 @@ public class MidPointClient {
     }
 
     private void handleGenericException(String message, Exception ex) {
-        MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
+        if (!suppressNotifications) {
+            MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
+        }
     }
 
     public <O extends ObjectType> String getRaw(Class<O> type, String oid, SearchOptions opts) throws ObjectNotFoundException {
