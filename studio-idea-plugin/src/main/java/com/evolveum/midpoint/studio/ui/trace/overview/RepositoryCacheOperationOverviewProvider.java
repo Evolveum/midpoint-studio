@@ -33,7 +33,7 @@ public class RepositoryCacheOperationOverviewProvider implements OverviewProvide
             provideOverview((RepositoryModifyTraceType) trace, root);
         } else if (trace instanceof RepositoryDeleteTraceType) {
             provideOverview((RepositoryDeleteTraceType) trace, root);
-        } else {
+        } else if (trace != null) {
             TextNode.create("Operation", trace.getClass().getSimpleName(), root);
             TextNode.create("Cache use", trace.getCacheUse(), root);
             PrismValueNode.create("Global cache use", trace.getGlobalCacheUse(), root);
