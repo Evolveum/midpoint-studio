@@ -2,6 +2,8 @@ package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -93,12 +95,21 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
             if (value == null) {
                 return "";
             }
-            if (d.getUserObject().isDisabled() && !DisplayUtil.isHtml(value)) {
+            if (isDisabled(d) && !DisplayUtil.isHtml(value)) {
                 return DisplayUtil.makeDisabled(value);
             } else {
                 return value;
             }
         }
+    }
+
+    private boolean isDisabled(AbstractTraceTreeTableNode d) {
+        OpNode opNode = d.getUserObject();
+        return opNode != null && (opNode.isDisabled() || isNotApplicable(opNode.getResult()));
+    }
+
+    private boolean isNotApplicable(OperationResultType result) {
+        return result != null && result.getStatus() == OperationResultStatusType.NOT_APPLICABLE;
     }
 
     @Override

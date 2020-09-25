@@ -29,7 +29,9 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         ProjectorComponentTraceType trace = node.getTrace();
         if (trace != null) {
 
-            ResourceShadowDiscriminator rsd = getRsd(node);
+            ResourceShadowDiscriminator rsd = getRsd(node, trace);
+
+            PrismValueNode.create("Discriminator", rsd != null ? rsd.toResourceShadowDiscriminatorType() : null, root);
 
             LensContextType inputContext = trace.getInputLensContext();
             if (inputContext != null) {
@@ -127,8 +129,15 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         return null;
     }
 
-    // TODO do seriously
-    private ResourceShadowDiscriminator getRsd(ProjectorProjectionOpNode node) {
+    private ResourceShadowDiscriminator getRsd(ProjectorProjectionOpNode node, ProjectorComponentTraceType trace) {
+        if (trace.getResourceShadowDiscriminator() != null) {
+            return ResourceShadowDiscriminator.fromResourceShadowDiscriminatorType(trace.getResourceShadowDiscriminator(), false);
+        } else {
+            return getRsdGuessed(node);
+        }
+    }
+
+    private ResourceShadowDiscriminator getRsdGuessed(ProjectorProjectionOpNode node) {
         List<String> qualifiers = node.getResult().getQualifier();
         if (qualifiers.size() != 1) {
             System.out.println("Wrong # of qualifiers: " + qualifiers);

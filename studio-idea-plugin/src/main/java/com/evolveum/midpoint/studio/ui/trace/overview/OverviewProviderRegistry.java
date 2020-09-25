@@ -1,35 +1,45 @@
 package com.evolveum.midpoint.studio.ui.trace.overview;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.schema.traces.RepositoryCacheOpNode;
 import com.evolveum.midpoint.schema.traces.operations.*;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  *
  */
 public class OverviewProviderRegistry {
 
+    private static final Map<Class<? extends OpNode>, Supplier<OverviewProvider<?>>> PROVIDERS = new LinkedHashMap<>();
+
+    static {
+        PROVIDERS.put(RepositoryCacheOpNode.class, RepositoryCacheOperationOverviewProvider::new);
+        PROVIDERS.put(FocusRepositoryLoadOpNode.class, FocusRepositoryLoadOverviewProvider::new);
+        PROVIDERS.put(FullProjectionLoadOpNode.class, FullProjectionLoadOverviewProvider::new);
+        PROVIDERS.put(ClockworkRunOpNode.class, ClockworkRunOverviewProvider::new);
+        PROVIDERS.put(ClockworkClickOpNode.class, ClockworkClickOverviewProvider::new);
+        PROVIDERS.put(ProjectorProjectionOpNode.class, ProjectorProjectionOverviewProvider::new);
+        PROVIDERS.put(ProjectorComponentOpNode.class, ProjectorComponentOverviewProvider::new);
+        PROVIDERS.put(FocusChangeExecutionOpNode.class, FocusChangeExecutionOverviewProvider::new);
+        PROVIDERS.put(ProjectionChangeExecutionOpNode.class, ProjectionChangeExecutionOverviewProvider::new);
+        PROVIDERS.put(ResourceObjectConstructionEvaluationOpNode.class, ResourceObjectConstructionEvaluationOverviewProvider::new);
+        PROVIDERS.put(MappingEvaluationOpNode.class, MappingEvaluationOverviewProvider::new);
+        PROVIDERS.put(TransformationExpressionEvaluationOpNode.class, TransformationExpressionEvaluationOverviewProvider::new);
+        PROVIDERS.put(ItemConsolidationOpNode.class, ItemConsolidationOverviewProvider::new);
+    }
+
     @SuppressWarnings("unchecked")
     @NotNull
     public static <O extends OpNode> OverviewProvider<O> getProvider(@NotNull O node) {
-        if (node instanceof ClockworkRunOpNode) {
-            return (OverviewProvider<O>) new ClockworkRunOverviewProvider();
-        } else if (node instanceof ClockworkClickOpNode) {
-            return (OverviewProvider<O>) new ClockworkClickOverviewProvider();
-        } else if (node instanceof ProjectorProjectionOpNode) {
-            return (OverviewProvider<O>) new ProjectorProjectionOverviewProvider();
-        } else if (node instanceof ProjectorComponentOpNode) {
-            return (OverviewProvider<O>) new ProjectorComponentOverviewProvider();
-        } else if (node instanceof FocusChangeExecutionOpNode) {
-            return (OverviewProvider<O>) new FocusChangeExecutionOverviewProvider();
-        } else if (node instanceof MappingEvaluationOpNode) {
-            return (OverviewProvider<O>) new MappingEvaluationOverviewProvider();
-        } else if (node instanceof TransformationExpressionEvaluationOpNode) {
-            return (OverviewProvider<O>) new TransformationExpressionEvaluationOverviewProvider();
-        } else if (node instanceof ItemConsolidationOpNode) {
-            return (OverviewProvider<O>) new ItemConsolidationOverviewProvider();
-        } else {
-            return (OverviewProvider<O>) new NullOverviewProvider();
+        for (Map.Entry<Class<? extends OpNode>, Supplier<OverviewProvider<?>>> entry : PROVIDERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(node.getClass())) {
+                return (OverviewProvider<O>) entry.getValue().get();
+            }
         }
+        return (OverviewProvider<O>) new NullOverviewProvider();
     }
 }

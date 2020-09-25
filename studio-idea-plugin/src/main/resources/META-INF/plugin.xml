@@ -122,6 +122,13 @@
                     icon="/icons/midpoint.png"
                     factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceOptionsWindowFactory"/>
 
+        <facet.toolWindow id="TraceGraph"
+                    facetIdList="MidPointFacet"
+                    anchor="right"
+                    order="last"
+                    icon="/icons/midpoint.png"
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceGraphWindowFactory"/>
+
         <fileType
                 name="MPTrace"
                 fieldName="INSTANCE"

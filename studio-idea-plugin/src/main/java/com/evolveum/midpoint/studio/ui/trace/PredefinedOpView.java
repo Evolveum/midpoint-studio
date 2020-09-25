@@ -13,7 +13,13 @@ import java.util.Collection;
 public enum PredefinedOpView {
 
     ALL("All", PredefinedOpTypeSet.ALL, PredefinedPerformanceCategoriesSet.NONE, PredefinedColumnSet.ALL),
-    OVERVIEW("Functional overview", PredefinedOpTypeSet.FUNCTIONAL_OVERVIEW, PredefinedPerformanceCategoriesSet.NONE, PredefinedColumnSet.FUNCTIONAL_VIEW),
+
+    FUNCTIONAL_OVERVIEW("Functional overview", PredefinedOpTypeSet.FUNCTIONAL_OVERVIEW,
+            PredefinedPerformanceCategoriesSet.NONE, PredefinedColumnSet.FUNCTIONAL_VIEW),
+
+    ASSIGNMENTS_EVALUATION_OVERVIEW("Assignments evaluation overview", PredefinedOpTypeSet.ASSIGNMENTS_EVALUATION_OVERVIEW,
+            PredefinedPerformanceCategoriesSet.NONE, PredefinedColumnSet.FUNCTIONAL_VIEW),
+
     NONE("None", PredefinedOpTypeSet.NONE, PredefinedPerformanceCategoriesSet.NONE, PredefinedColumnSet.FUNCTIONAL_VIEW);
 
     private final String label;
