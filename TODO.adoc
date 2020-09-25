@@ -45,22 +45,4 @@
 == Issues
 
 * If master password was removed from keyring and credentials.kdbx exists plugin should ask password
-* `DONE` Change master password fails after pwd is changed, error in console
-```
-2020-09-25 15:09:57,057 [ 224223]  TRACE - oint.studio.util.MidPointUtils -
-de.slackspace.openkeepass.exception.KeePassDatabaseUnreadableException: Could not decrypt keepass file. Master key wrong?
-at de.slackspace.openkeepass.crypto.Aes.createCryptoException(Aes.java:115)
-at de.slackspace.openkeepass.crypto.Aes.transformData(Aes.java:76)
-at de.slackspace.openkeepass.crypto.Aes.decrypt(Aes.java:41)
-at de.slackspace.openkeepass.crypto.Decrypter.processDatabaseEncryption(Decrypter.java:35)
-at de.slackspace.openkeepass.crypto.Decrypter.decryptDatabase(Decrypter.java:16)
-at de.slackspace.openkeepass.api.KeePassDatabaseReader.decryptStream(KeePassDatabaseReader.java:115)
-at de.slackspace.openkeepass.api.KeePassDatabaseReader.decryptAndParseDatabase(KeePassDatabaseReader.java:38)
-at de.slackspace.openkeepass.KeePassDatabase.openDatabase(KeePassDatabase.java:165)
-at com.evolveum.midpoint.studio.impl.EncryptionServiceImpl.refresh(EncryptionServiceImpl.java:110)
-at com.evolveum.midpoint.studio.impl.EncryptionServiceImpl.writeDatabase(EncryptionServiceImpl.java:248)
-at com.evolveum.midpoint.studio.impl.EncryptionServiceImpl.changeMasterPassword(EncryptionServiceImpl.java:75)
-at com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable.apply(MidPointProjectStructureConfigurable.java:105)
-```
-* when creating new project master pasword is not required - should be
 * query filter xml (browse panel) doesn't work

@@ -24,10 +24,13 @@ public class ProjectConfigurationPanel extends JPanel {
 
     private ProjectSettings settings;
 
+    private boolean allowMasterPasswordReset;
+
     public ProjectConfigurationPanel(ProjectSettings settings, boolean allowMasterPasswordReset) {
         super(new BorderLayout());
 
         this.settings = settings;
+        this.allowMasterPasswordReset = allowMasterPasswordReset;
 
         add(root, BorderLayout.CENTER);
 
@@ -73,7 +76,8 @@ public class ProjectConfigurationPanel extends JPanel {
         String pwd1 = password1.getPassword() != null ? new String(password1.getPassword()) : null;
         String pwd2 = password2.getPassword() != null ? new String(password2.getPassword()) : null;
 
-        if (StringUtils.isNotEmpty(oldPwd) && StringUtils.isAnyEmpty(pwd1, pwd2)) {
+        if ((allowMasterPasswordReset && StringUtils.isNotEmpty(oldPwd) && StringUtils.isAnyEmpty(pwd1, pwd2))
+                || (!allowMasterPasswordReset && StringUtils.isAnyEmpty(pwd1, pwd2))) {
             throw new ConfigurationException("Master password not filled in");
         }
 
