@@ -84,7 +84,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
         alwaysLoadFully = new SimpleCheckboxAction("Always load fully");
         group.add(alwaysLoadFully);
 
-        AnAction load = new AnAction("Load", "Load full log", AllIcons.Actions.Commit) {
+        AnAction load = new AnAction("Load", "Load full log", AllIcons.Actions.Show) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 updateTexts(true);

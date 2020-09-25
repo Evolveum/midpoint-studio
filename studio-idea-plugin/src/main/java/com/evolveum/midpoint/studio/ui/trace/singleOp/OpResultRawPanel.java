@@ -64,7 +64,7 @@ public class OpResultRawPanel extends BorderLayoutPanel {
         loadAutomatically = new SimpleCheckboxAction("Load automatically");
         group.add(loadAutomatically);
 
-        AnAction load = new AnAction("Load", "Load full log", AllIcons.Actions.Commit) {
+        AnAction load = new AnAction("Load", "Load full log", AllIcons.Actions.Show) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 nodeChange(currentNode, true);
