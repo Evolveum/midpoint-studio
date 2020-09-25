@@ -1,5 +1,6 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.log;
 
+import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -12,25 +13,25 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TraceLensContextToolWindowFactory implements ToolWindowFactory, DumbAware {
+public class LogWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ContentManager contentManager = toolWindow.getContentManager();
 
-        TraceLensContextPanel lens = new TraceLensContextPanel(project);
-        Content optionsContent = ContentFactory.SERVICE.getInstance().createContent(lens, null, false);
-        contentManager.addContent(optionsContent);
+        TraceLogsPanel logs = new TraceLogsPanel(project.getMessageBus());
+        Content logsContent = ContentFactory.SERVICE.getInstance().createContent(logs, "Logs", false);
+        contentManager.addContent(logsContent);
     }
 
     @Override
     public void init(ToolWindow window) {
-        window.setStripeTitle("Lens Context");
-        window.setTitle("Lens Context");
+        window.setStripeTitle("Log");
+        window.setTitle("Log");
     }
 
     @Override
-    public boolean isDoNotActivateOnStart() {
-        return false;
+    public boolean shouldBeAvailable(@NotNull Project project) {
+        return TraceUtils.shouldBeVisible(project);
     }
 }

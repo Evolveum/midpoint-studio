@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import org.jdesktop.swingx.JXTreeTable;
 

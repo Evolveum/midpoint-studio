@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace.entry;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
-import com.evolveum.midpoint.studio.ui.trace.OpNodeDumpPanel;
+import com.evolveum.midpoint.studio.ui.trace.singleOp.OpDumpPanel;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.EntryType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultImportanceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
@@ -55,7 +55,7 @@ public class ResultNode extends Node<OpNode> {
     private void addParams(String prefix, ParamsType params, Node parent) {
         if (params != null) {
             for (EntryType e : params.getEntry()) {
-                TextNode.create(prefix + ": " + e.getKey(), OpNodeDumpPanel.dump(e.getEntryValue()), parent);
+                TextNode.create(prefix + ": " + e.getKey(), OpDumpPanel.dump(e.getEntryValue()), parent);
             }
         }
     }

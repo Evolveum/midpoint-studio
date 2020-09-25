@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.log;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;

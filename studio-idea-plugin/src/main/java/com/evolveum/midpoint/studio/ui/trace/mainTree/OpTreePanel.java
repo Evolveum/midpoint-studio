@@ -1,10 +1,12 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.mainTree;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.studio.ui.trace.mainTree.model.AbstractOpTreeTableNode;
+import com.evolveum.midpoint.studio.ui.trace.mainTree.model.OpTreeTableModel;
 import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
 import com.evolveum.midpoint.studio.ui.trace.presentation.AbstractOpNodePresentation;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -36,15 +38,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Created by Viliam Repan (lazyman).
+ * Panel holding tree of OpNodes. This is the main view of the trace viewer.
  */
-public class TraceTreeViewPanel extends JPanel {
+public class OpTreePanel extends JPanel {
 
-    private static final Logger LOG = Logger.getInstance(TraceTreeViewPanel.class);
+    private static final Logger LOG = Logger.getInstance(OpTreePanel.class);
 
     private JXTreeTable traceTreeTable;
 
-    private TraceTreeTableModel traceTreeTableModel;
+    private OpTreeTableModel opTreeTableModel;
 
     private final MidPointProjectNotifier notifier;
 
@@ -54,7 +56,7 @@ public class TraceTreeViewPanel extends JPanel {
 
     private final List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions = new ArrayList<>();
 
-    public TraceTreeViewPanel(Project project, @Nullable OpNode rootOpNode) {
+    public OpTreePanel(Project project, @Nullable OpNode rootOpNode) {
         super(new BorderLayout());
 
         this.rootOpNode = rootOpNode;
@@ -78,16 +80,16 @@ public class TraceTreeViewPanel extends JPanel {
             columnDefinitions.add(new TreeTableColumnDefinition<>(column));
         }
 
-        traceTreeTableModel = new TraceTreeTableModel(columnDefinitions, rootOpNode);
+        opTreeTableModel = new OpTreeTableModel(columnDefinitions, rootOpNode);
 
-        traceTreeTable = MidPointUtils.createTable2(traceTreeTableModel, MidPointUtils.createTableColumnModel(columnDefinitions), false);
+        traceTreeTable = MidPointUtils.createTable2(opTreeTableModel, MidPointUtils.createTableColumnModel(columnDefinitions), false);
 
         traceTreeTable.addHighlighter(new AbstractHighlighter() {
             @Override
             protected Component doHighlight(Component component, ComponentAdapter adapter) {
                 int row = adapter.convertRowIndexToModel(adapter.row);
                 TreePath pathForRow = traceTreeTable.getPathForRow(row);
-                AbstractTraceTreeTableNode node = (AbstractTraceTreeTableNode) pathForRow.getLastPathComponent();
+                AbstractOpTreeTableNode node = (AbstractOpTreeTableNode) pathForRow.getLastPathComponent();
                 OpNode opNode = node.getUserObject();
                 if (opNode != null) {
                     AbstractOpNodePresentation<?> presentation = (AbstractOpNodePresentation<?>) opNode.getPresentation(); // fixme hack
@@ -136,7 +138,7 @@ public class TraceTreeViewPanel extends JPanel {
     private void hideSelected(boolean deep) {
         List<TreePath> selectedPaths = getSelectedPaths();
         for (TreePath selectedPath : selectedPaths) {
-            AbstractTraceTreeTableNode selectedTreeNode = (AbstractTraceTreeTableNode) selectedPath.getLastPathComponent();
+            AbstractOpTreeTableNode selectedTreeNode = (AbstractOpTreeTableNode) selectedPath.getLastPathComponent();
             OpNode selectedOpNode = selectedTreeNode.getUserObject();
             assert selectedOpNode != null;
             setNodeVisible(selectedOpNode, false, deep);
@@ -154,7 +156,7 @@ public class TraceTreeViewPanel extends JPanel {
     private void setChildrenVisible(boolean deep) {
         List<TreePath> selectedPaths = getSelectedPaths();
         for (TreePath selectedPath : selectedPaths) {
-            AbstractTraceTreeTableNode selectedTreeNode = (AbstractTraceTreeTableNode) selectedPath.getLastPathComponent();
+            AbstractOpTreeTableNode selectedTreeNode = (AbstractOpTreeTableNode) selectedPath.getLastPathComponent();
             OpNode selectedOpNode = selectedTreeNode.getUserObject();
             assert selectedOpNode != null;
             for (OpNode child : selectedOpNode.getChildren()) {
@@ -165,9 +167,9 @@ public class TraceTreeViewPanel extends JPanel {
     }
 
     private void updateLinksAndRefresh(Collection<TreePath> changedPaths) {
-        traceTreeTableModel.updateParentChildLinks(); // todo restrict in scope
+        opTreeTableModel.updateParentChildLinks(); // todo restrict in scope
         for (TreePath changedPath : changedPaths) {
-            traceTreeTableModel.firePathChanged(changedPath);
+            opTreeTableModel.firePathChanged(changedPath);
         }
     }
 
@@ -195,7 +197,7 @@ public class TraceTreeViewPanel extends JPanel {
 
     public void selectedTraceNodeChange(TreePath path) {
         if (path != null) {
-            AbstractTraceTreeTableNode node = (AbstractTraceTreeTableNode) path.getLastPathComponent();
+            AbstractOpTreeTableNode node = (AbstractOpTreeTableNode) path.getLastPathComponent();
             notifier.selectedTraceNodeChange(node != null ? node.getUserObject() : null);
         } else {
             notifier.selectedTraceNodeChange(null);
@@ -223,8 +225,8 @@ public class TraceTreeViewPanel extends JPanel {
             if (rootOpNode != null) {
                 options.applyVisibilityTo(rootOpNode);
             }
-            traceTreeTableModel.updateParentChildLinks();
-            traceTreeTableModel.fireChange();
+            opTreeTableModel.updateParentChildLinks();
+            opTreeTableModel.fireChange();
         }
 
         DefaultTableColumnModelExt realColumnModel = (DefaultTableColumnModelExt) traceTreeTable.getColumnModel();

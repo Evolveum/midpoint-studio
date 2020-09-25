@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.impl.trace;
 
 import com.evolveum.midpoint.schema.traces.OpType;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
-import com.evolveum.midpoint.studio.ui.trace.PredefinedOpView;
+import com.evolveum.midpoint.studio.ui.trace.options.PredefinedOpView;
 import com.evolveum.midpoint.studio.ui.trace.TraceViewEditor;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;

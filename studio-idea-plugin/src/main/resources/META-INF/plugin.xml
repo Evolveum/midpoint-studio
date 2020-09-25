@@ -102,28 +102,28 @@
                           anchor="bottom"
                           order="last"
                           icon="/icons/midpoint.png"
-                          factoryClass="com.evolveum.midpoint.studio.ui.trace.LogWindowFactory"/>
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.log.LogWindowFactory"/>
 
         <facet.toolWindow id="TraceLensContext"
                           facetIdList="MidPointFacet"
                           anchor="left"
                           order="last"
                           icon="/icons/midpoint.png"
-                          factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceLensContextToolWindowFactory"/>
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.lensContext.TraceLensContextToolWindowFactory"/>
 
         <facet.toolWindow id="TraceOptions"
                           facetIdList="MidPointFacet"
                           anchor="right"
                           order="last"
                           icon="/icons/midpoint.png"
-                          factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceOptionsWindowFactory"/>
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsWindowFactory"/>
 
         <facet.toolWindow id="TraceGraph"
                     facetIdList="MidPointFacet"
                     anchor="right"
                     order="last"
                     icon="/icons/midpoint.png"
-                    factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceGraphWindowFactory"/>
+                    factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
 
         <fileType
                 name="MPTrace"

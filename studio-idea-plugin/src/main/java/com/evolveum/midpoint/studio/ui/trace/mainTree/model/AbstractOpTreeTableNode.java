@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.mainTree.model;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Common ancestor for trace tree table nodes.
  */
-public class AbstractTraceTreeTableNode implements TreeTableNode {
+public class AbstractOpTreeTableNode implements TreeTableNode {
 
     /**
      * OpNode corresponding to this trace tree table node.
@@ -25,14 +25,14 @@ public class AbstractTraceTreeTableNode implements TreeTableNode {
      * VISIBLE children for this node. (Note that this node itself may or may not be visible.)
      * Computed anew each time the visibility of nodes change.
      */
-    private final List<RegularTraceTreeTableNode> children = new ArrayList<>();
+    private final List<RegularOpTreeTableNode> children = new ArrayList<>();
 
     /**
      * Parent of this node. Computed anew each time the visibility of nodes change.
      */
-    private AbstractTraceTreeTableNode parent;
+    private AbstractOpTreeTableNode parent;
 
-    public AbstractTraceTreeTableNode(@Nullable OpNode opNode) {
+    public AbstractOpTreeTableNode(@Nullable OpNode opNode) {
         this.opNode = opNode;
     }
 
@@ -97,17 +97,17 @@ public class AbstractTraceTreeTableNode implements TreeTableNode {
         children.clear();
     }
 
-    public void addChild(RegularTraceTreeTableNode child) {
+    public void addChild(RegularOpTreeTableNode child) {
 //        System.out.println("Adding child " + child + " to " + this);
         children.add(child);
         child.setParent(this);
     }
 
-    public void setParent(AbstractTraceTreeTableNode parent) {
+    public void setParent(AbstractOpTreeTableNode parent) {
         this.parent = parent;
     }
 
-    public List<RegularTraceTreeTableNode> getChildren() {
+    public List<RegularOpTreeTableNode> getChildren() {
         return children;
     }
 

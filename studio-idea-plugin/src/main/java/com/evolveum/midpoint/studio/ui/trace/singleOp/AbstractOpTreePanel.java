@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
@@ -7,6 +7,7 @@ import com.evolveum.midpoint.studio.impl.trace.Format;
 import com.evolveum.midpoint.studio.impl.trace.FormattingContext;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.studio.ui.trace.ViewingState;
 import com.evolveum.midpoint.studio.ui.trace.entry.Node;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -41,13 +42,13 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Displays detailed information about given OpNode: Shows operation result and (optional) trace in a tree view.
+ * Display selected of given OpNode - as a tree.
  *
  * Created by Viliam Repan (lazyman).
  */
-public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
+public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
 
-    private static final Logger LOG = Logger.getInstance(OpNodeTreeViewPanel.class);
+    private static final Logger LOG = Logger.getInstance(AbstractOpTreePanel.class);
 
     private JXTreeTable variables;
 
@@ -59,7 +60,7 @@ public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
 
     private OpNode currentOpNode;
 
-    public OpNodeTreeViewPanel(@NotNull Project project) {
+    public AbstractOpTreePanel(@NotNull Project project) {
         initLayout();
         updateModel(null);
         MessageBus bus = project.getMessageBus();
@@ -222,7 +223,7 @@ public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
 
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
-                        OpNodeTreeViewPanel.FormatComboboxAction.this.setFormat(this.getFormat());
+                        AbstractOpTreePanel.FormatComboboxAction.this.setFormat(this.getFormat());
                     }
                 });
             }

@@ -7,6 +7,7 @@ import com.evolveum.midpoint.schema.traces.TraceParser;
 import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.StudioNameResolver;
+import com.evolveum.midpoint.studio.ui.trace.mainTree.OpTreePanel;
 import com.evolveum.midpoint.studio.ui.trace.presentation.PresentationInitializer;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -43,7 +44,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
     private Wrapper wrapper = new Wrapper();
 
-    private TraceTreeViewPanel traceTreeViewPanel;
+    private OpTreePanel opTreePanel;
 
     public TraceViewEditor(@NotNull Project project, @NotNull VirtualFile file) {
         this.project = project;
@@ -88,13 +89,13 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
         if (root != null) {
             PresentationInitializer.initialize(root);
         }
-        traceTreeViewPanel = new TraceTreeViewPanel(project, root);
-        wrapper.setContent(traceTreeViewPanel);
+        opTreePanel = new OpTreePanel(project, root);
+        wrapper.setContent(opTreePanel);
     }
 
     public void applyOptions(Options options) {
-        if (traceTreeViewPanel != null) {
-            traceTreeViewPanel.applyOptions(options);
+        if (opTreePanel != null) {
+            opTreePanel.applyOptions(options);
         }
     }
 
@@ -133,15 +134,15 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
     @Override
     public void selectNotify() {
-        if (traceTreeViewPanel != null) {
-            traceTreeViewPanel.selectNotify();
+        if (opTreePanel != null) {
+            opTreePanel.selectNotify();
         }
     }
 
     @Override
     public void deselectNotify() {
-        if (traceTreeViewPanel != null) {
-            traceTreeViewPanel.deselectNotify();
+        if (opTreePanel != null) {
+            opTreePanel.deselectNotify();
         }
     }
 

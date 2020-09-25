@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
+import com.evolveum.midpoint.studio.ui.trace.singleOp.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -39,32 +40,32 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     private Content buildTraceEntryDetails(Project project) {
-        OpNodeDumpPanel panel = new OpNodeDumpPanel(project);
+        OpDumpPanel panel = new OpDumpPanel(project);
         return ContentFactory.SERVICE.getInstance().createContent(panel, "Operation Details", false);
     }
 
     private Content buildTraceEntryDetailsRaw(Project project) {
-        OpNodeTraceRawPanel panel = new OpNodeTraceRawPanel(project);
+        OpTraceRawPanel panel = new OpTraceRawPanel(project);
         return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entries Raw", false);
     }
 
     private Content buildOperationResultRaw(Project project) {
-        OpNodeOperationResultRawPanel panel = new OpNodeOperationResultRawPanel(project);
+        OpResultRawPanel panel = new OpResultRawPanel(project);
         return ContentFactory.SERVICE.getInstance().createContent(panel, "Operation Raw", false);
     }
 
     private Content buildTraceTree(Project project) {
-        OpNodeDetailsPanel variables = new OpNodeDetailsPanel(project);
+        OpDetailsTreePanel variables = new OpDetailsTreePanel(project);
         return ContentFactory.SERVICE.getInstance().createContent(variables, "Tree View", false);
     }
 
     private Content buildTraceOverview(Project project) {
-        OpNodeOverviewPanel variables = new OpNodeOverviewPanel(project);
+        OpOverviewTreePanel variables = new OpOverviewTreePanel(project);
         return ContentFactory.SERVICE.getInstance().createContent(variables, "Overview", false);
     }
 
     private Content buildTracePerformance(Project project) {
-        OpNodePerformancePanel perfInformation = new OpNodePerformancePanel(project.getMessageBus());
+        OpPerformancePanel perfInformation = new OpPerformancePanel(project.getMessageBus());
         //return new HeaderDecorator("Trace Performance Information", new JBScrollPane(perfInformation));
         return ContentFactory.SERVICE.getInstance().createContent(perfInformation, "Performance Information", false);
     }

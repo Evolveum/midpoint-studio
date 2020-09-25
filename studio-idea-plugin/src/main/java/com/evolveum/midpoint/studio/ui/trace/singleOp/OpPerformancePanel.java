@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
@@ -6,6 +6,7 @@ import com.evolveum.midpoint.schema.traces.PerformanceCategoryInfo;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.studio.ui.trace.singleOp.model.ListTableModel;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SingleOperationPerformanceInformationType;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.OnePixelSplitter;
@@ -25,13 +26,13 @@ import static com.evolveum.midpoint.studio.util.MidPointUtils.formatTime;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class OpNodePerformancePanel extends BorderLayoutPanel {
+public class OpPerformancePanel extends BorderLayoutPanel {
 
     private JBTable category;
 
     private JBTable operation;
 
-    public OpNodePerformancePanel(MessageBus bus) {
+    public OpPerformancePanel(MessageBus bus) {
         initLayout();
 
         bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {

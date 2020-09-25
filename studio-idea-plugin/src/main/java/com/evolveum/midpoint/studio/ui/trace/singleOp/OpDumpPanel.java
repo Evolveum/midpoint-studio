@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
@@ -27,13 +27,13 @@ import java.util.Locale;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class OpNodeDumpPanel extends BorderLayoutPanel {
+public class OpDumpPanel extends BorderLayoutPanel {
 
-    private static final Logger LOG = Logger.getInstance(OpNodeDumpPanel.class);
+    private static final Logger LOG = Logger.getInstance(OpDumpPanel.class);
 
     private JBTextArea text;
 
-    public OpNodeDumpPanel(@NotNull Project project) {
+    public OpDumpPanel(@NotNull Project project) {
         initLayout();
 
         MessageBus bus = project.getMessageBus();

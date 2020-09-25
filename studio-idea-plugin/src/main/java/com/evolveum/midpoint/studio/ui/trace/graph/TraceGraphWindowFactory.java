@@ -1,5 +1,6 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.graph;
 
+import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -9,28 +10,26 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Created by Viliam Repan (lazyman).
- */
-public class LogWindowFactory implements ToolWindowFactory, DumbAware {
+public class TraceGraphWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ContentManager contentManager = toolWindow.getContentManager();
 
-        TraceLogsPanel logs = new TraceLogsPanel(project.getMessageBus());
-        Content logsContent = ContentFactory.SERVICE.getInstance().createContent(logs, "Logs", false);
-        contentManager.addContent(logsContent);
+        TraceGraphPanel graphPanel = new TraceGraphPanel(project);
+        Content graphContent = ContentFactory.SERVICE.getInstance().createContent(graphPanel, null, false);
+        contentManager.addContent(graphContent);
     }
 
     @Override
     public void init(ToolWindow window) {
-        window.setStripeTitle("Log");
-        window.setTitle("Log");
+        window.setStripeTitle("Trace Graph");
+        window.setTitle("Trace Graph");
     }
 
     @Override
     public boolean shouldBeAvailable(@NotNull Project project) {
         return TraceUtils.shouldBeVisible(project);
     }
+
 }

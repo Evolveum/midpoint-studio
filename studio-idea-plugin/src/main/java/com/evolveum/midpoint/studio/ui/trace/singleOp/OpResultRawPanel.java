@@ -1,14 +1,12 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
-import com.evolveum.midpoint.studio.impl.trace.Format;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.diagnostic.Logger;
@@ -22,14 +20,13 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 import java.awt.*;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class OpNodeOperationResultRawPanel extends BorderLayoutPanel {
+public class OpResultRawPanel extends BorderLayoutPanel {
 
-    private static final Logger LOG = Logger.getInstance(OpNodeOperationResultRawPanel.class);
+    private static final Logger LOG = Logger.getInstance(OpResultRawPanel.class);
 
     private SimpleCheckboxAction showChildren;
     private SimpleCheckboxAction loadAutomatically;
@@ -38,7 +35,7 @@ public class OpNodeOperationResultRawPanel extends BorderLayoutPanel {
     private OpNode currentNode;
     private boolean loaded;
 
-    public OpNodeOperationResultRawPanel(@NotNull Project project) {
+    public OpResultRawPanel(@NotNull Project project) {
         initLayout();
 
         MessageBus bus = project.getMessageBus();

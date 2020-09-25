@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.lensContext;
 
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -9,26 +9,28 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import org.jetbrains.annotations.NotNull;
 
-public class TraceGraphWindowFactory implements ToolWindowFactory, DumbAware {
+/**
+ * Created by Viliam Repan (lazyman).
+ */
+public class TraceLensContextToolWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ContentManager contentManager = toolWindow.getContentManager();
 
-        TraceGraphPanel graphPanel = new TraceGraphPanel(project);
-        Content graphContent = ContentFactory.SERVICE.getInstance().createContent(graphPanel, null, false);
-        contentManager.addContent(graphContent);
+        TraceLensContextPanel lens = new TraceLensContextPanel(project);
+        Content optionsContent = ContentFactory.SERVICE.getInstance().createContent(lens, null, false);
+        contentManager.addContent(optionsContent);
     }
 
     @Override
     public void init(ToolWindow window) {
-        window.setStripeTitle("Trace Graph");
-        window.setTitle("Trace Graph");
+        window.setStripeTitle("Lens Context");
+        window.setTitle("Lens Context");
     }
 
     @Override
-    public boolean shouldBeAvailable(@NotNull Project project) {
-        return TraceUtils.shouldBeVisible(project);
+    public boolean isDoNotActivateOnStart() {
+        return false;
     }
-
 }

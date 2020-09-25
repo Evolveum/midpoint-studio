@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.ui.trace.entry.Node;
@@ -15,15 +15,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Displays detailed information about given OpNode: Shows operation result and (optional) trace in a tree view.
+ * Provides detailed information on given OpNode as a tree.
+ * Information displayed are: operation result and trace (if present).
  *
  * Created by Viliam Repan (lazyman).
  */
-public class OpNodeDetailsPanel extends OpNodeTreeViewPanel {
+public class OpDetailsTreePanel extends AbstractOpTreePanel {
 
-    private static final Logger LOG = Logger.getInstance(OpNodeDetailsPanel.class);
+    private static final Logger LOG = Logger.getInstance(OpDetailsTreePanel.class);
 
-    public OpNodeDetailsPanel(@NotNull Project project) {
+    public OpDetailsTreePanel(@NotNull Project project) {
         super(project);
     }
 

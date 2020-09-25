@@ -1,7 +1,8 @@
-package com.evolveum.midpoint.studio.ui.trace;
+package com.evolveum.midpoint.studio.ui.trace.mainTree.model;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.studio.ui.trace.DisplayUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
@@ -17,20 +18,20 @@ import java.util.stream.Collectors;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TraceTreeTableModel extends DefaultTreeTableModel {
+public class OpTreeTableModel extends DefaultTreeTableModel {
 
     @NotNull private final List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions;
     @Nullable private final OpNode rootOpNode;
-    @NotNull private final RootTraceTreeTableNode invisibleRootTreeNode;
+    @NotNull private final RootOpTreeTableNode invisibleRootTreeNode;
 
-    @NotNull private final Map<OpNode, RegularTraceTreeTableNode> convertedNodeMap = new HashMap<>();
+    @NotNull private final Map<OpNode, RegularOpTreeTableNode> convertedNodeMap = new HashMap<>();
 
-    public TraceTreeTableModel(@NotNull List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions,
+    public OpTreeTableModel(@NotNull List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions,
             @Nullable OpNode rootOpNode) {
 
         this.columnDefinitions = columnDefinitions;
         this.rootOpNode = rootOpNode;
-        this.invisibleRootTreeNode = new RootTraceTreeTableNode(rootOpNode);
+        this.invisibleRootTreeNode = new RootOpTreeTableNode(rootOpNode);
 
         if (rootOpNode != null) {
             createNodeMap(rootOpNode);
@@ -44,7 +45,7 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
     }
 
     private void createNodeMap(OpNode opNode) {
-        convertedNodeMap.put(opNode, new RegularTraceTreeTableNode(opNode));
+        convertedNodeMap.put(opNode, new RegularOpTreeTableNode(opNode));
         opNode.getChildren().forEach(this::createNodeMap);
     }
 
@@ -54,10 +55,10 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
         }
 
         invisibleRootTreeNode.clearParentChildLinks();
-        convertedNodeMap.values().forEach(AbstractTraceTreeTableNode::clearParentChildLinks);
+        convertedNodeMap.values().forEach(AbstractOpTreeTableNode::clearParentChildLinks);
 
         if (rootOpNode.isVisible()) {
-            RegularTraceTreeTableNode realRootTreeNode = convertedNodeMap.get(rootOpNode);
+            RegularOpTreeTableNode realRootTreeNode = convertedNodeMap.get(rootOpNode);
             updateParentChildLinks(realRootTreeNode);
             invisibleRootTreeNode.addChild(realRootTreeNode);
         } else {
@@ -70,9 +71,9 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
         setRoot(invisibleRootTreeNode);
     }
 
-    private void updateParentChildLinks(AbstractTraceTreeTableNode node) {
+    private void updateParentChildLinks(AbstractOpTreeTableNode node) {
         for (OpNode visibleChild : node.getUserObject().getVisibleChildren()) {
-            RegularTraceTreeTableNode visibleTreeTableChild = convertedNodeMap.get(visibleChild);
+            RegularOpTreeTableNode visibleTreeTableChild = convertedNodeMap.get(visibleChild);
             node.addChild(visibleTreeTableChild);
             updateParentChildLinks(visibleTreeTableChild);
         }
@@ -87,7 +88,7 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
 
     @Override
     public Object getValueAt(Object node, int column) {
-        AbstractTraceTreeTableNode d = (AbstractTraceTreeTableNode) node;
+        AbstractOpTreeTableNode d = (AbstractOpTreeTableNode) node;
         if (d == null || d.getUserObject() == null) {
             return null;
         } else {
@@ -103,7 +104,7 @@ public class TraceTreeTableModel extends DefaultTreeTableModel {
         }
     }
 
-    private boolean isDisabled(AbstractTraceTreeTableNode d) {
+    private boolean isDisabled(AbstractOpTreeTableNode d) {
         OpNode opNode = d.getUserObject();
         return opNode != null && (opNode.isDisabled() || isNotApplicable(opNode.getResult()));
     }
