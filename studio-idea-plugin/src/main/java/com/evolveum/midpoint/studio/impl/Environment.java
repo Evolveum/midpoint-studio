@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.intellij.util.xmlb.annotations.Transient;
-import com.evolveum.midpoint.client.api.ProxyType;
+import com.evolveum.midpoint.studio.impl.client.ProxyType;
 import com.evolveum.midpoint.studio.util.Color;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import org.jetbrains.annotations.NotNull;

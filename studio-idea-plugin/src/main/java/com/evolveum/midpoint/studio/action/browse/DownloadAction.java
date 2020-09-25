@@ -7,6 +7,7 @@ import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointObjectUtils;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -40,10 +41,6 @@ public class DownloadAction extends BackgroundAction {
     public static final String NOTIFICATION_KEY = "Upload Action";
 
     private static final String TASK_TITLE = "Downloading objects";
-
-    private static final String OBJECTS_XML_PREFIX = "<objects xmlns=\"http://midpoint.evolveum.com/xml/ns/public/common/common-3\">\n";
-
-    private static final String OBJECTS_XML_SUFFIX = "</objects>\n";
 
     private Environment environment;
     private boolean showOnly;
@@ -103,7 +100,9 @@ public class DownloadAction extends BackgroundAction {
                 file = FileUtils.createScratchFile(project, environment);
 
                 out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
-                out.write(OBJECTS_XML_PREFIX);
+                if (oids.size() > 1) {
+                    out.write(MidPointObjectUtils.OBJECTS_XML_PREFIX);
+                }
 
                 if (oids != null) {
                     showByOid(client, serializer, out);
@@ -111,7 +110,9 @@ public class DownloadAction extends BackgroundAction {
                     showByQuery(client, serializer, out);
                 }
 
-                out.write(OBJECTS_XML_SUFFIX);
+                if (oids.size() > 1) {
+                    out.write(MidPointObjectUtils.OBJECTS_XML_SUFFIX);
+                }
 
                 openFile(project, file);
             } catch (Exception ex) {

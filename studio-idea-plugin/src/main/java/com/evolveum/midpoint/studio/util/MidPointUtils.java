@@ -1,16 +1,16 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.client.api.ClientException;
-import com.evolveum.midpoint.client.impl.ServiceFactory;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.MidPointFacetType;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
+import com.evolveum.midpoint.studio.impl.client.ClientException;
+import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -22,7 +22,9 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
+import com.intellij.facet.FacetManager;
 import com.intellij.ide.DataManager;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
@@ -34,9 +36,13 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -102,6 +108,7 @@ public class MidPointUtils {
     public static LookupElementBuilder buildLookupElement(String name, String oid, String source) {
         return LookupElementBuilder.create(oid)
                 .withTailText("(" + name + ")")
+                .withLookupString(name)
                 .withTypeText(source)
                 .withBoldness(true)
                 .withCaseSensitivity(false);
@@ -196,7 +203,7 @@ public class MidPointUtils {
     }
 
     public static void publishException(Project project, Class clazz, String notificationKey, String msg, Exception ex) {
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
         mm.printToConsole(clazz, msg + ". Reason: " + ex.getMessage());
 
         publishExceptionNotification(notificationKey, msg, ex);
@@ -241,7 +248,7 @@ public class MidPointUtils {
                 message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
 
         if (project != null) {
-            MidPointManager manager = MidPointManager.getInstance(project);
+            MidPointService manager = MidPointService.getInstance(project);
             manager.printToConsole(clazz, message, ex);
         }
     }
@@ -295,7 +302,6 @@ public class MidPointUtils {
         table.setEditable(false);
         table.setDragEnabled(false);
         table.setHorizontalScrollEnabled(true);
-        table.setSelectionModel(new ExtendedListSelectionModel(table.getSelectionModel()));        // todo fix
         table.setTreeTableModel(model);
         table.setLeafIcon(null);
         table.setClosedIcon(null);
@@ -544,5 +550,55 @@ public class MidPointUtils {
             model.addColumn(column);
         }
         return model;
+    }
+
+    public static boolean isObjectTypeElement(XmlTag tag) {
+        if (tag == null) {
+            return false;
+        }
+
+        QName name = new QName(tag.getNamespace(), tag.getLocalName());
+        for (ObjectTypes type : ObjectTypes.values()) {
+            if (name.equals(type.getElementName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static List<VirtualFile> filterXmlFiles(VirtualFile[] files) {
+        List<VirtualFile> result = new ArrayList<>();
+        if (files == null) {
+            return result;
+        }
+
+        for (VirtualFile selected : files) {
+            if (selected.isDirectory()) {
+                VfsUtilCore.iterateChildrenRecursively(
+                        selected,
+                        file -> file.isDirectory() || XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
+                        file -> {
+                            if (!file.isDirectory()) {
+                                result.add(file);
+                            }
+                            return true;
+                        });
+            } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
+                result.add(selected);
+            }
+        }
+
+        return result;
+    }
+
+    public static boolean hasMidPointFacet(@NotNull Project project) {
+        ModuleManager mm = ModuleManager.getInstance(project);
+        Module[] modules = mm.getModules();
+        if (modules == null || modules.length == 0) {
+            return false;
+        }
+        FacetManager fm = FacetManager.getInstance(modules[0]);
+        return fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null;
     }
 }

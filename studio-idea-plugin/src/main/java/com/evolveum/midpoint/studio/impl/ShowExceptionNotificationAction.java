@@ -25,7 +25,7 @@ public class ShowExceptionNotificationAction extends NotificationAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt, @NotNull Notification notification) {
-        MidPointManager mm = MidPointManager.getInstance(evt.getProject());
+        MidPointService mm = MidPointService.getInstance(evt.getProject());
 
         StringBuilder sb = new StringBuilder();
         if (message != null) {

@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl.browse;
 
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -165,25 +165,34 @@ public class BulkActionGenerator extends Generator {
         } else {
             try {
                 Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
-                Element originalFilter = DOMUtil.getChildElement(originalQuery, "filter");
-                if (originalFilter != null) {
+
+                if (originalQuery != null) {
                     Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "searchFilter", "s"));
-                    List<Element> children = DOMUtil.listChildElements(originalFilter);
-                    for (Element child : children) {
-                        DOMUtil.fixNamespaceDeclarations(child);
-                        filter.appendChild(root.getOwnerDocument().adoptNode(child));
-                    }
+
+                    DOMUtil.fixNamespaceDeclarations(originalQuery);
+                    filter.appendChild(root.getOwnerDocument().adoptNode(originalQuery));
                 }
+
+// now there's no "<query>" just a filter, might change in a bit
+//                Element originalFilter = DOMUtil.getChildElement(originalQuery, "filter");
+//                if (originalFilter != null) {
+//                    Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "searchFilter", "s"));
+//                    List<Element> children = DOMUtil.listChildElements(originalFilter);
+//                    for (Element child : children) {
+//                        DOMUtil.fixNamespaceDeclarations(child);
+//                        filter.appendChild(root.getOwnerDocument().adoptNode(child));
+//                    }
+//                }
             } catch (RuntimeException e) {
                 MidPointUtils.publishExceptionNotification(GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
             }
         }
     }
 
-    public void createSingleSourceSearch(Element root, PrismObject object) {
+    public void createSingleSourceSearch(Element root, MidPointObject object) {
         Element search = DOMUtil.createSubElement(root, new QName(Constants.SCRIPT_NS, "expression", "s"));
         DOMUtil.setXsiType(search, new QName(Constants.SCRIPT_NS, "SearchExpressionType", "s"));
-        DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "type", "s")).setTextContent(MidPointUtils.getTypeQName(object).getLocalPart());
+        DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "type", "s")).setTextContent(object.getType().getTypeQName().getLocalPart());
         Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "searchFilter", "s"));
         if (object.getOid() != null) {
             Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
@@ -192,7 +201,7 @@ public class BulkActionGenerator extends Generator {
         } else if (object.getName() != null) {
             Element equal = DOMUtil.createSubElement(filter, Constants.Q_EQUAL_Q);
             DOMUtil.createSubElement(equal, Constants.Q_PATH_Q).setTextContent("name");
-            DOMUtil.createSubElement(equal, Constants.Q_VALUE_Q).setTextContent(object.getName().getOrig());
+            DOMUtil.createSubElement(equal, Constants.Q_VALUE_Q).setTextContent(object.getName());
         } else {
             MidPointUtils.publishNotification(GeneratorAction.NOTIFICATION_KEY, "Warning",
                     "No OID nor name provided; action on this object cannot be executed.", NotificationType.WARNING);
@@ -306,7 +315,7 @@ public class BulkActionGenerator extends Generator {
         return true;
     }
 
-    public String generateFromSourceObject(PrismObject object, GeneratorOptions options) {
+    public String generateFromSourceObject(MidPointObject object, GeneratorOptions options) {
         Element pipe = DOMUtil.getDocument(new QName(Constants.SCRIPT_NS, "pipeline", "s")).getDocumentElement();
         createSingleSourceSearch(pipe, object);
         if (action == Action.ASSIGN_THIS) {

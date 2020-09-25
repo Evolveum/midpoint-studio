@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.ProjectSettings;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.options.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,6 +36,18 @@ public class ProjectConfigurationPanel extends JPanel {
     }
 
     public ProjectSettings getSettings() {
+        ProjectSettings settings = new ProjectSettings();
+
+        settings.setMidPointSettings(midpointSettingsPanel.getSettings());
+        settings.setEnvironmentSettings(environmentsPanel.getFullSettings());
+
+        if (password1.getPassword().length > 0) {
+            settings.setMasterPassword(new String(password1.getPassword()));
+        }
+        if (oldPassword.getPassword().length > 0) {
+            settings.setOldMasterPassword(new String(oldPassword.getPassword()));
+        }
+
         return settings;
     }
 
@@ -50,13 +63,17 @@ public class ProjectConfigurationPanel extends JPanel {
     public boolean validateData() throws ConfigurationException {
         String oldPwd = oldPassword.getPassword() != null ? new String(oldPassword.getPassword()) : null;
         if (StringUtils.isNotEmpty(oldPwd)) {
-            // todo validate old pwd against keychain
+            String projectId = settings.getMidPointSettings().getProjectId();
+            String currentPwd = MidPointUtils.getPassword(projectId);
+            if (!Objects.equals(oldPwd, currentPwd)) {
+                throw new ConfigurationException("Old password doesn't match one that is stored in keychain with id " + projectId);
+            }
         }
 
         String pwd1 = password1.getPassword() != null ? new String(password1.getPassword()) : null;
         String pwd2 = password2.getPassword() != null ? new String(password2.getPassword()) : null;
 
-        if (StringUtils.isAnyEmpty(pwd1, pwd2)) {
+        if (StringUtils.isNotEmpty(oldPwd) && StringUtils.isAnyEmpty(pwd1, pwd2)) {
             throw new ConfigurationException("Master password not filled in");
         }
 
@@ -72,5 +89,11 @@ public class ProjectConfigurationPanel extends JPanel {
         settings.setMidPointSettings(midpointSettingsPanel.getSettings());
         settings.setMasterPassword(new String(password1.getPassword()));
         settings.setOldMasterPassword(new String(oldPassword.getPassword()));
+    }
+
+    public void clearPasswords() {
+        oldPassword.setText("");
+        password1.setText("");
+        password2.setText("");
     }
 }

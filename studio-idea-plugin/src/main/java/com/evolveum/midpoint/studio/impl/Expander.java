@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
 import org.apache.commons.io.IOUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -9,6 +8,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,13 +19,16 @@ public class Expander {
 
     private static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
 
-    private CredentialsManager credentialsManager;
+    private Environment environment;
 
-    private EnvironmentProperties propertyManager;
+    private EncryptionService encryptionService;
 
-    public Expander(CredentialsManager credentialsManager, @NotNull EnvironmentProperties propertyManager) {
-        this.credentialsManager = credentialsManager;
-        this.propertyManager = propertyManager;
+    private EnvironmentProperties environmentProperties;
+
+    public Expander(Environment environment, EncryptionService encryptionService) {
+        this.environment = environment;
+        this.encryptionService = encryptionService;
+        this.environmentProperties = new EnvironmentProperties(environment);
     }
 
     /**
@@ -79,26 +82,38 @@ public class Expander {
     }
 
     private String expandKey(String key) {
-        if (credentialsManager == null) {
-            return propertyManager.get(key);
+        String value = null;
+        if (encryptionService == null || !encryptionService.isAvailable()) {
+            return expandKeyFromProperties(key);
         }
 
-        if (key.startsWith("username:")) {
-            Credentials credentials = credentialsManager.get(key.replaceFirst("username:", ""));
-            if (credentials == null) {
-                return null;
-            }
-
-            return credentials.getUsername();
-        } else if (key.startsWith("password:")) {
-            Credentials credentials = credentialsManager.get(key.replaceFirst("password:", ""));
-            if (credentials == null) {
-                return null;
-            }
-
-            return credentials.getPassword();
+        EncryptedProperty property = encryptionService.get(key, EncryptedProperty.class);
+        if (property == null) {
+            return expandKeyFromProperties(key);
         }
 
-        return propertyManager.get(key);
+        if (property.getEnvironment() != null && environment != null) {
+            if (!Objects.equals(property.getEnvironment(), environment.getId())) {
+                return expandKeyFromProperties(key);
+            }
+        }
+
+        value = property.getValue();
+
+        if (value != null) {
+            return value;
+        }
+
+        return expandKeyFromProperties(key);
+    }
+
+    private String expandKeyFromProperties(String key) {
+        String value = environmentProperties.get(key);
+
+        if (value == null) {
+            throw new IllegalStateException("Couldn't translate key '" + key + "'");
+        }
+
+        return value;
     }
 }

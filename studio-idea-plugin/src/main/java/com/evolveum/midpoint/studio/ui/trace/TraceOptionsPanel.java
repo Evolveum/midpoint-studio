@@ -29,7 +29,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
     private static final Logger LOG = Logger.getInstance(TraceOptionsPanel.class);
 
-    private final TraceManager traceManager;
+    private TraceService traceManager;
 
     /**
      * Predefined view e.g. "All", "Functional overview", ...
@@ -69,7 +69,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
     private final Map<TraceTreeViewColumn, JCheckBox> columnsChecks = new HashMap<>();
 
     public TraceOptionsPanel(Project project) {
-        this.traceManager = TraceManager.getInstance(project);
+        this.traceManager = TraceService.getInstance(project);
 
         initLayout();
     }

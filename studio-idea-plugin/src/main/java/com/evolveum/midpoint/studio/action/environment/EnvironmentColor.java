@@ -7,7 +7,7 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.util.ObjectUtils;
 import com.intellij.util.ui.JBUI;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,7 +61,7 @@ public class EnvironmentColor extends DumbAwareAction implements CustomComponent
             return;
         }
 
-        EnvironmentManager envManager = EnvironmentManager.getInstance(e.getProject());
+        EnvironmentService envManager = EnvironmentService.getInstance(e.getProject());
         Environment env = envManager.getSelected();
 
         if (env == null || env.getColor() == null) {

@@ -1,9 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.CredentialsManager;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
-import com.evolveum.midpoint.studio.impl.ProjectSettings;
+import com.evolveum.midpoint.studio.impl.*;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
@@ -59,10 +56,10 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
         ProjectSettings pSettings = new ProjectSettings();
 
-        MidPointManager mm = MidPointManager.getInstance(project);
+        MidPointService mm = MidPointService.getInstance(project);
         pSettings.setMidPointSettings(mm.getSettings());
 
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         pSettings.setEnvironmentSettings(em.getFullSettings());
 
         settings = new ProjectConfigurationPanel(pSettings, true);
@@ -81,8 +78,15 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
             return false;
         }
 
-        MidPointManager mm = MidPointManager.getInstance(project);
-        return !Objects.equals(mm.getSettings(), settings.getSettings());
+        ProjectSettings pSettings = new ProjectSettings();
+
+        MidPointService mm = MidPointService.getInstance(project);
+        pSettings.setMidPointSettings(mm.getSettings());
+
+        EnvironmentService em = EnvironmentService.getInstance(project);
+        pSettings.setEnvironmentSettings(em.getFullSettings());
+
+        return !Objects.equals(pSettings, settings.getSettings());
     }
 
     @Override
@@ -98,15 +102,56 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
         if (StringUtils.isNotEmpty(pSettings.getMasterPassword())) {
             try {
-                CredentialsManager.getInstance(project).resetMasterPassword(pSettings.getOldMasterPassword(), pSettings.getMasterPassword());
+                EncryptionService.getInstance(project).changeMasterPassword(pSettings.getOldMasterPassword(), pSettings.getMasterPassword());
             } catch (Exception ex) {
                 throw new ConfigurationException(ex.getMessage());
             }
         }
 
-        MidPointManager.getInstance(project).setSettings(pSettings.getMidPointSettings());
-        EnvironmentManager.getInstance(project).setSettings(pSettings.getEnvironmentSettings());
+        MidPointService.getInstance(project).setSettings(pSettings.getMidPointSettings());
+        EnvironmentService.getInstance(project).setSettings(pSettings.getEnvironmentSettings());
+
+        settings.clearPasswords();
+
+        // check whether there's a module created and midpoint facet enabled
+//        ApplicationManager.getApplication().runWriteAction(() -> {
+//            validateModule();
+//            validateFacet();
+//        });
     }
+
+//    private void validateModule() {
+//        ModuleManager mm = ModuleManager.getInstance(project);
+//        Module[] modules = mm.getModules();
+//
+//        if (modules == null || modules.length == 0) {
+//            return;
+//        }
+//
+//        Module module = modules[0];
+//        if (MidPointModuleBuilder.MODULE_NAME.equals(module.getModuleTypeName())) {
+//            return;
+//        }
+//
+//        new MidPointModuleBuilder().createProjectFiles(project, project.getBaseDir());
+//
+////        modules[0].setModuleType(MidPointModuleBuilder.MODULE_NAME);
+//
+////        MavenProjectsManager.getInstance(project).addManagedFiles(Arrays.asList(project.getBaseDir().findChild("pom.xml")));
+//    }
+//
+//    private void validateFacet() {
+//        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
+//        ModuleManagerEmm = ModuleManager.getInstance(project);
+//        Module[] modules = mm.getModules();
+//        if (modules == null || modules.length == 0) {
+//            return;
+//        }
+//        FacetManager fm = FacetManager.getInstance(modules[0]);
+//        if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) == null) {
+//            fm.addFacet(facetType, facetType.getDefaultFacetName(), null);
+//        }
+//    }
 
     @Override
     public ActionCallback navigateTo(@Nullable Place place, boolean requestFocus) {

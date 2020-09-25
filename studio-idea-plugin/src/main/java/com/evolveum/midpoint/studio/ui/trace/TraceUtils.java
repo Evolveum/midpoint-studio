@@ -220,4 +220,7 @@ public class TraceUtils {
     public static String getTypeName(ObjectDeltaType delta) {
         return delta != null && delta.getObjectType() != null ? delta.getObjectType().getLocalPart() : "object";
     }
+    public static String prettyPrint(List<PrismValue> values) {
+        return values.stream().map(value -> prettyPrint(value)).collect(Collectors.joining("; "));
+    }
 }

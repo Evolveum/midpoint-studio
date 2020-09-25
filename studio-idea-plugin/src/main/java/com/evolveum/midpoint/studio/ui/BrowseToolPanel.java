@@ -13,19 +13,21 @@ import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
-import com.evolveum.midpoint.studio.compatibility.ExtendedListSelectionModel;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.impl.browse.Generator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorAction;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
 import com.evolveum.midpoint.studio.impl.browse.ProcessResultsOptions;
+import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.prism.xml.ns._public.query_3.QueryType;
+import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
@@ -109,7 +111,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         JComponent resultsPanel = initResultsPanel();
 
         OnePixelSplitter split = new OnePixelSplitter(false);
-        split.setProportion(0.3f);
+        split.setProportion(0.4f);
         split.setFirstComponent(queryPanel);
         split.setSecondComponent(resultsPanel);
 
@@ -332,7 +334,39 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         ObjectTypes type = this.objectType.getSelected();
         List<ObjectType> selected = getResultsModel().getSelectedObjects(results);
 
-        ProcessResultsDialog dialog = new ProcessResultsDialog(processResultsOptions, query, queryType, type, selected);
+        if (ComboQueryType.Type.QUERY_XML != queryType && StringUtils.isNotEmpty(query)) {
+            // translate query
+            EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
+            Environment env = em.getSelected();
+
+            try {
+                LOG.debug("Setting up midpoint client");
+                MidPointClient client = new MidPointClient(evt.getProject(), env);
+
+                LOG.debug("Translating object query");
+                ObjectQuery objectQuery = buildQuery(client);
+
+                PrismContext ctx = client.getPrismContext();
+                QueryConverter converter = ctx.getQueryConverter();
+                QueryType q = converter.createQueryType(objectQuery);
+
+                SearchFilterType filter = q.getFilter();
+
+                RunnableUtils.PluginClassCallable<String> callable = new RunnableUtils.PluginClassCallable<>() {
+
+                    @Override
+                    public String callWithPluginClassLoader() throws Exception {
+                        return ctx.serializerFor(PrismContext.LANG_XML).serialize(filter.getFilterClauseAsRootXNode());
+                    }
+                };
+
+                query = callable.call();
+            } catch (Exception ex) {
+                handleGenericException("Couldn't serialize query", ex);
+            }
+        }
+
+        ProcessResultsDialog dialog = new ProcessResultsDialog(processResultsOptions, query, type, selected);
         dialog.show();
 
         if (dialog.isOK() || dialog.isGenerate()) {
@@ -348,7 +382,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         updateTableModel(null);
 
         // load data
-        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
         indicator.setText("Searching objects in environment: " + env.getName());
@@ -390,12 +424,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private boolean isResultSelected() {
-        ExtendedListSelectionModel model = (ExtendedListSelectionModel) results.getSelectionModel();
+        ListSelectionModel model = results.getSelectionModel();
         return model.getSelectedItemsCount() != 0;
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
-        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
         DownloadAction da = new DownloadAction(env, getResultsModel().getSelectedOids(results), showOnly, rawDownload) {
@@ -469,7 +503,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private boolean isSearchEnabled() {
         // todo add condition that we're not currently searching
-        return EnvironmentManager.getInstance(project).isEnvironmentSelected();
+        return EnvironmentService.getInstance(project).isEnvironmentSelected();
     }
 
     private boolean isCancelEnabled() {
@@ -496,18 +530,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             case QUERY_XML:
                 filter = parseFilter(ctx);
                 break;
-            case QUERY_SIMPLE:
-                filter = parseSimpleFilter(ctx);
         }
 
         ItemPath path = ctx.path(ObjectType.F_NAME);
         ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(), path, OrderDirection.ASCENDING);
 
         return qf.createQuery(filter, paging);
-    }
-
-    private ObjectFilter parseSimpleFilter(PrismContext ctx) {
-        return null;
     }
 
     private ObjectFilter parseFilter(PrismContext ctx) {

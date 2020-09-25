@@ -100,7 +100,7 @@ public abstract class OpNodeTreeViewPanel extends BorderLayoutPanel {
     }
 
     private void variableDisplayAsChanged(Format format) {
-        ExtendedListSelectionModel ext = (ExtendedListSelectionModel) variables.getSelectionModel();
+        ListSelectionModel ext = variables.getSelectionModel();
         int[] indices = ext.getSelectedIndices();
         if (indices == null || indices.length == 0) {
             applySelection(null);

@@ -5,6 +5,8 @@ import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.OpNodeTreeBuilder;
 import com.evolveum.midpoint.schema.traces.TraceParser;
 import com.evolveum.midpoint.studio.impl.MidPointManager;
+import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.trace.OpNode;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.StudioNameResolver;
 import com.evolveum.midpoint.studio.ui.trace.presentation.PresentationInitializer;
@@ -77,7 +79,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             System.out.println("Initializing TraceViewEditor - built op node tree: " + (System.currentTimeMillis() - start) + " ms");
 
         } catch (Exception ex) {
-            MidPointManager mm = MidPointManager.getInstance(project);
+            MidPointService mm = MidPointService.getInstance(project);
             mm.printToConsole(TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't load file", ex);
 

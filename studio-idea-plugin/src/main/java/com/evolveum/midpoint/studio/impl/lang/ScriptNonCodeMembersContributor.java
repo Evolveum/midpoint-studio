@@ -15,6 +15,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.*;
 import com.intellij.psi.scope.PsiScopeProcessor;
 import com.intellij.psi.xml.XmlTag;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.groovy.annotator.intentions.dynamic.GrDynamicImplicitProperty;
 import org.jetbrains.plugins.groovy.lang.resolve.NonCodeMembersContributor;
@@ -66,6 +67,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         }
 
         addMappingSources(qualifierType, aClass, processor, place, state);
+        addFunctionParameters(qualifierType, aClass, processor, place, state);
     }
 
     private Class getVariableType(MidPointExpressionVariables var) {
@@ -76,21 +78,48 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         return Object.class;    // todo improve for "input" variable and/or variables that can contain subtypes
     }
 
+    private void addFunctionParameters(PsiType qualifierType, PsiClass aClass, PsiScopeProcessor processor, PsiElement place, ResolveState state) {
+        XmlTag function = findParentTag(place, SchemaConstantsGenerated.C_FUNCTION);
+        if (function == null) {
+            return;
+        }
+
+        XmlTag[] parameters = function.findSubTags("parameter", SchemaConstantsGenerated.NS_COMMON);
+
+        PsiManager psiManager = PsiManager.getInstance(aClass.getProject());
+
+        for (XmlTag parameter : parameters) {
+            XmlTag nameTag = MidPointUtils.findSubTag(parameter, ExpressionParameterType.F_NAME.asSingleName());
+            XmlTag typeTag = MidPointUtils.findSubTag(parameter, ExpressionParameterType.F_TYPE.asSingleName());
+
+            String name = null;
+            if (nameTag != null && nameTag.getValue() != null) {
+                name = nameTag.getValue().getText();
+            }
+
+            if (StringUtils.isEmpty(name)) {
+                continue;
+            }
+
+            Class type = Object.class;
+            if (typeTag != null && typeTag.getValue() != null) {
+                type = getParameterVariableType(typeTag);
+            }
+
+            PsiVariable var = new GrDynamicImplicitProperty(psiManager, name, type.getName(), aClass.getQualifiedName());
+            if (!ResolveUtil.processElement(processor, var, state)) {
+                break;
+            }
+        }
+    }
+
     private void addMappingSources(PsiType qualifierType, PsiClass aClass, PsiScopeProcessor processor, PsiElement place, ResolveState state) {
-        XmlTag script = findScriptCodeTag(place);
-        if (script == null || script.getParentTag() == null) {
+        XmlTag expression = findParentTag(place, SchemaConstantsGenerated.C_EXPRESSION);
+        if (expression == null) {
             return;
         }
 
-        XmlTag parent = script.getParentTag();
-        if ("expression".equals(parent.getLocalName())) {
-            parent = parent.getParentTag();
-        }
-        if (parent == null) {
-            return;
-        }
-
-        XmlTag[] sources = parent.findSubTags("source", SchemaConstantsGenerated.NS_COMMON);
+        XmlTag[] sources = expression.findSubTags("source", SchemaConstantsGenerated.NS_COMMON);
 
         PsiManager psiManager = PsiManager.getInstance(aClass.getProject());
 
@@ -146,6 +175,35 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         return names;
     }
 
+    private Class getParameterVariableType(XmlTag typeTag) {
+        if (typeTag == null || typeTag.getValue() == null) {
+            return Object.class;
+        }
+
+        String type = typeTag.getValue().getText();
+        if (StringUtils.isEmpty(type)) {
+            return Object.class;
+        }
+
+        String[] split = type.split(":", -1);
+        String localPart;
+        String namespace;
+        if (split.length > 1) {
+            localPart = split[1];
+            namespace = typeTag.getNamespaceByPrefix(split[0]);
+        } else {
+            localPart = split[0];
+            namespace = typeTag.getNamespace();
+        }
+
+        QName qname = new QName(namespace, localPart);
+
+        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+        SchemaRegistry registry = ctx.getSchemaRegistry();
+
+        return registry.determineClassForType(qname);
+    }
+
     private Class getSourceVariableType(List<QName> names) {
         if (names == null || names.isEmpty()) {
             return Object.class;
@@ -184,26 +242,24 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         return Object.class;
     }
 
-    private XmlTag findScriptCodeTag(PsiElement place) {
-        PsiElement e = place;
-
-        XmlTag script = null;
+    private XmlTag findParentTag(PsiElement element, QName parentTagName) {
+        XmlTag parent = null;
         for (int i = 0; i < 20; i++) {
-            if (e == null) {
+            if (element == null) {
                 break;
             }
 
-            if (e instanceof XmlTag) {
-                XmlTag tag = (XmlTag) e;
-                if ("script".equals(tag.getLocalName()) && SchemaConstantsGenerated.NS_COMMON.equals(tag.getNamespace())) {
-                    script = tag;
+            if (element instanceof XmlTag) {
+                XmlTag tag = (XmlTag) element;
+                if (parentTagName.getLocalPart().equals(tag.getLocalName()) && parentTagName.getNamespaceURI().equals(tag.getNamespace())) {
+                    parent = tag;
                     break;
                 }
             }
 
-            e = e.getContext();
+            element = element.getContext();
         }
 
-        return script;
+        return parent;
     }
 }

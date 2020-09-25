@@ -10,7 +10,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -58,7 +57,7 @@ public class GeneratorAction extends BackgroundAction {
 
     @Override
     protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
-        EnvironmentManager em = EnvironmentManager.getInstance(evt.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         if (!em.isEnvironmentSelected()) {
             MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error", "Environment not selected", NotificationType.ERROR);
             return;

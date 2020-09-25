@@ -1,10 +1,10 @@
 package com.evolveum.midpoint.studio.action.environment;
 
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
 
 /**
  * Created by lazyman on 10/02/2017.
@@ -23,7 +23,7 @@ public class SelectEnvironment extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        EnvironmentManager manager = EnvironmentManager.getInstance(e.getProject());
+        EnvironmentService manager = EnvironmentService.getInstance(e.getProject());
         manager.select(environment != null ? environment.getId() : null);
     }
 
