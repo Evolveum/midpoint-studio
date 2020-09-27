@@ -1,13 +1,14 @@
 package com.evolveum.midpoint.studio.ui.trace.mainTree;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.model.AbstractOpTreeTableNode;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.model.OpTreeTableModel;
-import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
 import com.evolveum.midpoint.studio.ui.trace.presentation.AbstractOpNodePresentation;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
@@ -50,7 +51,8 @@ public class OpTreePanel extends JPanel {
 
     private final MidPointProjectNotifier notifier;
 
-    @Nullable private final OpNode rootOpNode;
+    @Nullable
+    private final OpNode rootOpNode;
 
     private Options lastOptions;
 
@@ -129,7 +131,7 @@ public class OpTreePanel extends JPanel {
         group.add(MidPointUtils.createAnAction("Show direct children", AllIcons.Welcome.CreateNewProject, e -> setChildrenVisible(false)));
         group.add(MidPointUtils.createAnAction("Show all children", AllIcons.Actions.ShowAsTree, e -> setChildrenVisible(true)));
         group.add(MidPointUtils.createAnAction("Hide selected", AllIcons.General.HideToolWindow, e -> hideSelected(false)));
-        group.add(MidPointUtils.createAnAction("Hide selected (tree)", AllIcons.Actions.DeleteTagHover, e -> hideSelected(true)));
+        group.add(MidPointUtils.createAnAction("Hide selected (tree)", MidPointIcons.ACTION_DELETE_TAG_HOVER, e -> hideSelected(true)));
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceViewPanelMainToolbar", group, true);
         return resultsActionsToolbar.getComponent();
@@ -176,7 +178,7 @@ public class OpTreePanel extends JPanel {
     private void setNodeVisible(OpNode node, boolean value, boolean deep) {
         node.setVisible(value);
         if (deep) {
-            node.getChildren().forEach(child -> setNodeVisible(child, value,true));
+            node.getChildren().forEach(child -> setNodeVisible(child, value, true));
         }
     }
 
