@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.util.DOMUtilSettings;
+import com.evolveum.midpoint.util.MiscUtil;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -30,6 +31,9 @@ public class ServiceFactory {
 
         try {
             Thread.currentThread().setContextClassLoader(ServiceFactory.class.getClassLoader());
+
+            // just to initialize MiscUtil class with correct classloader
+            MiscUtil.class.getName();
 
             DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
             // todo create web client just to obtain extension schemas!
