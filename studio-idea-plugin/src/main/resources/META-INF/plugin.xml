@@ -129,7 +129,6 @@
                 extensions="zip|xml|mptrace"
                 language=""
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
-        <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.trace.MPTraceFileTypeFactory"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
