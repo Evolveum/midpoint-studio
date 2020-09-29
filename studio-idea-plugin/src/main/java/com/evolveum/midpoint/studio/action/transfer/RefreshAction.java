@@ -14,9 +14,11 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -68,6 +70,8 @@ public class RefreshAction extends BackgroundAction {
             return;
         }
 
+        indicator.setIndeterminate(false);
+
         EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
@@ -79,9 +83,24 @@ public class RefreshAction extends BackgroundAction {
         AtomicInteger result = new AtomicInteger(0);
 
         ApplicationManager.getApplication().invokeAndWait(() -> {
-            int r = Messages.showConfirmationDialog((JComponent) evt.getInputEvent().getComponent(),
-                    "Are you sure you want to reload " + toProcess.size() + " file(s) from the server '" + env.getName() + "'?",
-                    "Confirm action", "Refresh", "Cancel");
+            Component comp = evt.getInputEvent().getComponent();
+
+            JComponent source;
+            if (comp instanceof JComponent) {
+                source = (JComponent) comp;
+            } else {
+                JWindow w;
+                if (comp instanceof JWindow) {
+                    w = (JWindow) comp;
+                } else {
+                    w = (JWindow) WindowManager.getInstance().suggestParentWindow(evt.getProject());
+                }
+
+                source = w.getRootPane();
+            }
+
+            int r = Messages.showConfirmationDialog(source, "Are you sure you want to reload " + toProcess.size()
+                    + " file(s) from the server '" + env.getName() + "'?", "Confirm action", "Refresh", "Cancel");
 
             result.set(r);
         });
