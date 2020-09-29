@@ -533,8 +533,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 break;
         }
 
-        ItemPath path = ctx.path(ObjectType.F_NAME);
-        ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(), path, OrderDirection.ASCENDING);
+        ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
+                ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);
 
         return qf.createQuery(filter, paging);
     }
