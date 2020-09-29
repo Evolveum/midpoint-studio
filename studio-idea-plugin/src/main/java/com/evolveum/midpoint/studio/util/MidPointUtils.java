@@ -233,7 +233,17 @@ public class MidPointUtils {
 
     public static void publishExceptionNotification(String key, String message, Exception ex) {
         String msg = message + ", reason: " + ex.getMessage();
-        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR);
+
+        NotificationAction action = null;
+        if (ex instanceof ClientException) {
+            ClientException cex = (ClientException) ex;
+            OperationResult result = cex.getResult();
+            if (result != null) {
+                action = new ShowResultNotificationAction(result);
+            }
+        }
+
+        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR, action);
 
         if (LOG.isTraceEnabled()) {
             LOG.trace(msg);

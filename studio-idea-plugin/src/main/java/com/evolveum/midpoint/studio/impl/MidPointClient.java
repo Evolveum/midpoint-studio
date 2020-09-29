@@ -181,8 +181,11 @@ public class MidPointClient {
 
         PrismObject<O> result = null;
         try {
-            Collection<SelectorOptions<GetOperationOptions>> options =
-                    SelectorOptions.createCollection(GetOperationOptions.createRaw());
+            Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
+            if (opts.raw()) {
+                options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
+            }
+
             ObjectType o = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
             result = (PrismObject) o.asPrismObject();
 
