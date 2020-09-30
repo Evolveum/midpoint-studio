@@ -19,6 +19,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
@@ -49,6 +50,8 @@ import java.util.regex.Pattern;
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointModuleBuilder extends ModuleBuilder {
+
+    private static final Logger LOG = Logger.getInstance(MidPointModuleBuilder.class);
 
     public static final String NOTIFICATION_KEY = "Module";
 
@@ -131,17 +134,31 @@ public class MidPointModuleBuilder extends ModuleBuilder {
     }
 
     private void createGitIgnoreFile(Project project, VirtualFile root) throws IOException {
+        final String GITIGNORE = ".gitignore";
+
+        VirtualFile file = root.findChild(GITIGNORE);
+        if (file != null && file.exists()) {
+            LOG.info("File '" + GITIGNORE + "' already exits");
+            return;
+        }
+
+        file = root.createChildData(this, GITIGNORE);
+
         FileTemplateManager ftManager = FileTemplateManager.getInstance(project);
         FileTemplate fileTemplate = ftManager.getTemplate(MidPointFileTemplateGroupFactory.MIDPOINT_GIT_IGNORE_TEMPLATE);
-
-        VirtualFile file = root.createChildData(this, ".gitignore");
 
         String text = fileTemplate.getText();
         VfsUtil.saveText(file, text);
     }
 
     private void createPomFile(Project project, VirtualFile root, Properties properties) throws IOException {
-        VirtualFile file = root.createChildData(this, MavenConstants.POM_XML);
+        VirtualFile file = root.findChild(MavenConstants.POM_XML);
+        if (file != null && file.exists()) {
+            LOG.info("File '" + MavenConstants.POM_XML + "' already exits");
+            return;
+        }
+
+        file = root.createChildData(this, MavenConstants.POM_XML);
 
         FileTemplateManager ftManager = FileTemplateManager.getInstance(project);
         FileTemplate fileTemplate = ftManager.getTemplate(MidPointFileTemplateGroupFactory.MIDPOINT_MAVEN_POM_TEMPLATE);

@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.action.logging;
 
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LoggingLevelType;
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.DumbAware;
 
@@ -20,8 +21,12 @@ public abstract class SetModuleLoggingGroupAction extends DefaultActionGroup imp
         String id = getClass().getSimpleName() + action.getLevel().value();
 
         ActionManager am = ActionManager.getInstance();
-        am.registerAction(id, action);
+        AnAction a = am.getAction(id);
+        if (a == null) {
+            am.registerAction(id, action);
+            a = action;
+        }
 
-        add(action);
+        add(a);
     }
 }
