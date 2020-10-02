@@ -1,10 +1,10 @@
 <idea-plugin require-restart="true">
     <id>com.evolveum.midpoint.studio</id>
     <name>MidPoint Studio</name>
-    <vendor email="midpoint.studio@evolveum.com" url="https://evolveum.com">evolveum, s.r.o.</vendor>
+    <vendor email="midpoint.studio@evolveum.com" url="https://evolveum.com/">Evolveum</vendor>
 
     <description><![CDATA[
-        Plugin which enables support for MidPoint configuration files.
+        Integrated development environment for MidPoint configuration.
 
         <b>Features</b>
         <ul>
@@ -21,9 +21,9 @@
 
     <change-notes><![CDATA[
 
-        <h1>Release 4.1</h1>
+        <h1>Milestone 4.2-M1</h1>
         <ul>
-            <li>Initial release of plugin</li>
+            <li>Initial release of plugin (Milestone 1 towards 4.2 release)</li>
             <li>Browse/Upload with raw options for both operations</li>
             <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
             <li>XML tags autocompletion, links to documentation</li>
