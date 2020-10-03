@@ -220,7 +220,7 @@ public class MidPointClient {
     public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand) throws IOException, AuthenticationException {
         if (expand) {
             EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-            Expander expander = new Expander(environment, cm);
+            Expander expander = new Expander(environment, cm, project);
 
             String expanded = expander.expand(obj.getContent());
 
@@ -263,7 +263,7 @@ public class MidPointClient {
 
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         String expanded = expander.expand(xml);
 
@@ -273,7 +273,7 @@ public class MidPointClient {
 
     public List<PrismObject<?>> parseObjects(String xml) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         String expanded = expander.expand(xml);
 
@@ -283,7 +283,7 @@ public class MidPointClient {
 
     public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
@@ -296,7 +296,7 @@ public class MidPointClient {
 
     public <O extends ObjectType> PrismObject<O> parseObject(VirtualFile file) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
