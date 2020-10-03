@@ -33,7 +33,7 @@ public class ServiceFactory {
             Thread.currentThread().setContextClassLoader(ServiceFactory.class.getClassLoader());
 
             // just to initialize MiscUtil class with correct classloader
-            MiscUtil.class.getName();
+            MiscUtil.emptyIfNull("");
 
             DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
             // todo create web client just to obtain extension schemas!
