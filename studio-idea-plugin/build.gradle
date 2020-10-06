@@ -7,8 +7,7 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.4.26"
-    id "com.palantir.git-version" version "0.12.3"
+    id "org.jetbrains.intellij" version "0.5.0"
 }
 
 apply from: "$rootDir/$project.name/verifier.gradle"
@@ -71,11 +70,20 @@ dependencies {
     }
 }
 
+def channelSuffix = ""
+if (!publishChannel?.isBlank() && publishChannel != "stable") {
+    channelSuffix = "-" + publishChannel
+}
+
+def fullVersion = "$project.version.$buildNumber$channelSuffix"
+
+println "Plugin version: " + fullVersion
+
 intellij {
     version '2020.2'    // 'LATEST-EAP-SNAPSHOT'
     type 'IC'
     downloadSources true
-    pluginName 'MidPoint Studio'
+    pluginName 'intellij-midpoint-studio'
     updateSinceUntilBuild false
     plugins = [
             'PsiViewer:202-SNAPSHOT.3',
@@ -87,10 +95,11 @@ intellij {
     patchPluginXml {
         sinceBuild '193'
         untilBuild '202.*'
-        version versionDetails().lastTag + '.' + versionDetails().commitDistance
+        version fullVersion
+
     }
     publishPlugin {
-        channels project.channels
+        channels publishChannel
         token System.getenv('studio_intellijPublishToken')
     }
 }
@@ -98,10 +107,4 @@ intellij {
 runPluginVerifier {
     pluginFileName = "$intellij.pluginName-$version"
     ides = ["IC-2019.3", "IC-2020.1", "IC-2020.2", "IC-LATEST-EAP-SNAPSHOT"]
-}
-
-buildPlugin.configure {
-    doFirst {
-        println "Git version: " + versionDetails().lastTag + '.' + versionDetails().commitDistance
-    }
 }
