@@ -87,7 +87,7 @@ intellij {
     patchPluginXml {
         sinceBuild '193'
         untilBuild '202.*'
-        version project.version + '.' + versionDetails().commitDistance
+        version versionDetails().lastTag + '.' + versionDetails().commitDistance
     }
     publishPlugin {
         channels project.channels
@@ -102,6 +102,6 @@ runPluginVerifier {
 
 buildPlugin.configure {
     doFirst {
-        println "Git describe: " + versionDetails().commitDistance
+        println "Git version: " + versionDetails().lastTag + '.' + versionDetails().commitDistance
     }
 }
