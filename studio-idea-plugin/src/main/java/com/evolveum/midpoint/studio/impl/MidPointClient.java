@@ -217,12 +217,12 @@ public class MidPointClient {
         return client.execute(object);
     }
 
-    public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand) throws IOException, AuthenticationException {
+    public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand, VirtualFile file) throws IOException, AuthenticationException {
         if (expand) {
             EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
             Expander expander = new Expander(environment, cm, project);
 
-            String expanded = expander.expand(obj.getContent());
+            String expanded = expander.expand(obj.getContent(), file);
 
             obj = MidPointObject.copy(obj);
             obj.setContent(expanded);

@@ -70,7 +70,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             });
 
             if (!StringUtils.isEmpty(text)) {
-                ProcessState state = processText(e, mm, indicator, client, text);
+                ProcessState state = processText(e, mm, indicator, client, text, e.getDataContext().getData(PlatformDataKeys.VIRTUAL_FILE));
 
                 showNotificationAfterFinish(0, 0, state.success, state.fail);
             } else {
@@ -148,7 +148,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                     String xml = IOUtils.toString(in);
 
-                    ProcessState state = processText(evt, mm, indicator, client, xml);
+                    ProcessState state = processText(evt, mm, indicator, client, xml, file);
                     success.addAndGet(state.success);
                     fail.addAndGet(state.fail);
                 } catch (IOException ex) {
@@ -161,7 +161,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         showNotificationAfterFinish(filesCount, failedFilesCount.get(), success.get(), fail.get());
     }
 
-    private ProcessState processText(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, String text) {
+    private ProcessState processText(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, String text, VirtualFile file) {
         indicator.setIndeterminate(false);
 
         ProcessState state = new ProcessState();
@@ -171,6 +171,8 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
             int i = 0;
             for (MidPointObject obj : objects) {
+                obj.setFile(file);
+
                 i++;
 
                 indicator.setFraction(i / objects.size());

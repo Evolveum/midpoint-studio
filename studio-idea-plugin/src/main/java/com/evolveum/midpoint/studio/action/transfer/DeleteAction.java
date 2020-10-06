@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.vfs.VirtualFile;
 
 /**
  * Created by Viliam Repan (lazyman).

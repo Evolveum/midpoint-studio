@@ -10,10 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +35,7 @@ public class Expander {
 
     private EnvironmentProperties environmentProperties;
 
-    private Map<String, String> projectProperties;
+    private Map<String, String> projectProperties = new HashMap<>();
 
     public Expander(Environment environment, EncryptionService encryptionService, Project project) {
         this.environment = environment;
@@ -120,11 +117,14 @@ public class Expander {
         if (key != null && key.startsWith("@")) {
             String filePath = key.replaceFirst("@", "");
             File contentFile = new File(filePath);
-            if (file.toNioPath().isAbsolute()) {
+            if (contentFile.isAbsolute()) {
                 VirtualFile content = VfsUtil.findFileByIoFile(contentFile, true);
                 return loadContent(content);
             } else {
                 if (file != null) {
+                    if (!file.isDirectory()) {
+                        file = file.getParent();
+                    }
                     VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
 
                     return loadContent(content);
