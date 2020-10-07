@@ -19,6 +19,16 @@ dependencies {
     compile("com.evolveum.midpoint.model:model-api:$midpointVersion") {
         transitive = false
     }
+    compile("com.evolveum.midpoint.model:model-impl:$midpointVersion") {
+        transitive = false
+    }
+    compile("com.evolveum.midpoint.infra:common:$midpointVersion") {
+        exclude group: "org.springframework"
+        exclude group: "net.sf.jasperreports"
+        exclude group: "org.apache.cxf"
+        exclude group: "org.slf4j"
+        exclude group: "ch.qos.logback"
+    }
     compile("com.evolveum.midpoint.repo:security-api:$midpointVersion") {
         transitive = false
     }
@@ -26,6 +36,7 @@ dependencies {
         transitive = false
     }
     compile "com.evolveum.midpoint:midpoint-localization:$midpointVersion"
+
     compile("com.evolveum.midpoint:midscribe-core:$midscribeVersion") {
         exclude group: "org.springframework"
         exclude group: "net.sf.jasperreports"
@@ -42,26 +53,7 @@ dependencies {
     compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
     compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
 
-    // dependencies form midpoint-client, todo cleanup
-
-    compile("com.evolveum.midpoint.model:model-impl:$midpointVersion") {
-        transitive = false
-    }
-    compile("com.evolveum.midpoint.infra:common:$midpointVersion") {
-        exclude group: "org.springframework"
-        exclude group: "net.sf.jasperreports"
-        exclude group: "org.apache.cxf"
-        exclude group: "org.slf4j"
-        exclude group: "ch.qos.logback"
-    }
-
     compile "stax:stax:$staxVersion"
-
-//    compile("com.evolveum.midpoint.infra:schema:4.2-SNAPSHOT") {
-//        exclude group: "org.springframework"
-//        exclude group: "net.sf.jasperreports"
-//        exclude group: "org.apache.cxf"
-//    }
 
     runtime "org.glassfish.jaxb:jaxb-runtime:2.3.2" // needed because of NamespacePrefixMapper class
     runtime("org.springframework:spring-core:5.0.7.RELEASE") {
@@ -71,11 +63,11 @@ dependencies {
 }
 
 def channelSuffix = ""
-if (!publishChannel?.isBlank() && publishChannel != "stable") {
-    channelSuffix = "-" + publishChannel
+if (!publishChannel?.isBlank() && publishChannel?.toLowerCase() == "nightly") {
+    channelSuffix = "-" + publishChannel.toLowerCase()
 }
 
-def fullVersion = "$project.version.$buildNumber$channelSuffix"
+def fullVersion = "$project.version-$buildNumber$channelSuffix"
 
 println "Plugin version: " + fullVersion
 
@@ -96,7 +88,6 @@ intellij {
         sinceBuild '193'
         untilBuild '202.*'
         version fullVersion
-
     }
     publishPlugin {
         channels publishChannel
