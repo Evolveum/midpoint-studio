@@ -24,6 +24,12 @@ public class MidPointObjectUtils {
 
     public static final String OBJECTS_XML_SUFFIX = "</objects>\n";
 
+    public static final String DELTAS_XML_PREFIX="<deltaList xsi:type=\"t:ObjectDeltaListType\"" +
+            " xmlns:t=\"http://midpoint.evolveum.com/xml/ns/public/common/api-types-3\"" +
+            " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">";
+
+    public static final String DELTAS_XML_SUFFIX = "</deltas>\n";
+
     public static List<MidPointObject> parseText(String text, String notificationKey) {
         return parseText(text, null, notificationKey);
     }

@@ -200,6 +200,11 @@
                 text="Refresh From Server"
                 icon="/icons/buildLoadChanges.svg"/>
 
+        <action id="MidPoint.Action.DiffRemote"
+                class="com.evolveum.midpoint.studio.action.transfer.DiffRemoteAction"
+                text="Diff Remote"
+                icon="AllIcons.Actions.Diff"/>
+
         <!-- SERVER SIDE -->
 
         <action id="MidPoint.Action.UploadRecompute"
@@ -266,6 +271,8 @@
 
                 <reference ref="MidPoint.Action.Refresh"/>
 
+                <reference ref="MidPoint.Action.DiffRemote"/>
+
                 <separator/>
 
                 <reference ref="MidPoint.Action.DeleteRaw"/>
@@ -324,6 +331,8 @@
             <separator/>
 
             <reference ref="MidPoint.Action.Refresh"/>
+
+            <reference ref="MidPoint.Action.DiffRemote"/>
 
             <separator/>
 

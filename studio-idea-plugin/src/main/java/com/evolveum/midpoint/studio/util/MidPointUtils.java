@@ -37,6 +37,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
@@ -651,5 +652,14 @@ public class MidPointUtils {
         pane.setBorder(null);
 
         return pane;
+    }
+
+    public static void openFile(Project project, VirtualFile file) {
+        if (file == null) {
+            return;
+        }
+
+        FileEditorManager fem = FileEditorManager.getInstance(project);
+        fem.openFile(file, true, true);
     }
 }
