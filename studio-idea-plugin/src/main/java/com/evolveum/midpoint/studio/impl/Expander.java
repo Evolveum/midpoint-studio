@@ -87,10 +87,10 @@ public class Expander {
 
             String value = expandKey(key, file);
             if (value == null) {
-                matcher.appendReplacement(sb, "\\" + matcher.group());
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group()));
                 missingKeys.add(key);
             } else {
-                matcher.appendReplacement(sb, value);
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
             }
         }
         matcher.appendTail(sb);

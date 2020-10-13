@@ -237,6 +237,8 @@ public class MidPointUtils {
             if (result != null) {
                 action = new ShowResultNotificationAction(result);
             }
+        } else {
+            action = new ShowExceptionNotificationAction("Exception occurred", ex);
         }
 
         MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR, action);
