@@ -5,6 +5,10 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,7 +48,19 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
     }
 
     public void focusConsole() {
-        // todo open midpoint tool window and focus to console
+        if (console == null) {
+            return;
+        }
+
+        ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow("MidPoint");
+        tw.show(null);
+
+        ContentManager cm = tw.getContentManager();
+        Content content = cm.getContent(1);
+        cm.setSelectedContent(content);
+
+        console.requestFocus();
+        console.requestScrollingToEnd();
     }
 
     public void printToConsole(Class clazz, String message) {
