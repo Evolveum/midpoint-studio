@@ -41,7 +41,7 @@ public abstract class SetModuleLoggingGroupAction extends DefaultActionGroup imp
     }
 
     protected void addAction(SetBasicLoggerAction action) {
-        String id = getClass().getSimpleName() + action.getLevel().value();
+        String id = getClass().getSimpleName()+ "." + action.getLevel().value();
 
         ActionManager am = ActionManager.getInstance();
         AnAction a = am.getAction(id);
