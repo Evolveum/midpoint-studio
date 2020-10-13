@@ -18,6 +18,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,6 +43,13 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
         this.notificationKey = notificationKey;
         this.operation = operation;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent evt) {
+        super.update(evt);
+
+        MidPointUtils.updateServerActionState(evt);
     }
 
     @Override

@@ -43,25 +43,7 @@ public class RefreshAction extends BackgroundAction {
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
-        if (evt.getProject() == null) {
-            return;
-        }
-
-        boolean hasFacet = MidPointUtils.hasMidPointFacet(evt.getProject());
-        if (!hasFacet) {
-            evt.getPresentation().setVisible(false);
-            return;
-        }
-
-        VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
-                (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
-
-        List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
-
-        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
-
-        boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
-        evt.getPresentation().setEnabled(enabled);
+        MidPointUtils.updateServerActionState(evt);
     }
 
     @Override
