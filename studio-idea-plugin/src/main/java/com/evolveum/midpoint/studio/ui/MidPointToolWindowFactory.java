@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -48,18 +47,15 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     private Content buildConsole(Project project) {
-        JPanel root = new JPanel(new BorderLayout());
-
         MidPointConsoleView consoleView = new MidPointConsoleView(project);
         Disposer.register(project, consoleView);
 
-        root.add(consoleView.getComponent(), BorderLayout.CENTER);
+        MidPointConsolePanel root = new MidPointConsolePanel(consoleView);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("ConsoleActions",
                 new DefaultActionGroup(consoleView.createConsoleActions()), false);
-        root.add(toolbar.getComponent(), BorderLayout.WEST);
 
-        MidPointService.getInstance(project).setConsole(consoleView);
+        root.setToolbar(toolbar);
 
         return ContentFactory.SERVICE.getInstance()
                 .createContent(root, "Console", false);

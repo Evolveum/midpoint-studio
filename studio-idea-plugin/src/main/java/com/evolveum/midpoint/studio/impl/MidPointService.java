@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.ui.MidPointConsolePanel;
 import com.evolveum.midpoint.studio.ui.MidPointConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.components.State;
@@ -43,15 +44,7 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         return project.getService(MidPointService.class);
     }
 
-    public void setConsole(MidPointConsoleView console) {
-        this.console = console;
-    }
-
     public void focusConsole() {
-        if (console == null) {
-            return;
-        }
-
         ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow("MidPoint");
         tw.show(null);
 
@@ -59,8 +52,27 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         Content content = cm.getContent(1);
         cm.setSelectedContent(content);
 
+        MidPointConsoleView console = getConsole();
+
         console.requestFocus();
         console.requestScrollingToEnd();
+    }
+
+    private MidPointConsoleView getConsole() {
+        if (console != null) {
+            return console;
+        }
+
+        ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow("MidPoint");
+        tw.show(null);
+
+        ContentManager cm = tw.getContentManager();
+        Content content = cm.getContent(1);
+        MidPointConsolePanel panel = (MidPointConsolePanel) content.getComponent();
+
+        this.console = panel.getConsole();
+
+        return console;
     }
 
     public void printToConsole(Class clazz, String message) {
@@ -72,9 +84,7 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
     }
 
     public void printToConsole(Class clazz, String message, Exception ex, ConsoleViewContentType type) {
-        if (console == null) {
-            return;
-        }
+        MidPointConsoleView console = getConsole();
 
         Validate.notNull(clazz, "Class must not be null");
         Validate.notNull(type, "Console view content type must not be null");
