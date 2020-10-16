@@ -22,6 +22,8 @@ import java.awt.*;
  */
 public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
 
+    public static final String WINDOW_ID = "MidPoint";
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         toolWindow.setStripeTitle("MidPoint");

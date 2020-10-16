@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.studio.ui.MidPointConsolePanel;
 import com.evolveum.midpoint.studio.ui.MidPointConsoleView;
+import com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
@@ -45,7 +46,7 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
     }
 
     public void focusConsole() {
-        ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow("MidPoint");
+        ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow(MidPointToolWindowFactory.WINDOW_ID);
         tw.show(null);
 
         ContentManager cm = tw.getContentManager();
@@ -63,8 +64,7 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
             return console;
         }
 
-        ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow("MidPoint");
-        tw.show(null);
+        ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow(MidPointToolWindowFactory.WINDOW_ID);
 
         ContentManager cm = tw.getContentManager();
         Content content = cm.getContent(1);
