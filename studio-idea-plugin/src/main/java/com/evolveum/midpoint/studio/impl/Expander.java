@@ -1,14 +1,16 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +18,14 @@ import java.util.regex.Pattern;
  * Created by Viliam Repan (lazyman).
  */
 public class Expander {
+
+    public static final String KEY_FILE_NAME = "@filename";
+
+    public static final String KEY_PROJECT_NAME = "#project.name";
+
+    public static final String KEY_PROJECT_DIR = "#project.dir";
+
+    public static final String KEY_SERVER_DISPLAY_NAME = "#server.displayName";
 
     private static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
 
@@ -25,10 +35,28 @@ public class Expander {
 
     private EnvironmentProperties environmentProperties;
 
-    public Expander(Environment environment, EncryptionService encryptionService) {
+    private Map<String, String> projectProperties = new HashMap<>();
+
+    public Expander(Environment environment, EncryptionService encryptionService, Project project) {
         this.environment = environment;
         this.encryptionService = encryptionService;
         this.environmentProperties = new EnvironmentProperties(environment);
+
+        initProjectProperties(project);
+    }
+
+    private void initProjectProperties(Project project) {
+        if (project == null) {
+            return;
+        }
+
+        projectProperties.put(KEY_SERVER_DISPLAY_NAME, environment.getName());
+        projectProperties.put(KEY_PROJECT_NAME, project.getName());
+        projectProperties.put(KEY_PROJECT_DIR, project.getBasePath());
+    }
+
+    public String expand(String object) {
+        return expand(object, null);
     }
 
     /**
@@ -40,7 +68,7 @@ public class Expander {
      * @param object
      * @return
      */
-    public String expand(String object) {
+    public String expand(String object, VirtualFile file) {
         if (object == null) {
             return null;
         }
@@ -57,12 +85,12 @@ public class Expander {
                 continue;
             }
 
-            String value = expandKey(key);
+            String value = expandKey(key, file);
             if (value == null) {
-                matcher.appendReplacement(sb, "\\" + matcher.group());
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group()));
                 missingKeys.add(key);
             } else {
-                matcher.appendReplacement(sb, value);
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
             }
         }
         matcher.appendTail(sb);
@@ -71,6 +99,10 @@ public class Expander {
     }
 
     public InputStream expand(InputStream is, Charset charset) throws IOException {
+        return expand(is, charset, null);
+    }
+
+    public InputStream expand(InputStream is, Charset charset, String fileName) throws IOException {
         if (is == null) {
             return null;
         }
@@ -81,8 +113,33 @@ public class Expander {
         return new ByteArrayInputStream(expanded.getBytes());
     }
 
-    private String expandKey(String key) {
-        String value = null;
+    private String expandKey(String key, VirtualFile file) {
+        if (key != null && key.startsWith("@")) {
+            String filePath = key.replaceFirst("@", "");
+            File contentFile = new File(filePath);
+            if (contentFile.isAbsolute()) {
+                VirtualFile content = VfsUtil.findFileByIoFile(contentFile, true);
+                return loadContent(content);
+            } else {
+                if (file != null) {
+                    if (!file.isDirectory()) {
+                        file = file.getParent();
+                    }
+                    VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
+
+                    return loadContent(content);
+                } else {
+                    throw new IllegalStateException("Couldn't load file '" + key + "', unknown path '" + key + "'");
+                }
+            }
+        }
+
+        String value;
+        value = projectProperties.get(key);
+        if (value != null) {
+            return value;
+        }
+
         if (encryptionService == null || !encryptionService.isAvailable()) {
             return expandKeyFromProperties(key);
         }
@@ -115,5 +172,18 @@ public class Expander {
         }
 
         return value;
+    }
+
+    private String loadContent(VirtualFile file) {
+        if (file.isDirectory()) {
+            throw new IllegalStateException("Can't load content, file '" + file.getPath() + "' is directory");
+        }
+
+        try {
+            byte[] content = file.contentsToByteArray();
+            return new String(content, file.getCharset());
+        } catch (IOException ex) {
+            throw new IllegalStateException("Couldn't load content of file '\" + file.getPath() + \"', reason: " + ex.getMessage());
+        }
     }
 }

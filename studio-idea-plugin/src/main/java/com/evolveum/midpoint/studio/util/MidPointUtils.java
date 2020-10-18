@@ -6,10 +6,7 @@ import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.impl.MidPointFacetType;
-import com.evolveum.midpoint.studio.impl.MidPointService;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
-import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.client.ClientException;
 import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
@@ -31,17 +28,16 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.XmlPatterns;
@@ -233,7 +229,19 @@ public class MidPointUtils {
 
     public static void publishExceptionNotification(String key, String message, Exception ex) {
         String msg = message + ", reason: " + ex.getMessage();
-        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR);
+
+        NotificationAction action = null;
+        if (ex instanceof ClientException) {
+            ClientException cex = (ClientException) ex;
+            OperationResult result = cex.getResult();
+            if (result != null) {
+                action = new ShowResultNotificationAction(result);
+            }
+        } else {
+            action = new ShowExceptionNotificationAction("Exception occurred", ex);
+        }
+
+        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR, action);
 
         if (LOG.isTraceEnabled()) {
             LOG.trace(msg);
@@ -641,5 +649,36 @@ public class MidPointUtils {
         pane.setBorder(null);
 
         return pane;
+    }
+
+    public static void openFile(Project project, VirtualFile file) {
+        if (file == null) {
+            return;
+        }
+
+        FileEditorManager fem = FileEditorManager.getInstance(project);
+        fem.openFile(file, true, true);
+    }
+
+    public static void updateServerActionState(AnActionEvent evt) {
+        if (evt.getProject() == null) {
+            return;
+        }
+
+        boolean hasFacet = MidPointUtils.hasMidPointFacet(evt.getProject());
+        if (!hasFacet) {
+            evt.getPresentation().setVisible(false);
+            return;
+        }
+
+        VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
+                (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+
+        List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
+
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
+
+        boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
+        evt.getPresentation().setEnabled(enabled);
     }
 }

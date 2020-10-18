@@ -114,7 +114,7 @@ public class DownloadAction extends BackgroundAction {
                     out.write(MidPointObjectUtils.OBJECTS_XML_SUFFIX);
                 }
 
-                openFile(project, file);
+                MidPointUtils.openFile(project, file);
             } catch (Exception ex) {
                 MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
                         "Exception occurred when preparing show only file " + (file != null ? file.getName() : null), ex);
@@ -214,20 +214,11 @@ public class DownloadAction extends BackgroundAction {
         }
 
         if (!files.isEmpty()) {
-            ApplicationManager.getApplication().invokeAndWait(() -> openFile(project, files.get(0)));
+            ApplicationManager.getApplication().invokeAndWait(() -> MidPointUtils.openFile(project, files.get(0)));
         }
     }
 
     private void downloadByQuery(MidPointClient client, PrismSerializer<String> serializer) {
         // todo implement later
-    }
-
-    private void openFile(Project project, VirtualFile file) {
-        if (file == null) {
-            return;
-        }
-
-        FileEditorManager fem = FileEditorManager.getInstance(project);
-        fem.openFile(file, true, true);
     }
 }

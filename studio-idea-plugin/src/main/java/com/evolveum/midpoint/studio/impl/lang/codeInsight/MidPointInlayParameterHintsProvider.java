@@ -59,7 +59,22 @@ public class MidPointInlayParameterHintsProvider implements InlayParameterHintsP
                 label = "Name undefined";
             }
         } else {
-            label = "Multiple object with same oid";
+            boolean multiple = false;
+
+            label = result.iterator().next().getName();
+            for (OidNameValue o : result) {
+                if (!Objects.equals(label, o.getName())) {
+                    multiple = true;
+                    break;
+                }
+            }
+
+            if (multiple) {
+                label = "Multiple object with same oid";
+            } else {
+                label = label + " (multiple objects)";
+            }
+
         }
 
         return Arrays.asList(new InlayInfo(label, offset, false, true, false));

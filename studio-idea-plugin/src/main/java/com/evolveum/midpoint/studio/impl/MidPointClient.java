@@ -181,8 +181,11 @@ public class MidPointClient {
 
         PrismObject<O> result = null;
         try {
-            Collection<SelectorOptions<GetOperationOptions>> options =
-                    SelectorOptions.createCollection(GetOperationOptions.createRaw());
+            Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
+            if (opts.raw()) {
+                options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
+            }
+
             ObjectType o = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
             result = (PrismObject) o.asPrismObject();
 
@@ -214,12 +217,12 @@ public class MidPointClient {
         return client.execute(object);
     }
 
-    public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand) throws IOException, AuthenticationException {
+    public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand, VirtualFile file) throws IOException, AuthenticationException {
         if (expand) {
             EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-            Expander expander = new Expander(environment, cm);
+            Expander expander = new Expander(environment, cm, project);
 
-            String expanded = expander.expand(obj.getContent());
+            String expanded = expander.expand(obj.getContent(), file);
 
             obj = MidPointObject.copy(obj);
             obj.setContent(expanded);
@@ -260,7 +263,7 @@ public class MidPointClient {
 
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         String expanded = expander.expand(xml);
 
@@ -270,7 +273,7 @@ public class MidPointClient {
 
     public List<PrismObject<?>> parseObjects(String xml) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         String expanded = expander.expand(xml);
 
@@ -280,7 +283,7 @@ public class MidPointClient {
 
     public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
@@ -293,7 +296,7 @@ public class MidPointClient {
 
     public <O extends ObjectType> PrismObject<O> parseObject(VirtualFile file) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();

@@ -5,7 +5,6 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
-import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SearchResultMetadata;
@@ -236,6 +235,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             @Override
             public void update(AnActionEvent e) {
                 e.getPresentation().setEnabled(isSearchEnabled());
+
                 super.update(e);
             }
 
@@ -291,12 +291,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         downloadAction = createAnAction("Download", AllIcons.Actions.Download,
                 e -> downloadPerformed(e, false, rawDownload),
-                e -> isDownloadShowEnabled());
+                e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
         group.add(downloadAction);
 
         showAction = createAnAction("Show", AllIcons.Actions.Show,
                 e -> downloadPerformed(e, true, rawDownload),
-                e -> isDownloadShowEnabled());
+                e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
         group.add(showAction);
 
         CheckboxAction rawSearch = new CheckboxAction("Raw") {
@@ -304,6 +304,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             @Override
             public void update(AnActionEvent e) {
                 e.getPresentation().setEnabled(isDownloadShowEnabled());
+
                 super.update(e);
             }
 
@@ -323,7 +324,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         processAction = createAnAction("Process", AllIcons.Actions.RealIntentionBulb,
                 e -> processPerformed(e),
-                e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
+                e -> e.getPresentation().setEnabled(isResultSelected()));
         group.add(processAction);
 
         return group;
@@ -499,7 +500,9 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private boolean isDownloadShowEnabled() {
-        return isResultSelected();
+        EnvironmentService em = EnvironmentService.getInstance(project);
+
+        return isResultSelected() && em.isEnvironmentSelected();
     }
 
     private boolean isSearchEnabled() {
@@ -533,8 +536,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 break;
         }
 
-        ItemPath path = ctx.path(ObjectType.F_NAME);
-        ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(), path, OrderDirection.ASCENDING);
+        ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
+                ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);
 
         return qf.createQuery(filter, paging);
     }

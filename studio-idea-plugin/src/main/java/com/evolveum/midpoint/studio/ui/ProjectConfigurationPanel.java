@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.Objects;
 
 /**
@@ -21,6 +22,7 @@ public class ProjectConfigurationPanel extends JPanel {
     private MidPointSettingsPanel midpointSettingsPanel;
     private JLabel oldPasswordLabel;
     private JPasswordField oldPassword;
+    private JButton importFromEclipse;
 
     private ProjectSettings settings;
 
@@ -36,6 +38,17 @@ public class ProjectConfigurationPanel extends JPanel {
 
         oldPasswordLabel.setVisible(allowMasterPasswordReset);
         oldPassword.setVisible(allowMasterPasswordReset);
+
+        importFromEclipse.addActionListener(e -> importFromEclipsePerformed(e));
+        importFromEclipse.setVisible(isImportFromEclipseVisible());
+    }
+
+    protected boolean isImportFromEclipseVisible() {
+        return false;
+    }
+
+    protected void importFromEclipsePerformed(ActionEvent evt) {
+
     }
 
     public ProjectSettings getSettings() {

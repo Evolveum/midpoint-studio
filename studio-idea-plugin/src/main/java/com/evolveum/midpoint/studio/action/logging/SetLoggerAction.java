@@ -10,6 +10,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,6 +29,20 @@ public class SetLoggerAction extends BackgroundAction {
 
     public SetLoggerAction() {
         super("Updating logging configuration");
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+        super.update(e);
+
+        if (e.getProject() == null) {
+            return;
+        }
+
+        EnvironmentService em = EnvironmentService.getInstance(e.getProject());
+
+        boolean enabled = em.getSelected() != null;
+        e.getPresentation().setEnabled(enabled);
     }
 
     @Override

@@ -13,7 +13,6 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectListType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.BuildInformationType;
@@ -66,12 +65,38 @@ public class ServiceImpl implements Service {
     public <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query, Collection<SelectorOptions<GetOperationOptions>> options)
             throws IOException, AuthenticationException {
 
+        PrismContext prismContext = prismContext();
+
         if (query == null) {
-            query = prismContext().queryFactory().createQuery();
+            query = prismContext.queryFactory().createQuery();
         }
 
         if (options == null) {
             options = new ArrayList<>();
+        }
+
+        Map<String, String> params = new HashMap<>();
+        GetOperationOptions root = SelectorOptions.findRootOptions(options);
+        if (root != null && root.getRaw()) {
+            params.put("options", "raw");
+        }
+
+        for (SelectorOptions o : options) {
+            if (!(o.getOptions() instanceof GetOperationOptions)) {
+                continue;
+            }
+
+            GetOperationOptions goo = (GetOperationOptions) o.getOptions();
+            if (goo.getRetrieve() != null) {
+                switch (goo.getRetrieve()) {
+                    case EXCLUDE:
+                        params.put("exclude", o.getItemPath(prismContext.emptyPath()).toString());
+                        break;
+                    case INCLUDE:
+                        params.put("include", o.getItemPath(prismContext.emptyPath()).toString());
+                        break;
+                }
+            }
         }
 
         try {
@@ -82,7 +107,7 @@ public class ServiceImpl implements Service {
 
             String path = "/" + ObjectTypes.getRestTypeFromClass(type) + "/search";
 
-            Request.Builder builder = context.build(path)
+            Request.Builder builder = context.build(path, params)
                     .post(RequestBody.create(content, ServiceContext.APPLICATION_XML));
 
             Request req = builder.build();
@@ -230,10 +255,14 @@ public class ServiceImpl implements Service {
             options = new ArrayList<>();
         }
 
-        // todo use options
+        Map<String, String> params = new HashMap<>();
+        GetOperationOptions root = SelectorOptions.findRootOptions(options);
+        if (root != null && root.getRaw()) {
+            params.put("options", "raw");
+        }
 
         String path = "/" + ObjectTypes.getRestTypeFromClass(type) + "/" + oid;
-        Request.Builder builder = context.build(path)
+        Request.Builder builder = context.build(path, params)
                 .get();
 
         Request req = builder.build();
@@ -243,7 +272,7 @@ public class ServiceImpl implements Service {
             validateResponseCode(response, oid);
 
             if (javax.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
-                throw new SystemException("Unknown response status: " + response.code());
+                throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
             }
 
             if (response.body() == null) {
@@ -303,7 +332,7 @@ public class ServiceImpl implements Service {
             validateResponseCode(response, oid);
 
             if (javax.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
-                throw new SystemException("Unknown response status: " + response.code());
+                throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
             }
 
             ResponseBody body = response.body();

@@ -1,42 +1,45 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
-import com.evolveum.midpoint.studio.MidPointIcons;
+import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.delta.ObjectDelta;
+import com.evolveum.midpoint.schema.DeltaConvertor;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
+import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
+import com.intellij.icons.AllIcons;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.WindowManager;
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * todo maybe create another refresh (non-raw) action
- * <p>
  * Created by Viliam Repan (lazyman).
  */
-public class RefreshAction extends BackgroundAction {
+public class DiffRemoteAction extends BackgroundAction {
 
-    public static final String NOTIFICATION_KEY = "Refresh Action";
+    public static final String NOTIFICATION_KEY = "Diff Remote Action";
 
-    public RefreshAction() {
-        super("Refresh From Server", MidPointIcons.ACTION_BUILD_LOAD_CHANGES, "Refresh From Server");
+    public DiffRemoteAction() {
+        super(NOTIFICATION_KEY, AllIcons.Actions.Diff, NOTIFICATION_KEY);
     }
 
     @Override
@@ -62,35 +65,6 @@ public class RefreshAction extends BackgroundAction {
 
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
-        AtomicInteger result = new AtomicInteger(0);
-
-        ApplicationManager.getApplication().invokeAndWait(() -> {
-            Component comp = evt.getInputEvent().getComponent();
-
-            JComponent source;
-            if (comp instanceof JComponent) {
-                source = (JComponent) comp;
-            } else {
-                JWindow w;
-                if (comp instanceof JWindow) {
-                    w = (JWindow) comp;
-                } else {
-                    w = (JWindow) WindowManager.getInstance().suggestParentWindow(evt.getProject());
-                }
-
-                source = w.getRootPane();
-            }
-
-            int r = Messages.showConfirmationDialog(source, "Are you sure you want to reload " + toProcess.size()
-                    + " file(s) from the server '" + env.getName() + "'?", "Confirm action", "Refresh", "Cancel");
-
-            result.set(r);
-        });
-
-        if (result.get() == Messages.NO) {
-            return;
-        }
-
         if (toProcess.isEmpty()) {
             MidPointUtils.publishNotification(NOTIFICATION_KEY, getTaskTitle(),
                     "No files matched for " + getTaskTitle() + " (xml)", NotificationType.WARNING);
@@ -107,7 +81,7 @@ public class RefreshAction extends BackgroundAction {
 
         int skipped = 0;
         int missing = 0;
-        AtomicInteger reloaded = new AtomicInteger(0);
+        AtomicInteger diffed = new AtomicInteger(0);
         AtomicInteger failed = new AtomicInteger(0);
 
         int current = 0;
@@ -130,11 +104,11 @@ public class RefreshAction extends BackgroundAction {
 
             if (objects.isEmpty()) {
                 skipped++;
-                mm.printToConsole(RefreshAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
+                mm.printToConsole(DiffRemoteAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
                 continue;
             }
 
-            List<String> newObjects = new ArrayList<>();
+            Map<String, MidPointObject> remoteObjects = new HashMap<>();
 
             for (MidPointObject object : objects) {
                 if (isCanceled()) {
@@ -143,54 +117,84 @@ public class RefreshAction extends BackgroundAction {
 
                 try {
                     String newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
-                    newObjects.add(newObject);
 
-                    reloaded.incrementAndGet();
+                    MidPointObject obj = MidPointObject.copy(object);
+                    obj.setContent(newObject);
+                    remoteObjects.put(obj.getOid(), obj);
+
+                    diffed.incrementAndGet();
                 } catch (ObjectNotFoundException ex) {
                     missing++;
-                    newObjects.add(object.getContent());
 
-                    mm.printToConsole(RefreshAction.class, "Couldn't find object "
+                    mm.printToConsole(DiffRemoteAction.class, "Couldn't find object "
                             + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
-                    newObjects.add(object.getContent());
 
-                    mm.printToConsole(RefreshAction.class, "Error getting object"
+                    mm.printToConsole(DiffRemoteAction.class, "Error getting object"
                             + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
             }
 
             RunnableUtils.runWriteActionAndWait(() -> {
-                try (Writer writer = new OutputStreamWriter(file.getOutputStream(this), file.getCharset())) {
-                    if (newObjects.size() > 1) {
-                        writer.write(MidPointObjectUtils.OBJECTS_XML_PREFIX);
+
+                Writer writer = null;
+                VirtualFile vf = null;
+                try {
+                    List<String> deltas = new ArrayList<>();
+
+                    for (MidPointObject local : objects) {
+                        MidPointObject remote = remoteObjects.get(local.getOid());
+                        if (remote == null) {
+                            continue;
+                        }
+
+                        PrismObject localObject = client.parseObject(local.getContent());
+                        PrismObject remoteObject = client.parseObject(remote.getContent());
+
+                        ObjectDelta delta = localObject.diff(remoteObject);
+                        ObjectDeltaType odt = DeltaConvertor.toObjectDeltaType(delta);
+
+                        String xml = client.serialize(odt);
+                        deltas.add(xml);
+                    }
+
+                    vf = FileUtils.createScratchFile(evt.getProject(), env);
+
+                    writer = new OutputStreamWriter(vf.getOutputStream(this), vf.getCharset());
+
+                    if (deltas.size() > 1) {
+                        writer.write(MidPointObjectUtils.DELTAS_XML_PREFIX);
                         writer.write('\n');
                     }
 
-                    for (String obj : newObjects) {
+                    for (String obj : deltas) {
                         writer.write(obj);
                     }
 
-                    if (newObjects.size() > 1) {
-                        writer.write(MidPointObjectUtils.OBJECTS_XML_SUFFIX);
+                    if (deltas.size() > 1) {
+                        writer.write(MidPointObjectUtils.DELTAS_XML_SUFFIX);
                         writer.write('\n');
                     }
-                } catch (IOException ex) {
+                } catch (SchemaException | IOException ex) {
                     failed.incrementAndGet();
 
-                    mm.printToConsole(RefreshAction.class, "Failed to write refreshed file " + file.getPath(), ex);
+                    mm.printToConsole(DiffRemoteAction.class, "Failed to compare file " + file.getPath(), ex);
+                } finally {
+                    IOUtils.closeQuietly(writer);
                 }
+
+                MidPointUtils.openFile(evt.getProject(), vf);
             });
         }
 
         NotificationType type = missing > 0 || failed.get() > 0 || skipped > 0 ? NotificationType.WARNING : NotificationType.INFORMATION;
 
         StringBuilder msg = new StringBuilder();
-        msg.append("Reloaded ").append(reloaded.get()).append(" objects<br/>");
+        msg.append("Compared ").append(diffed.get()).append(" objects<br/>");
         msg.append("Missing ").append(missing).append(" objects<br/>");
-        msg.append("Failed to reload ").append(failed.get()).append(" objects<br/>");
+        msg.append("Failed to compare ").append(failed.get()).append(" objects<br/>");
         msg.append("Skipped ").append(skipped).append(" files");
-        MidPointUtils.publishNotification(NOTIFICATION_KEY, "Refresh Action", msg.toString(), type);
+        MidPointUtils.publishNotification(NOTIFICATION_KEY, getTaskTitle(), msg.toString(), type);
     }
 }

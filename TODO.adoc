@@ -2,14 +2,9 @@
 
 * EnvironmentManagerImpl.getSelected() always reads credentials keepass file (full environment), multiple times pre second only to get color
 * MidPointXmlStructureViewBuilderProvider not finished
-* `DONE` Upload/Execute of scripts doesn't work
 * Finish jira issue submitting (error reporting)
-*  `DONE`Transform components to services
 * Implement action that will allow import one account from resource and then unlink
 * Passwords
-** `DONE` settings for master password not visible in project/module settings
-** `DONE` where do we store environment username/password? -> regression, they are not stsored in keepass2
-** `DONE` master password reset
 ** what if master password was not set? ask for credentials?
 * resource templates and rethink whole create resource process
 * make different midpoint versions as distributions and load them via custom classpath
@@ -27,22 +22,9 @@
 ** Livesync task token parsing and validation (for example whether task is not too much behind)
 ** Resource going up/down + reason
 * Midpoint client
-** `DONE` midpoint client uploading/downloading stuff should be probably dumb by default
-** `DONE` no parsing before upload/after download, just upload/download whatever comes, so that user can be sure nothing was messed up on client side
 ** there could be some parsing checks afterwards if needed/wanted
-** `DONE` better API for idea should be created, right now MidPointClient/Service api are just botched together like there's no tomorrow
 * how to import existing eclipse projects?
-* `DONE` update okhttp client parsing in serviceimpl to use something like MidpointAbstractProvider with LocalizationService
-    * `DONE` after move from cxf to okhttp this was removed and not replaced by anything
-    * `DONE` also parsing will not work correctly probably for specific objects
 * better error message for resource upload when there's wrong connectorRef (returns error 500)
 * new action "patch" or update operation which can use ObjectDeltaType
 * "Samples" toolbar action button
 ** shows somehow indexed midpoint-samples for simple search
-* paging for browse panel
-* import project from eclipse
-
-== Issues
-
-* If master password was removed from keyring and credentials.kdbx exists plugin should ask password
-* query filter xml (browse panel) doesn't work

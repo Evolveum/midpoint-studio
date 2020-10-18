@@ -120,26 +120,32 @@ public class ServiceContext {
 
     public void validateResponse(Response response) throws AuthenticationException {
         int code = response.code();
-        String reason = javax.ws.rs.core.Response.Status.fromStatusCode(response.code()).getReasonPhrase();
+        javax.ws.rs.core.Response.Status status = javax.ws.rs.core.Response.Status.fromStatusCode(response.code());
+        String reason = status != null ? status.getReasonPhrase() : null;
 
         if (javax.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
             throw new AuthenticationException(reason);
         }
 
         if (!response.isSuccessful()) {
-            OperationResult result = null;
-            try {
-                ResponseBody body = response.body();
-                if (body != null) {
-                    PrismParser parser = getParser(body.string());
-
-                    OperationResultType resultType = parser.parseRealValue(OperationResultType.class);
-                    result = resultType != null ? OperationResult.createOperationResult(resultType) : null;
-                }
-            } catch (Exception ex) {
-            }
-
+            OperationResult result = getOperationResultFromResponse(response);
             throw new ClientException("Unknown response status: " + code + ", reason: " + reason, result);
         }
+    }
+
+    public OperationResult getOperationResultFromResponse(Response response) {
+        OperationResult result = null;
+        try {
+            ResponseBody body = response.body();
+            if (body != null) {
+                PrismParser parser = getParser(body.string());
+
+                OperationResultType resultType = parser.parseRealValue(OperationResultType.class);
+                return resultType != null ? OperationResult.createOperationResult(resultType) : null;
+            }
+        } catch (Exception ex) {
+        }
+
+        return null;
     }
 }
