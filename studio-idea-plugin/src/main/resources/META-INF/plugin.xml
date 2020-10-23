@@ -44,6 +44,8 @@
         <applicationService
                 serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
 
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.XmlSchemaCacheService"/>
+
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
@@ -117,11 +119,11 @@
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsWindowFactory"/>
 
         <facet.toolWindow id="TraceGraph"
-                    facetIdList="MidPointFacet"
-                    anchor="right"
-                    order="last"
-                    icon="/icons/midpoint.png"
-                    factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
+                          facetIdList="MidPointFacet"
+                          anchor="right"
+                          order="last"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
 
         <fileType
                 name="MPTrace"
@@ -132,8 +134,8 @@
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
-<!--        todo finish -->
-<!--        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>-->
+        <!--        todo finish -->
+        <!--        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>-->
 
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
