@@ -4,6 +4,7 @@ import com.evolveum.midpoint.studio.ui.MidPointConsolePanel;
 import com.evolveum.midpoint.studio.ui.MidPointConsoleView;
 import com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
@@ -64,13 +65,14 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
             return console;
         }
 
-        ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow(MidPointToolWindowFactory.WINDOW_ID);
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow(MidPointToolWindowFactory.WINDOW_ID);
 
-        ContentManager cm = tw.getContentManager();
-        Content content = cm.getContent(1);
-        MidPointConsolePanel panel = (MidPointConsolePanel) content.getComponent();
-
-        this.console = panel.getConsole();
+            ContentManager cm = tw.getContentManager();
+            Content content = cm.getContent(1);
+            MidPointConsolePanel panel = (MidPointConsolePanel) content.getComponent();
+            this.console = panel.getConsole();
+        });
 
         return console;
     }
