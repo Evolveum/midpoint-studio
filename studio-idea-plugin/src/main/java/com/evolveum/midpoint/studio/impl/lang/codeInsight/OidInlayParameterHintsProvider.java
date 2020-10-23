@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MidPointInlayParameterHintsProvider implements InlayParameterHintsProvider {
+public class OidInlayParameterHintsProvider implements InlayParameterHintsProvider {
 
     @NotNull
     @Override

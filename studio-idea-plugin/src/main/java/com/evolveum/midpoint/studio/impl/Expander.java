@@ -27,7 +27,7 @@ public class Expander {
 
     public static final String KEY_SERVER_DISPLAY_NAME = "#server.displayName";
 
-    private static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
+    public static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
 
     private Environment environment;
 
