@@ -74,7 +74,7 @@ public class XmlSchemaCacheService {
         Path dir = path.getParent();
         String file = path.getFileName().toString();
 
-        String package_ = dir.toString().replaceAll(File.separator, ".");
+        String package_ = dir.toString().replace(File.separator, ".");
         if (package_.startsWith(".")) {
             package_ = package_.replaceFirst("\\.", "");
         }
