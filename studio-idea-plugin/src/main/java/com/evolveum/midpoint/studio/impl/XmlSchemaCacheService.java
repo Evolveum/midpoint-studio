@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiPackage;
@@ -21,19 +20,15 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class XmlSchemaCacheService {
 
-    private Logger LOG = Logger.getInstance(XmlSchemaCacheService.class);
+    private static final Logger LOG = Logger.getInstance(XmlSchemaCacheService.class);
 
-    private static final Long CACHE_MAX_TTL = 1 * 60 * 1000L; // 1 minute
+    private static final Long CACHE_MAX_TTL = 60 * 1000L; // 1 minute
 
     private final Set<String> UNKNOWN = ConcurrentHashMap.newKeySet();
 
     private final ConcurrentMap<String, XmlFile> SCHEMAS = ContainerUtil.createConcurrentSoftKeySoftValueMap();
 
     private long lastRefresh = System.currentTimeMillis();
-
-    public XmlSchemaCacheService(Project project) {
-
-    }
 
     public synchronized XmlFile getSchema(String url, PsiFile baseFile) {
         if (url == null) {
@@ -63,8 +58,6 @@ public class XmlSchemaCacheService {
             return null;
         }
 
-        Project project = baseFile.getProject();
-
         String resourceUrl = url.replaceFirst("http://midpoint.evolveum.com", "");
         resourceUrl = resourceUrl.replaceFirst("http://prism.evolveum.com", "");
 
@@ -74,7 +67,7 @@ public class XmlSchemaCacheService {
         Path dir = path.getParent();
         String file = path.getFileName().toString();
 
-        String package_ = dir.toString().replaceAll(File.separator, ".");
+        String package_ = dir.toString().replace(File.separator, ".");
         if (package_.startsWith(".")) {
             package_ = package_.replaceFirst("\\.", "");
         }
