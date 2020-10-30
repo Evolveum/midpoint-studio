@@ -2,6 +2,8 @@ package com.evolveum.midpoint.studio.impl.trace;
 
 import com.evolveum.midpoint.schema.traces.OpType;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
+import com.evolveum.midpoint.studio.impl.performance.PerformanceOptions;
+import com.evolveum.midpoint.studio.ui.performance.PerformanceViewEditor;
 import com.evolveum.midpoint.studio.ui.trace.options.PredefinedOpView;
 import com.evolveum.midpoint.studio.ui.trace.TraceViewEditor;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -19,6 +21,7 @@ public class TraceService {
     private PredefinedOpView opViewType;
 
     private Options options;
+    private PerformanceOptions performanceOptions;
 
     public TraceService(@NotNull Project project) {
         this.project = project;
@@ -56,6 +59,19 @@ public class TraceService {
 
             TraceViewEditor traceViewEditor = (TraceViewEditor) editor;
             traceViewEditor.applyOptions(options);
+        }
+    }
+
+    public void setPerformanceOptions(PerformanceOptions options) {
+        this.performanceOptions = options;
+
+        FileEditorManager fem = FileEditorManager.getInstance(project);
+
+        for (FileEditor editor : fem.getAllEditors()) {
+            if (editor instanceof PerformanceViewEditor) {
+                PerformanceViewEditor traceViewEditor = (PerformanceViewEditor) editor;
+                traceViewEditor.applyOptions(options);
+            }
         }
     }
 

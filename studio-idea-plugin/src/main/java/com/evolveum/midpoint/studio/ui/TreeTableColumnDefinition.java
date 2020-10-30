@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.ui.trace.lens.ColumnDefinition;
+import com.evolveum.midpoint.studio.ui.common.ColumnDefinition;
 
 import javax.swing.table.TableCellRenderer;
 import java.util.function.Function;
@@ -34,7 +34,7 @@ public class TreeTableColumnDefinition<R, V> {
     }
 
     public TreeTableColumnDefinition(ColumnDefinition<R> columnDefinition) {
-        this.header = columnDefinition.getName();
+        this.header = columnDefinition.getLabel();
         this.size = columnDefinition.getSize();
         this.value = v -> (V) columnDefinition.getFormatter().apply(v);
         this.originalColumnDefinition = columnDefinition;

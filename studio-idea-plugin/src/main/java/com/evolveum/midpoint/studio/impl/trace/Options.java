@@ -4,7 +4,7 @@ import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.OpType;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
 import com.evolveum.midpoint.schema.traces.PerformanceCategoryInfo;
-import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
+import com.evolveum.midpoint.studio.ui.trace.mainTree.TraceTreeViewColumn;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -6,7 +6,6 @@ import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
-import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.model.AbstractOpTreeTableNode;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.model.OpTreeTableModel;
 import com.evolveum.midpoint.studio.ui.trace.presentation.AbstractOpNodePresentation;

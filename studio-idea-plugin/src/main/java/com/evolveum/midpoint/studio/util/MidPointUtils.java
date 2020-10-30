@@ -350,6 +350,12 @@ public class MidPointUtils {
 
     @Experimental
     public static <R> JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
+        return createTable2(model, columnModel, disableHack, null);
+    }
+
+    @Experimental
+    public static <R> JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack,
+            Consumer<JXTreeTable> tableCustomizer) {
 
         JXTreeTable table = new JXTreeTable(model) {
             @Override
@@ -369,6 +375,10 @@ public class MidPointUtils {
         table.setLeafIcon(null);
         table.setClosedIcon(null);
         table.setOpenIcon(null);
+
+        if (tableCustomizer != null) {
+            tableCustomizer.accept(table);
+        }
 
         table.packAll();
 
@@ -600,6 +610,14 @@ public class MidPointUtils {
     }
 
     public static List<VirtualFile> filterXmlFiles(VirtualFile[] files) {
+        return filterFiles(files, XmlFileType.DEFAULT_EXTENSION);
+    }
+
+    public static List<VirtualFile> filterZipFiles(VirtualFile[] files) {
+        return filterFiles(files, "zip");
+    }
+
+    private static List<VirtualFile> filterFiles(VirtualFile[] files, String extension) {
         List<VirtualFile> result = new ArrayList<>();
         if (files == null) {
             return result;
@@ -609,14 +627,14 @@ public class MidPointUtils {
             if (selected.isDirectory()) {
                 VfsUtilCore.iterateChildrenRecursively(
                         selected,
-                        file -> file.isDirectory() || XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
+                        file -> file.isDirectory() || extension.equalsIgnoreCase(file.getExtension()),
                         file -> {
                             if (!file.isDirectory()) {
                                 result.add(file);
                             }
                             return true;
                         });
-            } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
+            } else if (extension.equalsIgnoreCase(selected.getExtension())) {
                 result.add(selected);
             }
         }

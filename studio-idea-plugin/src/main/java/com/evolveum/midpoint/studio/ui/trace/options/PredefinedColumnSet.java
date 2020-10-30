@@ -1,12 +1,12 @@
 package com.evolveum.midpoint.studio.ui.trace.options;
 
-import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
+import com.evolveum.midpoint.studio.ui.trace.mainTree.TraceTreeViewColumn;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import static com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn.*;
+import static com.evolveum.midpoint.studio.ui.trace.mainTree.TraceTreeViewColumn.*;
 
 /**
  *

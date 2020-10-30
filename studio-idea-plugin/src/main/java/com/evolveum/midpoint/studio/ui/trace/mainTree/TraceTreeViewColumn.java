@@ -1,7 +1,8 @@
-package com.evolveum.midpoint.studio.ui.trace.lens;
+package com.evolveum.midpoint.studio.ui.trace.mainTree;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
+import com.evolveum.midpoint.studio.ui.common.ColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.DisplayUtil;
 
 import javax.swing.table.TableCellRenderer;
@@ -43,21 +44,27 @@ public enum TraceTreeViewColumn implements ColumnDefinition<OpNode> {
     ICF_W_TIME("ICF:W time", 80, o -> coloredTime(o.getPerformanceByCategory().get(PerformanceCategory.ICF_WRITE).getTotalTime())),
     LOG_ENTRIES("Log", 50, o -> coloredInt(o.getLogEntriesCount()));
 
-    private final String name;
+    private final String label;
+    private final String description = null; // TODO
     private final int size;
     private final Function<OpNode, String> formatter;
     private final TableCellRenderer tableCellRenderer;
 
-    TraceTreeViewColumn(String name, int size, Function<OpNode, String> formatter) {
-        this.name = name;
+    TraceTreeViewColumn(String label, int size, Function<OpNode, String> formatter) {
+        this.label = label;
         this.size = size;
         this.formatter = formatter;
-        this.tableCellRenderer = null; //tableCellRenderer;
+        this.tableCellRenderer = null;
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getLabel() {
+        return label;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     @Override

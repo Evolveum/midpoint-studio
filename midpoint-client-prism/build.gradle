@@ -8,7 +8,7 @@ dependencies {
     }
     compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
     compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
-    compile("com.evolveum.midpoint.infra:schema:4.2-SNAPSHOT") {
+    compile("com.evolveum.midpoint.infra:schema:4.3-SNAPSHOT") {
         exclude group: "org.springframework"
         exclude group: "net.sf.jasperreports"
         exclude group: "org.apache.cxf"

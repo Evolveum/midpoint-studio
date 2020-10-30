@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui.trace.options;
 
 import com.evolveum.midpoint.schema.traces.OpType;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
-import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
+import com.evolveum.midpoint.studio.ui.trace.mainTree.TraceTreeViewColumn;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;

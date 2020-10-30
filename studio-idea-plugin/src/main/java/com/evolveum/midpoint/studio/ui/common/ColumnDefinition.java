@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.trace.lens;
+package com.evolveum.midpoint.studio.ui.common;
 
 import com.evolveum.midpoint.util.annotation.Experimental;
 
@@ -12,7 +12,9 @@ import java.util.function.Function;
 @Experimental
 public interface ColumnDefinition<O> {
 
-    String getName();
+    String getLabel();
+
+    String getDescription();
 
     int getSize();
 

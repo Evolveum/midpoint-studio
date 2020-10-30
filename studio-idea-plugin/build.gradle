@@ -55,6 +55,8 @@ dependencies {
 
     compile "stax:stax:$staxVersion"
 
+    compile "com.github.inamik.text.tables:inamik-text-tables:0.8"
+
     runtime "org.glassfish.jaxb:jaxb-runtime:2.3.2" // needed because of NamespacePrefixMapper class
     runtime("org.springframework:spring-core:5.0.7.RELEASE") {
         // needed because of DebugDumpable impl uses spring ReflectionUtils class

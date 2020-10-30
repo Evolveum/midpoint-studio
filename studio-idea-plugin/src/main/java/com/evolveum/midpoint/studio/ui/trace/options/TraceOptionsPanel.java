@@ -5,7 +5,7 @@ import com.evolveum.midpoint.schema.traces.PerformanceCategory;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
-import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
+import com.evolveum.midpoint.studio.ui.trace.mainTree.TraceTreeViewColumn;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -191,7 +191,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
         for (TraceTreeViewColumn column : TraceTreeViewColumn.values()) {
             JCheckBox check = new JCheckBox();
-            check.setText(column.getName());
+            check.setText(column.getLabel());
             check.setSelected(true);
 
             columnsPanel.add(check);

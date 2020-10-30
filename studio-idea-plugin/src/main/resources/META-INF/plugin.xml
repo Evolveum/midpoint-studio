@@ -90,12 +90,21 @@
 
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
 
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.performance.PerformanceViewEditorProvider"/>
+
         <facet.toolWindow id="MidPointTrace"
                           facetIdList="MidPointFacet"
                           anchor="bottom"
                           order="last"
                           icon="/icons/midpoint.png"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
+
+        <facet.toolWindow id="MidPointPerformance"
+                          facetIdList="MidPointFacet"
+                          anchor="bottom"
+                          order="last"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.performance.PerformanceToolWindowFactory"/>
 
         <facet.toolWindow id="TraceLog"
                           facetIdList="MidPointFacet"
@@ -118,6 +127,13 @@
                           icon="/icons/midpoint.png"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsWindowFactory"/>
 
+        <facet.toolWindow id="PerformanceOptions"
+                          facetIdList="MidPointFacet"
+                          anchor="right"
+                          order="last"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.performance.options.OptionsWindowFactory"/>
+
         <facet.toolWindow id="TraceGraph"
                           facetIdList="MidPointFacet"
                           anchor="right"
@@ -131,6 +147,13 @@
                 extensions="zip|xml|mptrace"
                 language=""
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
+
+        <fileType
+                name="MPPerformance"
+                fieldName="INSTANCE"
+                extensions="perf-sum"
+                language=""
+                implementationClass="com.evolveum.midpoint.studio.impl.performance.MPPerformanceFileType"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
@@ -251,6 +274,12 @@
                 text="Test Action"
                 icon="AllIcons.Debugger.Db_set_breakpoint"/>
 
+        <!-- STATISTICS -->
+
+        <action id="MidPoint.Action.SummarizeOperations"
+                class="com.evolveum.midpoint.studio.action.SummarizeOperations"
+                text="Summarize Operations"/>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
@@ -320,6 +349,13 @@
                         text="Set All of These to INFO"
                         class="com.evolveum.midpoint.studio.action.logging.SetAllToInfoAction"/>
             </group>
+
+            <group id="MidPoint.Group.Menu.Statistics"
+                   text="Statistics"
+                   popup="true">
+                <reference ref="MidPoint.Action.SummarizeOperations"/>
+            </group>
+
         </group>
 
         <group id="MidPoint.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
