@@ -48,7 +48,7 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     @Override
     protected boolean removeItem(Selectable<Environment> environment) {
-        return getData().remove(environment);
+        return getData().contains(environment);
     }
 
     @Nullable
