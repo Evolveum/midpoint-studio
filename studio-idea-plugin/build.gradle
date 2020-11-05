@@ -64,10 +64,10 @@ dependencies {
 
 def channelSuffix = ""
 if (!publishChannel?.isBlank() && publishChannel?.toLowerCase() == "nightly") {
-    channelSuffix = "-" + publishChannel.toLowerCase()
+    channelSuffix = "-" + $buildNumber + "-" + publishChannel.toLowerCase()
 }
 
-def fullVersion = "$project.version-$buildNumber$channelSuffix"
+def fullVersion = "$project.version$channelSuffix"
 
 println "Plugin version: " + fullVersion
 
