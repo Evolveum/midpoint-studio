@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
@@ -51,12 +52,18 @@ public class ServiceContext {
         return build(path, new HashMap<>());
     }
 
-    public Request.Builder build(String path, Map<String, String> params) {
+    public Request.Builder build(String path, Map<String, Object> params) {
         HttpUrl.Builder builder = HttpUrl.parse(url + REST_PREFIX + path).newBuilder();
 
         if (params != null) {
-            for (Map.Entry<String, String> param : params.entrySet()) {
-                builder.addQueryParameter(param.getKey(), param.getValue());
+            for (Map.Entry<String, Object> param : params.entrySet()) {
+                Object value = param.getValue();
+                if (!(value instanceof List)) {
+                    builder.addQueryParameter(param.getKey(), param.getValue().toString());
+                } else {
+                    List list = (List) value;
+                    list.forEach(v -> builder.addQueryParameter(param.getKey(), v.toString()));
+                }
             }
         }
 

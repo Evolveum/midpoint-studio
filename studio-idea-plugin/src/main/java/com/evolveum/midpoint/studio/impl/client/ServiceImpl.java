@@ -75,7 +75,7 @@ public class ServiceImpl implements Service {
             options = new ArrayList<>();
         }
 
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         GetOperationOptions root = SelectorOptions.findRootOptions(options);
         if (root != null && root.getRaw()) {
             params.put("options", "raw");
@@ -90,10 +90,10 @@ public class ServiceImpl implements Service {
             if (goo.getRetrieve() != null) {
                 switch (goo.getRetrieve()) {
                     case EXCLUDE:
-                        params.put("exclude", o.getItemPath(prismContext.emptyPath()).toString());
+                        addParameter(params, "exclude", o.getItemPath(prismContext.emptyPath()).toString());
                         break;
                     case INCLUDE:
-                        params.put("include", o.getItemPath(prismContext.emptyPath()).toString());
+                        addParameter(params, "include", o.getItemPath(prismContext.emptyPath()).toString());
                         break;
                 }
             }
@@ -119,6 +119,21 @@ public class ServiceImpl implements Service {
         }
     }
 
+    private void addParameter(Map<String, Object> parameters, String param, Object value) {
+        Object o = parameters.get(param);
+        if (o != null && !(o instanceof List)) {
+            return;
+        }
+
+        List list = (List) o;
+        if (list == null) {
+            list = new ArrayList();
+            parameters.put(param, list);
+        }
+
+        list.add(value);
+    }
+
     @Override
     public String add(MidPointObject object) throws IOException, AuthenticationException {
         return add(object, null);
@@ -130,7 +145,7 @@ public class ServiceImpl implements Service {
             opts = new ArrayList<>();
         }
 
-        Map<String, String> options = new HashMap<>();
+        Map<String, Object> options = new HashMap<>();
         opts.forEach(o -> options.put("options", o));
 
         String path = "/" + ObjectTypes.getRestTypeFromClass(object.getType().getClassDefinition());
@@ -255,7 +270,7 @@ public class ServiceImpl implements Service {
             options = new ArrayList<>();
         }
 
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         GetOperationOptions root = SelectorOptions.findRootOptions(options);
         if (root != null && root.getRaw()) {
             params.put("options", "raw");
@@ -298,7 +313,7 @@ public class ServiceImpl implements Service {
             opts = new DeleteOptions();
         }
 
-        Map<String, String> options = new HashMap<>();
+        Map<String, Object> options = new HashMap<>();
         if (opts.raw()) {
             options.put("options", "raw");
         }
