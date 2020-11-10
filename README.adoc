@@ -35,26 +35,56 @@ Documentation is available https://docs.evolveum.com/midpoint/studio/[here].
 
 == Installation
 
-It's available in jetbrains plugin store https://plugins.jetbrains.com/plugin/13809-midpoint-studio[here] only as `Nightly`.
+It's available in JetBrains Marketplace https://plugins.jetbrains.com/plugin/13809-midpoint-studio[here] only as `Nightly`.
 Installation steps:
 
 . Start Intellij Idea (Community/Ultimate)
-. Go to menu File -> Settings (Preferences) -> Plugins -> Manage plugin repositories
-. Add repository https://plugins.jetbrains.com/plugins/Nightly/list
-. Search for "MidPoint Studio" -> Install
+. Go to menu *File -> Settings (Preferences) -> Plugins*
+. For full releases, they are directly available
+.. Search for "MidPoint Studio" -> Install
+. For nightly/milestone releases
+.. Go to *Manage plugin repositories*
+.. Add one of these repositories:
+... `nightly` -> https://plugins.jetbrains.com/plugins/Nightly/list
+... `milestone` -> https://plugins.jetbrains.com/plugins/Milestone/list
+.. Save & Close dialog
+.. Search for "MidPoint Studio" -> Install
+
+== Issues, Bugs
+
+You're welcome to file bugs, new feature request or other issues in our issue tracker https://jira.evolveum.com[Jira].
+Please don't forget add these information to new issue:
+
+* Add component `Studio`
+* Describe plugin version and Intellij version, OS related information
+* Attach necessary logs, e.g. idea.log => can be found using menu *Help -> Show log in Finder*
 
 == Development Notes
 
 === Git Branches
 
-* Development branch is `master`. 
-* Early access preview `eap`
-* Branch used for releases is called `stable`.
+* Development branch -> `master`
+* Nightly builds -> `nightly`
+* Milestones -> `milestone`
+* Releases `stable`
+
+=== Versions and Releases
+
+* Nightly builds -> `<MidPointMajor.MidPointMinor>-<BuildNumber>-nightly`, e.g. `4.2-150-nightly`
+* Milestones -> `<MidPointMajor.MidPointMinor>-<BuildNumber>`, e.g. `4.2-150`
+* Releases -> `<MidPointMajor.MidPointMinor>`, e.g. `4.3`
+
+Versioning scheme aligns to MidPoint releases.
+For example, MidPoint version 4.3 will correspond to MidPoint Studio release 4.3.
+`4.3-SNAPSHOT` builds produced by maven will equal to 4.2-XXX-[nightly] versions.
+
+Whole build & publish process is managed by https://jenkins.evolveum.com/[Jenkins CI] using git branches.
+Each type of release (nightly, milestone, stable) is published to https://plugins.jetbrains.com/plugin/13809-midpoint-studio[JetBrains Marketplace].
 
 === Logging settings
 
-Intellij Idea logs to file `studio-idea-plugin/build/idea-sandbox/system/log/idea.log`. Logging settings can be changed 
-during runtime via top menu `Help/Debug Log Settings` by adding packages/classes on each line in format:
+Intellij Idea logs to file `studio-idea-plugin/build/idea-sandbox/system/log/idea.log`.
+Logging settings can be changed during runtime via top menu `Help/Debug Log Settings` by adding packages/classes on each line in format:
 
 * `#LOGGER` to log LOGGER (package or class) on DEBUG level
 * `#LOGGER:trace` to log LOGGER (package or class) on TRACE level
