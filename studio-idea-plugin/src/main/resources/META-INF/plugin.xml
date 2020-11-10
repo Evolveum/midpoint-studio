@@ -21,9 +21,9 @@
 
     <change-notes><![CDATA[
 
-        <h1>Milestone 4.2-M1</h1>
+        <h1>Milestone 4.2</h1>
         <ul>
-            <li>Initial release of plugin (Milestone 1 towards 4.2 release)</li>
+            <li>Initial release of plugin (towards 4.2 release)</li>
             <li>Browse/Upload with raw options for both operations</li>
             <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
             <li>XML tags autocompletion, links to documentation</li>

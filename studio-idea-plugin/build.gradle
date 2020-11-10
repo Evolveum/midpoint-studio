@@ -63,8 +63,13 @@ dependencies {
 }
 
 def channelSuffix = ""
-if (!publishChannel?.isBlank() && publishChannel?.toLowerCase() == "nightly") {
-    channelSuffix = "-" + $buildNumber + "-" + publishChannel.toLowerCase()
+if (!publishChannel?.isBlank()) {
+    def channel = publishChannel.toLowerCase()
+    if (channel == "nightly") {
+        channelSuffix = "-" + buildNumber + "-" + channel
+    } else if (channel == "milestone") {
+        channelSuffix = "-" + buildNumber
+    }
 }
 
 def fullVersion = "$project.version$channelSuffix"
