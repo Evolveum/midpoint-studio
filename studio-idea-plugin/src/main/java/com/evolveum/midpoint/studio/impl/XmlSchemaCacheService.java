@@ -104,4 +104,9 @@ public class XmlSchemaCacheService {
 
         return schema;
     }
+
+    public synchronized void clear() {
+        UNKNOWN.clear();
+        SCHEMAS.clear();
+    }
 }

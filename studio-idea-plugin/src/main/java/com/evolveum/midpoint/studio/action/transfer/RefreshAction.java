@@ -142,8 +142,8 @@ public class RefreshAction extends BackgroundAction {
                 }
 
                 try {
-                    String newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
-                    newObjects.add(newObject);
+                    MidPointObject newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    newObjects.add(newObject.getContent());
 
                     reloaded.incrementAndGet();
                 } catch (ObjectNotFoundException ex) {

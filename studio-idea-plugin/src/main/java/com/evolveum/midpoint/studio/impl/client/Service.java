@@ -21,13 +21,11 @@ import java.util.List;
  */
 public interface Service {
 
-    <O extends ObjectType> SearchResultList<O> list(Class<O> type)
-            throws IOException, AuthenticationException;
-
-    <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query)
-            throws IOException, AuthenticationException;
-
+    @Deprecated
     <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query, Collection<SelectorOptions<GetOperationOptions>> options)
+            throws IOException, AuthenticationException;
+
+    <O extends ObjectType> SearchResult search(Class<O> type, ObjectQuery query, Collection<SelectorOptions<GetOperationOptions>> options)
             throws IOException, AuthenticationException;
 
     String add(MidPointObject object)
@@ -39,16 +37,18 @@ public interface Service {
     ExecuteScriptResponseType execute(String input)
             throws IOException, SchemaException, AuthenticationException;
 
+    @Deprecated
     <O extends ObjectType> O get(Class<O> type, String oid)
             throws ObjectNotFoundException, AuthenticationException, IOException;
 
+    @Deprecated
     <O extends ObjectType> O get(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
             throws ObjectNotFoundException, AuthenticationException, IOException;
 
-    <O extends ObjectType> String getRaw(Class<O> type, String oid)
+    <O extends ObjectType> MidPointObject getRaw(Class<O> type, String oid)
             throws ObjectNotFoundException, AuthenticationException, IOException;
 
-    <O extends ObjectType> String getRaw(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
+    <O extends ObjectType> MidPointObject getRaw(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
             throws ObjectNotFoundException, AuthenticationException, IOException;
 
     <O extends ObjectType> void delete(Class<O> type, String oid)

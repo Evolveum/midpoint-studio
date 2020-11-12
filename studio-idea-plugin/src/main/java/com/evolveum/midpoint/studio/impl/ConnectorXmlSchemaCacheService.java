@@ -1,24 +1,23 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
-import com.evolveum.midpoint.prism.query.ObjectFilter;
+import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.XmlSchemaType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -45,9 +44,22 @@ public class ConnectorXmlSchemaCacheService {
 
     public ConnectorXmlSchemaCacheService(Project project) {
         this.project = project;
+
+//        MessageBus bus = project.getMessageBus();
+//        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+//
+//            @Override
+//            public void environmentChanged(Environment oldEnv, Environment newEnv) {
+//                updateCache(newEnv);
+//            }
+//        });
     }
 
-    public XmlFile getSchema(String namespace, PsiFile baseFile, String oid, ObjectFilter filter) {
+//    private void updateCache(Environment env) {
+//
+//    }
+
+    public XmlFile getSchema(String namespace, PsiFile baseFile) {
         if (!(baseFile instanceof XmlFile)) {
             return null;
         }
@@ -62,7 +74,7 @@ public class ConnectorXmlSchemaCacheService {
             return null;
         }
 
-        MidPointClient client = new MidPointClient(project, env, true);
+        MidPointClient client = new MidPointClient(project, env, true, true);
 
         Key key = buildConnectorKey((XmlFile) baseFile, client);
         if (key == null) {
@@ -82,19 +94,31 @@ public class ConnectorXmlSchemaCacheService {
             public XmlFile callWithPluginClassLoader() throws Exception {
                 XmlFile file = getConnectorSchema(namespace, key, client);
 
-                SCHEMAS.put(key, new Value(file, System.currentTimeMillis()));
+//                SCHEMAS.put(key, new Value(file, System.currentTimeMillis()));
 
                 return file;
             }
         };
 
+        callable = new RunnableUtils.PluginClassCallable<XmlFile>() {
+            @Override
+            public XmlFile callWithPluginClassLoader() throws Exception {
+                return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-123.xsd", XMLLanguage.INSTANCE, "<xml/>");
+            }
+        };
+
         try {
-            return callable.call();
+            XmlFile file = callable.call();
+            return file;
         } catch (Exception ex) {
             LOG.warn("Couldn't prepare connector schema");
         }
 
         return null;
+    }
+
+    public void clear() {
+        SCHEMAS.clear();
     }
 
     private Key buildConnectorKey(XmlFile file, MidPointClient client) {
@@ -135,18 +159,30 @@ public class ConnectorXmlSchemaCacheService {
     private XmlFile getConnectorSchema(@NotNull String url, @NotNull Key key, @NotNull MidPointClient client) throws Exception {
         // take resource -> connectorRef or connectorRef/filter, download connector object get schema from there
 
-        String connector = null;
+        MidPointObject object;
         if (key.getOid() != null) {
-            connector = client.getRaw(ConnectorType.class, key.getOid(), new SearchOptions().raw(true));
+            object = client.getRaw(ConnectorType.class, key.getOid(), new SearchOptions().raw(true));
         } else {
-            // todo handle filter
-//            SearchResultList list = client.searchRaw(ConnectorType.class, key.getFilter(), new SearchOptions().raw(true));
-            // if there are more, maybe notification? probably not
+            PrismContext ctx = client.getPrismContext();
+            QueryFactory qf = ctx.queryFactory();
+
+            ObjectPaging paging = qf.createPaging(0, 10, ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);
+
+            ObjectQuery query = qf.createQuery(key.getFilter(), paging);
+
+            List<MidPointObject> list = client.search(ConnectorType.class, query, true).getObjects();
+            if (list.size() != 1) {
+                return null;
+            }
+
+            object = list.get(0);
         }
 
-        if (connector == null) {
+        if (object == null || object.getContent() == null) {
             return null;
         }
+
+        String connector = object.getContent();
 
         Document doc = DOMUtil.parseDocument(connector);
         Element schema = DOMUtil.getChildElement(doc.getDocumentElement(), ConnectorType.F_SCHEMA.asSingleName());
@@ -167,10 +203,12 @@ public class ConnectorXmlSchemaCacheService {
         modifyConnectorXsdSchema(xsdSchema);
 
         String xsd = DOMUtil.serializeDOMToString(xsdSchema);
-        VirtualFile virtualFile = new LightVirtualFile("connector-schema.xsd", xsd);
+//        VirtualFile virtualFile = new LightVirtualFile("connector-" + object.getOid() + ".xsd", xsd);
 
-        PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-        return (XmlFile) psiFile;
+//        PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+
+        return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-" + object.getOid() + ".xsd", XMLLanguage.INSTANCE, xsd);
+//        return (XmlFile) psiFile;
     }
 
     private void modifyConnectorXsdSchema(Element xsdSchema) {

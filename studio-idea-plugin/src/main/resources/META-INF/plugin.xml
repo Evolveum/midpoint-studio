@@ -46,6 +46,8 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.XmlSchemaCacheService"/>
 
+<!--        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.ConnectorXmlSchemaCacheService"/>-->
+
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
@@ -135,7 +137,7 @@
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <!--        todo finish -->
-        <!--        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>-->
+<!--        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>-->
 
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
@@ -324,7 +326,7 @@
 
         <group id="MidPoint.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
-            <!--            <reference ref="MidPoint.Action.TestAction"/>-->
+<!--                        <reference ref="MidPoint.Action.TestAction"/>-->
 
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>
