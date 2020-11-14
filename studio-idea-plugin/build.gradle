@@ -62,6 +62,12 @@ dependencies {
     }
 }
 
+if (gitLocalBranch == 'nightly' || gitLocalBranch == 'milestone') {
+    publishChannel = gitLocalBranch
+} else if (gitLocalBranch == 'stable') {
+    publishChannel = 'default'
+}
+
 def channelSuffix = ""
 if (!publishChannel?.isBlank()) {
     def channel = publishChannel.toLowerCase()
@@ -75,6 +81,7 @@ if (!publishChannel?.isBlank()) {
 def fullVersion = "$project.version$channelSuffix"
 
 println "Plugin version: " + fullVersion
+println "Publish channel: " + publishChannel
 
 intellij {
     version '2020.2'    // 'LATEST-EAP-SNAPSHOT'
