@@ -2,11 +2,9 @@ package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.SearchOptions;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.diff.actions.CompareFilesAction;
 import com.intellij.diff.chains.DiffRequestChain;
 import com.intellij.diff.chains.SimpleDiffRequestChain;
@@ -152,7 +150,7 @@ public class CompareFileWithServerAction extends CompareFilesAction {
         MidPointClient client = new MidPointClient(project, env);
 
 
-        PrismObject obj = null;
+        PrismObject<? extends ObjectType> obj = null;
 
         try {
             obj = client.parseObject(file1);
@@ -164,7 +162,11 @@ public class CompareFileWithServerAction extends CompareFilesAction {
             return null;
         }
 
-        PrismObject other = client.get(obj.getCompileTimeClass(), obj.getOid(), new SearchOptions().raw(true));
+        try {
+            MidPointObject other = client.get(obj.getCompileTimeClass(), obj.getOid(), new SearchOptions().raw(true));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
         // todo create virtual in memory file
         return null;

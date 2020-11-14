@@ -37,18 +37,10 @@ public interface Service {
     ExecuteScriptResponseType execute(String input)
             throws IOException, SchemaException, AuthenticationException;
 
-    @Deprecated
-    <O extends ObjectType> O get(Class<O> type, String oid)
+    <O extends ObjectType> MidPointObject get(Class<O> type, String oid)
             throws ObjectNotFoundException, AuthenticationException, IOException;
 
-    @Deprecated
-    <O extends ObjectType> O get(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
-            throws ObjectNotFoundException, AuthenticationException, IOException;
-
-    <O extends ObjectType> MidPointObject getRaw(Class<O> type, String oid)
-            throws ObjectNotFoundException, AuthenticationException, IOException;
-
-    <O extends ObjectType> MidPointObject getRaw(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
+    <O extends ObjectType> MidPointObject get(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
             throws ObjectNotFoundException, AuthenticationException, IOException;
 
     <O extends ObjectType> void delete(Class<O> type, String oid)

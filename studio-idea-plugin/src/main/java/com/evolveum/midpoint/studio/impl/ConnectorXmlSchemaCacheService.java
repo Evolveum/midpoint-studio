@@ -4,7 +4,6 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -17,7 +16,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -161,7 +159,7 @@ public class ConnectorXmlSchemaCacheService {
 
         MidPointObject object;
         if (key.getOid() != null) {
-            object = client.getRaw(ConnectorType.class, key.getOid(), new SearchOptions().raw(true));
+            object = client.get(ConnectorType.class, key.getOid(), new SearchOptions().raw(true));
         } else {
             PrismContext ctx = client.getPrismContext();
             QueryFactory qf = ctx.queryFactory();

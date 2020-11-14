@@ -116,7 +116,7 @@ public class DiffRemoteAction extends BackgroundAction {
                 }
 
                 try {
-                    MidPointObject newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    MidPointObject newObject = client.get(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
 
                     MidPointObject obj = MidPointObject.copy(object);
                     obj.setContent(newObject.getContent());

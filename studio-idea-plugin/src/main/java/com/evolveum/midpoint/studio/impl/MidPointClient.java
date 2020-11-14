@@ -195,39 +195,14 @@ public class MidPointClient {
         }
     }
 
-    public <O extends ObjectType> MidPointObject getRaw(Class<O> type, String oid, SearchOptions opts) throws ObjectNotFoundException {
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) throws ObjectNotFoundException {
         printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
 
         MidPointObject result = null;
         try {
             Collection<SelectorOptions<GetOperationOptions>> options =
                     SelectorOptions.createCollection(GetOperationOptions.createRaw());
-            result = client.getRaw(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
-
-            printToConsole("Get done");
-        } catch (Exception ex) {
-            handleGenericException("Error occurred while searching objects", ex);
-        }
-
-        return result;
-    }
-
-    /**
-     * todo "move" to MidPointObject like apis, not PrismObject here if not necessary
-     */
-    @Deprecated
-    public <O extends ObjectType> PrismObject<O> get(Class<O> type, String oid, SearchOptions opts) {
-        printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
-
-        PrismObject<O> result = null;
-        try {
-            Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
-            if (opts.raw()) {
-                options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
-            }
-
-            ObjectType o = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
-            result = (PrismObject) o.asPrismObject();
+            result = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
 
             printToConsole("Get done");
         } catch (Exception ex) {

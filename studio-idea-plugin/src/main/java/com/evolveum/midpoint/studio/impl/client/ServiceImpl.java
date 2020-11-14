@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.impl.client;
 
-import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
@@ -240,41 +239,15 @@ public class ServiceImpl implements Service {
         }
     }
 
-    @Deprecated
     @Override
-    public <O extends ObjectType> O get(Class<O> type, String oid)
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid)
             throws ObjectNotFoundException, AuthenticationException, IOException {
 
         return get(type, oid, null);
-
-    }
-
-    @Deprecated
-    @Override
-    public <O extends ObjectType> O get(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
-            throws ObjectNotFoundException, AuthenticationException, IOException {
-
-        MidPointObject obj = getRaw(type, oid, options);
-        try {
-            String content = obj.getContent();
-            ParsingContext parsingContext = prismContext().createParsingContextForCompatibilityMode();
-            PrismParser parser = prismContext().parserFor(content).language(PrismContext.LANG_XML).context(parsingContext);
-
-            return (O) parser.parse().asObjectable();
-        } catch (SchemaException | IOException ex) {
-            throw new RuntimeException("Couldn't parse object, reason: " + ex.getMessage(), ex);
-        }
     }
 
     @Override
-    public <O extends ObjectType> MidPointObject getRaw(Class<O> type, String oid)
-            throws ObjectNotFoundException, AuthenticationException, IOException {
-
-        return getRaw(type, oid, null);
-    }
-
-    @Override
-    public <O extends ObjectType> MidPointObject getRaw(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
             throws ObjectNotFoundException, AuthenticationException, IOException {
 
         return executeGet(type, oid, options);

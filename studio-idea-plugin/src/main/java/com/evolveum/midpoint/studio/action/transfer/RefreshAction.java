@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
@@ -141,8 +142,9 @@ public class RefreshAction extends BackgroundAction {
                     break;
                 }
 
+                ObjectTypes type = object.getType();
                 try {
-                    MidPointObject newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    MidPointObject newObject = client.get(type.getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
                     newObjects.add(newObject.getContent());
 
                     reloaded.incrementAndGet();
@@ -151,13 +153,13 @@ public class RefreshAction extends BackgroundAction {
                     newObjects.add(object.getContent());
 
                     mm.printToConsole(RefreshAction.class, "Couldn't find object "
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+                            + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
                     newObjects.add(object.getContent());
 
                     mm.printToConsole(RefreshAction.class, "Error getting object"
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
+                            + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
             }
 
