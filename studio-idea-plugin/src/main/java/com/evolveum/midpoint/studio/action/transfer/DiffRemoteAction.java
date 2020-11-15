@@ -99,6 +99,8 @@ public class DiffRemoteAction extends BackgroundAction {
                 file.refresh(false, true);
 
                 List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                obj = MidPointObjectUtils.filterObjectTypeOnly(obj);
+
                 objects.addAll(obj);
             });
 

@@ -611,13 +611,15 @@ public class MidPointUtils {
                         selected,
                         file -> file.isDirectory() || XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
                         file -> {
-                            if (!file.isDirectory()) {
+                            if (!file.isDirectory() && !result.contains(file)) {
                                 result.add(file);
                             }
                             return true;
                         });
             } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
-                result.add(selected);
+                if (!result.contains(selected)) {
+                    result.add(selected);
+                }
             }
         }
 

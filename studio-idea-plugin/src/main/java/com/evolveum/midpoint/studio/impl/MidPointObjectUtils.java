@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -31,6 +32,14 @@ public class MidPointObjectUtils {
     public static final String DELTAS_XML_SUFFIX = "</deltas>\n";
 
     private static final String NS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
+
+    public static  List<MidPointObject> filterObjectTypeOnly(List<MidPointObject> objects) {
+        if (objects == null) {
+            return null;
+        }
+
+        return objects.stream().filter(o -> o.getType() != null).collect(Collectors.toList());
+    }
 
     public static List<MidPointObject> parseText(String text, String notificationKey) {
         return parseText(text, null, notificationKey);

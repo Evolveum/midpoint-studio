@@ -176,6 +176,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
         try {
             List<MidPointObject> objects = MidPointObjectUtils.parseText(text, notificationKey);
+            objects = MidPointObjectUtils.filterObjectTypeOnly(objects);
 
             int i = 0;
             for (MidPointObject obj : objects) {
