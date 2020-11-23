@@ -71,7 +71,8 @@ public class EncryptionServiceImpl implements EncryptionService {
 
             writeDatabase(newPassword);
         } else {
-            this.database = KeePassDatabase.getInstance(dbFile).openDatabase(oldPassword);
+            String pwd = oldPassword != null ? oldPassword : newPassword;
+            this.database = KeePassDatabase.getInstance(dbFile).openDatabase(pwd);
             writeDatabase(newPassword);
         }
 
@@ -109,7 +110,8 @@ public class EncryptionServiceImpl implements EncryptionService {
             try {
                 database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
             } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't open credentials database with master password", ex);
+                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                        "Couldn't open credentials database with master password", ex, new UpdateMasterPasswordNotificationAction());
             }
         }
     }
