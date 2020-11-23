@@ -1,9 +1,11 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
 import com.evolveum.midpoint.studio.impl.Expander;
+import com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService;
 import com.intellij.codeInsight.hints.HintInfo;
 import com.intellij.codeInsight.hints.InlayInfo;
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlText;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +34,14 @@ public class PropertiesInlayParameterHintsProvider implements InlayParameterHint
             return Collections.emptyList();
         }
 
+        Project project = element.getProject();
+
+        if (project == null) {
+            return Collections.emptyList();
+        }
+
+        PropertiesInlayCacheService cache = project.getService(PropertiesInlayCacheService.class);
+
         List<InlayInfo> result = new ArrayList<>();
 
         Matcher matcher = Expander.PATTERN.matcher(value);
@@ -43,22 +53,13 @@ public class PropertiesInlayParameterHintsProvider implements InlayParameterHint
 
             int offset = element.getTextRange().getStartOffset() + matcher.regionStart();
 
-            String label = "sample"; // todo expand
+            String label = cache.expandKeyForInlay(key, element.getContainingFile().getVirtualFile());
+            if (label == null) {
+                continue;
+            }
+
             result.add(new InlayInfo(label, offset, false, true, false));
         }
-
-//        Project project = element.getProject();
-//        if (project == null) {
-//            return Collections.emptyList();
-//        }
-//
-//        EnvironmentService es = EnvironmentService.getInstance(project);
-//        if (!es.isEnvironmentSelected()) {
-//            return Collections.emptyList();
-//        }
-//
-//        EnvironmentProperties env = es.getSelectedEnvironmentProperties();
-//        Expander expander = new Expander(es.getSelected(), EncryptionService.getInstance(project), project);
 
         return result;
     }
