@@ -16,6 +16,10 @@ public class MidPointSettings implements Serializable {
 
     private String generatedFilePattern;
 
+    private boolean printRestCommunicationToConsole;
+
+    private DocGeneratorOptions docGeneratorOptions;
+
     public MidPointSettings() {
     }
 
@@ -47,8 +51,24 @@ public class MidPointSettings implements Serializable {
         return generatedFilePattern;
     }
 
+    public boolean isPrintRestCommunicationToConsole() {
+        return printRestCommunicationToConsole;
+    }
+
+    public void setPrintRestCommunicationToConsole(boolean printRestCommunicationToConsole) {
+        this.printRestCommunicationToConsole = printRestCommunicationToConsole;
+    }
+
     public void setGeneratedFilePattern(String generatedFilePattern) {
         this.generatedFilePattern = generatedFilePattern;
+    }
+
+    public DocGeneratorOptions getDocGeneratorOptions() {
+        return docGeneratorOptions;
+    }
+
+    public void setDocGeneratorOptions(DocGeneratorOptions docGeneratorOptions) {
+        this.docGeneratorOptions = docGeneratorOptions;
     }
 
     @Override
@@ -58,12 +78,15 @@ public class MidPointSettings implements Serializable {
 
         MidPointSettings that = (MidPointSettings) o;
 
+        if (printRestCommunicationToConsole != that.printRestCommunicationToConsole) return false;
         if (projectId != null ? !projectId.equals(that.projectId) : that.projectId != null) return false;
         if (midPointVersion != null ? !midPointVersion.equals(that.midPointVersion) : that.midPointVersion != null)
             return false;
         if (dowloadFilePattern != null ? !dowloadFilePattern.equals(that.dowloadFilePattern) : that.dowloadFilePattern != null)
             return false;
-        return generatedFilePattern != null ? generatedFilePattern.equals(that.generatedFilePattern) : that.generatedFilePattern == null;
+        if (generatedFilePattern != null ? !generatedFilePattern.equals(that.generatedFilePattern) : that.generatedFilePattern != null)
+            return false;
+        return docGeneratorOptions != null ? docGeneratorOptions.equals(that.docGeneratorOptions) : that.docGeneratorOptions == null;
     }
 
     @Override
@@ -72,6 +95,8 @@ public class MidPointSettings implements Serializable {
         result = 31 * result + (midPointVersion != null ? midPointVersion.hashCode() : 0);
         result = 31 * result + (dowloadFilePattern != null ? dowloadFilePattern.hashCode() : 0);
         result = 31 * result + (generatedFilePattern != null ? generatedFilePattern.hashCode() : 0);
+        result = 31 * result + (printRestCommunicationToConsole ? 1 : 0);
+        result = 31 * result + (docGeneratorOptions != null ? docGeneratorOptions.hashCode() : 0);
         return result;
     }
 

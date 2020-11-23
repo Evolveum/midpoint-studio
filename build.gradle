@@ -11,13 +11,16 @@ allprojects {
         maven {
             url 'https://nexus.evolveum.com/nexus/content/repositories/snapshots/'
         }
+        maven {
+            url 'https://www.jetbrains.com/intellij-repository/snapshots/'
+        }
     }
 }
 
 subprojects {
     apply plugin: 'java'
 
-    version '4.0.0'
+    version '4.2'
 
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion

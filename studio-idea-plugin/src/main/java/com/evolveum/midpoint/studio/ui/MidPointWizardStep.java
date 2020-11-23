@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.options.ConfigurationException;
-import com.evolveum.midpoint.studio.impl.ModuleSettings;
+import com.evolveum.midpoint.studio.impl.ProjectSettings;
 
 import javax.swing.*;
 
@@ -13,10 +13,10 @@ public class MidPointWizardStep extends ModuleWizardStep {
 
     private ProjectConfigurationPanel panel;
 
-    public MidPointWizardStep(ModuleSettings settings) {
+    public MidPointWizardStep(ProjectSettings settings) {
         super();
 
-        panel = new ProjectConfigurationPanel(settings);
+        panel = new ProjectConfigurationPanel(settings, false);
     }
 
     @Override

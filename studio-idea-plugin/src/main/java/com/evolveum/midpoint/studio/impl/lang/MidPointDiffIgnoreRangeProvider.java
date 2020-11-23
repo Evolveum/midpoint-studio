@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
-import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.diff.contents.DiffContent;
 import com.intellij.diff.lang.DiffIgnoredRangeProvider;
@@ -81,7 +81,7 @@ public class MidPointDiffIgnoreRangeProvider implements DiffIgnoredRangeProvider
 
         if (element instanceof XmlTag) {
             XmlTag em = (XmlTag) element;
-            QName name = new QName(em.getNamespace(), em.getLocalName());
+            QName name = MidPointUtils.createQName(em);
             if (IGNORED_ELEMENTS.contains(name)) {
                 return true;
             }

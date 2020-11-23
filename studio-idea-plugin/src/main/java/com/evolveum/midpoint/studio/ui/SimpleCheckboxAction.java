@@ -22,6 +22,20 @@ public class SimpleCheckboxAction extends CheckboxAction {
 
     @Override
     public void setSelected(@NotNull AnActionEvent e, boolean state) {
-        selected = state;
+        if (selected != state) {
+            selected = state;
+            onStateChange();
+        }
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public void onStateChange() {
     }
 }

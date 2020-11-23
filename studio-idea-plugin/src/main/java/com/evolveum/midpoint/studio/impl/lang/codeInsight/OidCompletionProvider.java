@@ -1,12 +1,17 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
+import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
+import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -18,16 +23,18 @@ public class OidCompletionProvider extends CompletionProvider<CompletionParamete
     protected void addCompletions(@NotNull CompletionParameters parameters,
                                   @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
 
-        result.addElement(MidPointUtils.buildLookupElement("Random OID", UUID.randomUUID().toString(), "", 100));
+        PsiElement element = parameters.getPosition();
 
-//        result.addElement(MPUtils.buildLookupElement("oid", "oid", "OidCompletionProvider", 90));
+        if (MidPointUtils.isItObjectTypeOidAttribute(element)) {
+            result.addElement(MidPointUtils.buildLookupElement("Random OID", UUID.randomUUID().toString(), "", 110));
+            return;
+        }
 
-//        ((XmlTag)((XmlTag)((XmlTag)parameters.getPosition().getParent().
-//                getParent().getParent()).getDescriptor().getDeclaration()))
-//                .getAttribute("type").getValueElement().getReferences() -> returns more, one of them schemaxsd something
+        List<OidNameValue> oids = ObjectFileBasedIndexImpl.getAllOidNames(parameters.getEditor().getProject());
+        Collections.sort(oids, (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getName(), o2.getName()));
 
-//        ((SchemaPrefixReference)((XmlTag)((XmlTag)((XmlTag)parameters.getPosition().getParent().
-//                getParent().getParent()).getDescriptor().getDeclaration()))
-//                .getAttribute("type").getValueElement().getReferences()[1])
+        if (!oids.isEmpty()) {
+            oids.forEach(o -> result.addElement(MidPointUtils.buildLookupElement(o.getName(), o.getOid(), o.getSource(), 100)));
+        }
     }
 }

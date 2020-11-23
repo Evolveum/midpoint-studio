@@ -2,6 +2,11 @@ package com.evolveum.midpoint.studio.action;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.openapi.wm.WindowManager;
+import com.intellij.openapi.wm.ex.StatusBarEx;
+import com.intellij.util.ui.UIUtil;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -21,5 +26,12 @@ public class GenerateRandomOid extends AnAction {
         StringSelection selection = new StringSelection(oid);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
+
+        UIUtil.invokeLaterIfNeeded(() -> {
+            IdeFrame ideFrame = WindowManager.getInstance().getIdeFrame(e.getProject());
+            if (ideFrame != null) {
+                ((StatusBarEx) ideFrame.getStatusBar()).notifyProgressByBalloon(MessageType.INFO, "Oid copied to system clipboard.");
+            }
+        });
     }
 }

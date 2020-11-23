@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.browse;
 
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.UpdateInBackground;
@@ -38,6 +39,10 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
         this.taskTitle = taskTitle;
     }
 
+    public String getTaskTitle() {
+        return taskTitle;
+    }
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
         Project project = evt.getProject();
@@ -48,7 +53,13 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
             public void run(ProgressIndicator indicator) {
                 running = true;
 
-                executeOnBackground(evt, indicator);
+                new RunnableUtils.PluginClasspathRunnable() {
+
+                    @Override
+                    public void runWithPluginClassLoader() {
+                        executeOnBackground(evt, indicator);
+                    }
+                }.run();
             }
 
             @Override

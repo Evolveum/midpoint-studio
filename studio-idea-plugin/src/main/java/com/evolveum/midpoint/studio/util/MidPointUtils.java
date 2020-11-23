@@ -1,20 +1,16 @@
 package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.util.PrismContextFactory;
-import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
-import com.evolveum.midpoint.studio.impl.MidPointException;
-import com.evolveum.midpoint.client.api.ClientException;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.impl.MidPointFacet;
-import com.evolveum.midpoint.studio.impl.MidPointManager;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
-import com.evolveum.midpoint.studio.ui.trace.TableColumnDefinition;
-import com.evolveum.midpoint.util.DOMUtilSettings;
-import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
+import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.client.ClientException;
+import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
@@ -26,35 +22,51 @@ import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
 import com.intellij.facet.FacetManager;
 import com.intellij.ide.DataManager;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.XmlPatterns;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
+import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
+import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.table.TableColumnModelExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import javax.xml.namespace.QName;
 import java.awt.Color;
+import java.awt.*;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -67,24 +79,27 @@ public class MidPointUtils {
 
     public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
 
+    private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
+
     private static final Random RANDOM = new Random();
 
-    public static final PrismContext DEFAULT_PRISM_CONTEXT;
+    public static final PrismContext DEFAULT_PRISM_CONTEXT = ServiceFactory.DEFAULT_PRISM_CONTEXT;
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
 
+    private static final String[] NAMES;
+
     static {
-        DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
+        List<String> names = new ArrayList<>();
+        for (ObjectTypes t : ObjectTypes.values()) {
+            if (t.getClassDefinition() == null || Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
+                continue;
+            }
 
-        try {
-            PrismContextFactory factory = new MidPointPrismContextFactory();
-            PrismContext prismContext = factory.createPrismContext();
-            prismContext.initialize();
-
-            DEFAULT_PRISM_CONTEXT = prismContext;
-        } catch (Exception ex) {
-            throw new MidPointException("Couldn't initialize default prism context", ex);
+            names.add(t.getElementName().getLocalPart());
         }
+
+        NAMES = names.toArray(new String[names.size()]);
     }
 
     @Deprecated
@@ -111,6 +126,7 @@ public class MidPointUtils {
     public static LookupElementBuilder buildLookupElement(String name, String oid, String source) {
         return LookupElementBuilder.create(oid)
                 .withTailText("(" + name + ")")
+                .withLookupString(name)
                 .withTypeText(source)
                 .withBoldness(true)
                 .withCaseSensitivity(false);
@@ -204,6 +220,37 @@ public class MidPointUtils {
                 .generateServiceName(MidPointSettings.class.getSimpleName(), key));
     }
 
+    public static void publishException(Project project, Class clazz, String notificationKey, String msg, Exception ex) {
+        MidPointService mm = MidPointService.getInstance(project);
+        mm.printToConsole(clazz, msg + ". Reason: " + ex.getMessage());
+
+        publishExceptionNotification(notificationKey, msg, ex);
+    }
+
+    public static void publishExceptionNotification(String key, String message, Exception ex) {
+        String msg = message + ", reason: " + ex.getMessage();
+
+        NotificationAction action = null;
+        if (ex instanceof ClientException) {
+            ClientException cex = (ClientException) ex;
+            OperationResult result = cex.getResult();
+            if (result != null) {
+                action = new ShowResultNotificationAction(result);
+            }
+        } else {
+            action = new ShowExceptionNotificationAction("Exception occurred", ex);
+        }
+
+        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR, action);
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(msg);
+            LOG.trace(ex);
+        } else {
+            LOG.debug(msg);
+        }
+    }
+
     public static void publishNotification(String key, String title, String content, NotificationType type) {
         publishNotification(key, title, content, type, (NotificationAction[]) null);
     }
@@ -227,11 +274,13 @@ public class MidPointUtils {
             }
         }
 
-        MidPointUtils.publishNotification(key, "Error",
-                message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
+        if (key != null) {
+            MidPointUtils.publishNotification(key, "Error",
+                    message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
+        }
 
         if (project != null) {
-            MidPointManager manager = MidPointManager.getInstance(project);
+            MidPointService manager = MidPointService.getInstance(project);
             manager.printToConsole(clazz, message, ex);
         }
     }
@@ -248,6 +297,10 @@ public class MidPointUtils {
         }
 
         return map;
+    }
+
+    public static AnAction createAnAction(String text, Icon icon, Consumer<AnActionEvent> actionPerformed) {
+        return createAnAction(text, icon, actionPerformed, null);
     }
 
     public static AnAction createAnAction(String text, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
@@ -275,41 +328,67 @@ public class MidPointUtils {
         };
     }
 
-    public static boolean isMidPointFacetPresent(Project project) {
-        Module[] modules = ModuleManager.getInstance(project).getModules();
-        if (modules == null || modules.length == 0) {
-            return false;
-        }
-
-        FacetManager facetManager = FacetManager.getInstance(modules[0]);
-        return facetManager.getFacetByType(MidPointFacet.ID) != null;
-    }
-
-    public static JXTreeTable createTable(TreeTableModel model, List<TableColumnDefinition> columns) {
-        JXTreeTable table = new JXTreeTable(model);
+    public static <R> JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition<R, ?>> columns) {
+        JXTreeTable table = new JXTreeTable();
         table.setRootVisible(false);
         table.setEditable(false);
         table.setDragEnabled(false);
         table.setHorizontalScrollEnabled(true);
+        table.setTreeTableModel(model);
         table.setLeafIcon(null);
         table.setClosedIcon(null);
         table.setOpenIcon(null);
 
         if (columns != null) {
-            for (int i = 0; i < columns.size(); i++) {
-                TableColumnDefinition def = columns.get(i);
-
-                TableColumn column = table.getColumnModel().getColumn(i);
-                column.setPreferredWidth(def.getSize());
-                if (def.getTableCellRenderer() != null) {
-                    column.setCellRenderer(def.getTableCellRenderer());
-                }
-            }
+            applyColumnDefinitions(columns, table);
         }
 
         table.packAll();
 
         return table;
+    }
+
+    @Experimental
+    public static <R> JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
+
+        JXTreeTable table = new JXTreeTable(model) {
+            @Override
+            protected void resetDefaultTableCellRendererColors(Component renderer, int row, int column) {
+                if (!disableHack) {
+                    super.resetDefaultTableCellRendererColors(renderer, row, column);
+                }
+            }
+        };
+        table.setAutoCreateColumnsFromModel(false);
+        table.setColumnModel(columnModel);
+        table.setRootVisible(false);
+        table.setEditable(false);
+        table.setDragEnabled(false);
+        table.setHorizontalScrollEnabled(true);
+        table.setSelectionModel(table.getSelectionModel());        // todo fix
+        table.setLeafIcon(null);
+        table.setClosedIcon(null);
+        table.setOpenIcon(null);
+
+        table.packAll();
+
+        return table;
+    }
+
+    private static <R> void applyColumnDefinitions(List<TreeTableColumnDefinition<R, ?>> columnDefinitions, JXTreeTable table) {
+        for (int i = 0; i < columnDefinitions.size(); i++) {
+            TreeTableColumnDefinition<R, ?> columnDef = columnDefinitions.get(i);
+
+            TableColumn column = table.getColumnModel().getColumn(i);
+            column.setPreferredWidth(columnDef.getSize());
+            if (columnDef.getTableCellRenderer() != null) {
+                column.setCellRenderer(columnDef.getTableCellRenderer());
+            }
+        }
+    }
+
+    public static String getName(PrismObject obj) {
+        return obj != null ? getOrigFromPolyString(obj.getName()) : null;
     }
 
     public static String getOrigFromPolyString(PolyString poly) {
@@ -318,6 +397,50 @@ public class MidPointUtils {
 
     public static String getOrigFromPolyString(PolyStringType poly) {
         return poly != null ? poly.getOrig() : null;
+    }
+
+    public static String generateTaskIdentifier() {
+        return System.currentTimeMillis() + ":" + Math.round(Math.random() * 1000000000.0);
+    }
+
+    public static ObjectTypes commonSuperType(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return null;
+        }
+
+        Class<? extends ObjectType> c1 = o1.getClassDefinition();
+        Class<? extends ObjectType> c2 = o2.getClassDefinition();
+
+        Class<? extends ObjectType> s = c1;
+        while (!s.isAssignableFrom(c2)) {
+            s = (Class<? extends ObjectType>) s.getSuperclass();
+        }
+
+        return ObjectTypes.getObjectType(s);
+    }
+
+    public static boolean isAssignableFrom(ObjectTypes o1, ObjectTypes o2) {
+        if (o1 == null || o2 == null) {
+            return false;
+        }
+
+        return o1.getClassDefinition().isAssignableFrom(o2.getClassDefinition());
+    }
+
+    public static QName getTypeQName(ObjectType obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        return getTypeQName(obj.asPrismObject());
+    }
+
+    public static QName getTypeQName(PrismObject obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        return ObjectTypes.getObjectType(obj.getCompileTimeClass()).getTypeQName();
     }
 
     public static String formatTime(Long time) {
@@ -334,5 +457,230 @@ public class MidPointUtils {
         } else {
             return String.format(Locale.US, "%.1f%%", value * 100);
         }
+    }
+
+    public static XmlTag[] findSubTags(XmlTag tag, QName name) {
+        if (tag == null) {
+            return new XmlTag[0];
+        }
+
+        return tag.findSubTags(name.getLocalPart(), name.getNamespaceURI());
+    }
+
+    public static XmlTag findSubTag(XmlTag tag, QName name) {
+        XmlTag[] tags = findSubTags(tag, name);
+        if (tags != null && tags.length > 0) {
+            return tags[0];
+        }
+
+        return null;
+    }
+
+    public static JPanel createBorderLayoutPanel(JComponent north, JComponent center, JComponent south) {
+        JPanel panel = new BorderLayoutPanel();
+        if (north != null) {
+            panel.add(north, BorderLayout.NORTH);
+        }
+
+        if (center != null) {
+            panel.add(center, BorderLayout.CENTER);
+        }
+
+        if (south != null) {
+            panel.add(south, BorderLayout.SOUTH);
+        }
+
+        return panel;
+    }
+
+//    public static void applyTestResult(VirtualFile file, ExecuteActionServerResponse lastResponse) {
+//        if (file == null) {
+//            return;
+//        }
+//        if (lastResponse.isSuccess()) {
+//            return;
+//        }
+//
+//        try {
+//            file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+//            IMarker m = file.createMarker(IMarker.PROBLEM);
+//            m.setAttribute(IMarker.LINE_NUMBER, 1);
+//            m.setAttribute(IMarker.MESSAGE, "Test resource failed: " + lastResponse.getErrorDescription());
+//            m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+//            m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+//        } catch (CoreException e) {
+//            Console.logError("Couldn't show validation result: " + e.getMessage(), e);
+//        }
+//    }
+//
+//    public static void applyValidationResult(VirtualFile file, String dataOutput) {
+//        if (file == null) {
+//            return;
+//        }
+//
+//        Element root = DOMUtil.parseDocument(dataOutput).getDocumentElement();
+//        Element item = DOMUtil.getChildElement(root, "item");
+//        if (item == null) {
+//            return;
+//        }
+//        Element validationResult = DOMUtil.getChildElement(item, "validationResult");
+//        if (validationResult == null) {
+//            return;
+//        }
+//        List<Element> issues = DOMUtil.getChildElements(validationResult, new QName(Constants.COMMON_NS, "issue"));
+//
+//        try {
+//            file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+//            for (Element issue : issues) {
+//                String severity = getElementText(issue, "severity");
+//                String category = getElementText(issue, "category");
+//                String code = getElementText(issue, "code");
+//                String text = getElementText(issue, "text");
+//                String itemPath = getElementText(issue, "itemPath");
+//                int severityCode;
+//                switch (severity) {
+//                    case "error": severityCode = IMarker.SEVERITY_ERROR; break;
+//                    case "warning": severityCode = IMarker.SEVERITY_WARNING; break;
+//                    default: severityCode = IMarker.SEVERITY_INFO; break;
+//                }
+//                IMarker m = file.createMarker(IMarker.PROBLEM);
+//                m.setAttribute(IMarker.LINE_NUMBER, 1);
+//                m.setAttribute(IMarker.MESSAGE, text);
+//                m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+//                m.setAttribute(IMarker.SEVERITY, severityCode);
+//                m.setAttribute(IMarker.LOCATION, itemPath);
+//            }
+//
+//        } catch (CoreException e) {
+//            Console.logError("Couldn't show validation result: " + e.getMessage(), e);
+//        }
+//    }
+//
+//    private static String getElementText(Element element, String name) {
+//        Element child = DOMUtil.getChildElement(element, name);
+//        return child != null ? child.getTextContent() : null;
+//    }
+
+    public static QName createQName(XmlTag element) {
+        if (element == null) {
+            return null;
+        }
+
+        return new QName(element.getNamespace(), element.getLocalName());
+
+    }
+
+    public static <R> TableColumnModelExt createTableColumnModel(List<TreeTableColumnDefinition<R, ?>> columnDefinitions) {
+        TableColumnModelExt model = new DefaultTableColumnModelExt();
+        int index = 0;
+        for (TreeTableColumnDefinition<R, ?> columnDefinition : columnDefinitions) {
+            TableColumnExt column = new TableColumnExt(index++, columnDefinition.getSize(),
+                    columnDefinition.getTableCellRenderer(), null);
+            column.setIdentifier(columnDefinition.getHeader());
+            column.setEditable(false);
+            column.setTitle(columnDefinition.getHeader());
+            model.addColumn(column);
+        }
+        return model;
+    }
+
+    public static boolean isObjectTypeElement(XmlTag tag) {
+        if (tag == null) {
+            return false;
+        }
+
+        QName name = new QName(tag.getNamespace(), tag.getLocalName());
+        for (ObjectTypes type : ObjectTypes.values()) {
+            if (name.equals(type.getElementName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static List<VirtualFile> filterXmlFiles(VirtualFile[] files) {
+        List<VirtualFile> result = new ArrayList<>();
+        if (files == null) {
+            return result;
+        }
+
+        for (VirtualFile selected : files) {
+            if (selected.isDirectory()) {
+                VfsUtilCore.iterateChildrenRecursively(
+                        selected,
+                        file -> file.isDirectory() || XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
+                        file -> {
+                            if (!file.isDirectory() && !result.contains(file)) {
+                                result.add(file);
+                            }
+                            return true;
+                        });
+            } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
+                if (!result.contains(selected)) {
+                    result.add(selected);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static boolean hasMidPointFacet(@NotNull Project project) {
+        ModuleManager mm = ModuleManager.getInstance(project);
+        Module[] modules = mm.getModules();
+        if (modules == null || modules.length == 0) {
+            return false;
+        }
+        FacetManager fm = FacetManager.getInstance(modules[0]);
+        return fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null;
+    }
+
+    public static boolean isItObjectTypeOidAttribute(PsiElement element) {
+        return psiElement().inside(
+                XmlPatterns
+                        .xmlAttributeValue()
+                        .withParent(
+                                XmlPatterns.xmlAttribute("oid").withParent(
+                                        XmlPatterns.xmlTag().withNamespace(SchemaConstantsGenerated.NS_COMMON)
+                                                .withName(NAMES)))).accepts(element);
+    }
+
+    public static JBScrollPane borderlessScrollPane(@NotNull JComponent component) {
+        JBScrollPane pane = new JBScrollPane(component);
+        pane.setBorder(null);
+
+        return pane;
+    }
+
+    public static void openFile(Project project, VirtualFile file) {
+        if (file == null) {
+            return;
+        }
+
+        FileEditorManager fem = FileEditorManager.getInstance(project);
+        fem.openFile(file, true, true);
+    }
+
+    public static void updateServerActionState(AnActionEvent evt) {
+        if (evt.getProject() == null) {
+            return;
+        }
+
+        boolean hasFacet = MidPointUtils.hasMidPointFacet(evt.getProject());
+        if (!hasFacet) {
+            evt.getPresentation().setVisible(false);
+            return;
+        }
+
+        VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
+                (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+
+        List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
+
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
+
+        boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
+        evt.getPresentation().setEnabled(enabled);
     }
 }

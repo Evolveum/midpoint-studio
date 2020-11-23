@@ -2,10 +2,9 @@ package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.SearchOptions;
+import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.diff.actions.CompareFilesAction;
 import com.intellij.diff.chains.DiffRequestChain;
 import com.intellij.diff.chains.SimpleDiffRequestChain;
@@ -43,7 +42,7 @@ public class CompareFileWithServerAction extends CompareFilesAction {
             return true;
         }
 
-        EnvironmentManager em = EnvironmentManager.getInstance(e.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(e.getProject());
         if (!em.isEnvironmentSelected()) {
             return false;
         }
@@ -66,7 +65,7 @@ public class CompareFileWithServerAction extends CompareFilesAction {
                 }
             }
 
-            if (isAvailable(file, project)) {
+            if (RunnableUtils.executeWithPluginClassloader(() -> isAvailable(file, project))) {
                 return true;
             }
         }
@@ -105,7 +104,7 @@ public class CompareFileWithServerAction extends CompareFilesAction {
     }
 
     private List<PrismObject<?>> parseObjects(Project project, VirtualFile file) {
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         Environment env = em.getSelected();
         MidPointClient client = new MidPointClient(project, env);
 
@@ -146,12 +145,12 @@ public class CompareFileWithServerAction extends CompareFilesAction {
     }
 
     private VirtualFile getOtherFile(Project project, VirtualFile file1) {
-        EnvironmentManager em = EnvironmentManager.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(project);
         Environment env = em.getSelected();
         MidPointClient client = new MidPointClient(project, env);
 
 
-        PrismObject obj = null;
+        PrismObject<? extends ObjectType> obj = null;
 
         try {
             obj = client.parseObject(file1);
@@ -163,7 +162,11 @@ public class CompareFileWithServerAction extends CompareFilesAction {
             return null;
         }
 
-        PrismObject other = client.get(obj.getCompileTimeClass(), obj.getOid(), new SearchOptions().raw(true));
+        try {
+            MidPointObject other = client.get(obj.getCompileTimeClass(), obj.getOid(), new SearchOptions().raw(true));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
         // todo create virtual in memory file
         return null;

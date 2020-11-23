@@ -30,7 +30,7 @@ public class HeaderDecorator extends BorderLayoutPanel {
         header.setFont(JBUI.CurrentTheme.ToolWindow.headerFont());
 
         int padding = JBUI.CurrentTheme.ToolWindow.tabVerticalPadding();
-        header.setBorder(BorderFactory.createEmptyBorder(padding, 7, padding, 0));
+        header.setBorder(JBUI.Borders.empty(padding, 7, padding, 0));
 
         return header;
     }

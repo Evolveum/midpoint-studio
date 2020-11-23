@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -44,8 +45,8 @@ public class EnvironmentProperties {
         try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             properties.load(reader);
         } catch (IOException ex) {
-            // todo handle error
-            throw new RuntimeException(ex);
+            MidPointUtils.publishExceptionNotification(EnvironmentService.NOTIFICATION_KEY,
+                    "Couldn't load environment properties", ex);
         }
 
         this.properties = properties;

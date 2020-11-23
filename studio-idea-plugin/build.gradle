@@ -13,12 +13,23 @@ plugins {
 apply from: "$rootDir/$project.name/verifier.gradle"
 
 dependencies {
-    compile project(':midpoint-client')
-
     compile("com.evolveum.midpoint.model:model-common:$midpointVersion") {
         transitive = false
     }
     compile("com.evolveum.midpoint.model:model-api:$midpointVersion") {
+        transitive = false
+    }
+    compile("com.evolveum.midpoint.model:model-impl:$midpointVersion") {
+        transitive = false
+    }
+    compile("com.evolveum.midpoint.infra:common:$midpointVersion") {
+        exclude group: "org.springframework"
+        exclude group: "net.sf.jasperreports"
+        exclude group: "org.apache.cxf"
+        exclude group: "org.slf4j"
+        exclude group: "ch.qos.logback"
+    }
+    compile("com.evolveum.midpoint.repo:security-api:$midpointVersion") {
         transitive = false
     }
     compile("com.evolveum.midpoint.model:notifications-api:$midpointVersion") {
@@ -26,13 +37,29 @@ dependencies {
     }
     compile "com.evolveum.midpoint:midpoint-localization:$midpointVersion"
 
+    compile("com.evolveum.midpoint:midscribe-core:$midscribeVersion") {
+        exclude group: "org.springframework"
+        exclude group: "net.sf.jasperreports"
+        exclude group: "org.apache.cxf", module: "cxf-rt-wsdl"
+
+        exclude group: "org.slf4j"
+        exclude group: "ch.qos.logback"
+    }
+
     compile "de.slackspace:openkeepass:$openkeepass"
-    compile "net.mikehardy:google-analytics-java7:$analyticsVersion"
     compile "org.apache.commons:commons-lang3:$commonsLang"
-    compile "org.knowm.xchart:xchart:$xchartVersion"
-    compile "com.h2database:h2:$h2Version"
-//    compile "org.slf4j:slf4j-log4j12:1.7.25"
-//    compile 'com.github.adedayo.intellij.sdk:forms_rt:142.1'
+//    compile "org.knowm.xchart:xchart:$xchartVersion"
+    compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
+    compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
+
+    compile "stax:stax:$staxVersion"
+
+    runtime "org.glassfish.jaxb:jaxb-runtime:2.3.2" // needed because of NamespacePrefixMapper class
+    runtime("org.springframework:spring-core:5.0.7.RELEASE") {
+        // needed because of DebugDumpable impl uses spring ReflectionUtils class
+        transitive = false
+    }
 }
 
 if (gitLocalBranch == 'nightly' || gitLocalBranch == 'milestone') {
@@ -56,22 +83,43 @@ def fullVersion = "$project.version$channelSuffix"
 println "Plugin version: " + fullVersion
 println "Publish channel: " + publishChannel
 
+if (gitLocalBranch == 'nightly' || gitLocalBranch == 'milestone') {
+    publishChannel = gitLocalBranch
+} else if (gitLocalBranch == 'stable') {
+    publishChannel = 'default'
+}
+
+def channelSuffix = ""
+if (!publishChannel?.isBlank()) {
+    def channel = publishChannel.toLowerCase()
+    if (channel == "nightly") {
+        channelSuffix = "-" + buildNumber + "-" + channel
+    } else if (channel == "milestone") {
+        channelSuffix = "-" + buildNumber
+    }
+}
+
+def fullVersion = "$project.version$channelSuffix"
+
+println "Plugin version: " + fullVersion
+println "Publish channel: " + publishChannel
+
 intellij {
-    version '2019.3'
+    version '2020.2'    // 'LATEST-EAP-SNAPSHOT'
     type 'IC'
     downloadSources true
     pluginName 'intellij-midpoint-studio'
     updateSinceUntilBuild false
     plugins = [
-            'PsiViewer:193-SNAPSHOT',
-            'com.jetbrains.hackathon.indices.viewer:1.3',
+            'PsiViewer:202-SNAPSHOT.3',
+            'com.jetbrains.hackathon.indices.viewer:1.8',
             'java',
             'Groovy',
             'maven'
     ]
     patchPluginXml {
-        sinceBuild '191'
-        untilBuild '193.*'
+        sinceBuild '193'
+        untilBuild '202.*'
         version fullVersion
     }
     publishPlugin {
@@ -79,6 +127,7 @@ intellij {
         token System.getenv('studio_intellijPublishToken')
     }
 }
+
 runPluginVerifier {
     pluginFileName = "$intellij.pluginName-$version"
     ides = ["IC-2019.3", "IC-2020.1", "IC-2020.2", "IC-LATEST-EAP-SNAPSHOT"]

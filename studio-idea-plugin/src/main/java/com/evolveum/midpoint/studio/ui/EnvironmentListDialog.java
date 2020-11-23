@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.evolveum.midpoint.studio.impl.EnvironmentManager;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -22,8 +22,8 @@ public class EnvironmentListDialog extends DialogWrapper {
 
         this.project = project;
 
-        EnvironmentManager manager = EnvironmentManager.getInstance(project);
-        panel = new EnvironmentsPanel(manager.getFullSettings());
+        EnvironmentService manager = EnvironmentService.getInstance(project);
+        panel = new EnvironmentsPanel(project, manager.getFullSettings());
 
         setTitle("Edit Environments");
 
@@ -52,7 +52,7 @@ public class EnvironmentListDialog extends DialogWrapper {
     protected void doOKAction() {
         super.doOKAction();
 
-        EnvironmentManager manager = EnvironmentManager.getInstance(project);
+        EnvironmentService manager = EnvironmentService.getInstance(project);
         manager.setSettings(panel.getFullSettings());
     }
 }

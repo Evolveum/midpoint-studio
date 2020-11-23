@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.AddEditRemovePanel;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentSettings;
@@ -16,8 +17,12 @@ import java.util.Objects;
  */
 public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment>> {
 
-    public EnvironmentsPanel(EnvironmentSettings settings) {
+    private Project project;
+
+    public EnvironmentsPanel(Project project, EnvironmentSettings settings) {
         super(new EnvironmentsModel(), new ArrayList<>(), null);
+
+        this.project = project;
 
         setPreferredSize(new Dimension(150, 100));
         getTable().setShowColumns(true);
@@ -43,7 +48,7 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     @Override
     protected boolean removeItem(Selectable<Environment> environment) {
-        return getData().remove(environment);
+        return getData().contains(environment);
     }
 
     @Nullable
@@ -60,7 +65,7 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     @Nullable
     private Selectable<Environment> doAddOrEdit(@Nullable Selectable<Environment> environment) {
-        EnvironmentEditorDialog dialog = new EnvironmentEditorDialog(environment);
+        EnvironmentEditorDialog dialog = new EnvironmentEditorDialog(project, environment);
         if (!dialog.showAndGet()) {
             return null;
         }
