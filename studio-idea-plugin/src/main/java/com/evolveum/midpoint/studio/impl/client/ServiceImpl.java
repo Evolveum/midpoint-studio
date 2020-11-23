@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.impl.client;
 
-import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
@@ -11,6 +10,7 @@ import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.MidPointObject;
+import com.evolveum.midpoint.studio.impl.MidPointObjectUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -47,35 +47,12 @@ public class ServiceImpl implements Service {
         return context.getPrismContext();
     }
 
-    @Override
-    public <O extends ObjectType> SearchResultList<O> list(Class<O> type)
-            throws IOException, AuthenticationException {
-
-        return list(type, null);
-    }
-
-    @Override
-    public <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query)
-            throws IOException, AuthenticationException {
-
-        return list(type, query, null);
-    }
-
-    @Override
-    public <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query, Collection<SelectorOptions<GetOperationOptions>> options)
-            throws IOException, AuthenticationException {
-
-        PrismContext prismContext = prismContext();
-
-        if (query == null) {
-            query = prismContext.queryFactory().createQuery();
-        }
-
+    private Map<String, Object> buildSearchParams(Collection<SelectorOptions<GetOperationOptions>> options, PrismContext prismContext) {
         if (options == null) {
             options = new ArrayList<>();
         }
 
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         GetOperationOptions root = SelectorOptions.findRootOptions(options);
         if (root != null && root.getRaw()) {
             params.put("options", "raw");
@@ -90,33 +67,84 @@ public class ServiceImpl implements Service {
             if (goo.getRetrieve() != null) {
                 switch (goo.getRetrieve()) {
                     case EXCLUDE:
-                        params.put("exclude", o.getItemPath(prismContext.emptyPath()).toString());
+                        addParameter(params, "exclude", o.getItemPath(prismContext.emptyPath()).toString());
                         break;
                     case INCLUDE:
-                        params.put("include", o.getItemPath(prismContext.emptyPath()).toString());
+                        addParameter(params, "include", o.getItemPath(prismContext.emptyPath()).toString());
                         break;
                 }
             }
         }
 
+        return params;
+    }
+
+    private <O extends ObjectType> Request buildSearchRequest(Class<O> type, ObjectQuery query, Map<String, Object> params) throws SchemaException {
+        if (query == null) {
+            query = prismContext().queryFactory().createQuery();
+        }
+
+        QueryConverter converter = prismContext().getQueryConverter();
+        QueryType queryType = converter.createQueryType(query);
+
+        String content = context.serialize(queryType);
+
+        String path = "/" + ObjectTypes.getRestTypeFromClass(type) + "/search";
+
+        Request.Builder builder = context.build(path, params)
+                .post(RequestBody.create(content, ServiceContext.APPLICATION_XML));
+
+        return builder.build();
+    }
+
+    @Override
+    public <O extends ObjectType> SearchResult search(Class<O> type, ObjectQuery query, Collection<SelectorOptions<GetOperationOptions>> options)
+            throws IOException, AuthenticationException {
+
+        Map<String, Object> params = buildSearchParams(options, prismContext());
+
         try {
-            QueryConverter converter = prismContext().getQueryConverter();
-            QueryType queryType = converter.createQueryType(query);
+            Request req = buildSearchRequest(type, query, params);
 
-            String content = context.serialize(queryType);
+            String result = executeRequest(req, String.class);
 
-            String path = "/" + ObjectTypes.getRestTypeFromClass(type) + "/search";
+            List<MidPointObject> objects = MidPointObjectUtils.parseText(result, "Search objects");
+            return new SearchResult(objects);
+        } catch (SchemaException ex) {
+            throw new ClientException("Couldn't create query", ex);
+        }
+    }
 
-            Request.Builder builder = context.build(path, params)
-                    .post(RequestBody.create(content, ServiceContext.APPLICATION_XML));
+    @Deprecated
+    @Override
+    public <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query, Collection<SelectorOptions<GetOperationOptions>> options)
+            throws IOException, AuthenticationException {
 
-            Request req = builder.build();
+        Map<String, Object> params = buildSearchParams(options, prismContext());
+
+        try {
+            Request req = buildSearchRequest(type, query, params);
 
             ObjectListType list = executeRequest(req, ObjectListType.class);
             return new SearchResultList<>((List<O>) list.getObject());
         } catch (SchemaException ex) {
             throw new ClientException("Couldn't create query", ex);
         }
+    }
+
+    private void addParameter(Map<String, Object> parameters, String param, Object value) {
+        Object o = parameters.get(param);
+        if (o != null && !(o instanceof List)) {
+            return;
+        }
+
+        List list = (List) o;
+        if (list == null) {
+            list = new ArrayList();
+            parameters.put(param, list);
+        }
+
+        list.add(value);
     }
 
     @Override
@@ -130,7 +158,7 @@ public class ServiceImpl implements Service {
             opts = new ArrayList<>();
         }
 
-        Map<String, String> options = new HashMap<>();
+        Map<String, Object> options = new HashMap<>();
         opts.forEach(o -> options.put("options", o));
 
         String path = "/" + ObjectTypes.getRestTypeFromClass(object.getType().getClassDefinition());
@@ -212,50 +240,27 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public <O extends ObjectType> O get(Class<O> type, String oid)
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid)
             throws ObjectNotFoundException, AuthenticationException, IOException {
 
         return get(type, oid, null);
-
     }
 
     @Override
-    public <O extends ObjectType> O get(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
-            throws ObjectNotFoundException, AuthenticationException, IOException {
-
-        String obj = getRaw(type, oid, options);
-        try {
-            ParsingContext parsingContext = prismContext().createParsingContextForCompatibilityMode();
-            PrismParser parser = prismContext().parserFor(obj).language(PrismContext.LANG_XML).context(parsingContext);
-
-            return (O) parser.parse().asObjectable();
-        } catch (SchemaException | IOException ex) {
-            throw new RuntimeException("Couldn't parse object, reason: " + ex.getMessage(), ex);
-        }
-    }
-
-    @Override
-    public <O extends ObjectType> String getRaw(Class<O> type, String oid)
-            throws ObjectNotFoundException, AuthenticationException, IOException {
-
-        return getRaw(type, oid, null);
-    }
-
-    @Override
-    public <O extends ObjectType> String getRaw(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
             throws ObjectNotFoundException, AuthenticationException, IOException {
 
         return executeGet(type, oid, options);
     }
 
-    private <O extends ObjectType> String executeGet(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
+    private <O extends ObjectType> MidPointObject executeGet(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
             throws ObjectNotFoundException, AuthenticationException, IOException {
 
         if (options == null) {
             options = new ArrayList<>();
         }
 
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         GetOperationOptions root = SelectorOptions.findRootOptions(options);
         if (root != null && root.getRaw()) {
             params.put("options", "raw");
@@ -279,7 +284,14 @@ public class ServiceImpl implements Service {
                 return null;
             }
 
-            return response.body().string();
+            String content = response.body().string();
+            List<MidPointObject> objects = MidPointObjectUtils.parseText(content, null);
+
+            if (objects.size() == 1) {
+                return objects.get(0);
+            }
+
+            return null;
         }
     }
 
@@ -298,7 +310,7 @@ public class ServiceImpl implements Service {
             opts = new DeleteOptions();
         }
 
-        Map<String, String> options = new HashMap<>();
+        Map<String, Object> options = new HashMap<>();
         if (opts.raw()) {
             options.put("options", "raw");
         }

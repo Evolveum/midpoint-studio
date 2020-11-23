@@ -398,7 +398,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             ObjectQuery query = buildQuery(client);
 
             LOG.debug("Starting search");
-            result = client.search(type.getClassDefinition(), query, rawSearch);
+            result = client.list(type.getClassDefinition(), query, rawSearch);
         } catch (Exception ex) {
             handleGenericException("Couldn't search objects", ex);
         }

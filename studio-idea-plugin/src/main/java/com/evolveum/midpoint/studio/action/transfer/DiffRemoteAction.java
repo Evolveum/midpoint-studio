@@ -99,6 +99,8 @@ public class DiffRemoteAction extends BackgroundAction {
                 file.refresh(false, true);
 
                 List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                obj = MidPointObjectUtils.filterObjectTypeOnly(obj);
+
                 objects.addAll(obj);
             });
 
@@ -116,10 +118,10 @@ public class DiffRemoteAction extends BackgroundAction {
                 }
 
                 try {
-                    String newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    MidPointObject newObject = client.get(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
 
                     MidPointObject obj = MidPointObject.copy(object);
-                    obj.setContent(newObject);
+                    obj.setContent(newObject.getContent());
                     remoteObjects.put(obj.getOid(), obj);
 
                     diffed.incrementAndGet();

@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
@@ -125,6 +126,8 @@ public class RefreshAction extends BackgroundAction {
                 file.refresh(false, true);
 
                 List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                obj = MidPointObjectUtils.filterObjectTypeOnly(obj);
+
                 objects.addAll(obj);
             });
 
@@ -141,9 +144,10 @@ public class RefreshAction extends BackgroundAction {
                     break;
                 }
 
+                ObjectTypes type = object.getType();
                 try {
-                    String newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
-                    newObjects.add(newObject);
+                    MidPointObject newObject = client.get(type.getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    newObjects.add(newObject.getContent());
 
                     reloaded.incrementAndGet();
                 } catch (ObjectNotFoundException ex) {
@@ -151,13 +155,13 @@ public class RefreshAction extends BackgroundAction {
                     newObjects.add(object.getContent());
 
                     mm.printToConsole(RefreshAction.class, "Couldn't find object "
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+                            + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
                     newObjects.add(object.getContent());
 
                     mm.printToConsole(RefreshAction.class, "Error getting object"
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
+                            + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
             }
 

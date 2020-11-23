@@ -228,20 +228,26 @@ public class MidPointUtils {
     }
 
     public static void publishExceptionNotification(String key, String message, Exception ex) {
+        publishExceptionNotification(key, message, ex, new NotificationAction[]{});
+    }
+
+    public static void publishExceptionNotification(String key, String message, Exception ex, NotificationAction... actions) {
         String msg = message + ", reason: " + ex.getMessage();
 
-        NotificationAction action = null;
+        List<NotificationAction> list = new ArrayList<>();
         if (ex instanceof ClientException) {
             ClientException cex = (ClientException) ex;
             OperationResult result = cex.getResult();
             if (result != null) {
-                action = new ShowResultNotificationAction(result);
+                list.add(new ShowResultNotificationAction(result));
             }
         } else {
-            action = new ShowExceptionNotificationAction("Exception occurred", ex);
+            list.add(new ShowExceptionNotificationAction("Exception occurred", ex));
         }
 
-        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR, action);
+        list.addAll(Arrays.asList(actions));
+
+        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR, list.toArray(new NotificationAction[list.size()]));
 
         if (LOG.isTraceEnabled()) {
             LOG.trace(msg);
@@ -611,13 +617,15 @@ public class MidPointUtils {
                         selected,
                         file -> file.isDirectory() || XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
                         file -> {
-                            if (!file.isDirectory()) {
+                            if (!file.isDirectory() && !result.contains(file)) {
                                 result.add(file);
                             }
                             return true;
                         });
             } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
-                result.add(selected);
+                if (!result.contains(selected)) {
+                    result.add(selected);
+                }
             }
         }
 

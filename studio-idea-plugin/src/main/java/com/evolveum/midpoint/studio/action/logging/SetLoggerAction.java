@@ -5,6 +5,8 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -12,6 +14,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -65,8 +68,18 @@ public class SetLoggerAction extends BackgroundAction {
         LOG.debug("MidPoint client setup done");
 
         LOG.debug("Downloading system configuration");
-        PrismObject<SystemConfigurationType> configPrism = client.get(SystemConfigurationType.class,
-                SystemObjectsType.SYSTEM_CONFIGURATION.value(), new SearchOptions());
+        PrismObject<SystemConfigurationType> configPrism;
+        try {
+            MidPointObject object = client.get(SystemConfigurationType.class,
+                    SystemObjectsType.SYSTEM_CONFIGURATION.value(), new SearchOptions());
+
+            configPrism = (PrismObject) client.parseObject(object.getContent());
+        } catch (ObjectNotFoundException | SchemaException | IOException ex) {
+            MidPointUtils.publishException(e.getProject(), getClass(), NOTIFICATION_KEY,
+                    "Couldn't download and parse system configuration", ex);
+
+            return;
+        }
 
         LOG.debug("Updating logging configuration");
 

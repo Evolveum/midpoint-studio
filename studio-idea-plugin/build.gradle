@@ -62,14 +62,26 @@ dependencies {
     }
 }
 
-def channelSuffix = ""
-if (!publishChannel?.isBlank() && publishChannel?.toLowerCase() == "nightly") {
-    channelSuffix = "-" + publishChannel.toLowerCase()
+if (gitLocalBranch == 'nightly' || gitLocalBranch == 'milestone') {
+    publishChannel = gitLocalBranch
+} else if (gitLocalBranch == 'stable') {
+    publishChannel = 'default'
 }
 
-def fullVersion = "$project.version-$buildNumber$channelSuffix"
+def channelSuffix = ""
+if (!publishChannel?.isBlank()) {
+    def channel = publishChannel.toLowerCase()
+    if (channel == "nightly") {
+        channelSuffix = "-" + buildNumber + "-" + channel
+    } else if (channel == "milestone") {
+        channelSuffix = "-" + buildNumber
+    }
+}
+
+def fullVersion = "$project.version$channelSuffix"
 
 println "Plugin version: " + fullVersion
+println "Publish channel: " + publishChannel
 
 intellij {
     version '2020.2'    // 'LATEST-EAP-SNAPSHOT'
