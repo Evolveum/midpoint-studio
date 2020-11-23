@@ -7,9 +7,10 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.4.16"
-    id "com.palantir.git-version" version "0.12.2"
+    id "org.jetbrains.intellij" version "0.5.0"
 }
+
+apply from: "$rootDir/$project.name/verifier.gradle"
 
 dependencies {
     compile project(':midpoint-client')
@@ -34,11 +35,32 @@ dependencies {
 //    compile 'com.github.adedayo.intellij.sdk:forms_rt:142.1'
 }
 
+if (gitLocalBranch == 'nightly' || gitLocalBranch == 'milestone') {
+    publishChannel = gitLocalBranch
+} else if (gitLocalBranch == 'stable') {
+    publishChannel = 'default'
+}
+
+def channelSuffix = ""
+if (!publishChannel?.isBlank()) {
+    def channel = publishChannel.toLowerCase()
+    if (channel == "nightly") {
+        channelSuffix = "-" + buildNumber + "-" + channel
+    } else if (channel == "milestone") {
+        channelSuffix = "-" + buildNumber
+    }
+}
+
+def fullVersion = "$project.version$channelSuffix"
+
+println "Plugin version: " + fullVersion
+println "Publish channel: " + publishChannel
+
 intellij {
     version '2019.3'
     type 'IC'
     downloadSources true
-    pluginName 'MidPoint Studio'
+    pluginName 'intellij-midpoint-studio'
     updateSinceUntilBuild false
     plugins = [
             'PsiViewer:193-SNAPSHOT',
@@ -50,16 +72,14 @@ intellij {
     patchPluginXml {
         sinceBuild '191'
         untilBuild '193.*'
-        version project.version + '.' + versionDetails().commitDistance
+        version fullVersion
     }
     publishPlugin {
-        channels project.channels
+        channels publishChannel
         token System.getenv('studio_intellijPublishToken')
     }
 }
-
-buildPlugin.configure {
-    doFirst {
-        println "Git describe: " + versionDetails().commitDistance
-    }
+runPluginVerifier {
+    pluginFileName = "$intellij.pluginName-$version"
+    ides = ["IC-2019.3", "IC-2020.1", "IC-2020.2", "IC-LATEST-EAP-SNAPSHOT"]
 }
