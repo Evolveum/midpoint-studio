@@ -15,8 +15,12 @@ import org.jetbrains.annotations.NotNull;
  */
 public class UpdateMasterPasswordNotificationAction extends NotificationAction {
 
-    public UpdateMasterPasswordNotificationAction() {
+    private boolean masterPwdExists;
+
+    public UpdateMasterPasswordNotificationAction(boolean masterPwdExists) {
         super("Update master password");
+
+        this.masterPwdExists = masterPwdExists;
     }
 
     @Override
@@ -26,8 +30,10 @@ public class UpdateMasterPasswordNotificationAction extends NotificationAction {
         if (project == null) {
             return;
         }
-        String pwd = Messages.showPasswordDialog(project, "Update stored master password",
-                "Update master password", null, new NonEmptyInputValidator());
+
+        String content = masterPwdExists ? "Update stored master password" : "Set new master password";
+
+        String pwd = Messages.showPasswordDialog(project, content, "Master password", null, new NonEmptyInputValidator());
 
         if (pwd == null) {
             return;
@@ -42,7 +48,7 @@ public class UpdateMasterPasswordNotificationAction extends NotificationAction {
                     "Master password update successful.", NotificationType.INFORMATION);
         } catch (Exception ex) {
             MidPointUtils.publishExceptionNotification(EncryptionService.NOTIFICATION_KEY,
-                    "Couldn't open credentials database with master password", ex, new UpdateMasterPasswordNotificationAction());
+                    "Couldn't open credentials database with master password", ex, new UpdateMasterPasswordNotificationAction(true));
         }
     }
 }
