@@ -25,6 +25,9 @@ public class PropertiesInlayCacheService {
                 refresh(newEnv);
             }
         });
+
+        EnvironmentService env = project.getService(EnvironmentService.class);
+        refresh(env.getSelected());
     }
 
     private void refresh(Environment environment) {
