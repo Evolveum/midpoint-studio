@@ -24,6 +24,7 @@ import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
@@ -57,6 +58,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,6 +72,17 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private static final Logger LOG = Logger.getInstance(BrowseToolPanel.class);
 
     private static final String NOTIFICATION_KEY = "MidPoint Browser";
+
+    private static final String EMPTY_QUERY =
+            "<query xmlns=\"http://prism.evolveum.com/xml/ns/public/query-3\">\n" +
+                    "    <filter>\n" +
+                    "        <!-- insert filter -->\n" +
+                    "    </filter>\n" +
+                    "    <paging>\n" +
+                    "        <offset>0</offset>\n" +
+                    "        <maxSize>500</maxSize>\n" +
+                    "    </paging>\n" +
+                    "</query>";
 
     private Project project;
 
@@ -227,7 +240,32 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         objectType = new ComboObjectTypes();
         group.add(objectType);
 
-        queryType = new ComboQueryType();
+        queryType = new ComboQueryType() {
+
+            @Override
+            public void setSelected(Type selected) {
+                super.setSelected(selected);
+
+                if (queryType.getSelected() == null || query == null) {
+                    return;
+                }
+
+                switch (queryType.getSelected()) {
+                    case QUERY_XML:
+                        if (StringUtils.isEmpty(query.getText())) {
+                            query.setText(EMPTY_QUERY);
+                        }
+                        break;
+                    case NAME:
+                    case NAME_OR_OID:
+                    case OID:
+                        // todo file type
+                        break;
+                }
+
+
+            }
+        };
         group.add(queryType);
 
         CheckboxAction rawSearch = new CheckboxAction("Raw") {
@@ -515,12 +553,17 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         return false;
     }
 
-    public ObjectQuery buildQuery(MidPointClient client) {
+    public ObjectQuery buildQuery(MidPointClient client) throws SchemaException, IOException {
         PrismContext ctx = client.getPrismContext();
         QueryFactory qf = ctx.queryFactory();
 
-        ObjectFilter filter = null;
         ComboQueryType.Type queryType = this.queryType.getSelected();
+        if (ComboQueryType.Type.QUERY_XML == queryType) {
+            return parseQuery(client);
+        }
+
+        ObjectFilter filter = null;
+
         switch (queryType) {
             case OID:
                 filter = createFilter(ctx, true, false);
@@ -531,9 +574,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             case NAME_OR_OID:
                 filter = createFilter(ctx, true, true);
                 break;
-            case QUERY_XML:
-                filter = parseFilter(client);
-                break;
         }
 
         ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
@@ -542,7 +582,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         return qf.createQuery(filter, paging);
     }
 
-    private ObjectFilter parseFilter(MidPointClient client) {
+    private ObjectQuery parseQuery(MidPointClient client) throws SchemaException, IOException {
         String text = query.getText();
         if (StringUtils.isEmpty(text)) {
             return null;
@@ -550,15 +590,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         ObjectTypes type = objectType.getSelected();
 
-        try {
-            PrismParser parser = client.createParser(text);
-            SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
+        PrismParser parser = client.createParser(text);
+        QueryType queryType = parser.parseRealValue(QueryType.class);
 
-            return client.getPrismContext().getQueryConverter().parseFilter(filterType, type.getClassDefinition());
-        } catch (Exception ex) {
-            // todo error handling
-            throw new RuntimeException(ex);
-        }
+        return client.getPrismContext().getQueryConverter().createObjectQuery(type.getClassDefinition(), queryType);
     }
 
     private ObjectFilter createFilter(PrismContext ctx, boolean oid, boolean name) {
