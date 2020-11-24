@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl;
+package com.evolveum.midpoint.studio.impl.cache;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.JavaPsiFacade;

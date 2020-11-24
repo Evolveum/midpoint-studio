@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.studio.impl.ConnectorXmlSchemaCacheService;
+import com.evolveum.midpoint.studio.impl.cache.ConnectorXmlSchemaCacheService;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;

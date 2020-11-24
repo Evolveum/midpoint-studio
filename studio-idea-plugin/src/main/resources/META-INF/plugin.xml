@@ -44,7 +44,7 @@
         <applicationService
                 serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.XmlSchemaCacheService"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>
 
 <!--        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.ConnectorXmlSchemaCacheService"/>-->
 
