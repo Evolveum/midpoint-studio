@@ -36,6 +36,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManagerEx;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VfsUtilCore;
@@ -695,5 +696,30 @@ public class MidPointUtils {
 
         boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
         evt.getPresentation().setEnabled(enabled);
+    }
+
+    public static Module guessMidpointModule(Project project) {
+        ModuleManager mm = ModuleManager.getInstance(project);
+        Module[] modules = mm.getModules();
+
+        if (modules == null || modules.length == 0) {
+            return null;
+        }
+
+        for (Module module : modules) {
+            ModuleRootManagerEx mrm = ModuleRootManagerEx.getInstanceEx(module);
+            for (VirtualFile file : mrm.getContentRoots()) {
+                if (!file.isDirectory()) {
+                    continue;
+                }
+
+                VirtualFile objects = file.findChild("objects");
+                if (objects != null && objects.isDirectory()) {
+                    return module;
+                }
+            }
+        }
+
+        return modules[0];
     }
 }
