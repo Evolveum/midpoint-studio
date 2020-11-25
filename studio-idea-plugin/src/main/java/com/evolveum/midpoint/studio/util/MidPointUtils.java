@@ -638,8 +638,15 @@ public class MidPointUtils {
         if (modules == null || modules.length == 0) {
             return false;
         }
-        FacetManager fm = FacetManager.getInstance(modules[0]);
-        return fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null;
+
+        for (Module module : modules) {
+            FacetManager fm = FacetManager.getInstance(module);
+            if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static boolean isItObjectTypeOidAttribute(PsiElement element) {
