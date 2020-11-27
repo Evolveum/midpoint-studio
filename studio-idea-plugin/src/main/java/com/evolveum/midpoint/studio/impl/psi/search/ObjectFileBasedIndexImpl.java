@@ -201,16 +201,28 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
     }
 
     public static VirtualFile getVirtualFile(String oid, Project project) {
-        if (oid == null) {
-            return null;
-        }
-
-        Collection<VirtualFile> files = FileBasedIndex.getInstance().getContainingFiles(NAME, oid, createFilter(project));
+        List<VirtualFile> files = new ArrayList<>();
         if (files == null || files.isEmpty()) {
             return null;
         }
 
-        return files.iterator().next();
+        return files.get(0);
+    }
+
+    public static List<VirtualFile> getVirtualFiles(String oid, Project project) {
+        if (oid == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<VirtualFile> files = FileBasedIndex.getInstance().getContainingFiles(NAME, oid, createFilter(project));
+        if (files == null || files.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<VirtualFile> result = new ArrayList<>();
+        result.addAll(files);
+
+        return result;
     }
 
     public static List<OidNameValue> getOidNamesByOid(String oid, Project project) {

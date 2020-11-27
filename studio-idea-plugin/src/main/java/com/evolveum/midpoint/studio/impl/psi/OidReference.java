@@ -1,7 +1,5 @@
 package com.evolveum.midpoint.studio.impl.psi;
 
-import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -14,21 +12,20 @@ import org.jetbrains.annotations.Nullable;
  */
 public class OidReference extends PsiReferenceBase<XmlAttributeValue> {
 
-    public OidReference(XmlAttributeValue element) {
+    private VirtualFile file;
+
+    public OidReference(XmlAttributeValue element, VirtualFile file) {
         super(element, true);
+
+        this.file = file;
     }
 
     @Override
     public @Nullable PsiFile resolve() {
-        Project project = getElement().getProject();
-
-        String oid = getElement().getValue();
-
-        VirtualFile file = ObjectFileBasedIndexImpl.getVirtualFile(oid, project);
         if (file == null) {
             return null;
         }
 
-        return PsiManager.getInstance(project).findFile(file);
+        return PsiManager.getInstance(getElement().getProject()).findFile(file);
     }
 }
