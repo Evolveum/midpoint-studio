@@ -1,8 +1,10 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.hints.HintInfo;
 import com.intellij.codeInsight.hints.InlayInfo;
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +38,12 @@ public class MidPointInlayParameterHintsProvider implements InlayParameterHintsP
     @Override
     public @NotNull List<InlayInfo> getParameterHints(@NotNull PsiElement element) {
         List<InlayInfo> list = new ArrayList<>();
+
+        Project project = element.getProject();
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return list;
+        }
+
 
         for (InlayParameterHintsProvider p : PROVIDERS) {
             list.addAll(p.getParameterHints(element));
