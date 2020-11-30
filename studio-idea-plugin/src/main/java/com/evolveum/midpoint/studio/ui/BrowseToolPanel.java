@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
+import com.evolveum.midpoint.prism.impl.query.EqualFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
@@ -16,10 +17,7 @@ import com.evolveum.midpoint.studio.action.browse.DownloadAction;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.browse.Generator;
-import com.evolveum.midpoint.studio.impl.browse.GeneratorAction;
-import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
-import com.evolveum.midpoint.studio.impl.browse.ProcessResultsOptions;
+import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -61,6 +59,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
 
@@ -108,6 +107,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private boolean rawDownload = true;
 
     private Paging paging = new Paging();
+    private QName nameFilterType = Constants.Q_SUBSTRING;
 
     private ProcessResultsOptions processResultsOptions = new ProcessResultsOptions();
 
@@ -529,12 +529,13 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void pagingSettingsPerformed(AnActionEvent evt) {
-        PagingDialog dialog = new PagingDialog(paging);
+        BrowseSettingsDialog dialog = new BrowseSettingsDialog(nameFilterType, paging);
         if (!dialog.showAndGet()) {
             return;
         }
 
         this.paging = dialog.getPaging();
+        this.nameFilterType = dialog.getNameFilterType();
     }
 
     private boolean isDownloadShowEnabled() {
@@ -629,11 +630,15 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         if (name) {
             PrismPropertyDefinition def = ctx.getSchemaRegistry().findPropertyDefinitionByElementName(ObjectType.F_NAME);
             QName matchingRule = PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME;
-            List<ObjectFilter> substrings = new ArrayList<>();
+            List<ObjectFilter> filters = new ArrayList<>();
             for (String s : filtered) {
-                substrings.add(SubstringFilterImpl.createSubstring(ctx.path(ObjectType.F_NAME), def, ctx, matchingRule, s, false, false));
+                ObjectFilter filter = Objects.equals(nameFilterType, Constants.Q_EQUAL_Q) ?
+                        EqualFilterImpl.createEqual(ctx.path(ObjectType.F_NAME), def, matchingRule, ctx, s) :
+                        SubstringFilterImpl.createSubstring(ctx.path(ObjectType.F_NAME), def, ctx, matchingRule, s, false, false);
+
+                filters.add(filter);
             }
-            OrFilter nameOr = qf.createOr(substrings);
+            OrFilter nameOr = qf.createOr(filters);
             or.addCondition(nameOr);
         }
 
