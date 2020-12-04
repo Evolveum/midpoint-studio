@@ -194,7 +194,7 @@ public class OperationResultDialog extends DialogWrapper {
         FileSaverDialog saver = FileChooserFactory.getInstance().createSaveFileDialog(
                 new FileSaverDescriptor("Save Operation Result As Xml", "Save to", "xml"), project);
 
-        VirtualFileWrapper target = saver.save(null, project.getName() + ".xml");
+        VirtualFileWrapper target = saver.save((VirtualFile) null, project.getName() + ".xml");
         if (target != null) {
             Task.Backgroundable task = new Task.Backgroundable(project, "Saving Operation Result Xml") {
 

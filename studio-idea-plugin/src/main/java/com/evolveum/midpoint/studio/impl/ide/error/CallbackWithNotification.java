@@ -10,19 +10,19 @@ import com.intellij.util.Consumer;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class CallbackWithNotification implements Consumer<SubmittedReportInfo> {
+public class CallbackWithNotification<O extends SubmittedReportInfo> implements Consumer<O> {
 
-    private Consumer<SubmittedReportInfo> originalConsumer;
+    private Consumer<O> originalConsumer;
 
     private Project project;
 
-    public CallbackWithNotification(Consumer<SubmittedReportInfo> originalConsumer, Project project) {
+    public CallbackWithNotification(Consumer<O> originalConsumer, Project project) {
         this.originalConsumer = originalConsumer;
         this.project = project;
     }
 
     @Override
-    public void consume(SubmittedReportInfo reportInfo) {
+    public void consume(O reportInfo) {
         originalConsumer.consume(reportInfo);
 
         if (reportInfo.getStatus().equals(SubmittedReportInfo.SubmissionStatus.FAILED)) {
