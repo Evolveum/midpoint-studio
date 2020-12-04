@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.action;
 
-import com.evolveum.midpoint.studio.impl.ConnectorXmlSchemaCacheService;
-import com.evolveum.midpoint.studio.impl.XmlSchemaCacheService;
+import com.evolveum.midpoint.studio.impl.cache.ConnectorXmlSchemaCacheService;
+import com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;

@@ -78,7 +78,13 @@ Versioning scheme aligns to MidPoint releases.
 For example, MidPoint version 4.3 will correspond to MidPoint Studio release 4.3.
 `4.3-SNAPSHOT` builds produced by maven will equal to 4.2-XXX-[nightly] versions.
 
-Whole build & publish process is managed by https://jenkins.evolveum.com/[Jenkins CI] using git branches.
+Whole build & publish process is managed by https://jenkins.evolveum.com/[Jenkins CI] using git branches. There are two jobs:
+
+* `midpoint-studio-master` -> polls git repository and build `master` branch periodically
+* `midpoint-studio-release` -> manual job, that's used to publish new builds to JetBrains Marketstore. It Accepts two options:
+** `PUBLISH` - boolean, whether build should be published to JetBrains Marketstore
+** `PUBLISH_BRANCH` - which release (nightly/milestone/stable) should be built. Builds will trigger cascade, e.g. `stable` -> `milestone` -> `nightly`
+
 Each type of release (nightly, milestone, stable) is published to https://plugins.jetbrains.com/plugin/13809-midpoint-studio[JetBrains Marketplace].
 
 === Logging settings

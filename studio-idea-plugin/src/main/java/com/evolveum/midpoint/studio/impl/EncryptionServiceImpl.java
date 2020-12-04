@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import de.slackspace.openkeepass.KeePassDatabase;
@@ -71,7 +72,8 @@ public class EncryptionServiceImpl implements EncryptionService {
 
             writeDatabase(newPassword);
         } else {
-            this.database = KeePassDatabase.getInstance(dbFile).openDatabase(oldPassword);
+            String pwd = oldPassword != null ? oldPassword : newPassword;
+            this.database = KeePassDatabase.getInstance(dbFile).openDatabase(pwd);
             writeDatabase(newPassword);
         }
 
@@ -96,6 +98,10 @@ public class EncryptionServiceImpl implements EncryptionService {
 
         String masterPassword = getMasterPassword();
         if (StringUtils.isEmpty(masterPassword)) {
+            MidPointUtils.publishNotification(NOTIFICATION_KEY,
+                    "Credentials file", "Master password not set. All encrypted values will be forgotten after " +
+                            "restart, e.g. environment usernames/passwords, encrypted properties. ", NotificationType.WARNING,
+                    new UpdateMasterPasswordNotificationAction(false));
             return;
         }
 
@@ -109,7 +115,8 @@ public class EncryptionServiceImpl implements EncryptionService {
             try {
                 database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
             } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't open credentials database with master password", ex);
+                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                        "Couldn't open credentials database with master password", ex, new UpdateMasterPasswordNotificationAction(true));
             }
         }
     }
