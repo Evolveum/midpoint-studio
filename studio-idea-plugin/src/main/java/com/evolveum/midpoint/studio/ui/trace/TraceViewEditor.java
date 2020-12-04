@@ -82,7 +82,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
 
         } catch (Exception ex) {
             MidPointService mm = MidPointService.getInstance(project);
-            mm.printToConsole(TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
+            mm.printToConsole(null, TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't load file", ex);
 
             ex.printStackTrace();

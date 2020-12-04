@@ -221,9 +221,9 @@ public class MidPointUtils {
                 .generateServiceName(MidPointSettings.class.getSimpleName(), key));
     }
 
-    public static void publishException(Project project, Class clazz, String notificationKey, String msg, Exception ex) {
+    public static void publishException(Project project, Environment env, Class clazz, String notificationKey, String msg, Exception ex) {
         MidPointService mm = MidPointService.getInstance(project);
-        mm.printToConsole(clazz, msg + ". Reason: " + ex.getMessage());
+        mm.printToConsole(env, clazz, msg + ". Reason: " + ex.getMessage());
 
         publishExceptionNotification(notificationKey, msg, ex);
     }
@@ -272,7 +272,7 @@ public class MidPointUtils {
         Notifications.Bus.notify(notification);
     }
 
-    public static void handleGenericException(Project project, Class clazz, String key, String message, Exception ex) {
+    public static void handleGenericException(Project project, Environment env, Class clazz, String key, String message, Exception ex) {
         NotificationAction action = null;
         if (ex instanceof ClientException) {
             OperationResult result = ((ClientException) ex).getResult();
@@ -288,7 +288,7 @@ public class MidPointUtils {
 
         if (project != null) {
             MidPointService manager = MidPointService.getInstance(project);
-            manager.printToConsole(clazz, message, ex);
+            manager.printToConsole(env, clazz, message, ex);
         }
     }
 

@@ -33,7 +33,7 @@ public class ShowExceptionNotificationAction extends NotificationAction {
         }
         sb.append(ExceptionUtil.getThrowableText(exception));
 
-        mm.printToConsole(TestConnectionAction.class, sb.toString());
+        mm.printToConsole(null, TestConnectionAction.class, sb.toString());
         mm.focusConsole();
     }
 

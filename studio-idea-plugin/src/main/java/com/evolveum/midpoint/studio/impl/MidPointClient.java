@@ -94,14 +94,14 @@ public class MidPointClient {
                 }
 
                 if (!suppressConsole) {
-                    midPointManager.printToConsole(MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+                    midPointManager.printToConsole(environment, MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
                 }
             });
 
             client = factory.create();
 
             if (midPointManager != null && !suppressConsole) {
-                midPointManager.printToConsole(MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+                midPointManager.printToConsole(environment, MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
             }
         } catch (Exception ex) {
             handleGenericException("Couldn't create rest client", ex);
@@ -124,7 +124,7 @@ public class MidPointClient {
 
     private void printToConsole(String message) {
         if (midPointManager != null && !suppressConsole) {
-            midPointManager.printToConsole(MidPointClient.class, message);
+            midPointManager.printToConsole(getEnvironment(), MidPointClient.class, message);
         }
     }
 
@@ -191,7 +191,7 @@ public class MidPointClient {
 
     private void handleGenericException(String message, Exception ex) {
         if (!suppressNotifications) {
-            MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
+            MidPointUtils.handleGenericException(project, getEnvironment(), MidPointClient.class, NOTIFICATION_KEY, message, ex);
         }
     }
 

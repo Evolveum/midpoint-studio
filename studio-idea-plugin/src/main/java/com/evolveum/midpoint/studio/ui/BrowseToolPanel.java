@@ -402,7 +402,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
                 query = callable.call();
             } catch (Exception ex) {
-                handleGenericException("Couldn't serialize query", ex);
+                handleGenericException(env, "Couldn't serialize query", ex);
             }
         }
 
@@ -438,7 +438,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             LOG.debug("Starting search");
             result = client.list(type.getClassDefinition(), query, rawSearch);
         } catch (Exception ex) {
-            handleGenericException("Couldn't search objects", ex);
+            handleGenericException(env, "Couldn't search objects", ex);
         }
 
         LOG.debug("Updating table");
@@ -450,8 +450,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         // updatePagingAction(result, query.getOffset());
     }
 
-    private void handleGenericException(String message, Exception ex) {
-        MidPointUtils.handleGenericException(project, BrowseToolPanel.class, NOTIFICATION_KEY, message, ex);
+    private void handleGenericException(Environment env, String message, Exception ex) {
+        MidPointUtils.handleGenericException(project, env, BrowseToolPanel.class, NOTIFICATION_KEY, message, ex);
     }
 
     private List<Pair<String, ObjectTypes>> getSelectedOids() {

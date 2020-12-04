@@ -40,7 +40,7 @@ public class GenerateDocumentationAction extends BackgroundAction {
         } catch (Exception ex) {
             LOG.error("Couldn't generate documentation", ex);
 
-            MidPointUtils.handleGenericException(evt.getProject(), GenerateDocumentationAction.class,
+            MidPointUtils.handleGenericException(evt.getProject(), null, GenerateDocumentationAction.class,
                     NOTIFICATION_KEY, "Couldn't generate documentation", ex);
         }
     }

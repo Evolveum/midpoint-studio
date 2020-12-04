@@ -106,7 +106,7 @@ public class DiffRemoteAction extends BackgroundAction {
 
             if (objects.isEmpty()) {
                 skipped++;
-                mm.printToConsole(DiffRemoteAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
+                mm.printToConsole(env, DiffRemoteAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
                 continue;
             }
 
@@ -128,12 +128,12 @@ public class DiffRemoteAction extends BackgroundAction {
                 } catch (ObjectNotFoundException ex) {
                     missing++;
 
-                    mm.printToConsole(DiffRemoteAction.class, "Couldn't find object "
+                    mm.printToConsole(env, DiffRemoteAction.class, "Couldn't find object "
                             + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
 
-                    mm.printToConsole(DiffRemoteAction.class, "Error getting object"
+                    mm.printToConsole(env, DiffRemoteAction.class, "Error getting object"
                             + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
             }
@@ -181,7 +181,7 @@ public class DiffRemoteAction extends BackgroundAction {
                 } catch (SchemaException | IOException ex) {
                     failed.incrementAndGet();
 
-                    mm.printToConsole(DiffRemoteAction.class, "Failed to compare file " + file.getPath(), ex);
+                    mm.printToConsole(env, DiffRemoteAction.class, "Failed to compare file " + file.getPath(), ex);
                 } finally {
                     IOUtils.closeQuietly(writer);
                 }

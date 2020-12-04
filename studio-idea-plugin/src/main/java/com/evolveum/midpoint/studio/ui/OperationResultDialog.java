@@ -229,7 +229,7 @@ public class OperationResultDialog extends DialogWrapper {
 
                 file.createNewFile();
             } catch (IOException ex) {
-                mm.printToConsole(OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
             }
 
             VirtualFile vFile = fileWrapper.getVirtualFile();
@@ -246,7 +246,7 @@ public class OperationResultDialog extends DialogWrapper {
 
                 IOUtils.write(xml, out);
             } catch (IOException | SchemaException ex) {
-                mm.printToConsole(OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
             }
         });
     }
