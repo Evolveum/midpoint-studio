@@ -3,7 +3,7 @@ allprojects {
         mavenCentral()
         mavenLocal()
         maven {
-            url 'http://nexus.evolveum.com/nexus/content/repositories/releases/'
+            url 'https://nexus.evolveum.com/nexus/content/repositories/releases/'
         }
         maven {
             url 'https://nexus.evolveum.com/nexus/content/groups/public/'
