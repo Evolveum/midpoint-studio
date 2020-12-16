@@ -178,7 +178,7 @@ public class DiffRemoteAction extends BackgroundAction {
                         writer.write(MidPointObjectUtils.DELTAS_XML_SUFFIX);
                         writer.write('\n');
                     }
-                } catch (SchemaException | IOException ex) {
+                } catch (Exception ex) {
                     failed.incrementAndGet();
 
                     mm.printToConsole(env, DiffRemoteAction.class, "Failed to compare file " + file.getPath(), ex);

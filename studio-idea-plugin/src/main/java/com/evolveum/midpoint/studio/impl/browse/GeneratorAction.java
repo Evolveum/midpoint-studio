@@ -84,7 +84,7 @@ public class GeneratorAction extends BackgroundAction {
         List<PrismObject<?>> objects = null;
         try {
             objects = client.parseObjects(content);
-        } catch (IOException | SchemaException ex) {
+        } catch (Exception ex) {
             MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't parse generated content", ex);
         }
 
@@ -93,6 +93,7 @@ public class GeneratorAction extends BackgroundAction {
                 UploadResponse resp = client.upload(object, Collections.emptyList());
                 // todo check oid/result
             } catch (Exception ex) {
+                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't upload generated content", ex);
                 // todo proper error handling (sum all errors and show notification if necessary)
             }
         }
