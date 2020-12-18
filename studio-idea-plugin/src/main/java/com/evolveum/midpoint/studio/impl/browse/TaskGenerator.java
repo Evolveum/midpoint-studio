@@ -94,7 +94,8 @@ public class TaskGenerator extends Generator {
                         objectQuery.appendChild(doc.adoptNode(child));
                     }
                 } catch (RuntimeException e) {
-                    MidPointUtils.publishExceptionNotification(GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
+                    MidPointUtils.publishExceptionNotification(null, TaskGenerator.class,
+                            GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
                     throw e;
                 }
             }

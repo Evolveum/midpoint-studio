@@ -47,7 +47,7 @@ public class UpdateMasterPasswordNotificationAction extends NotificationAction {
             MidPointUtils.publishNotification(EncryptionService.NOTIFICATION_KEY, "Master Password",
                     "Master password update successful.", NotificationType.INFORMATION);
         } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(EncryptionService.NOTIFICATION_KEY,
+            MidPointUtils.publishExceptionNotification(null, UpdateMasterPasswordNotificationAction.class, EncryptionService.NOTIFICATION_KEY,
                     "Couldn't open credentials database with master password", ex, new UpdateMasterPasswordNotificationAction(true));
         }
     }

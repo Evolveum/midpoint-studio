@@ -99,7 +99,7 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
             sb.append('[').append(env.getName()).append("] ");
         }
 
-        sb.append(clazz.getSimpleName());
+        sb.append(clazz != null ? clazz.getSimpleName() : "");
         sb.append(": ");
         if (message != null) {
             sb.append(message);

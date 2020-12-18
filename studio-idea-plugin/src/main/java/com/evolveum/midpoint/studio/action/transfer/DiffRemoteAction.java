@@ -1,16 +1,14 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.delta.ObjectDelta;
-import com.evolveum.midpoint.schema.DeltaConvertor;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
+import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
+import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 import com.intellij.icons.AllIcons;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -22,7 +20,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -151,13 +148,15 @@ public class DiffRemoteAction extends BackgroundAction {
                             continue;
                         }
 
+                        // todo expand local content before its used for comparing
                         PrismObject localObject = client.parseObject(local.getContent());
                         PrismObject remoteObject = client.parseObject(remote.getContent());
 
-                        ObjectDelta delta = localObject.diff(remoteObject);
-                        ObjectDeltaType odt = DeltaConvertor.toObjectDeltaType(delta);
+                        ObjectDeltaObjectType odo = new ObjectDeltaObjectType();
+                        odo.setOldObject((ObjectType) localObject.asObjectable());
+                        odo.setNewObject((ObjectType) remoteObject.asObjectable());
 
-                        String xml = client.serialize(odt);
+                        String xml = client.serialize(odo);
                         deltas.add(xml);
                     }
 

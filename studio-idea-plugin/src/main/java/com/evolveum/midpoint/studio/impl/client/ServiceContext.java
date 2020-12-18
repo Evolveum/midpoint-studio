@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.client;
 import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -71,31 +72,11 @@ public class ServiceContext {
     }
 
     public PrismSerializer<String> getSerializer() {
-        return prismContext.xmlSerializer()
-                .options(SerializationOptions.createSerializeReferenceNames());
+        return MidPointUtils.getSerializer(prismContext);
     }
 
     public String serialize(Object object) throws SchemaException {
-        final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
-
-        PrismSerializer<String> serializer = getSerializer();
-
-        String result;
-        if (object instanceof ObjectType) {
-            ObjectType ot = (ObjectType) object;
-            result = serializer.serialize(ot.asPrismObject());
-        } else if (object instanceof PrismObject) {
-            result = serializer.serialize((PrismObject<?>) object);
-        } else if (object instanceof OperationResult) {
-            LocalizationService localizationService = new LocalizationServiceImpl();
-            Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
-            OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
-            result = serializer.serializeAnyData(operationResultType, fakeQName);
-        } else {
-            result = serializer.serializeAnyData(object, fakeQName);
-        }
-
-        return result;
+        return MidPointUtils.serialize(prismContext, object);
     }
 
     public <T> T parse(String text, Class<T> type) throws SchemaException, IOException {

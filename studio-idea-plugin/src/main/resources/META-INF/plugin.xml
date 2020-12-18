@@ -163,6 +163,7 @@
 
         <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
 
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.delta.ObjectDeltaEditorProvider"/>
 
         <diff.lang.DiffIgnoredRangeProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>

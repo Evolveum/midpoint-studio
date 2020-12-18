@@ -140,7 +140,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     private void publishException(MidPointService mm, String msg, Exception ex) {
         mm.printToConsole(environment, getClass(), msg + ". Reason: " + ex.getMessage());
 
-        MidPointUtils.publishExceptionNotification(notificationKey, msg, ex);
+        MidPointUtils.publishExceptionNotification(environment, getClass(), notificationKey, msg, ex);
     }
 
     private void processFiles(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
