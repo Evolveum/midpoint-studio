@@ -1,10 +1,10 @@
 package com.evolveum.midpoint.studio.action;
 
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.ShowExceptionNotificationAction;
+import com.evolveum.midpoint.studio.impl.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationAction;
@@ -84,13 +84,15 @@ public class TestConnectionAction extends AnAction {
 
             NotificationAction action = null;
             if (result.exception() != null) {
-                action = new ShowExceptionNotificationAction("Connection test exception for '" + environment.getName() + "'", result.exception());
+                action = new ShowExceptionNotificationAction("Connection test exception for '" + environment.getName() + "'",
+                        result.exception(), TestConnectionAction.class, environment);
             }
 
             MidPointUtils.publishNotification(NOTIFICATION_KEY, "Test connection",
                     "Connection test for '" + environment.getName() + "' " + status + "." + versionInfo, type, action);
         } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Connection test for '" + environment.getName() + "' failed with exception", ex);
+            MidPointUtils.publishExceptionNotification(environment, TestConnectionAction.class,
+                    NOTIFICATION_KEY, "Connection test for '" + environment.getName() + "' failed with exception", ex);
         }
     }
 }

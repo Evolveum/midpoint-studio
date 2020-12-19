@@ -1,10 +1,10 @@
-<idea-plugin>
+<idea-plugin require-restart="true">
     <id>com.evolveum.midpoint.studio</id>
     <name>MidPoint Studio</name>
-    <vendor email="midpoint.studio@evolveum.com" url="https://evolveum.com">evolveum, s.r.o.</vendor>
+    <vendor email="midpoint.studio@evolveum.com" url="https://evolveum.com/">Evolveum</vendor>
 
     <description><![CDATA[
-        Plugin which enables support for MidPoint configuration files.
+        Integrated development environment for MidPoint configuration.
 
         <b>Features</b>
         <ul>
@@ -21,9 +21,13 @@
 
     <change-notes><![CDATA[
 
-        <h1>Release 4.1</h1>
+        <h1>Nightly 4.3</h1>
         <ul>
-            <li>Initial release of plugin</li>
+            <li>Bugfixes</li>
+        </ul>
+
+        <h1>Release 4.2</h1>
+        <ul>
             <li>Browse/Upload with raw options for both operations</li>
             <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
             <li>XML tags autocompletion, links to documentation</li>
@@ -43,6 +47,12 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService
                 serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
+
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>
+
+<!--        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.ConnectorXmlSchemaCacheService"/>-->
+
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
@@ -120,11 +130,11 @@
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsWindowFactory"/>
 
         <facet.toolWindow id="TraceGraph"
-                    facetIdList="MidPointFacet"
-                    anchor="right"
-                    order="last"
-                    icon="/icons/midpoint.png"
-                    factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
+                          facetIdList="MidPointFacet"
+                          anchor="right"
+                          order="last"
+                          icon="/icons/midpoint.png"
+                          factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
 
         <fileType
                 name="MPTrace"
@@ -132,11 +142,11 @@
                 extensions="zip|xml|mptrace"
                 language=""
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
-        <fileTypeFactory implementation="com.evolveum.midpoint.studio.impl.trace.MPTraceFileTypeFactory"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
-        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
+        <!--        todo finish -->
+<!--        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>-->
 
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
@@ -156,6 +166,7 @@
 
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.metrics.MetricsEditorProvider"/>
 
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.delta.ObjectDeltaEditorProvider"/>
 
         <diff.lang.DiffIgnoredRangeProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
@@ -202,6 +213,11 @@
                 class="com.evolveum.midpoint.studio.action.transfer.RefreshAction"
                 text="Refresh From Server"
                 icon="/icons/buildLoadChanges.svg"/>
+
+        <action id="MidPoint.Action.DiffRemote"
+                class="com.evolveum.midpoint.studio.action.transfer.DiffRemoteAction"
+                text="Diff Remote"
+                icon="AllIcons.Actions.Diff"/>
 
         <!-- SERVER SIDE -->
 
@@ -289,6 +305,8 @@
 
                 <reference ref="MidPoint.Action.Refresh"/>
 
+                <reference ref="MidPoint.Action.DiffRemote"/>
+
                 <separator/>
 
                 <reference ref="MidPoint.Action.DeleteRaw"/>
@@ -338,7 +356,7 @@
 
         <group id="MidPoint.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
-            <!--            <reference ref="MidPoint.Action.TestAction"/>-->
+<!--                        <reference ref="MidPoint.Action.TestAction"/>-->
 
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>
@@ -347,6 +365,8 @@
             <separator/>
 
             <reference ref="MidPoint.Action.Refresh"/>
+
+            <reference ref="MidPoint.Action.DiffRemote"/>
 
             <separator/>
 

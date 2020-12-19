@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
@@ -14,9 +15,11 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -41,25 +44,7 @@ public class RefreshAction extends BackgroundAction {
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
-        if (evt.getProject() == null) {
-            return;
-        }
-
-        boolean hasFacet = MidPointUtils.hasMidPointFacet(evt.getProject());
-        if (!hasFacet) {
-            evt.getPresentation().setVisible(false);
-            return;
-        }
-
-        VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
-                (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
-
-        List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
-
-        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
-
-        boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
-        evt.getPresentation().setEnabled(enabled);
+        MidPointUtils.updateServerActionState(evt);
     }
 
     @Override
@@ -67,6 +52,8 @@ public class RefreshAction extends BackgroundAction {
         if (evt.getProject() == null) {
             return;
         }
+
+        indicator.setIndeterminate(false);
 
         EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
@@ -79,9 +66,24 @@ public class RefreshAction extends BackgroundAction {
         AtomicInteger result = new AtomicInteger(0);
 
         ApplicationManager.getApplication().invokeAndWait(() -> {
-            int r = Messages.showConfirmationDialog((JComponent) evt.getInputEvent().getComponent(),
-                    "Are you sure you want to reload " + toProcess.size() + " file(s) from the server '" + env.getName() + "'?",
-                    "Confirm action", "Refresh", "Cancel");
+            Component comp = evt.getInputEvent().getComponent();
+
+            JComponent source;
+            if (comp instanceof JComponent) {
+                source = (JComponent) comp;
+            } else {
+                JWindow w;
+                if (comp instanceof JWindow) {
+                    w = (JWindow) comp;
+                } else {
+                    w = (JWindow) WindowManager.getInstance().suggestParentWindow(evt.getProject());
+                }
+
+                source = w.getRootPane();
+            }
+
+            int r = Messages.showConfirmationDialog(source, "Are you sure you want to reload " + toProcess.size()
+                    + " file(s) from the server '" + env.getName() + "'?", "Confirm action", "Refresh", "Cancel");
 
             result.set(r);
         });
@@ -121,15 +123,17 @@ public class RefreshAction extends BackgroundAction {
             List<MidPointObject> objects = new ArrayList<>();
 
             RunnableUtils.runWriteActionAndWait(() -> {
-                file.refresh(false, false);
+                file.refresh(false, true);
 
                 List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                obj = MidPointObjectUtils.filterObjectTypeOnly(obj);
+
                 objects.addAll(obj);
             });
 
             if (objects.isEmpty()) {
                 skipped++;
-                mm.printToConsole(RefreshAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
+                mm.printToConsole(env, RefreshAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
                 continue;
             }
 
@@ -140,29 +144,30 @@ public class RefreshAction extends BackgroundAction {
                     break;
                 }
 
+                ObjectTypes type = object.getType();
                 try {
-                    String newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
-                    newObjects.add(newObject);
+                    MidPointObject newObject = client.get(type.getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    newObjects.add(newObject.getContent());
 
                     reloaded.incrementAndGet();
                 } catch (ObjectNotFoundException ex) {
                     missing++;
                     newObjects.add(object.getContent());
 
-                    mm.printToConsole(RefreshAction.class, "Couldn't find object "
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+                    mm.printToConsole(env, RefreshAction.class, "Couldn't find object "
+                            + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
                     newObjects.add(object.getContent());
 
-                    mm.printToConsole(RefreshAction.class, "Error getting object"
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
+                    mm.printToConsole(env, RefreshAction.class, "Error getting object"
+                            + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
             }
 
             RunnableUtils.runWriteActionAndWait(() -> {
                 try (Writer writer = new OutputStreamWriter(file.getOutputStream(this), file.getCharset())) {
-                    if (objects.size() > 1) {
+                    if (newObjects.size() > 1) {
                         writer.write(MidPointObjectUtils.OBJECTS_XML_PREFIX);
                         writer.write('\n');
                     }
@@ -171,14 +176,14 @@ public class RefreshAction extends BackgroundAction {
                         writer.write(obj);
                     }
 
-                    if (objects.size() > 1) {
+                    if (newObjects.size() > 1) {
                         writer.write(MidPointObjectUtils.OBJECTS_XML_SUFFIX);
                         writer.write('\n');
                     }
                 } catch (IOException ex) {
                     failed.incrementAndGet();
 
-                    mm.printToConsole(RefreshAction.class, "Failed to write refreshed file " + file.getPath(), ex);
+                    mm.printToConsole(env, RefreshAction.class, "Failed to write refreshed file " + file.getPath(), ex);
                 }
             });
         }

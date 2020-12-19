@@ -143,12 +143,16 @@ public class BrowseTableModel extends AbstractTreeTableModel {
                 ObjectTypes type = (ObjectTypes) obj;
                 data.forEach(o -> {
                     if (type.getClassDefinition().equals(o.getClass())) {
-                        selected.add(o);
+                        if (!selected.contains(o)) {
+                            selected.add(o);
+                        }
                     }
                 });
             } else if (obj instanceof ObjectType) {
                 ObjectType o = (ObjectType) obj;
-                selected.add(o);
+                if (!selected.contains(o)) {
+                    selected.add(o);
+                }
             }
         }
 

@@ -217,7 +217,9 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
         SchemaRegistry registry = ctx.getSchemaRegistry();
 
-        return registry.determineClassForType(qname);
+        Class clazz = registry.determineClassForType(qname);
+
+        return clazz != null ? clazz : Object.class;
     }
 
     private Class getSourceVariableType(List<QName> names) {

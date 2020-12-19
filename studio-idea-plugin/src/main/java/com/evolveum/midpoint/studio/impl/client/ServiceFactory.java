@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.util.DOMUtilSettings;
+import com.evolveum.midpoint.util.MiscUtil;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -17,11 +18,14 @@ import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class ServiceFactory {
+
+    public static final int TIMEOUT = 60;
 
     public static final PrismContext DEFAULT_PRISM_CONTEXT;
 
@@ -30,6 +34,9 @@ public class ServiceFactory {
 
         try {
             Thread.currentThread().setContextClassLoader(ServiceFactory.class.getClassLoader());
+
+            // just to initialize MiscUtil class with correct classloader
+            MiscUtil.emptyIfNull("");
 
             DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
             // todo create web client just to obtain extension schemas!
@@ -120,6 +127,10 @@ public class ServiceFactory {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.followSslRedirects(false);
         builder.followRedirects(false);
+
+        builder.writeTimeout(TIMEOUT, TimeUnit.SECONDS);
+        builder.readTimeout(TIMEOUT, TimeUnit.SECONDS);
+        builder.connectTimeout(TIMEOUT, TimeUnit.SECONDS);
 
         if (username != null || password != null) {
             builder.authenticator((route, response) -> {

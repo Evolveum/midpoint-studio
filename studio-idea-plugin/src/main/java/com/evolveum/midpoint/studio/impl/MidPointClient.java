@@ -51,14 +51,17 @@ public class MidPointClient {
 
     private boolean suppressNotifications;
 
+    private boolean suppressConsole;
+
     public MidPointClient(Project project, @NotNull Environment environment) {
-        this(project, environment, false);
+        this(project, environment, false, false);
     }
 
-    public MidPointClient(Project project, @NotNull Environment environment, boolean suppressNotifications) {
+    public MidPointClient(Project project, @NotNull Environment environment, boolean suppressNotifications, boolean suppressConsole) {
         this.project = project;
         this.environment = environment;
         this.suppressNotifications = suppressNotifications;
+        this.suppressConsole = suppressConsole;
 
         if (project != null) {
             this.midPointManager = MidPointService.getInstance(project);
@@ -90,13 +93,15 @@ public class MidPointClient {
                     return;
                 }
 
-                midPointManager.printToConsole(MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+                if (!suppressConsole) {
+                    midPointManager.printToConsole(environment, MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+                }
             });
 
             client = factory.create();
 
-            if (midPointManager != null) {
-                midPointManager.printToConsole(MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+            if (midPointManager != null && !suppressConsole) {
+                midPointManager.printToConsole(environment, MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
             }
         } catch (Exception ex) {
             handleGenericException("Couldn't create rest client", ex);
@@ -118,12 +123,12 @@ public class MidPointClient {
     }
 
     private void printToConsole(String message) {
-        if (midPointManager != null) {
-            midPointManager.printToConsole(MidPointClient.class, message);
+        if (midPointManager != null && !suppressConsole) {
+            midPointManager.printToConsole(getEnvironment(), MidPointClient.class, message);
         }
     }
 
-    public <O extends ObjectType> SearchResultList search(Class<O> type, ObjectQuery query, boolean raw) {
+    private Collection<SelectorOptions<GetOperationOptions>> buildSearchSelectorOptions(boolean raw) {
         Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
         if (raw) {
             options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
@@ -134,11 +139,42 @@ public class MidPointClient {
         options.add(SelectorOptions.create(ctx.toUniformPath(ObjectType.F_SUBTYPE), GetOperationOptions.createRetrieve(RetrieveOption.INCLUDE)));
         options.add(SelectorOptions.create(ctx.toUniformPath(OrgType.F_DISPLAY_NAME), GetOperationOptions.createRetrieve(RetrieveOption.INCLUDE)));
 
-        return search(type, query, options);
+        return options;
     }
 
-    private <O extends ObjectType> SearchResultList<O> search(Class<O> type, ObjectQuery query,
-                                                              Collection<SelectorOptions<GetOperationOptions>> options) {
+    public <O extends ObjectType> SearchResult search(Class<O> type, ObjectQuery query, boolean raw) {
+        Collection<SelectorOptions<GetOperationOptions>> options = buildSearchSelectorOptions(raw);
+
+        printToConsole("Starting objects search for " + type.getSimpleName() + ", " + options);
+
+        SearchResult result = null;
+        try {
+            result = client.search(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
+
+            printToConsole("Search done");
+        } catch (Exception ex) {
+            handleGenericException("Error occurred while searching objects", ex);
+        }
+
+        return result;
+    }
+
+    /**
+     * todo "move" to MidPointObject like apis, not PrismObject here if not necessary
+     */
+    @Deprecated
+    public <O extends ObjectType> SearchResultList list(Class<O> type, ObjectQuery query, boolean raw) {
+        Collection<SelectorOptions<GetOperationOptions>> options = buildSearchSelectorOptions(raw);
+
+        return list(type, query, options);
+    }
+
+    /**
+     * todo "move" to MidPointObject like apis, not PrismObject here if not necessary
+     */
+    @Deprecated
+    private <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query,
+                                                            Collection<SelectorOptions<GetOperationOptions>> options) {
         printToConsole("Starting objects search for " + type.getSimpleName() + ", " + options);
 
         SearchResultList<O> result = null;
@@ -155,36 +191,18 @@ public class MidPointClient {
 
     private void handleGenericException(String message, Exception ex) {
         if (!suppressNotifications) {
-            MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
+            MidPointUtils.handleGenericException(project, getEnvironment(), MidPointClient.class, NOTIFICATION_KEY, message, ex);
         }
     }
 
-    public <O extends ObjectType> String getRaw(Class<O> type, String oid, SearchOptions opts) throws ObjectNotFoundException {
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) throws ObjectNotFoundException {
         printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
 
-        String result = null;
+        MidPointObject result = null;
         try {
             Collection<SelectorOptions<GetOperationOptions>> options =
                     SelectorOptions.createCollection(GetOperationOptions.createRaw());
-            result = client.getRaw(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
-
-            printToConsole("Get done");
-        } catch (Exception ex) {
-            handleGenericException("Error occurred while searching objects", ex);
-        }
-
-        return result;
-    }
-
-    public <O extends ObjectType> PrismObject<O> get(Class<O> type, String oid, SearchOptions opts) {
-        printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
-
-        PrismObject<O> result = null;
-        try {
-            Collection<SelectorOptions<GetOperationOptions>> options =
-                    SelectorOptions.createCollection(GetOperationOptions.createRaw());
-            ObjectType o = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
-            result = (PrismObject) o.asPrismObject();
+            result = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
 
             printToConsole("Get done");
         } catch (Exception ex) {
@@ -214,12 +232,12 @@ public class MidPointClient {
         return client.execute(object);
     }
 
-    public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand) throws IOException, AuthenticationException {
+    public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand, VirtualFile file) throws IOException, AuthenticationException {
         if (expand) {
             EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-            Expander expander = new Expander(environment, cm);
+            Expander expander = new Expander(environment, cm, project);
 
-            String expanded = expander.expand(obj.getContent());
+            String expanded = expander.expand(obj.getContent(), file);
 
             obj = MidPointObject.copy(obj);
             obj.setContent(expanded);
@@ -260,7 +278,7 @@ public class MidPointClient {
 
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         String expanded = expander.expand(xml);
 
@@ -270,7 +288,7 @@ public class MidPointClient {
 
     public List<PrismObject<?>> parseObjects(String xml) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         String expanded = expander.expand(xml);
 
@@ -280,7 +298,7 @@ public class MidPointClient {
 
     public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
@@ -293,7 +311,7 @@ public class MidPointClient {
 
     public <O extends ObjectType> PrismObject<O> parseObject(VirtualFile file) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm);
+        Expander expander = new Expander(environment, cm, project);
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();

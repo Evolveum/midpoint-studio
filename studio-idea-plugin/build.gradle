@@ -1,17 +1,14 @@
 buildscript {
     repositories {
         maven {
-            url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'
+            url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
         }
     }
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.4.21"
-    id "com.palantir.git-version" version "0.12.2"
+    id "org.jetbrains.intellij" version "0.6.5"
 }
-
-apply from: "$rootDir/$project.name/verifier.gradle"
 
 dependencies {
     compile("com.evolveum.midpoint.model:model-common:$midpointVersion") {
@@ -20,6 +17,16 @@ dependencies {
     compile("com.evolveum.midpoint.model:model-api:$midpointVersion") {
         transitive = false
     }
+    compile("com.evolveum.midpoint.model:model-impl:$midpointVersion") {
+        transitive = false
+    }
+    compile("com.evolveum.midpoint.infra:common:$midpointVersion") {
+        exclude group: "org.springframework"
+        exclude group: "net.sf.jasperreports"
+        exclude group: "org.apache.cxf"
+        exclude group: "org.slf4j"
+        exclude group: "ch.qos.logback"
+    }
     compile("com.evolveum.midpoint.repo:security-api:$midpointVersion") {
         transitive = false
     }
@@ -27,6 +34,7 @@ dependencies {
         transitive = false
     }
     compile "com.evolveum.midpoint:midpoint-localization:$midpointVersion"
+
     compile("com.evolveum.midpoint:midscribe-core:$midscribeVersion") {
         exclude group: "org.springframework"
         exclude group: "net.sf.jasperreports"
@@ -43,26 +51,7 @@ dependencies {
     compile "com.squareup.okhttp3:okhttp:$okHttpVersion"
     compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
 
-    // dependencies form midpoint-client, todo cleanup
-
-    compile("com.evolveum.midpoint.model:model-impl:$midpointVersion") {
-        transitive = false
-    }
-    compile("com.evolveum.midpoint.infra:common:$midpointVersion") {
-        exclude group: "org.springframework"
-        exclude group: "net.sf.jasperreports"
-        exclude group: "org.apache.cxf"
-        exclude group: "org.slf4j"
-        exclude group: "ch.qos.logback"
-    }
-
     compile "stax:stax:$staxVersion"
-
-//    compile("com.evolveum.midpoint.infra:schema:4.2-SNAPSHOT") {
-//        exclude group: "org.springframework"
-//        exclude group: "net.sf.jasperreports"
-//        exclude group: "org.apache.cxf"
-//    }
 
     runtime "org.glassfish.jaxb:jaxb-runtime:2.3.2" // needed because of NamespacePrefixMapper class
     runtime("org.springframework:spring-core:5.0.7.RELEASE") {
@@ -71,37 +60,50 @@ dependencies {
     }
 }
 
+if (gitLocalBranch == 'nightly' || gitLocalBranch == 'milestone') {
+    publishChannel = gitLocalBranch
+} else if (gitLocalBranch == 'stable') {
+    publishChannel = 'default'
+}
+
+def channelSuffix = ""
+if (!publishChannel?.isBlank()) {
+    def channel = publishChannel.toLowerCase()
+    if (channel == "nightly") {
+        channelSuffix = "-" + buildNumber + "-" + channel
+    } else if (channel == "milestone") {
+        channelSuffix = "-" + buildNumber
+    }
+}
+
+def fullVersion = "$project.version$channelSuffix"
+
+println "Plugin version: " + fullVersion
+println "Publish channel: " + publishChannel
+
 intellij {
-    version '2020.2'    // 'LATEST-EAP-SNAPSHOT'
+    version '2020.3'
     type 'IC'
     downloadSources true
-    pluginName 'MidPoint Studio'
+    pluginName 'intellij-midpoint-studio'
     updateSinceUntilBuild false
     plugins = [
-            'PsiViewer:202-SNAPSHOT.3',
-            'com.jetbrains.hackathon.indices.viewer:1.8',
+            'PsiViewer:203-SNAPSHOT',
+            'com.jetbrains.hackathon.indices.viewer:1.11',
             'java',
             'Groovy',
             'maven'
     ]
     patchPluginXml {
-        sinceBuild '193'
-        untilBuild '202.*'
-        version project.version + '.' + versionDetails().commitDistance
+        sinceBuild '202'
+        untilBuild '203.*'
+        version fullVersion
+    }
+    runPluginVerifier {
+        ideVersions = ["IC-2020.2.4", "IC-2020.3"]
     }
     publishPlugin {
-        channels project.channels
+        channels publishChannel
         token System.getenv('studio_intellijPublishToken')
-    }
-}
-
-runPluginVerifier {
-    pluginFileName = "$intellij.pluginName-$version"
-    ides = ["IC-2019.3", "IC-2020.1", "IC-2020.2", "IC-LATEST-EAP-SNAPSHOT"]
-}
-
-buildPlugin.configure {
-    doFirst {
-        println "Git describe: " + versionDetails().commitDistance
     }
 }

@@ -24,7 +24,7 @@ public class RepositoryCacheOperationOverviewProvider implements OverviewProvide
 
     @Override
     public void provideOverview(RepositoryCacheOpNode node, DefaultMutableTreeTableNode root,
-            ViewingState initialState) throws SchemaException {
+                                ViewingState initialState) throws SchemaException {
 
         RepositoryOperationTraceType trace = node.getTrace();
         if (trace instanceof RepositoryAddTraceType) {
@@ -34,7 +34,7 @@ public class RepositoryCacheOperationOverviewProvider implements OverviewProvide
         } else if (trace instanceof RepositoryDeleteTraceType) {
             provideOverview((RepositoryDeleteTraceType) trace, root);
         } else {
-            TextNode.create("Operation", trace.getClass().getSimpleName(), root);
+            TextNode.create("Operation", trace.getClass() != null ? trace.getClass().getSimpleName() : "Unknown", root);
             TextNode.create("Cache use", trace.getCacheUse(), root);
             PrismValueNode.create("Global cache use", trace.getGlobalCacheUse(), root);
             PrismValueNode.create("Local cache use", trace.getLocalCacheUse(), root);

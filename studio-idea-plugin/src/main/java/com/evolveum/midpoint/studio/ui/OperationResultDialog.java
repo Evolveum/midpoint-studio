@@ -37,7 +37,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +64,8 @@ public class OperationResultDialog extends DialogWrapper {
 
         this.panel = new BorderLayoutPanel();
 
+        // todo add message multi line renderer
+        // todo add colors for operation/status based on status
         List<TreeTableColumnDefinition<OperationResult, Object>> columns = new ArrayList<>();
         columns.add(new TreeTableColumnDefinition<>("Operation", 150,
                 r -> r.getOperation().replace("com.evolveum.midpoint", "..")));
@@ -190,7 +194,7 @@ public class OperationResultDialog extends DialogWrapper {
         FileSaverDialog saver = FileChooserFactory.getInstance().createSaveFileDialog(
                 new FileSaverDescriptor("Save Operation Result As Xml", "Save to", "xml"), project);
 
-        VirtualFileWrapper target = saver.save(null, project.getName() + ".xml");
+        VirtualFileWrapper target = saver.save((VirtualFile) null, project.getName() + ".xml");
         if (target != null) {
             Task.Backgroundable task = new Task.Backgroundable(project, "Saving Operation Result Xml") {
 
@@ -225,7 +229,7 @@ public class OperationResultDialog extends DialogWrapper {
 
                 file.createNewFile();
             } catch (IOException ex) {
-                mm.printToConsole(OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
             }
 
             VirtualFile vFile = fileWrapper.getVirtualFile();
@@ -242,7 +246,7 @@ public class OperationResultDialog extends DialogWrapper {
 
                 IOUtils.write(xml, out);
             } catch (IOException | SchemaException ex) {
-                mm.printToConsole(OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
             }
         });
     }
@@ -251,5 +255,22 @@ public class OperationResultDialog extends DialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
         return panel;
+    }
+
+    private static class StatusBasedCellTreeRenderer extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+
+            if (!(value instanceof OperationResult)) {
+                return comp;
+            }
+
+            OperationResult result = (OperationResult) value;
+            comp.setForeground(Color.RED);
+            return comp;
+        }
     }
 }

@@ -1,94 +1,60 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
-import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
-import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.hints.HintInfo;
 import com.intellij.codeInsight.hints.InlayInfo;
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiWhiteSpace;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlAttributeValue;
-import com.intellij.psi.xml.XmlTag;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointInlayParameterHintsProvider implements InlayParameterHintsProvider {
 
-    @NotNull
+    private static final InlayParameterHintsProvider[] PROVIDERS = {
+            new OidInlayParameterHintsProvider(),
+            new PropertiesInlayParameterHintsProvider()
+    };
+
     @Override
-    public List<InlayInfo> getParameterHints(PsiElement element) {
-        PsiElement parent = element.getParent();
-        if (!(element instanceof XmlAttributeValue)
-                || !(parent instanceof XmlAttribute)
-                || !"oid".equals(((XmlAttribute) parent).getLocalName())) {
-            return Collections.emptyList();
+    public @NotNull Set<String> getDefaultBlackList() {
+        Set<String> set = new HashSet<>();
+
+        for (InlayParameterHintsProvider p : PROVIDERS) {
+            set.addAll(p.getDefaultBlackList());
         }
 
-        XmlAttributeValue value = (XmlAttributeValue) element;
-        int offset = inlayOffset(element, false);
-
-        XmlAttribute attr = (XmlAttribute) parent;
-        XmlTag tag = attr.getParent();
-        if (MidPointUtils.isObjectTypeElement(tag)) {
-            return Collections.emptyList();
-        }
-
-        // todo implement his inlay parameter hints correctly for oid references
-//        return Arrays.asList(
-//                new InlayInfo("vilo", offset, false, true, false),
-//                new InlayInfo("jano", inlayOffset(element, true), false, true, true)
-//        );
-
-        List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), element.getProject());
-        if (result == null || result.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        String label;
-        if (result.size() == 1) {
-            label = result.iterator().next().getName();
-            if (StringUtils.isEmpty(label)) {
-                label = "Name undefined";
-            }
-        } else {
-            label = "Multiple object with same oid";
-        }
-
-        return Arrays.asList(new InlayInfo(label, offset, false, true, false));
+        return set;
     }
 
-    private int inlayOffset(PsiElement expr, boolean atEnd) {
-        if (expr.getTextRange().isEmpty()) {
-            PsiElement next = expr.getNextSibling();
-            if (next instanceof PsiWhiteSpace) {
-                return next.getTextRange().getEndOffset();
-            }
+    @Override
+    public @NotNull List<InlayInfo> getParameterHints(@NotNull PsiElement element) {
+        List<InlayInfo> list = new ArrayList<>();
+
+        Project project = element.getProject();
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return list;
         }
 
-        if (atEnd) {
-            return expr.getTextRange().getEndOffset();
+
+        for (InlayParameterHintsProvider p : PROVIDERS) {
+            list.addAll(p.getParameterHints(element));
         }
 
-        return expr.getTextRange().getStartOffset();
+        return list;
     }
 
     @Nullable
     @Override
     public HintInfo getHintInfo(PsiElement element) {
         return null;
-    }
-
-    @NotNull
-    @Override
-    public Set<String> getDefaultBlackList() {
-        return Collections.emptySet();
     }
 }

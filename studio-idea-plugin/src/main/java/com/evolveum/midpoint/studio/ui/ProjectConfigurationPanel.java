@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.Objects;
 
 /**
@@ -21,18 +22,33 @@ public class ProjectConfigurationPanel extends JPanel {
     private MidPointSettingsPanel midpointSettingsPanel;
     private JLabel oldPasswordLabel;
     private JPasswordField oldPassword;
+    private JButton importFromEclipse;
 
     private ProjectSettings settings;
+
+    private boolean allowMasterPasswordReset;
 
     public ProjectConfigurationPanel(ProjectSettings settings, boolean allowMasterPasswordReset) {
         super(new BorderLayout());
 
         this.settings = settings;
+        this.allowMasterPasswordReset = allowMasterPasswordReset;
 
         add(root, BorderLayout.CENTER);
 
         oldPasswordLabel.setVisible(allowMasterPasswordReset);
         oldPassword.setVisible(allowMasterPasswordReset);
+
+        importFromEclipse.addActionListener(e -> importFromEclipsePerformed(e));
+        importFromEclipse.setVisible(isImportFromEclipseVisible());
+    }
+
+    protected boolean isImportFromEclipseVisible() {
+        return false;
+    }
+
+    protected void importFromEclipsePerformed(ActionEvent evt) {
+
     }
 
     public ProjectSettings getSettings() {
@@ -73,7 +89,8 @@ public class ProjectConfigurationPanel extends JPanel {
         String pwd1 = password1.getPassword() != null ? new String(password1.getPassword()) : null;
         String pwd2 = password2.getPassword() != null ? new String(password2.getPassword()) : null;
 
-        if (StringUtils.isNotEmpty(oldPwd) && StringUtils.isAnyEmpty(pwd1, pwd2)) {
+        if ((allowMasterPasswordReset && StringUtils.isNotEmpty(oldPwd) && StringUtils.isAnyEmpty(pwd1, pwd2))
+                || (!allowMasterPasswordReset && StringUtils.isAnyEmpty(pwd1, pwd2))) {
             throw new ConfigurationException("Master password not filled in");
         }
 

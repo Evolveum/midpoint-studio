@@ -184,7 +184,8 @@ public class BulkActionGenerator extends Generator {
 //                    }
 //                }
             } catch (RuntimeException e) {
-                MidPointUtils.publishExceptionNotification(GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
+                MidPointUtils.publishExceptionNotification(null, BulkActionGenerator.class,
+                        GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
             }
         }
     }

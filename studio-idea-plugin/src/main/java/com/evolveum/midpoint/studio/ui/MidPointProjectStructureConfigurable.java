@@ -1,6 +1,14 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.facet.FacetManager;
+import com.intellij.facet.FacetType;
+import com.intellij.facet.FacetTypeRegistry;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
@@ -17,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.Objects;
 
 /**
@@ -62,7 +71,18 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
         EnvironmentService em = EnvironmentService.getInstance(project);
         pSettings.setEnvironmentSettings(em.getFullSettings());
 
-        settings = new ProjectConfigurationPanel(pSettings, true);
+        settings = new ProjectConfigurationPanel(pSettings, true) {
+
+            @Override
+            public void importFromEclipsePerformed(ActionEvent evt) {
+                MidPointProjectStructureConfigurable.this.importFromEclipsePerformed(evt);
+            }
+
+            @Override
+            protected boolean isImportFromEclipseVisible() {
+                return true;
+            }
+        };
         settings.setBorder(JBUI.Borders.emptyLeft(10));
 
         Wrapper wrapper = new Wrapper();
@@ -112,46 +132,49 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
         EnvironmentService.getInstance(project).setSettings(pSettings.getEnvironmentSettings());
 
         settings.clearPasswords();
-
-        // check whether there's a module created and midpoint facet enabled
-//        ApplicationManager.getApplication().runWriteAction(() -> {
-//            validateModule();
-//            validateFacet();
-//        });
     }
 
-//    private void validateModule() {
-//        ModuleManager mm = ModuleManager.getInstance(project);
-//        Module[] modules = mm.getModules();
-//
-//        if (modules == null || modules.length == 0) {
-//            return;
-//        }
-//
-//        Module module = modules[0];
-//        if (MidPointModuleBuilder.MODULE_NAME.equals(module.getModuleTypeName())) {
-//            return;
-//        }
-//
-//        new MidPointModuleBuilder().createProjectFiles(project, project.getBaseDir());
-//
-////        modules[0].setModuleType(MidPointModuleBuilder.MODULE_NAME);
-//
-////        MavenProjectsManager.getInstance(project).addManagedFiles(Arrays.asList(project.getBaseDir().findChild("pom.xml")));
-//    }
-//
-//    private void validateFacet() {
-//        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-//        ModuleManagerEmm = ModuleManager.getInstance(project);
-//        Module[] modules = mm.getModules();
-//        if (modules == null || modules.length == 0) {
-//            return;
-//        }
-//        FacetManager fm = FacetManager.getInstance(modules[0]);
-//        if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) == null) {
-//            fm.addFacet(facetType, facetType.getDefaultFacetName(), null);
-//        }
-//    }
+    private void importFromEclipsePerformed(ActionEvent evt) {
+        // check whether there's a module created and midpoint facet enabled
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            validateModule();
+            validateFacet();
+        });
+    }
+
+    private void validateModule() {
+        new MidPointModuleBuilder().createProjectFiles(project, project.getBaseDir());
+
+        ModuleManager mm = ModuleManager.getInstance(project);
+        Module[] modules = mm.getModules();
+
+        if (modules == null || modules.length == 0) {
+            return;
+        }
+
+        Module module = modules[0];
+        if (MidPointModuleBuilder.MODULE_NAME.equals(module.getModuleTypeName())) {
+            return;
+        }
+
+//        modules[0].setModuleType(MidPointModuleBuilder.MODULE_NAME);
+
+//        MavenProjectsManager.getInstance(project).addManagedFiles(Arrays.asList(project.getBaseDir().findChild("pom.xml")));
+    }
+
+    private void validateFacet() {
+        Module module = MidPointUtils.guessMidpointModule(project);
+        if (module == null) {
+            return;
+        }
+
+        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
+        FacetManager fm = FacetManager.getInstance(module);
+
+        if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) == null) {
+            fm.addFacet(facetType, facetType.getDefaultFacetName(), null);
+        }
+    }
 
     @Override
     public ActionCallback navigateTo(@Nullable Place place, boolean requestFocus) {
