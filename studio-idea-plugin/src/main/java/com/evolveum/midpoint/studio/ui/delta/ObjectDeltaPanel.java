@@ -102,11 +102,11 @@ public class ObjectDeltaPanel extends BorderLayoutPanel {
                     delta.applyTo(o2);
                     break;
                 case REMOTE:
-                    o1 = remote;
+                    o2 = remote;
                     delta = remote.diff(local);
 
-                    o2 = remote.clone();
-                    delta.applyTo(o2);
+                    o1 = remote.clone();
+                    delta.applyTo(o1);
                     break;
             }
 
