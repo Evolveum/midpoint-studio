@@ -14,6 +14,7 @@ import com.intellij.diff.chains.SimpleDiffRequestChain;
 import com.intellij.diff.impl.CacheDiffRequestChainProcessor;
 import com.intellij.diff.requests.DiffRequest;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -30,7 +31,7 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ObjectDeltaPanel extends BorderLayoutPanel {
+public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
     private enum DiffType {
 
@@ -73,6 +74,8 @@ public class ObjectDeltaPanel extends BorderLayoutPanel {
     private JPanel root = new BorderLayoutPanel();
 
     private CustomComboBoxAction<DiffStrategy> strategy;
+
+    private CacheDiffRequestChainProcessor processor;
 
     public ObjectDeltaPanel(@NotNull Project project, @NotNull VirtualFile file) {
         this.project = project;
@@ -171,14 +174,25 @@ public class ObjectDeltaPanel extends BorderLayoutPanel {
             DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, file1, file2);
 
             DiffRequestChain chain = new SimpleDiffRequestChain(request);
-            CacheDiffRequestChainProcessor processor = new CacheDiffRequestChainProcessor(project, chain);
+            if (processor != null) {
+                processor.dispose();
+            }
+            processor = new CacheDiffRequestChainProcessor(project, chain);
 
-            // todo disposing stuff !!!
+            if (root.getComponentCount() > 0) {
+                root.removeAll();
+            }
             root.add(processor.getComponent(), BorderLayout.CENTER);
             processor.updateRequest();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
 
+    @Override
+    public void dispose() {
+        if (processor != null) {
+            processor.dispose();
+        }
     }
 }
