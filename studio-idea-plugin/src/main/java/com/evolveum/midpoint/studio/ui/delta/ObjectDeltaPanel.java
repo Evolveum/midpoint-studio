@@ -4,7 +4,8 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
-import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
+import com.evolveum.midpoint.studio.ui.CustomComboBoxAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
 import com.intellij.diff.DiffRequestFactory;
@@ -23,31 +24,61 @@ import com.sun.istack.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class ObjectDeltaPanel extends BorderLayoutPanel {
 
-    private enum DiffType {LOCAL, REMOTE}
+    private enum DiffType {
+
+        LOCAL,
+
+        REMOTE
+
+    }
+
+    public enum DiffStrategy {
+
+        DEFAULT("Default diff", ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION),
+
+        EQUALS("Equals", ParameterizedEquivalenceStrategy.DEFAULT_FOR_EQUALS),
+
+        IGNORE_METADATA("Ignore metadata", ParameterizedEquivalenceStrategy.IGNORE_METADATA);
+
+        private String label;
+
+        private ParameterizedEquivalenceStrategy strategy;
+
+        DiffStrategy(String label, ParameterizedEquivalenceStrategy strategy) {
+            this.label = label;
+            this.strategy = strategy;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public ParameterizedEquivalenceStrategy getStrategy() {
+            return strategy;
+        }
+    }
 
     private Project project;
-
-    private Environment environment;
 
     private VirtualFile file;
 
     private JPanel root = new BorderLayoutPanel();
+
+    private CustomComboBoxAction<DiffStrategy> strategy;
 
     public ObjectDeltaPanel(@NotNull Project project, @NotNull VirtualFile file) {
         this.project = project;
         this.file = file;
 
         initLayout();
-    }
-
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
     }
 
     private void initLayout() {
@@ -64,6 +95,27 @@ public class ObjectDeltaPanel extends BorderLayoutPanel {
 
         AnAction remoteDiff = MidPointUtils.createAnAction("Remote diff", AllIcons.Actions.TraceInto, e -> showRemoteDiff(e));
         group.add(remoteDiff);
+
+        group.add(new Separator());
+
+        strategy = new CustomComboBoxAction<>() {
+
+            @Override
+            public DiffStrategy getDefaultItem() {
+                return DiffStrategy.DEFAULT;
+            }
+
+            @Override
+            public List<DiffStrategy> getItems() {
+                return Arrays.asList(DiffStrategy.values());
+            }
+
+            @Override
+            protected String createItemLabel(DiffStrategy item) {
+                return item != null ? item.getLabel() : "";
+            }
+        };
+        group.add(strategy);
 
         ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("ObjectDeltaPanelToolbar", group, true);
         JComponent toolbar = actionToolbar.getComponent();
@@ -83,6 +135,9 @@ public class ObjectDeltaPanel extends BorderLayoutPanel {
     private void showDiff(AnActionEvent evt, DiffType diffType) {
         PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
 
+        DiffStrategy strategy = this.strategy.getSelected();
+        ParameterizedEquivalenceStrategy pes = strategy != null ? strategy.getStrategy() : ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION;
+
         try (InputStream is = file.getInputStream()) {
             PrismParser parser = MidPointUtils.createParser(prismContext, is);
 
@@ -96,14 +151,14 @@ public class ObjectDeltaPanel extends BorderLayoutPanel {
             switch (diffType) {
                 case LOCAL:
                     o1 = local;
-                    delta = local.diff(remote);
+                    delta = local.diff(remote, pes);
 
                     o2 = local.clone();
                     delta.applyTo(o2);
                     break;
                 case REMOTE:
                     o2 = remote;
-                    delta = remote.diff(local);
+                    delta = remote.diff(local, pes);
 
                     o1 = remote.clone();
                     delta.applyTo(o1);
