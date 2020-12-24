@@ -73,6 +73,8 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
     private JPanel root = new BorderLayoutPanel();
 
+    private DiffType diffType = DiffType.LOCAL;
+
     private CustomComboBoxAction<DiffStrategy> strategy;
 
     private CacheDiffRequestChainProcessor processor;
@@ -86,12 +88,6 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
     private void initLayout() {
         DefaultActionGroup group = new DefaultActionGroup();
-
-        AnAction showDelta = MidPointUtils.createAnAction("Show delta", AllIcons.Actions.Expandall, e -> {
-        });
-        group.add(showDelta);
-
-        group.add(new Separator());
 
         AnAction localDiff = MidPointUtils.createAnAction("Local diff", AllIcons.Actions.StepOut, e -> showLocalDiff(e));
         group.add(localDiff);
@@ -117,6 +113,13 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
             protected String createItemLabel(DiffStrategy item) {
                 return item != null ? item.getLabel() : "";
             }
+
+            @Override
+            public void setSelected(DiffStrategy selected) {
+                super.setSelected(selected);
+
+                refreshDiffView();
+            }
         };
         group.add(strategy);
 
@@ -128,14 +131,18 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
     }
 
     private void showLocalDiff(AnActionEvent evt) {
-        showDiff(evt, DiffType.LOCAL);
+        diffType = DiffType.LOCAL;
+
+        refreshDiffView();
     }
 
     private void showRemoteDiff(AnActionEvent evt) {
-        showDiff(evt, DiffType.REMOTE);
+        diffType = DiffType.REMOTE;
+
+        refreshDiffView();
     }
 
-    private void showDiff(AnActionEvent evt, DiffType diffType) {
+    private void refreshDiffView() {
         PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
 
         DiffStrategy strategy = this.strategy.getSelected();
@@ -174,25 +181,31 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
             DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, file1, file2);
 
             DiffRequestChain chain = new SimpleDiffRequestChain(request);
-            if (processor != null) {
-                processor.dispose();
-            }
-            processor = new CacheDiffRequestChainProcessor(project, chain);
 
-            if (root.getComponentCount() > 0) {
-                root.removeAll();
-            }
+            cleanupDiffView();
+
+            processor = new CacheDiffRequestChainProcessor(project, chain);
             root.add(processor.getComponent(), BorderLayout.CENTER);
             processor.updateRequest();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            MidPointUtils.publishExceptionNotification(null, ObjectDeltaPanel.class, ObjectDeltaEditor.NOTIFICATION_KEY,
+                    "Couldn't create diff, reason: " + ex.getMessage(), ex);
+        }
+    }
+
+    private void cleanupDiffView() {
+        if (processor != null) {
+            processor.dispose();
+            processor = null;
+        }
+
+        if (root.getComponentCount() > 0) {
+            root.removeAll();
         }
     }
 
     @Override
     public void dispose() {
-        if (processor != null) {
-            processor.dispose();
-        }
+        cleanupDiffView();
     }
 }

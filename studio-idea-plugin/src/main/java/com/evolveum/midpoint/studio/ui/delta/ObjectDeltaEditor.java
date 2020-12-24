@@ -20,6 +20,8 @@ import java.beans.PropertyChangeListener;
  */
 public class ObjectDeltaEditor implements FileEditor, UserDataHolder, DumbAware {
 
+    public static final String NOTIFICATION_KEY = "Object Delta Editor";
+
     private Project project;
 
     private VirtualFile file;
