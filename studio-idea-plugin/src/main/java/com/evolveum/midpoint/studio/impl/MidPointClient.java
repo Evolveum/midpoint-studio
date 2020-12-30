@@ -339,4 +339,12 @@ public class MidPointClient {
     public TestConnectionResult testConnection() {
         return client.testServiceConnection();
     }
+
+    public List<String> getSourceProfiles() throws IOException {
+        return client.getSourceProfiles();
+    }
+
+    public List<ScriptObject> getSourceProfileScripts(String profile) throws IOException {
+        return client.getSourceProfileScripts(profile);
+    }
 }

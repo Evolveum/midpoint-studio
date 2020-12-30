@@ -57,4 +57,8 @@ public interface Service {
     TestConnectionResult testServiceConnection();
 
     PrismContext prismContext();
+
+    List<String> getSourceProfiles() throws IOException;
+
+    List<ScriptObject> getSourceProfileScripts(String profile) throws IOException;
 }

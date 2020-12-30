@@ -20,6 +20,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -366,6 +367,41 @@ public class ServiceImpl implements Service {
 
         if (javax.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
             throw new AuthenticationException(javax.ws.rs.core.Response.Status.fromStatusCode(response.code()).getReasonPhrase());
+        }
+    }
+
+    @Override
+    public List<String> getSourceProfiles() throws IOException {
+        Request.Builder builder = context.build(ServiceContext.REST_PREFIX_DEBUG, "/profiles", null)
+                .addHeader("Content-Type", "application/json")
+                .get();
+
+        Request req = builder.build();
+
+        OkHttpClient client = context.getClient();
+        try (okhttp3.Response response = client.newCall(req).execute()) {
+
+        }
+
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ScriptObject> getSourceProfileScripts(String profile) throws IOException {
+        Request.Builder builder = context.build(ServiceContext.REST_PREFIX_DEBUG, "/profile/" + profile, null)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .get();
+
+        Request req = builder.build();
+
+        OkHttpClient client = context.getClient();
+        try (okhttp3.Response response = client.newCall(req).execute()) {
+            String data = response.body().string();
+
+            ObjectMapper om = new ObjectMapper();
+            ScriptObjects sos = om.readValue(data.getBytes(), ScriptObjects.class);
+            return sos.getScripts();
         }
     }
 }

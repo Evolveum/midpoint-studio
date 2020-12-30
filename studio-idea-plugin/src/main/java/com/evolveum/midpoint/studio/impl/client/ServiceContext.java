@@ -27,6 +27,8 @@ public class ServiceContext {
 
     public static final String REST_PREFIX = "/ws/rest";
 
+    public static final String REST_PREFIX_DEBUG = "/rest/sources";
+
     public static final MediaType APPLICATION_XML = MediaType.get(javax.ws.rs.core.MediaType.APPLICATION_XML);
 
     private String url;
@@ -54,7 +56,11 @@ public class ServiceContext {
     }
 
     public Request.Builder build(String path, Map<String, Object> params) {
-        HttpUrl.Builder builder = HttpUrl.parse(url + REST_PREFIX + path).newBuilder();
+        return build(REST_PREFIX, path, params);
+    }
+
+    public Request.Builder build(String restPrefix, String path, Map<String, Object> params) {
+        HttpUrl.Builder builder = HttpUrl.parse(url + restPrefix + path).newBuilder();
 
         if (params != null) {
             for (Map.Entry<String, Object> param : params.entrySet()) {
