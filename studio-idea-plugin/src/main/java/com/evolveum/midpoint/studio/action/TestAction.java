@@ -10,9 +10,7 @@ import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.LightVirtualFile;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +49,7 @@ public class TestAction extends BackgroundAction {
             RunnableUtils.runWriteActionAndWait(() -> {
                 try {
                     VirtualFile lvf = project.getBaseDir().findFileByRelativePath("/src/main/java")
-                            .createChildData(this, URLDecoder.decode(so.getClazz(), StandardCharsets.UTF_8) + ".groovy");
+                            .createChildData(    this, URLDecoder.decode(so.getClassName(), StandardCharsets.UTF_8) + ".groovy");
                     lvf.setBinaryContent(URLDecoder.decode(so.getKey(), StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8));
 
                     MidPointUtils.openFile(project, lvf);

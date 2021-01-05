@@ -1,22 +1,17 @@
 package com.evolveum.midpoint.studio.impl.client;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ScriptObject implements Serializable  {
+public class ScriptObject implements Serializable {
 
-    @JsonProperty
     private String name;
 
     private String key;
 
-    @JsonProperty("class")
-    private String clazz;
+    private String className;
 
     public String getName() {
         return name;
@@ -34,12 +29,12 @@ public class ScriptObject implements Serializable  {
         this.key = key;
     }
 
-    public String getClazz() {
-        return clazz;
+    public String getClassName() {
+        return className;
     }
 
-    public void setClazz(String clazz) {
-        this.clazz = clazz;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     @Override
@@ -51,14 +46,14 @@ public class ScriptObject implements Serializable  {
 
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (key != null ? !key.equals(that.key) : that.key != null) return false;
-        return clazz != null ? clazz.equals(that.clazz) : that.clazz == null;
+        return className != null ? className.equals(that.className) : that.className == null;
     }
 
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (key != null ? key.hashCode() : 0);
-        result = 31 * result + (clazz != null ? clazz.hashCode() : 0);
+        result = 31 * result + (className != null ? className.hashCode() : 0);
         return result;
     }
 }
