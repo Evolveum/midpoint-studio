@@ -30,11 +30,17 @@ public class MidPointObjectUtils {
     public static final String DELTAS_XML_SUFFIX = "</objectDeltaObjectList>\n";
 
     public static List<MidPointObject> filterObjectTypeOnly(List<MidPointObject> objects) {
+        return filterObjectTypeOnly(objects, true);
+    }
+
+    public static List<MidPointObject> filterObjectTypeOnly(List<MidPointObject> objects, boolean excludeExecutables) {
         if (objects == null) {
             return null;
         }
 
-        return objects.stream().filter(o -> o.getType() != null).collect(Collectors.toList());
+        return objects.stream().filter(
+                o -> o.getType() != null || (o.isExecutable() && !excludeExecutables)
+        ).collect(Collectors.toList());
     }
 
     public static List<MidPointObject> parseText(String text, String notificationKey) {

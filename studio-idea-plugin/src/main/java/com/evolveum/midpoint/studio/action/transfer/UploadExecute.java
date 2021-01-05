@@ -5,7 +5,9 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.studio.impl.UploadResponse;
+import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 import java.util.ArrayList;
@@ -22,8 +24,18 @@ public class UploadExecute extends BaseObjectsAction {
 
     @Override
     public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception {
-        UploadResponse resp = client.uploadRaw(obj, buildAddOptions(obj), true, obj.getFile());
-        OperationResult result = resp.getResult();
+        OperationResult result = null;
+        if (obj.isExecutable()) {
+            ExecuteScriptResponseType response = client.execute(obj.getContent());
+
+            if (response != null) {
+                OperationResultType res = response.getResult();
+                result = OperationResult.createOperationResult(res);
+            }
+        } else {
+            UploadResponse resp = client.uploadRaw(obj, buildAddOptions(obj), true, obj.getFile());
+            result = resp.getResult();
+        }
 
         return validateOperationResult(evt, result, getOperation(), obj.getName());
     }

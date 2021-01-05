@@ -17,6 +17,11 @@ public class UploadTestResource extends UploadExecute {
     @Override
     public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception {
         ProcessObjectResult por = super.processObject(evt, client, obj);
+
+        if (obj.isExecutable()) {
+            return por;
+        }
+
         OperationResult uploadResult = por.result();
 
         if (uploadResult != null && !uploadResult.isSuccess()) {
