@@ -14,6 +14,11 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 public class MidPointCompletionContributor extends DefaultCompletionContributor {
 
     public MidPointCompletionContributor() {
+        extend(CompletionType.BASIC,
+                psiElement().inside(
+                        XmlPatterns
+                                .xmlText()),
+                new PropertiesCompletionProvider());
 
         extend(CompletionType.BASIC,
                 psiElement().inside(

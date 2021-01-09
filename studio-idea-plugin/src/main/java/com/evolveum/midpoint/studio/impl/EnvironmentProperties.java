@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -58,5 +60,13 @@ public class EnvironmentProperties {
         }
 
         return properties.getProperty(key);
+    }
+
+    public Set<String> getKeys() {
+        if (properties == null) {
+            return new HashSet<>();
+        }
+
+        return (Set) properties.keySet();
     }
 }

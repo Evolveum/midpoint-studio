@@ -7,6 +7,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.messages.MessageBus;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -41,7 +44,7 @@ public class PropertiesInlayCacheService {
         EncryptionService enc = EncryptionService.getInstance(project);
         expander = new Expander(environment, enc, project);
 
-        // force rehighlight editors, this probably shouln't be here, but right now no better place
+        // force re-highlight editors, this probably shouln't be here, but right now no better place
         ParameterHintsPassFactory.forceHintsUpdateOnNextPass();
         DaemonCodeAnalyzer dca = DaemonCodeAnalyzer.getInstance(project);
         dca.restart();
@@ -61,5 +64,13 @@ public class PropertiesInlayCacheService {
         }
 
         return expander.expandKeyFromProperties(key);
+    }
+
+    public Set<String> getKeys() {
+        if (expander == null) {
+            return new HashSet();
+        }
+
+        return expander.getKeys();
     }
 }
