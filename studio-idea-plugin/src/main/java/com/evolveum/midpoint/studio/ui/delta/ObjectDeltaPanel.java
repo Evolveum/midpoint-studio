@@ -13,9 +13,9 @@ import com.intellij.diff.chains.DiffRequestChain;
 import com.intellij.diff.chains.SimpleDiffRequestChain;
 import com.intellij.diff.impl.CacheDiffRequestChainProcessor;
 import com.intellij.diff.requests.DiffRequest;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
@@ -25,6 +25,7 @@ import com.sun.istack.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,21 +34,17 @@ import java.util.List;
  */
 public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
-    private enum DiffType {
-
-        LOCAL,
-
-        REMOTE
-
-    }
-
     public enum DiffStrategy {
 
-        DEFAULT("Default diff", ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION),
+        LITERAL("Literal", ParameterizedEquivalenceStrategy.LITERAL),
 
-        EQUALS("Equals", ParameterizedEquivalenceStrategy.DEFAULT_FOR_EQUALS),
+        DATA("Data", ParameterizedEquivalenceStrategy.DATA),
 
-        IGNORE_METADATA("Ignore metadata", ParameterizedEquivalenceStrategy.IGNORE_METADATA);
+        IGNORE_METADATA("Ignore Metadata", ParameterizedEquivalenceStrategy.IGNORE_METADATA),
+
+        DEFAULT("Default Compare", ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION),
+
+        REAL_VALUE("Real Value", ParameterizedEquivalenceStrategy.REAL_VALUE);
 
         private String label;
 
@@ -73,9 +70,7 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
     private JPanel root = new BorderLayoutPanel();
 
-    private DiffType diffType = DiffType.LOCAL;
-
-    private CustomComboBoxAction<DiffStrategy> strategy;
+    private CustomComboBoxAction<DiffStrategy> strategyCombo;
 
     private CacheDiffRequestChainProcessor processor;
 
@@ -84,20 +79,12 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
         this.file = file;
 
         initLayout();
+
+        refreshDiffView();
     }
 
     private void initLayout() {
-        DefaultActionGroup group = new DefaultActionGroup();
-
-        AnAction localDiff = MidPointUtils.createAnAction("Local diff", AllIcons.Actions.StepOut, e -> showLocalDiff(e));
-        group.add(localDiff);
-
-        AnAction remoteDiff = MidPointUtils.createAnAction("Remote diff", AllIcons.Actions.TraceInto, e -> showRemoteDiff(e));
-        group.add(remoteDiff);
-
-        group.add(new Separator());
-
-        strategy = new CustomComboBoxAction<>() {
+        strategyCombo = new CustomComboBoxAction<>() {
 
             @Override
             public DiffStrategy getDefaultItem() {
@@ -121,31 +108,14 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
                 refreshDiffView();
             }
         };
-        group.add(strategy);
-
-        ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("ObjectDeltaPanelToolbar", group, true);
-        JComponent toolbar = actionToolbar.getComponent();
-        add(toolbar, BorderLayout.NORTH);
 
         add(root, BorderLayout.CENTER);
-    }
-
-    private void showLocalDiff(AnActionEvent evt) {
-        diffType = DiffType.LOCAL;
-
-        refreshDiffView();
-    }
-
-    private void showRemoteDiff(AnActionEvent evt) {
-        diffType = DiffType.REMOTE;
-
-        refreshDiffView();
     }
 
     private void refreshDiffView() {
         PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
 
-        DiffStrategy strategy = this.strategy.getSelected();
+        DiffStrategy strategy = this.strategyCombo.getSelected();
         ParameterizedEquivalenceStrategy pes = strategy != null ? strategy.getStrategy() : ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION;
 
         try (InputStream is = file.getInputStream()) {
@@ -155,25 +125,11 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
             PrismObject local = odo.getOldObject().asPrismObject();
             PrismObject remote = odo.getNewObject().asPrismObject();
 
-            ObjectDelta delta;
-            PrismObject o1 = null;
-            PrismObject o2 = null;
-            switch (diffType) {
-                case LOCAL:
-                    o1 = local;
-                    delta = local.diff(remote, pes);
+            PrismObject o1 = local;
+            PrismObject o2 = local.clone();
 
-                    o2 = local.clone();
-                    delta.applyTo(o2);
-                    break;
-                case REMOTE:
-                    o2 = remote;
-                    delta = remote.diff(local, pes);
-
-                    o1 = remote.clone();
-                    delta.applyTo(o1);
-                    break;
-            }
+            ObjectDelta delta = local.diff(remote, pes);
+            delta.applyTo(o2);
 
             LightVirtualFile file1 = new LightVirtualFile("Local.xml", MidPointUtils.serialize(prismContext, o1));
             LightVirtualFile file2 = new LightVirtualFile("Remote.xml", MidPointUtils.serialize(prismContext, o2));
@@ -184,7 +140,19 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
             cleanupDiffView();
 
-            processor = new CacheDiffRequestChainProcessor(project, chain);
+            processor = new CacheDiffRequestChainProcessor(project, chain) {
+
+                @Override
+                protected @org.jetbrains.annotations.NotNull List<AnAction> getNavigationActions() {
+                    List<AnAction> list = new ArrayList<>();
+                    list.add(strategyCombo);
+                    list.add(new Separator());
+
+                    list.addAll(super.getNavigationActions());
+
+                    return list;
+                }
+            };
             root.add(processor.getComponent(), BorderLayout.CENTER);
             processor.updateRequest();
         } catch (Exception ex) {
