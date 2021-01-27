@@ -52,6 +52,7 @@ dependencies {
     compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
 
     compile "stax:stax:$staxVersion"
+    compile "xml-apis:xml-apis:$xmlApisVersion"
 
     runtime "org.glassfish.jaxb:jaxb-runtime:2.3.2" // needed because of NamespacePrefixMapper class
     runtime("org.springframework:spring-core:5.0.7.RELEASE") {
