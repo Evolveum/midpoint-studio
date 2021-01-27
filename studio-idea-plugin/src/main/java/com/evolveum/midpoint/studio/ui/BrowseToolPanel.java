@@ -10,10 +10,7 @@ import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SearchResultMetadata;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
-import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
-import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
-import com.evolveum.midpoint.studio.action.browse.DownloadAction;
+import com.evolveum.midpoint.studio.action.browse.*;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
@@ -97,6 +94,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private AnAction downloadAction;
     private AnAction showAction;
+    private AnAction deleteAction;
     private AnAction processAction;
 
     private TextAction pagingText;
@@ -337,6 +335,11 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
         group.add(showAction);
 
+        deleteAction = createAnAction("Delete", AllIcons.Vcs.Remove,
+                e -> deletePerformed(e, rawDownload),
+                e -> e.getPresentation().setEnabled(isDownloadShowEnabled()));
+        group.add(deleteAction);
+
         CheckboxAction rawSearch = new CheckboxAction("Raw") {
 
             @Override
@@ -484,6 +487,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 fem.openFile(file, true, true);
             }
         };
+        ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
+    }
+
+    private void deletePerformed(AnActionEvent evt, boolean rawDownload) {
+        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
+        Environment env = em.getSelected();
+
+        DeleteAction da = new DeleteAction(env, getResultsModel().getSelectedOids(results), rawDownload);
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
 
