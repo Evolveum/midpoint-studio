@@ -13,6 +13,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -27,7 +28,7 @@ public class Expander {
 
     public static final String KEY_SERVER_DISPLAY_NAME = "#server.displayName";
 
-    private static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
+    public static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
 
     private Environment environment;
 
@@ -113,6 +114,60 @@ public class Expander {
         return new ByteArrayInputStream(expanded.getBytes());
     }
 
+    public boolean isEncrypted(String key) {
+        EncryptedProperty property = encryptionService.get(key, EncryptedProperty.class);
+        if (property == null) {
+            return false;
+        }
+
+        if (property.getEnvironment() != null && environment != null) {
+            if (!Objects.equals(property.getEnvironment(), environment.getId())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean isExpandingFile(String key, VirtualFile file) {
+        if (key != null && key.startsWith("@")) {
+            String filePath = key.replaceFirst("@", "");
+            File contentFile = new File(filePath);
+            if (contentFile.isAbsolute() && contentFile.exists()) {
+                return true;
+            } else {
+                if (file != null) {
+                    if (!file.isDirectory()) {
+                        file = file.getParent();
+                    }
+                    VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
+                    return content.exists();
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public String expandKeyFromProperties(String key) {
+        return expandKeyFromProperties(key, false);
+    }
+
+    public Set<String> getKeys() {
+        Set<String> set = new HashSet<>();
+        if (encryptionService != null) {
+            set.addAll(encryptionService.list(EncryptedProperty.class).stream().map(p -> p.getKey()).collect(Collectors.toSet()));
+        }
+        if (projectProperties != null) {
+            set.addAll(projectProperties.keySet());
+        }
+        if (environmentProperties != null) {
+            set.addAll(environmentProperties.getKeys());
+        }
+
+        return set;
+    }
+
     private String expandKey(String key, VirtualFile file) {
         if (key != null && key.startsWith("@")) {
             String filePath = key.replaceFirst("@", "");
@@ -141,17 +196,17 @@ public class Expander {
         }
 
         if (encryptionService == null || !encryptionService.isAvailable()) {
-            return expandKeyFromProperties(key);
+            return expandKeyFromProperties(key, true);
         }
 
         EncryptedProperty property = encryptionService.get(key, EncryptedProperty.class);
         if (property == null) {
-            return expandKeyFromProperties(key);
+            return expandKeyFromProperties(key, true);
         }
 
         if (property.getEnvironment() != null && environment != null) {
             if (!Objects.equals(property.getEnvironment(), environment.getId())) {
-                return expandKeyFromProperties(key);
+                return expandKeyFromProperties(key, true);
             }
         }
 
@@ -161,13 +216,13 @@ public class Expander {
             return value;
         }
 
-        return expandKeyFromProperties(key);
+        return expandKeyFromProperties(key, true);
     }
 
-    private String expandKeyFromProperties(String key) {
+    private String expandKeyFromProperties(String key, boolean throwExceptionIfNotFound) {
         String value = environmentProperties.get(key);
 
-        if (value == null) {
+        if (value == null && throwExceptionIfNotFound) {
             throw new IllegalStateException("Couldn't translate key '" + key + "'");
         }
 

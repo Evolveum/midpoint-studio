@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.client;
 import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -14,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
@@ -24,6 +26,8 @@ import java.util.function.Function;
 public class ServiceContext {
 
     public static final String REST_PREFIX = "/ws/rest";
+
+    public static final String REST_PREFIX_DEBUG = "/rest/sources";
 
     public static final MediaType APPLICATION_XML = MediaType.get(javax.ws.rs.core.MediaType.APPLICATION_XML);
 
@@ -51,12 +55,22 @@ public class ServiceContext {
         return build(path, new HashMap<>());
     }
 
-    public Request.Builder build(String path, Map<String, String> params) {
-        HttpUrl.Builder builder = HttpUrl.parse(url + REST_PREFIX + path).newBuilder();
+    public Request.Builder build(String path, Map<String, Object> params) {
+        return build(REST_PREFIX, path, params);
+    }
+
+    public Request.Builder build(String restPrefix, String path, Map<String, Object> params) {
+        HttpUrl.Builder builder = HttpUrl.parse(url + restPrefix + path).newBuilder();
 
         if (params != null) {
-            for (Map.Entry<String, String> param : params.entrySet()) {
-                builder.addQueryParameter(param.getKey(), param.getValue());
+            for (Map.Entry<String, Object> param : params.entrySet()) {
+                Object value = param.getValue();
+                if (!(value instanceof List)) {
+                    builder.addQueryParameter(param.getKey(), param.getValue().toString());
+                } else {
+                    List list = (List) value;
+                    list.forEach(v -> builder.addQueryParameter(param.getKey(), v.toString()));
+                }
             }
         }
 
@@ -64,31 +78,11 @@ public class ServiceContext {
     }
 
     public PrismSerializer<String> getSerializer() {
-        return prismContext.xmlSerializer()
-                .options(SerializationOptions.createSerializeReferenceNames());
+        return MidPointUtils.getSerializer(prismContext);
     }
 
     public String serialize(Object object) throws SchemaException {
-        final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
-
-        PrismSerializer<String> serializer = getSerializer();
-
-        String result;
-        if (object instanceof ObjectType) {
-            ObjectType ot = (ObjectType) object;
-            result = serializer.serialize(ot.asPrismObject());
-        } else if (object instanceof PrismObject) {
-            result = serializer.serialize((PrismObject<?>) object);
-        } else if (object instanceof OperationResult) {
-            LocalizationService localizationService = new LocalizationServiceImpl();
-            Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
-            OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
-            result = serializer.serializeAnyData(operationResultType, fakeQName);
-        } else {
-            result = serializer.serializeAnyData(object, fakeQName);
-        }
-
-        return result;
+        return MidPointUtils.serialize(prismContext, object);
     }
 
     public <T> T parse(String text, Class<T> type) throws SchemaException, IOException {

@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ServiceFactory {
 
-    public static final int TIMEOUT = 30;
+    public static final int TIMEOUT = 60;
 
     public static final PrismContext DEFAULT_PRISM_CONTEXT;
 

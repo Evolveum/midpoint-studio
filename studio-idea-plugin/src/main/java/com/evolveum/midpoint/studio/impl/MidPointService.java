@@ -77,15 +77,15 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         return console;
     }
 
-    public void printToConsole(Class clazz, String message) {
-        printToConsole(clazz, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+    public void printToConsole(Environment env, Class clazz, String message) {
+        printToConsole(env, clazz, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
     }
 
-    public void printToConsole(Class clazz, String message, Exception ex) {
-        printToConsole(clazz, message, ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
+    public void printToConsole(Environment env, Class clazz, String message, Exception ex) {
+        printToConsole(env, clazz, message, ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
     }
 
-    public void printToConsole(Class clazz, String message, Exception ex, ConsoleViewContentType type) {
+    public void printToConsole(Environment env, Class clazz, String message, Exception ex, ConsoleViewContentType type) {
         MidPointConsoleView console = getConsole();
 
         Validate.notNull(clazz, "Class must not be null");
@@ -94,7 +94,12 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         StringBuilder sb = new StringBuilder();
         sb.append(DATE_FORMAT.format(new Date()));
         sb.append(' ');
-        sb.append(clazz.getSimpleName());
+
+        if (env != null) {
+            sb.append('[').append(env.getName()).append("] ");
+        }
+
+        sb.append(clazz != null ? clazz.getSimpleName() : "");
         sb.append(": ");
         if (message != null) {
             sb.append(message);

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -24,11 +25,23 @@ public class MidPointObjectUtils {
 
     public static final String OBJECTS_XML_SUFFIX = "</objects>\n";
 
-    public static final String DELTAS_XML_PREFIX="<deltaList xsi:type=\"t:ObjectDeltaListType\"" +
-            " xmlns:t=\"http://midpoint.evolveum.com/xml/ns/public/common/api-types-3\"" +
-            " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">";
+    public static final String DELTAS_XML_PREFIX = "<objectDeltaObjectList>";
 
-    public static final String DELTAS_XML_SUFFIX = "</deltas>\n";
+    public static final String DELTAS_XML_SUFFIX = "</objectDeltaObjectList>\n";
+
+    public static List<MidPointObject> filterObjectTypeOnly(List<MidPointObject> objects) {
+        return filterObjectTypeOnly(objects, true);
+    }
+
+    public static List<MidPointObject> filterObjectTypeOnly(List<MidPointObject> objects, boolean excludeExecutables) {
+        if (objects == null) {
+            return null;
+        }
+
+        return objects.stream().filter(
+                o -> o.getType() != null || (o.isExecutable() && !excludeExecutables)
+        ).collect(Collectors.toList());
+    }
 
     public static List<MidPointObject> parseText(String text, String notificationKey) {
         return parseText(text, null, notificationKey);
@@ -40,7 +53,7 @@ public class MidPointObjectUtils {
             return parseText(text, file, notificationKey);
         } catch (IOException ex) {
             if (notificationKey != null) {
-                MidPointUtils.publishExceptionNotification(notificationKey,
+                MidPointUtils.publishExceptionNotification(null, MidPointObjectUtils.class, notificationKey,
                         "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
             }
             return null;
@@ -66,7 +79,7 @@ public class MidPointObjectUtils {
             }
 
             if (notificationKey != null) {
-                MidPointUtils.publishExceptionNotification(notificationKey, msg, ex);
+                MidPointUtils.publishExceptionNotification(null, MidPointObjectUtils.class, notificationKey, msg, ex);
             }
 
             return new ArrayList<>();
@@ -79,7 +92,7 @@ public class MidPointObjectUtils {
             return DOMUtil.parse(is);
         } catch (IOException ex) {
             if (notificationKey != null) {
-                MidPointUtils.publishExceptionNotification(notificationKey,
+                MidPointUtils.publishExceptionNotification(null, MidPointObjectUtils.class, notificationKey,
                         "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
             }
 
@@ -95,7 +108,8 @@ public class MidPointObjectUtils {
 
         Element root = doc.getDocumentElement();
         String localName = root.getLocalName();
-        if ("actions".equals(localName) || "objects".equals(localName)) {
+        String xsiType = root.getAttributeNS(MidPointUtils.NS_XSI, "type");
+        if ("actions".equals(localName) || "objects".equals(localName) || (xsiType != null && xsiType.contains("ObjectListType"))) {
             for (Element child : DOMUtil.listChildElements(root)) {
                 DOMUtil.fixNamespaceDeclarations(child);
                 MidPointObject o = parseElement(child);
@@ -140,7 +154,7 @@ public class MidPointObjectUtils {
     private static MidPointObject parseElement(Element element) {
         String localName = element.getLocalName();
         boolean executable = Constants.SCRIPTING_ACTIONS.contains(localName);
-        ObjectTypes type = getObjectType(localName);
+        ObjectTypes type = getObjectType(element);
 
         MidPointObject o = new MidPointObject(DOMUtil.serializeDOMToString(element), type, executable);
         String oid = element.getAttribute("oid");
@@ -154,7 +168,19 @@ public class MidPointObjectUtils {
         return o;
     }
 
-    private static ObjectTypes getObjectType(String localName) {
+    private static ObjectTypes getObjectType(Element element) {
+        String xsiType = element.getAttributeNS(MidPointUtils.NS_XSI, "type");
+        if (xsiType != null) {
+            xsiType = xsiType.replaceFirst("^.*:", "");
+
+            for (ObjectTypes t : ObjectTypes.values()) {
+                if (xsiType.equals(t.getTypeQName().getLocalPart())) {
+                    return t;
+                }
+            }
+        }
+
+        String localName = element.getLocalName();
         if (localName == null) {
             return null;
         }

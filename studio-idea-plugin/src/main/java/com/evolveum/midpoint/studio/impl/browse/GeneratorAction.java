@@ -2,11 +2,13 @@ package com.evolveum.midpoint.studio.impl.browse;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.UploadResponse;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -84,8 +86,8 @@ public class GeneratorAction extends BackgroundAction {
         List<PrismObject<?>> objects = null;
         try {
             objects = client.parseObjects(content);
-        } catch (IOException | SchemaException ex) {
-            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't parse generated content", ex);
+        } catch (Exception ex) {
+            MidPointUtils.publishExceptionNotification(env, GeneratorAction.class, NOTIFICATION_KEY, "Couldn't parse generated content", ex);
         }
 
         for (PrismObject object : objects) {
@@ -93,6 +95,7 @@ public class GeneratorAction extends BackgroundAction {
                 UploadResponse resp = client.upload(object, Collections.emptyList());
                 // todo check oid/result
             } catch (Exception ex) {
+                MidPointUtils.publishExceptionNotification(env, GeneratorAction.class, NOTIFICATION_KEY, "Couldn't upload generated content", ex);
                 // todo proper error handling (sum all errors and show notification if necessary)
             }
         }
@@ -118,7 +121,8 @@ public class GeneratorAction extends BackgroundAction {
                 FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
                 fem.openFile(file, true, true);
             } catch (IOException ex) {
-                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Couldn't store generated content to file " + (file != null ? file.getName() : "[null]"), ex);
+                MidPointUtils.publishExceptionNotification(env, GeneratorAction.class, NOTIFICATION_KEY,
+                        "Couldn't store generated content to file " + (file != null ? file.getName() : "[null]"), ex);
             } finally {
                 IOUtils.closeQuietly(out);
             }

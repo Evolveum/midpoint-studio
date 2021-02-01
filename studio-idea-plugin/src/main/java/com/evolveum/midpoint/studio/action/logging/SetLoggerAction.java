@@ -5,6 +5,8 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -12,6 +14,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,19 +57,31 @@ public class SetLoggerAction extends BackgroundAction {
         }
 
         MidPointService mm = MidPointService.getInstance(e.getProject());
-        mm.printToConsole(getClass(), "Initializing action");
 
         LOG.debug("Setting up MidPoint client");
 
         EnvironmentService em = EnvironmentService.getInstance(e.getProject());
         Environment env = em.getSelected();
+
+        mm.printToConsole(env, getClass(), "Initializing action");
+
         MidPointClient client = new MidPointClient(e.getProject(), env);
 
         LOG.debug("MidPoint client setup done");
 
         LOG.debug("Downloading system configuration");
-        PrismObject<SystemConfigurationType> configPrism = client.get(SystemConfigurationType.class,
-                SystemObjectsType.SYSTEM_CONFIGURATION.value(), new SearchOptions());
+        PrismObject<SystemConfigurationType> configPrism;
+        try {
+            MidPointObject object = client.get(SystemConfigurationType.class,
+                    SystemObjectsType.SYSTEM_CONFIGURATION.value(), new SearchOptions());
+
+            configPrism = (PrismObject) client.parseObject(object.getContent());
+        } catch (ObjectNotFoundException | SchemaException | IOException ex) {
+            MidPointUtils.publishException(e.getProject(), env, getClass(), NOTIFICATION_KEY,
+                    "Couldn't download and parse system configuration", ex);
+
+            return;
+        }
 
         LOG.debug("Updating logging configuration");
 
@@ -112,15 +127,15 @@ public class SetLoggerAction extends BackgroundAction {
             OperationResult result = resp.getResult();
             if (result != null && !result.isSuccess()) {
                 String msg = "Upload status of system configuration was " + result.getStatus();
-                mm.printToConsole(getClass(), msg);
+                mm.printToConsole(env, getClass(), msg);
 
                 MidPointUtils.publishNotification(NOTIFICATION_KEY, "Warning", msg,
                         NotificationType.WARNING, new ShowResultNotificationAction(result));
             } else {
-                mm.printToConsole(getClass(), "System configuration uploaded");
+                mm.printToConsole(env, getClass(), "System configuration uploaded");
             }
         } catch (Exception ex) {
-            MidPointUtils.publishException(e.getProject(), getClass(), NOTIFICATION_KEY,
+            MidPointUtils.publishException(e.getProject(), env, getClass(), NOTIFICATION_KEY,
                     "Exception occurred during system configuration upload", ex);
         }
     }

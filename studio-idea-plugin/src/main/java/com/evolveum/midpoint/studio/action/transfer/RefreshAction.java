@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
@@ -125,12 +126,14 @@ public class RefreshAction extends BackgroundAction {
                 file.refresh(false, true);
 
                 List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                obj = MidPointObjectUtils.filterObjectTypeOnly(obj);
+
                 objects.addAll(obj);
             });
 
             if (objects.isEmpty()) {
                 skipped++;
-                mm.printToConsole(RefreshAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
+                mm.printToConsole(env, RefreshAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
                 continue;
             }
 
@@ -141,23 +144,24 @@ public class RefreshAction extends BackgroundAction {
                     break;
                 }
 
+                ObjectTypes type = object.getType();
                 try {
-                    String newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
-                    newObjects.add(newObject);
+                    MidPointObject newObject = client.get(type.getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    newObjects.add(newObject.getContent());
 
                     reloaded.incrementAndGet();
                 } catch (ObjectNotFoundException ex) {
                     missing++;
                     newObjects.add(object.getContent());
 
-                    mm.printToConsole(RefreshAction.class, "Couldn't find object "
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+                    mm.printToConsole(env, RefreshAction.class, "Couldn't find object "
+                            + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
                     newObjects.add(object.getContent());
 
-                    mm.printToConsole(RefreshAction.class, "Error getting object"
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
+                    mm.printToConsole(env, RefreshAction.class, "Error getting object"
+                            + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
             }
 
@@ -179,7 +183,7 @@ public class RefreshAction extends BackgroundAction {
                 } catch (IOException ex) {
                     failed.incrementAndGet();
 
-                    mm.printToConsole(RefreshAction.class, "Failed to write refreshed file " + file.getPath(), ex);
+                    mm.printToConsole(env, RefreshAction.class, "Failed to write refreshed file " + file.getPath(), ex);
                 }
             });
         }

@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
-import com.evolveum.midpoint.studio.impl.XmlSchemaCacheService;
+import com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiFile;

@@ -1,16 +1,14 @@
 buildscript {
     repositories {
         maven {
-            url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'
+            url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
         }
     }
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.5.0"
+    id "org.jetbrains.intellij" version "0.6.5"
 }
-
-apply from: "$rootDir/$project.name/verifier.gradle"
 
 dependencies {
     compile("com.evolveum.midpoint.model:model-common:$midpointVersion") {
@@ -54,6 +52,7 @@ dependencies {
     compile "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
 
     compile "stax:stax:$staxVersion"
+    compile "xml-apis:xml-apis:$xmlApisVersion"
 
     compile "com.github.inamik.text.tables:inamik-text-tables:0.8"
 
@@ -64,40 +63,50 @@ dependencies {
     }
 }
 
-def channelSuffix = ""
-if (!publishChannel?.isBlank() && publishChannel?.toLowerCase() == "nightly") {
-    channelSuffix = "-" + publishChannel.toLowerCase()
+if (gitLocalBranch == 'nightly' || gitLocalBranch == 'milestone') {
+    publishChannel = gitLocalBranch
+} else if (gitLocalBranch == 'stable') {
+    publishChannel = 'default'
 }
 
-def fullVersion = "$project.version-$buildNumber$channelSuffix"
+def channelSuffix = ""
+if (!publishChannel?.isBlank()) {
+    def channel = publishChannel.toLowerCase()
+    if (channel == "nightly") {
+        channelSuffix = "-" + buildNumber + "-" + channel
+    } else if (channel == "milestone") {
+        channelSuffix = "-" + buildNumber
+    }
+}
+
+def fullVersion = "$project.version$channelSuffix"
 
 println "Plugin version: " + fullVersion
+println "Publish channel: " + publishChannel
 
 intellij {
-    version '2020.2'    // 'LATEST-EAP-SNAPSHOT'
+    version '2020.3'
     type 'IC'
     downloadSources true
     pluginName 'intellij-midpoint-studio'
     updateSinceUntilBuild false
     plugins = [
-            'PsiViewer:202-SNAPSHOT.3',
-            'com.jetbrains.hackathon.indices.viewer:1.8',
+            'PsiViewer:203-SNAPSHOT',
+            'com.jetbrains.hackathon.indices.viewer:1.11',
             'java',
             'Groovy',
             'maven'
     ]
     patchPluginXml {
-        sinceBuild '193'
-        untilBuild '202.*'
+        sinceBuild '202'
+        untilBuild '203.*'
         version fullVersion
+    }
+    runPluginVerifier {
+        ideVersions = ["IC-2020.2.4", "IC-2020.3"]
     }
     publishPlugin {
         channels publishChannel
         token System.getenv('studio_intellijPublishToken')
     }
-}
-
-runPluginVerifier {
-    pluginFileName = "$intellij.pluginName-$version"
-    ides = ["IC-2019.3", "IC-2020.1", "IC-2020.2", "IC-LATEST-EAP-SNAPSHOT"]
 }
