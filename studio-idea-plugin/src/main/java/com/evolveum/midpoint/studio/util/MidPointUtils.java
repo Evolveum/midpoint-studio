@@ -149,8 +149,8 @@ public class MidPointUtils {
         }
 
         String escaped = StringUtils.stripAccents(name);
-        escaped = escaped.replaceAll("[\\s]+", "-");
-        return escaped.replaceAll("[^A-Za-z0-9]", "");
+        escaped = escaped.replaceAll("[\\s]+", " ");
+        return escaped.replaceAll("[^A-Za-z0-9\\s-]", "_");
     }
 
     public static void runWhenInitialized(final Project project, final Runnable r) {
