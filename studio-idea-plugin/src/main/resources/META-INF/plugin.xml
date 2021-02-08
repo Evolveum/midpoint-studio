@@ -233,6 +233,11 @@
                 text="Upload/Test/Validate Resource"
                 icon="/icons/uploadTestValidate.svg"/>
 
+        <action id="MidPoint.Action.TestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.TestResource"
+                text="Test Resource"
+                icon="/icons/testConnection.svg"/>
+
         <action id="MidPoint.Action.DeleteRaw"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
                 text="Delete (raw)"
@@ -277,6 +282,10 @@
                 <reference ref="MidPoint.Action.UploadRecompute"/>
                 <reference ref="MidPoint.Action.UploadTestResource"/>
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.TestResource"/>
 
                 <separator/>
 
@@ -357,6 +366,7 @@
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
+                <reference ref="MidPoint.Action.TestResource"/>
                 <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
 
