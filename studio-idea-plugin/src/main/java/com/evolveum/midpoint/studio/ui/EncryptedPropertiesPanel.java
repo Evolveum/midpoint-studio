@@ -151,8 +151,7 @@ public class EncryptedPropertiesPanel extends AddEditRemovePanel<EncryptedProper
         FileChooserDialog dialog = FileChooserFactory.getInstance()
                 .createFileChooser(FileChooserDescriptorFactory.createSingleFileDescriptor("properties"), project, this);
 
-        VirtualFile parent = project.getBaseDir();
-        VirtualFile[] files = dialog.choose(project, parent);
+        VirtualFile[] files = dialog.choose(project);
 
         if (files == null || files.length == 0) {
             return;
