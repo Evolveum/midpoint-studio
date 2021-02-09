@@ -97,11 +97,14 @@ intellij {
     ]
     patchPluginXml {
         sinceBuild '202'
-        untilBuild '203.*'
+        untilBuild '211.*'
         version fullVersion
     }
     runPluginVerifier {
-        ideVersions = ["IC-2020.2.4", "IC-2020.3"]
+        // available versions
+        // simple https://data.services.jetbrains.com/products?fields=code,name,releases.version,releases.build,releases.type&code=IIC
+        // full https://data.services.jetbrains.com/products?fields=code,name,releases.downloads,releases.version,releases.build,releases.type&code=IIC
+        ideVersions = ["IC-2020.2.4", "IC-2020.3.2", "IC-2021.1"]
     }
     publishPlugin {
         channels publishChannel
