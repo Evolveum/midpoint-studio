@@ -48,16 +48,16 @@ public class EncryptedPropertiesSerializer {
 
         int i = 0;
         for (EncryptedProperty property : properties) {
-            String keyPrefix = "property." + i + ".";
+            String prefix = "property." + i + ".";
 
-            putProperty(props, keyPrefix + "key", property.getKey());
-            putProperty(props, keyPrefix + "value", property.getValue());
-            putProperty(props, keyPrefix + "description", property.getDescription());
+            putProperty(props, prefix + "key", property.getKey());
+            putProperty(props, prefix + "value", property.getValue());
+            putProperty(props, prefix + "description", property.getDescription());
 
             if (property.getEnvironment() != null) {
                 Environment env = environmentService.get(property.getEnvironment());
                 if (env != null) {
-                    putProperty(props, keyPrefix + "environment", env.getName());
+                    putProperty(props, prefix + "environment", env.getName());
                 }
             }
 

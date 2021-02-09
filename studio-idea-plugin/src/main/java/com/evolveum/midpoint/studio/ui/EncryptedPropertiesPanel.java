@@ -14,6 +14,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
@@ -175,9 +176,19 @@ public class EncryptedPropertiesPanel extends AddEditRemovePanel<EncryptedProper
 
                 @Override
                 protected String mapEnvironment(String envName) {
-                    // todo ask via dialog how to map environment
+                    MatchEnvironmentPanel panel = new MatchEnvironmentPanel(envName, environmentService.getEnvironments());
 
-                    return super.mapEnvironment(envName);
+                    DialogBuilder db = new DialogBuilder();
+                    db.centerPanel(panel);
+                    db.addActionDescriptor(new DialogBuilder.CancelActionDescriptor());
+                    db.addActionDescriptor(new DialogBuilder.OkActionDescriptor());
+
+                    if (!db.showAndGet()) {
+                        return null;
+                    }
+
+                    Environment env = panel.getEnvironment();
+                    return env != null ? env.getId() : null;
                 }
             };
             List<EncryptedProperty> properties = parser.parse(file);
