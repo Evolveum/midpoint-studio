@@ -49,6 +49,8 @@ public class DownloadAction extends BackgroundAction {
 
     private boolean overwrite;
 
+    private boolean openAfterDownload = true;
+
     public DownloadAction(@NotNull Environment environment, @NotNull ObjectTypes type, ObjectQuery query,
                           boolean showOnly, boolean raw, boolean overwrite) {
         super(TASK_TITLE);
@@ -70,6 +72,14 @@ public class DownloadAction extends BackgroundAction {
         this.environment = environment;
         this.showOnly = showOnly;
         this.raw = raw;
+    }
+
+    public boolean isOpenAfterDownload() {
+        return openAfterDownload;
+    }
+
+    public void setOpenAfterDownload(boolean openAfterDownload) {
+        this.openAfterDownload = openAfterDownload;
     }
 
     @Override
@@ -193,7 +203,7 @@ public class DownloadAction extends BackgroundAction {
             }
         }
 
-        if (!files.isEmpty()) {
+        if (!files.isEmpty() && openAfterDownload) {
             ApplicationManager.getApplication().invokeAndWait(() -> MidPointUtils.openFile(project, files.get(0)));
         }
     }
@@ -227,7 +237,7 @@ public class DownloadAction extends BackgroundAction {
                     "Exception occurred when searching for " + type.getValue(), ex);
         }
 
-        if (!files.isEmpty()) {
+        if (!files.isEmpty() && openAfterDownload) {
             ApplicationManager.getApplication().invokeAndWait(() -> MidPointUtils.openFile(project, files.get(0)));
         }
     }

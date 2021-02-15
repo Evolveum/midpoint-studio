@@ -28,10 +28,10 @@ public class MidPointSettings implements Serializable {
     private DocGeneratorOptions docGeneratorOptions;
 
     @OptionTag(converter = ObjectTypesConverter.class)
-    private List<ObjectTypes> typesToDownload;
+    private List<ObjectTypes> downloadTypesInclude;
 
     @OptionTag(converter = ObjectTypesConverter.class)
-    private List<ObjectTypes> typesNotToDownload;
+    private List<ObjectTypes> downloadTypesExclude;
 
     private int typesToDownloadLimit;
 
@@ -86,26 +86,26 @@ public class MidPointSettings implements Serializable {
         this.docGeneratorOptions = docGeneratorOptions;
     }
 
-    public List<ObjectTypes> getTypesToDownload() {
-        if (typesToDownload == null) {
-            typesToDownload = new ArrayList<>();
+    public List<ObjectTypes> getDownloadTypesInclude() {
+        if (downloadTypesInclude == null) {
+            downloadTypesInclude = new ArrayList<>();
         }
-        return typesToDownload;
+        return downloadTypesInclude;
     }
 
-    public void setTypesToDownload(List<ObjectTypes> typesToDownload) {
-        this.typesToDownload = typesToDownload;
+    public void setDownloadTypesInclude(List<ObjectTypes> downloadTypesInclude) {
+        this.downloadTypesInclude = downloadTypesInclude;
     }
 
-    public List<ObjectTypes> getTypesNotToDownload() {
-        if (typesNotToDownload == null) {
-            typesNotToDownload = new ArrayList<>();
+    public List<ObjectTypes> getDownloadTypesExclude() {
+        if (downloadTypesExclude == null) {
+            downloadTypesExclude = new ArrayList<>();
         }
-        return typesNotToDownload;
+        return downloadTypesExclude;
     }
 
-    public void setTypesNotToDownload(List<ObjectTypes> typesNotToDownload) {
-        this.typesNotToDownload = typesNotToDownload;
+    public void setDownloadTypesExclude(List<ObjectTypes> downloadTypesExclude) {
+        this.downloadTypesExclude = downloadTypesExclude;
     }
 
     public int getTypesToDownloadLimit() {
@@ -134,9 +134,9 @@ public class MidPointSettings implements Serializable {
             return false;
         if (docGeneratorOptions != null ? !docGeneratorOptions.equals(that.docGeneratorOptions) : that.docGeneratorOptions != null)
             return false;
-        if (typesToDownload != null ? !typesToDownload.equals(that.typesToDownload) : that.typesToDownload != null)
+        if (downloadTypesInclude != null ? !downloadTypesInclude.equals(that.downloadTypesInclude) : that.downloadTypesInclude != null)
             return false;
-        return typesNotToDownload != null ? typesNotToDownload.equals(that.typesNotToDownload) : that.typesNotToDownload == null;
+        return downloadTypesExclude != null ? downloadTypesExclude.equals(that.downloadTypesExclude) : that.downloadTypesExclude == null;
     }
 
     @Override
@@ -147,8 +147,8 @@ public class MidPointSettings implements Serializable {
         result = 31 * result + (generatedFilePattern != null ? generatedFilePattern.hashCode() : 0);
         result = 31 * result + (printRestCommunicationToConsole ? 1 : 0);
         result = 31 * result + (docGeneratorOptions != null ? docGeneratorOptions.hashCode() : 0);
-        result = 31 * result + (typesToDownload != null ? typesToDownload.hashCode() : 0);
-        result = 31 * result + (typesNotToDownload != null ? typesNotToDownload.hashCode() : 0);
+        result = 31 * result + (downloadTypesInclude != null ? downloadTypesInclude.hashCode() : 0);
+        result = 31 * result + (downloadTypesExclude != null ? downloadTypesExclude.hashCode() : 0);
         result = 31 * result + typesToDownloadLimit;
         return result;
     }
@@ -179,7 +179,7 @@ public class MidPointSettings implements Serializable {
                 ObjectTypes.ACCESS_CERTIFICATION_CAMPAIGN,
                 ObjectTypes.NODE
         }));
-        settings.setTypesNotToDownload(types);
+        settings.setDownloadTypesExclude(types);
         settings.setTypesToDownloadLimit(100);
 
 

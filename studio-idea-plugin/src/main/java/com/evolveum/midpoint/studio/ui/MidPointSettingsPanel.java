@@ -41,8 +41,8 @@ public class MidPointSettingsPanel extends JPanel {
         logRestCommunication.setSelected(settings.isPrintRestCommunicationToConsole());
 
         ObjectTypesConverter converter = new ObjectTypesConverter();
-        typesIncluded.setText(converter.toString(settings.getTypesToDownload()));
-        typesExcluded.setText(converter.toString(settings.getTypesNotToDownload()));
+        typesIncluded.setText(converter.toString(settings.getDownloadTypesInclude()));
+        typesExcluded.setText(converter.toString(settings.getDownloadTypesExclude()));
 
         typesDownloadLimit.setText(Integer.toString(settings.getTypesToDownloadLimit()));
     }
@@ -55,8 +55,8 @@ public class MidPointSettingsPanel extends JPanel {
         settings.setPrintRestCommunicationToConsole(logRestCommunication.isSelected());
 
         ObjectTypesConverter converter = new ObjectTypesConverter();
-        settings.setTypesToDownload(converter.fromString(typesIncluded.getText()));
-        settings.setTypesNotToDownload(converter.fromString(typesExcluded.getText()));
+        settings.setDownloadTypesInclude(converter.fromString(typesIncluded.getText()));
+        settings.setDownloadTypesExclude(converter.fromString(typesExcluded.getText()));
 
         settings.setTypesToDownloadLimit(Integer.parseInt(typesDownloadLimit.getText()));
 

@@ -15,6 +15,7 @@ import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -53,6 +54,20 @@ public class DownloadSelectedTypes extends BackgroundAction {
         MidPointService mm = MidPointService.getInstance(project);
         MidPointSettings settings = mm.getSettings();
 
+        if (settings.getTypesToDownloadLimit() == 0 && settings.getDownloadTypesInclude().isEmpty() && settings.getDownloadTypesExclude().isEmpty()) {
+            // probably
+            MidPointSettings defaults = MidPointSettings.createDefaultSettings();
+            settings.setDownloadTypesInclude(defaults.getDownloadTypesInclude());
+            settings.setDownloadTypesExclude(defaults.getDownloadTypesExclude());
+            settings.setTypesToDownloadLimit(defaults.getTypesToDownloadLimit());
+            mm.settingsUpdated();
+        }
+
+        if (settings.getTypesToDownloadLimit() <= 0) {
+            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Download Selected Types", "Download limit set to zero. Done.", NotificationType.WARNING);
+            return;
+        }
+
         EnvironmentService em = EnvironmentService.getInstance(project);
         Environment environment = em.getSelected();
 
@@ -67,9 +82,9 @@ public class DownloadSelectedTypes extends BackgroundAction {
         for (ObjectTypes type : typesToDownload) {
             try {
                 DownloadAction da = new DownloadAction(environment, type, query, false, false, true);
+                da.setOpenAfterDownload(false);
                 da.download(evt, indicator);
             } catch (Exception ex) {
-
                 mm.printToConsole(environment, getClass(), "Couldn't download objects of type '" + type.getValue() + "'. Reason: " + ex.getMessage());
             }
         }
@@ -77,8 +92,8 @@ public class DownloadSelectedTypes extends BackgroundAction {
 
     private List<ObjectTypes> determineTypesToDownload(MidPointSettings settings) {
         List<ObjectTypes> rv = new ArrayList<>();
-        List<ObjectTypes> include = settings.getTypesToDownload();
-        List<ObjectTypes> exclude = settings.getTypesNotToDownload();
+        List<ObjectTypes> include = settings.getDownloadTypesInclude();
+        List<ObjectTypes> exclude = settings.getDownloadTypesExclude();
 
         if (include.isEmpty()) {
             rv.addAll(MidPointUtils.getConcreteObjectTypes());
