@@ -29,11 +29,11 @@ public class FileUtils {
         MidPointService mm = MidPointService.getInstance(project);
         MidPointSettings settings = mm.getSettings();
 
-        return createFile(project, params, null, null, null, settings.getGeneratedFilePattern());
+        return createFile(project, params, null, null, null, settings.getGeneratedFilePattern(), false);
     }
 
     public static <O extends ObjectType> VirtualFile createFile(Project project, Environment env,
-                                                                Class<O> objectType, String oid, String objectName) throws IOException {
+                                                                Class<O> objectType, String oid, String objectName, boolean overwrite) throws IOException {
         Map<String, String> params = new HashMap<>();
         params.put("s", env.getShortName());    // environment short name
         params.put("e", env.getName());    // environment name
@@ -41,11 +41,11 @@ public class FileUtils {
         MidPointService mm = MidPointService.getInstance(project);
         MidPointSettings settings = mm.getSettings();
 
-        return createFile(project, params, objectType, oid, objectName, settings.getDowloadFilePattern());
+        return createFile(project, params, objectType, oid, objectName, settings.getDowloadFilePattern(), overwrite);
     }
 
     private static <O extends ObjectType> VirtualFile createFile(Project project, Map<String, String> params,
-                                                                 Class<O> objectType, String oid, String objectName, String filePattern)
+                                                                 Class<O> objectType, String oid, String objectName, String filePattern, boolean overwrite)
             throws IOException {
 
         if (objectType != null) {
@@ -76,6 +76,12 @@ public class FileUtils {
 
         VirtualFile dir = VfsUtil.createDirectories(project.getBasePath()
                 + VfsUtilCore.VFS_SEPARATOR_CHAR + directoryPath);
+
+        VirtualFile file = dir.findChild(fileName);
+        if (overwrite && file != null) {
+            file.delete(FileUtils.class);
+        }
+
         return dir.createChildData(project, fileName);
     }
 

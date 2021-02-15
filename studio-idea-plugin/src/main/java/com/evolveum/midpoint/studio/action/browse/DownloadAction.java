@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.PrismSerializer;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.client.SearchResult;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -46,8 +47,10 @@ public class DownloadAction extends BackgroundAction {
 
     private List<Pair<String, ObjectTypes>> oids;
 
+    private boolean overwrite;
+
     public DownloadAction(@NotNull Environment environment, @NotNull ObjectTypes type, ObjectQuery query,
-                          boolean showOnly, boolean raw) {
+                          boolean showOnly, boolean raw, boolean overwrite) {
         super(TASK_TITLE);
 
         this.type = type;
@@ -56,6 +59,7 @@ public class DownloadAction extends BackgroundAction {
         this.environment = environment;
         this.showOnly = showOnly;
         this.raw = raw;
+        this.overwrite = overwrite;
     }
 
     public DownloadAction(@NotNull Environment environment, @NotNull List<Pair<String, ObjectTypes>> oids, boolean showOnly, boolean raw) {
@@ -175,22 +179,9 @@ public class DownloadAction extends BackgroundAction {
 
                 RunnableUtils.runWriteActionAndWait(() -> {
 
-                    VirtualFile file = null;
-                    Writer out = null;
-                    try {
-                        file = FileUtils.createFile(project, environment, obj.getType().getClassDefinition(), obj.getOid(), obj.getName());
-
-                        out = new BufferedWriter(
-                                new OutputStreamWriter(file.getOutputStream(DownloadAction.this), file.getCharset()));
-
-                        IOUtils.write(obj.getContent(), out);
-
+                    VirtualFile file = saveFile(project, obj);
+                    if (file != null) {
                         files.add(file);
-                    } catch (IOException ex) {
-                        MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
-                                "Exception occurred when serializing object to file " + (file != null ? file.getName() : null), ex);
-                    } finally {
-                        IOUtils.closeQuietly(out);
                     }
                 });
 
@@ -208,6 +199,58 @@ public class DownloadAction extends BackgroundAction {
     }
 
     private void downloadByQuery(MidPointClient client) {
-        // todo implement later
+        List<VirtualFile> files = new ArrayList<>();
+
+        Project project = client.getProject();
+
+        try {
+            SearchResult result = client.search(type.getClassDefinition(), query, raw);
+            if (result == null || result.getObjects() == null) {
+                return;
+            }
+
+            LOG.debug("Storing file");
+
+            RunnableUtils.runWriteActionAndWait(() -> {
+
+                for (MidPointObject obj : result.getObjects()) {
+                    VirtualFile file = saveFile(project, obj);
+                    if (file != null) {
+                        files.add(file);
+                    }
+                }
+            });
+
+            LOG.debug("Files saved");
+        } catch (Exception ex) {
+            MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
+                    "Exception occurred when searching for " + type.getValue(), ex);
+        }
+
+        if (!files.isEmpty()) {
+            ApplicationManager.getApplication().invokeAndWait(() -> MidPointUtils.openFile(project, files.get(0)));
+        }
+    }
+
+    private VirtualFile saveFile(Project project, MidPointObject obj) {
+        VirtualFile file = null;
+        Writer out = null;
+        try {
+            file = FileUtils.createFile(project, environment, obj.getType().getClassDefinition(), obj.getOid(), obj.getName(), overwrite);
+
+            out = new BufferedWriter(
+                    new OutputStreamWriter(file.getOutputStream(DownloadAction.this), file.getCharset()));
+
+            IOUtils.write(obj.getContent(), out);
+
+            return file;
+        } catch (IOException ex) {
+            MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
+                    "Exception occurred when serializing object to file " + (file != null ? file.getName() : null), ex);
+        } finally {
+            IOUtils.closeQuietly(out);
+        }
+
+        return null;
     }
 }

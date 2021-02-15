@@ -712,15 +712,20 @@ public class MidPointUtils {
         return fem.openFile(file, true, true);
     }
 
-    public static void updateServerActionState(AnActionEvent evt) {
+    public static boolean visibleWithMidPointFacet(AnActionEvent evt) {
         if (evt.getProject() == null) {
-            return;
+            return false;
         }
 
         boolean hasFacet = MidPointUtils.hasMidPointFacet(evt.getProject());
-        if (!hasFacet) {
-            evt.getPresentation().setVisible(false);
-            return;
+        evt.getPresentation().setVisible(hasFacet);
+
+        return hasFacet;
+    }
+
+    public static boolean enabledIfXmlSelected(AnActionEvent evt) {
+        if (!visibleWithMidPointFacet(evt)) {
+            return false;
         }
 
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
@@ -732,6 +737,8 @@ public class MidPointUtils {
 
         boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
         evt.getPresentation().setEnabled(enabled);
+
+        return enabled;
     }
 
     public static Module guessMidpointModule(Project project) {

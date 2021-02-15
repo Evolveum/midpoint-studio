@@ -40,7 +40,7 @@ public class DownloadSelectedTypes extends BackgroundAction {
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
-        MidPointUtils.updateServerActionState(evt);
+        MidPointUtils.visibleWithMidPointFacet(evt);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class DownloadSelectedTypes extends BackgroundAction {
         List<ObjectTypes> typesToDownload = determineTypesToDownload(settings);
         for (ObjectTypes type : typesToDownload) {
             try {
-                DownloadAction da = new DownloadAction(environment, type, query, false, false);
+                DownloadAction da = new DownloadAction(environment, type, query, false, false, true);
                 da.download(evt, indicator);
             } catch (Exception ex) {
 

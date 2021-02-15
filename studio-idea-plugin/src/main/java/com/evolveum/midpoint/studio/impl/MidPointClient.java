@@ -147,7 +147,7 @@ public class MidPointClient {
 
         printToConsole("Starting objects search for " + type.getSimpleName() + ", " + options);
 
-        SearchResult result = null;
+        SearchResult result = new SearchResult();
         try {
             result = client.search(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
 
