@@ -77,7 +77,7 @@ public class DownloadAction extends BackgroundAction {
         }
     }
 
-    private void showOnly(AnActionEvent evt, ProgressIndicator indicator) {
+    public void showOnly(AnActionEvent evt, ProgressIndicator indicator) {
         LOG.debug("Setting up midpoint client");
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
 
@@ -137,7 +137,7 @@ public class DownloadAction extends BackgroundAction {
         // todo implement later
     }
 
-    private void download(AnActionEvent evt, ProgressIndicator indicator) {
+    public void download(AnActionEvent evt, ProgressIndicator indicator) {
         LOG.debug("Setting up midpoint client");
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
 

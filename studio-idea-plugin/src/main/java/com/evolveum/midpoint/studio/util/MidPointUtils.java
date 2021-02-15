@@ -796,4 +796,14 @@ public class MidPointUtils {
 
         return result;
     }
+
+    public static List<ObjectTypes> getConcreteObjectTypes() {
+        List<ObjectTypes> rv = new ArrayList<>();
+        for (ObjectTypes t : ObjectTypes.values()) {
+            if (!Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
+                rv.add(t);
+            }
+        }
+        return rv;
+    }
 }
