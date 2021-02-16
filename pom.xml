@@ -6,7 +6,7 @@
 
     <groupId>com.evolveum.midpoint</groupId>
     <artifactId>midscribe</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -25,12 +25,13 @@
         <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
-        <jcommander.version>1.72</jcommander.version>
-        <asciidoctorj.version>2.2.0</asciidoctorj.version>
+        <jcommander.version>1.78</jcommander.version>
+        <asciidoctorj.version>2.4.3</asciidoctorj.version>
         <commons.io.version>2.6</commons.io.version>
-        <velocity.version>2.1</velocity.version>
-        <midpoint.version>4.2-SNAPSHOT</midpoint.version>
+        <velocity.version>2.2</velocity.version>
+        <midpoint.version>4.3-M2</midpoint.version>
         <testng.version>7.1.0</testng.version>
+        <xml.apis.version>1.4.01</xml.apis.version>
     </properties>
 
     <distributionManagement>
@@ -65,7 +66,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
+                    <version>3.8.1</version>
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
@@ -74,7 +75,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>3.2.0</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -177,15 +178,21 @@
                 <artifactId>schema</artifactId>
                 <version>${midpoint.version}</version>
                 <exclusions>
-                    <exclusion>
+                    <!--<exclusion>
                         <groupId>jakarta.xml.bind</groupId>
                         <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
+                    </exclusion>-->
                     <exclusion>
                         <groupId>net.sf.jasperreports</groupId>
                         <artifactId>jasperreports</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>xml-apis</groupId>
+                <artifactId>xml-apis</artifactId>
+                <version>${xml.apis.version}</version>
             </dependency>
 
             <dependency>
