@@ -6,8 +6,11 @@
 
 == Users
 
-    #foreach($object in $users)
-        #parse("/template/user.vm")
-    #end
+#set($objects=$users)
+#parse("/template/objects-sumary-table.vm")
+
+#foreach($object in $users)
+#parse("/template/user.vm")
+#end
 
 #end

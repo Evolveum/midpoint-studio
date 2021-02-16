@@ -5,7 +5,9 @@ $!object.getDescription()
 
 $!utils.stripIndent($object.getDocumentation())
 
-==== Connector
+==== Basic Information
+
+===== Connector
 
 #set($connector=$utils.loadObject($client, $object.getConnectorRef()))
 
@@ -16,7 +18,7 @@ Resource uses $!utils.getOrig($connector.getDisplayName()) connector. Artifact d
 * **Connector bundle:** $!connector.getConnectorBundle()
 * **Namespace:** $!connector.getNamespace()
 
-===== Connector Configuration
+====== Connector Configuration
 
 [cols=3,options=header]
 |===
@@ -36,7 +38,6 @@ Resource uses $!utils.getOrig($connector.getDisplayName()) connector. Artifact d
 
 #if(!$handlersConfig.isEmpty())
 
-
 ====== Results Handlers Configuration
 
 [cols=2,options=header]
@@ -51,6 +52,24 @@ Resource uses $!utils.getOrig($connector.getDisplayName()) connector. Artifact d
 #end
 |===
 
+#end
+
+#set($native = $object.getCapabilities().getNative())
+#set($configured = $object.getCapabilities().getConfigured())
+#if ($native || $configured)
+===== Capabilities
+
+#if ($native)
+====== Native
+#set($capabilities = $native)
+#parse("/template/capabilities.vm")
+#end
+
+#if ($configured)
+====== Configured
+#set($capabilities = $configured)
+#parse("/template/capabilities.vm")
+#end
 #end
 
 ==== Object Types
@@ -130,20 +149,3 @@ $!type.getDocumentation()
 
 #end
 
-#set($native = $object.getCapabilities().getNative())
-#set($configured = $object.getCapabilities().getConfigured())
-#if ($native || $configured)
-==== Capabilities
-
-#if ($native)
-===== Native
-#set($capabilities = $native)
-#parse("/template/capabilities.vm")
-#end
-
-#if ($configured)
-===== Configured
-#set($capabilities = $configured)
-#parse("/template/capabilities.vm")
-#end
-#end

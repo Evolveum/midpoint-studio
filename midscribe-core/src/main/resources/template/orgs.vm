@@ -6,8 +6,11 @@
 
 == Organization Units
 
-    #foreach($object in $orgs)
-        #parse("/template/org.vm")
-    #end
+#set($objects=$orgs)
+#parse("/template/objects-sumary-table.vm")
+
+#foreach($object in $orgs)
+#parse("/template/org.vm")
+#end
 
 #end

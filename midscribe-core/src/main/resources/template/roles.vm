@@ -6,8 +6,11 @@
 
 == Roles
 
-    #foreach($object in $roles)
-        #parse("/template/role.vm")
-    #end
+#set($objects=$roles)
+#parse("/template/objects-sumary-table.vm")
+
+#foreach($object in $roles)
+    #parse("/template/role.vm")
+#end
 
 #end

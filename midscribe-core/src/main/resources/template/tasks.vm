@@ -4,10 +4,13 @@
 
 #if(!$tasks.isEmpty())
 
+#set($objects=$tasks)
+#parse("/template/objects-sumary-table.vm")
+
 == Tasks
 
-    #foreach($object in $tasks)
-        #parse("/template/task.vm")
-    #end
+#foreach($object in $tasks)
+#parse("/template/task.vm")
+#end
 
 #end

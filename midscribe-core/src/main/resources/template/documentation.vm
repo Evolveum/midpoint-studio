@@ -6,6 +6,7 @@ Version $processor.getProperty("project.version"), $processor.getProperty("proje
 :toclevels: 4
 :toc-title: Table of Contents
 :source-highlighter: highlightjs
+:highlightjs-languages: groovy, xml, json
 
 :imagesdir: ./img
 

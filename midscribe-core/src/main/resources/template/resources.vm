@@ -6,6 +6,9 @@
 
 == Resources
 
+#set($objects=$resources)
+#parse("/template/objects-sumary-table.vm")
+
 #foreach($object in $resources)
 #parse("/template/resource.vm")
 #end

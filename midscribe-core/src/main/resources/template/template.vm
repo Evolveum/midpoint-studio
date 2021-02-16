@@ -18,10 +18,14 @@ $!utils.stripIndent($object.getDocumentation())
 #parse("/template/iterationSpecification.vm")
 #end
 
-#set($items = $object.getItems())
+#set($items = $object.getItem())
 #if ($items)
 ==== Items
-## todo
+
+#foreach($item in $items)
+====== $item.ref
+##todo
+#end
 #end
 
 #set($mappings = $object.getMapping())
