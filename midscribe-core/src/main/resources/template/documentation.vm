@@ -2,6 +2,7 @@
 $processor.getProperty("project.author")
 Version $processor.getProperty("project.version"), $processor.getProperty("project.date")
 :sectnums:
+:sectlinks:
 :toc: left
 :toclevels: 4
 :toc-title: Table of Contents

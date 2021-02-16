@@ -1,29 +1,29 @@
 ## main object: $mapping ()MappingType)
 
-[cols="h,d,d,d"]
+[cols="h,d,d,d",separator=¦]
 |===
-| Name
-3+| $!mapping.getName()
+¦ Name
+3+¦ $!mapping.getName()
 
 #if ($mapping.getDescription())
-| Description
-3+| $!mapping.getDescription()
+¦ Description
+3+¦ $!mapping.getDescription()
 #end
 
 #if ($mapping.getDocumentation())
-| Documentation
-3+a|
+¦ Documentation
+3+a¦
 $!utils.stripIndent($mapping.getDocumentation())
 #end
 
-| Options
-| Strength: #if ($mapping.getStrength()) *$!mapping.getStrength().value()* #end
-| Authoritative: #if ($mapping.isAuthoritative()) *$!mapping.isAuthoritative()* #end
-| Exclusive: #if ($mapping.isExclusive()) *$!mapping.isExclusive()* #end
+¦ Options
+¦ Strength: #if ($mapping.getStrength()) *$!mapping.getStrength().value()* #end
+¦ Authoritative: #if ($mapping.isAuthoritative()) *$!mapping.isAuthoritative()* #end
+¦ Exclusive: #if ($mapping.isExclusive()) *$!mapping.isExclusive()* #end
 
 #if (!$mapping.getChannel().isEmpty())
-| Channels
-3+a|
+¦ Channels
+3+a¦
 
 #foreach($channel in $mapping.getChannel())
 `$channel` +
@@ -31,31 +31,30 @@ $!utils.stripIndent($mapping.getDocumentation())
 #end
 
 #if (!$mapping.getExceptChannel().isEmpty())
-| Except channels
-3+a|
+¦ Except channels
+3+a¦
 
 #foreach($channel in $mapping.getExceptChannel())
 `$channel` +
 #end
 #end
 
-| Source
-a|
+¦ Source
+a¦
 
 #foreach($source in $mapping.getSource())
 `$source.getPath()` +
 #if ($source.getName()) &nbsp;&nbsp;&nbsp;&nbsp;=> `$source.getName()` + #end
 #end
 
-h| Target
-a|
+h¦ Target
+a¦
 
 #if ($mapping.getTarget())
     #set($target = $mapping.getTarget())
 `$target.getPath()` #if ($target.getName()) ($target.getName()) #end +
 #end
 
-| Expression
-3+a| #set($expression = $mapping.getExpression())
+4+a¦ #set($expression = $mapping.getExpression())
 #parse("/template/expression.vm")
 |===

@@ -41,6 +41,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.bmuschko</groupId>
+            <artifactId>asciidoctorj-tabbed-code-extension</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity-engine-core</artifactId>
         </dependency>

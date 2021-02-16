@@ -1,5 +1,6 @@
 package com.evolveum.midscribe.generator;
 
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 
 import java.util.List;
@@ -12,6 +13,8 @@ public interface MidPointClient {
     void init() throws Exception;
 
     void destroy() throws Exception;
+
+    PrismContext getPrismContext();
 
     <T extends ObjectType> List<T> list(Class<T> type);
 

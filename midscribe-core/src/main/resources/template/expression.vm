@@ -21,4 +21,34 @@ $!utils.stripIndent($expression.getDocumentation())
 ##* {@link JAXBElement }{@code <}{@link Object }{@code >}
 ##* {@link JAXBElement }{@code <}{@link Object }{@code >}
 
-$expression.getExpressionEvaluator().get(0).getValue().getClass().getSimpleName()
+#set($value = $expression.getExpressionEvaluator().get(0).getValue())
+
+#if($value.getClass().getSimpleName() == "ScriptExpressionEvaluatorType")
+[indent=0,subs="verbatim,attributes",role="primary"]
+.Expression
+----
+Script description
+##todo script description
+----
+
+[source,groovy,indent=0,subs="verbatim,attributes",role="secondary"]
+.Groovy
+----
+$utils.stripIndent($value.getCode())
+----
+#end
+
+#if($value.getClass().getSimpleName() == "AssignmentTargetSearchExpressionEvaluatorType")
+[indent=0,subs="verbatim,attributes",role="primary"]
+.Expression
+----
+Assignment target search description
+##todo script description
+----
+
+[source,xml,indent=0,subs="verbatim,attributes",role="secondary"]
+.XML
+----
+$utils.stripIndent($processor.serialize($value))
+----
+#end

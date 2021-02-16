@@ -23,7 +23,8 @@ $!utils.stripIndent($object.getDocumentation())
 ==== Items
 
 #foreach($item in $items)
-====== $item.ref
+[discrete]
+===== $item.ref
 ##todo
 #end
 #end

@@ -1,6 +1,10 @@
 package com.evolveum.midscribe.generator;
 
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.util.LocalizableMessage;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +14,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -63,6 +68,35 @@ public class ProcessorUtils {
         }
     }
 
+    private PrismSerializer<String> getSerializer(PrismContext prismContext) {
+        return prismContext.xmlSerializer()
+                .options(SerializationOptions.createSerializeReferenceNames());
+    }
+
+    public String serialize(Object object) throws SchemaException {
+        PrismContext prismContext = context.getClient().getPrismContext();
+
+        final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
+
+        PrismSerializer<String> serializer = getSerializer(prismContext);
+
+        String result;
+        if (object instanceof ObjectType) {
+            ObjectType ot = (ObjectType) object;
+            result = serializer.serialize(ot.asPrismObject());
+        } else if (object instanceof PrismObject) {
+            result = serializer.serialize((PrismObject<?>) object);
+        } else if (object instanceof OperationResult) {
+            Function<LocalizableMessage, String> resolveKeys = msg -> msg.getFallbackMessage();
+            OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
+            result = serializer.serializeAnyData(operationResultType, fakeQName);
+        } else {
+            result = serializer.serializeAnyData(object, fakeQName);
+        }
+
+        return result;
+    }
+
     public String getProperty(String key) {
         return properties.getProperty(key);
     }
@@ -114,6 +148,19 @@ public class ProcessorUtils {
 
     public List<FunctionLibraryType> loadFunctionLibraries() throws Exception {
         return loadObjects(FunctionLibraryType.class);
+    }
+
+    public <T extends ObjectType> T getObject(ObjectReferenceType ref) {
+        QName type = ref.getType();
+        if (type == null) {
+            type = ObjectType.COMPLEX_TYPE;
+        }
+
+        if (ref.getOid() == null) {
+            return null;
+        }
+
+        return getObject(type, ref.getOid());
     }
 
     public <T extends ObjectType> T getObject(QName type, String oid) {

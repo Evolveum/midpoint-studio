@@ -28,6 +28,8 @@ public class InMemoryClient implements MidPointClient {
 
     private GenerateOptions options;
 
+    private PrismContext prismContext;
+
     public InMemoryClient(GenerateOptions options) {
         Validate.notNull(options);
 
@@ -57,7 +59,7 @@ public class InMemoryClient implements MidPointClient {
         DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
 
         PrismContextFactory factory = new MidPointPrismContextFactory();
-        PrismContext prismContext = factory.createPrismContext();
+         prismContext = factory.createPrismContext();
         prismContext.initialize();
 
         ParsingContext parsingContext = prismContext.createParsingContextForCompatibilityMode();
@@ -101,6 +103,11 @@ public class InMemoryClient implements MidPointClient {
     public void destroy() throws Exception {
         objects.clear();
         objects = null;
+    }
+
+    @Override
+    public PrismContext getPrismContext() {
+        return prismContext;
     }
 
     @Override

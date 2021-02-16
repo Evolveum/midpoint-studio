@@ -8,18 +8,21 @@
 Max. iterations: $iterationSpecification.getMaxIterations()
 
 #if($iterationSpecification.getTokenExpression())
+[discrete]
 $utils.createHeading($headingLevel) Token Expression
 #set($expression = $iterationSpecification.getTokenExpression())
 #parse("/template/expression.vm")
 #end
 
 #if($iterationSpecification.getPreIterationCondition())
+[discrete]
 $utils.createHeading($headingLevel) Pre Iteration Condition
 #set($expression = $iterationSpecification.getPreIterationCondition())
 #parse("/template/expression.vm")
 #end
 
 #if($iterationSpecification.getPostIterationCondition())
+[discrete]
 $utils.createHeading($headingLevel) Post Iteration Condition
 #set($expression = $iterationSpecification.getPostIterationCondition())
 #parse("/template/expression.vm")
