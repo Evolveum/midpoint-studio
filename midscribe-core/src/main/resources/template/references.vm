@@ -1,0 +1,14 @@
+## main object: $references (List<ObjectReferenceType>)
+
+[cols=2,options=header]
+|===
+|Name
+|Type (Oid)
+
+#foreach($reference in $references)
+#set($obj = $processor.getObject($reference.type, $reference.oid))
+|$obj.name.orig
+|$reference.type.localPart ($reference.oid)
+
+#end
+|===

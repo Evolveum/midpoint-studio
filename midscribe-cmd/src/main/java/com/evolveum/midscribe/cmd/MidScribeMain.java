@@ -101,7 +101,8 @@ public class MidScribeMain {
         if (parsedCommand == null) {
             jc.usage();
         } else {
-            jc.usage(parsedCommand);
+            JCommander partial = jc.getCommands().get(parsedCommand);
+            partial.usage();
         }
     }
 

@@ -1,4 +1,24 @@
-## main object: $expression
+## main object: $expression (ExpressionType)
+
 $!expression.getDescription()
 
 $!utils.stripIndent($expression.getDocumentation())
+
+## todo describe expression evaluator
+##* {@link JAXBElement }{@code <}{@link GenerateExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link SequentialValueExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link AsIsExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link AssignmentTargetSearchExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ScriptExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link AssociationFromLinkExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ShadowDiscriminatorExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ReferenceSearchExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link FunctionExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ItemPathType }{@code >}
+##* {@link JAXBElement }{@code <}{@link SearchObjectExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ConstExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ProportionalExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link Object }{@code >}
+##* {@link JAXBElement }{@code <}{@link Object }{@code >}
+
+$expression.getExpressionEvaluator().get(0).getValue().getClass().getSimpleName()

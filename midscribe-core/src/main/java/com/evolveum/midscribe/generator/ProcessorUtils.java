@@ -1,9 +1,11 @@
 package com.evolveum.midscribe.generator;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.namespace.QName;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -112,6 +114,15 @@ public class ProcessorUtils {
 
     public List<FunctionLibraryType> loadFunctionLibraries() throws Exception {
         return loadObjects(FunctionLibraryType.class);
+    }
+
+    public <T extends ObjectType> T getObject(QName type, String oid) {
+        return getObject(ObjectTypes.getObjectTypeClass(type), oid);
+    }
+
+    public <T extends ObjectType> T getObject(Class<T> type, String oid) {
+        MidPointClient client = context.getClient();
+        return client.get(type, oid);
     }
 
     private <T extends ObjectType> List<T> loadObjects(Class<T> type) throws Exception {

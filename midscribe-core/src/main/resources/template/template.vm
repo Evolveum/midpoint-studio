@@ -7,7 +7,8 @@ $!utils.stripIndent($object.getDocumentation())
 #set($includeRef = $object.getIncludeRef())
 #if ($includeRef)
 ==== Include References
-## todo
+#set($references=$includeRef)
+#parse("/template/references.vm")
 #end
 
 #set($iterationSpecification = $object.getIterationSpecification())
