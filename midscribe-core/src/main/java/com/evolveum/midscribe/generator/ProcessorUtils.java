@@ -6,6 +6,7 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,15 @@ public class ProcessorUtils {
     }
 
     public String serialize(Object object) throws SchemaException {
+        if (object == null) {
+            return null;
+        }
+
+        if (object instanceof RawType) {
+            // todo fix this it's failing to parse and remove condition
+            return null;
+        }
+
         PrismContext prismContext = context.getClient().getPrismContext();
 
         final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");

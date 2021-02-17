@@ -55,6 +55,8 @@ a¦
 `$target.getPath()` #if ($target.getName()) ($target.getName()) #end +
 #end
 
+#if ($mapping.getExpression())
 4+a¦ #set($expression = $mapping.getExpression())
 #parse("/template/expression.vm")
+#end
 |===
