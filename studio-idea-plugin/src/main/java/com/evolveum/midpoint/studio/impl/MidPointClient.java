@@ -200,8 +200,11 @@ public class MidPointClient {
 
         MidPointObject result = null;
         try {
-            Collection<SelectorOptions<GetOperationOptions>> options =
-                    SelectorOptions.createCollection(GetOperationOptions.createRaw());
+            Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
+            if (opts.raw()) {
+                options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
+            }
+
             result = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
 
             printToConsole("Get done");
