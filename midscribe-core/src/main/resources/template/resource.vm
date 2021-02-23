@@ -95,7 +95,8 @@ $!type.getDocumentation()
 #foreach($attribute in $utils.sortAttributes($type.getAttribute()))
 |$!attribute.getRef().toString() #if ($attribute.getDisplayName()) ($!attribute.getDisplayName()) #end
 |
-|$!attribute.getDescription()
+|$!attribute.getDocumentation()
+$!attribute.getDescription()
 
 #end
 |===

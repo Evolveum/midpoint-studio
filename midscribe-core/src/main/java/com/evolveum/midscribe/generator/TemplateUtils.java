@@ -237,6 +237,11 @@ public class TemplateUtils {
             return null;
         }
 
+        if (type.getName() == null && type.getKind() == null && type.getIntent() == null) {
+            type = new ObjectSynchronizationType();
+            type.setKind(ShadowKindType.ACCOUNT);
+        }
+
         return getNameOfObjectType(type.getName(), type.getKind(), type.getIntent());
     }
 
