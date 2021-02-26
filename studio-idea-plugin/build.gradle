@@ -43,6 +43,7 @@ dependencies {
         exclude group: "org.slf4j"
         exclude group: "ch.qos.logback"
     }
+    implementation 'com.bmuschko:asciidoctorj-tabbed-code-extension:0.3'
 
     compile "de.slackspace:openkeepass:$openkeepass"
     compile "org.apache.commons:commons-lang3:$commonsLang"
