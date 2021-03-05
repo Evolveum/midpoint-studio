@@ -195,7 +195,7 @@ public class ServiceImpl implements Service {
         return executeRequest(req, ExecuteScriptResponseType.class);
     }
 
-    private <T> T executeRequest(Request req, Class<T> bodyType) throws IOException, SchemaException, AuthenticationException {
+    private <T> T executeRequest(Request req, Class<T> bodyType) throws IOException, SchemaException, AuthenticationException, ClientException {
         OkHttpClient client = context.getClient();
         try (Response response = client.newCall(req).execute()) {
             context.validateResponse(response);
@@ -215,6 +215,17 @@ public class ServiceImpl implements Service {
             }
 
             PrismParser parser = context.getParser(body);
+
+            if (response.code() == 240 || response.code() == 250) {
+                // body will contain operation result
+                OperationResultType res = parser.parseRealValue(OperationResultType.class);
+                if (bodyType.isAssignableFrom(OperationResultType.class)) {
+                    return (T) res;
+                } else {
+                    throw new ClientException("Client error", OperationResult.createOperationResult(res));
+                }
+            }
+
             return parser.parseRealValue(bodyType);
         }
     }

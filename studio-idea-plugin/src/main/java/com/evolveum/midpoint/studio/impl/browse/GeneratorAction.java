@@ -1,11 +1,9 @@
 package com.evolveum.midpoint.studio.impl.browse;
 
-import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.UploadResponse;
+import com.evolveum.midpoint.studio.action.transfer.UploadExecute;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -22,7 +20,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -81,26 +78,68 @@ public class GeneratorAction extends BackgroundAction {
     private void uploadContent(AnActionEvent evt, ProgressIndicator indicator, Environment env, String content) {
         updateIndicator(indicator, "Content created, uploading to " + env.getName());
 
+        MidPointService mm = MidPointService.getInstance(evt.getProject());
+
         MidPointClient client = new MidPointClient(evt.getProject(), env);
 
-        List<PrismObject<?>> objects = null;
-        try {
-            objects = client.parseObjects(content);
-        } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(env, GeneratorAction.class, NOTIFICATION_KEY, "Couldn't parse generated content", ex);
-        }
+        List<MidPointObject> objects = MidPointObjectUtils.parseText(content, NOTIFICATION_KEY);
 
-        for (PrismObject object : objects) {
+        int fail = 0;
+        int success = 0;
+        for (MidPointObject object : objects) {
             try {
-                UploadResponse resp = client.upload(object, Collections.emptyList());
-                // todo check oid/result
+                OperationResult result = UploadExecute.uploadExecute(client, object);
+                boolean problem = result != null && !result.isSuccess();
+
+                if (problem) {
+                    fail++;
+
+                    String msg = "Upload status of " + object.getName() + " was " + result.getStatus();
+                    mm.printToConsole(env, getClass(), msg);
+
+                    MidPointUtils.publishNotification(NOTIFICATION_KEY, "Warning", msg,
+                            NotificationType.WARNING, new ShowResultNotificationAction(result));
+                } else {
+                    success++;
+
+                    mm.printToConsole(env, getClass(), "Content uploaded successfuly");
+                }
             } catch (Exception ex) {
+                fail++;
+
+                mm.printToConsole(env, getClass(), "Couldn't upload generated content. Reason: " + ex.getMessage());
+
                 MidPointUtils.publishExceptionNotification(env, GeneratorAction.class, NOTIFICATION_KEY, "Couldn't upload generated content", ex);
-                // todo proper error handling (sum all errors and show notification if necessary)
             }
         }
 
+        showNotificationAfterFinish(success, fail);
+
         updateIndicator(indicator, "Content uploaded");
+    }
+
+    private void showNotificationAfterFinish(int successObjects, int failedObjects) {
+        NotificationType type;
+        String title;
+        StringBuilder sb = new StringBuilder();
+
+        if (failedObjects == 0 && successObjects > 0) {
+            type = NotificationType.INFORMATION;
+            title = "Success";
+
+            sb.append("Upload finished.");
+        } else {
+            type = NotificationType.WARNING;
+            title = "Warning";
+
+            sb.append("There were problems during upload");
+        }
+
+        sb.append("<br/>");
+        sb.append("Processed: ").append(successObjects).append(" objects<br/>");
+        sb.append("Failed to process: ").append(failedObjects).append(" objects");
+
+        MidPointUtils.publishNotification(NOTIFICATION_KEY, title, sb.toString(), type);
     }
 
     private void writeContent(AnActionEvent evt, ProgressIndicator indicator, Environment env, String content) {
