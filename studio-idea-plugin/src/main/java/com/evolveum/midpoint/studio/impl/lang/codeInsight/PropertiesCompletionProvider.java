@@ -46,7 +46,6 @@ public class PropertiesCompletionProvider extends CompletionProvider<CompletionP
         }
 
         for (String key : keys) {
-
             result.addElement(build(key, cache.expandKeyForInlay(key, vf)));
         }
     }

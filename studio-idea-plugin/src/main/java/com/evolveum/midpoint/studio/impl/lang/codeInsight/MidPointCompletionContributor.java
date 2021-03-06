@@ -48,6 +48,15 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
 
         extend(CompletionType.BASIC,
                 psiElement().inside(
+                        XmlPatterns
+                                .xmlText()
+                                .withParent(
+                                        commonTag("handlerUri").withParent(commonTag("task"))
+                                )),
+                new TaskHandlerAnnotatorCompletionProvider());
+
+        extend(CompletionType.BASIC,
+                psiElement().inside(
                         XmlPatterns.or(
                                 XmlPatterns.xmlText().withParent(commonTag("matching")),
                                 XmlPatterns.xmlText().withParent(commonTag("matchingRule")),
