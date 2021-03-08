@@ -85,7 +85,8 @@ public class MidPointClient {
                     .proxyServerType(environment.getProxyServerType())
                     .proxyUsername(environment.getProxyUsername())
                     .proxyPassword(environment.getProxyPassword())
-                    .ignoreSSLErrors(environment.isIgnoreSslErrors());
+                    .ignoreSSLErrors(environment.isIgnoreSslErrors())
+                    .responseTimeout(midPointManager.getSettings().getRestResponseTimeout());
 
             factory.messageListener((message) -> {
 

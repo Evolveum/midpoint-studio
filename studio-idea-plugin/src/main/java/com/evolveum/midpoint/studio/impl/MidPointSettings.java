@@ -35,6 +35,8 @@ public class MidPointSettings implements Serializable {
 
     private int typesToDownloadLimit;
 
+    private int restResponseTimeout = 60;
+
     public MidPointSettings() {
     }
 
@@ -116,27 +118,36 @@ public class MidPointSettings implements Serializable {
         this.typesToDownloadLimit = typesToDownloadLimit;
     }
 
+    public int getRestResponseTimeout() {
+        return restResponseTimeout;
+    }
+
+    public void setRestResponseTimeout(int restResponseTimeout) {
+        this.restResponseTimeout = restResponseTimeout;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MidPointSettings that = (MidPointSettings) o;
+        MidPointSettings settings = (MidPointSettings) o;
 
-        if (printRestCommunicationToConsole != that.printRestCommunicationToConsole) return false;
-        if (typesToDownloadLimit != that.typesToDownloadLimit) return false;
-        if (projectId != null ? !projectId.equals(that.projectId) : that.projectId != null) return false;
-        if (midPointVersion != null ? !midPointVersion.equals(that.midPointVersion) : that.midPointVersion != null)
+        if (printRestCommunicationToConsole != settings.printRestCommunicationToConsole) return false;
+        if (typesToDownloadLimit != settings.typesToDownloadLimit) return false;
+        if (restResponseTimeout != settings.restResponseTimeout) return false;
+        if (projectId != null ? !projectId.equals(settings.projectId) : settings.projectId != null) return false;
+        if (midPointVersion != null ? !midPointVersion.equals(settings.midPointVersion) : settings.midPointVersion != null)
             return false;
-        if (dowloadFilePattern != null ? !dowloadFilePattern.equals(that.dowloadFilePattern) : that.dowloadFilePattern != null)
+        if (dowloadFilePattern != null ? !dowloadFilePattern.equals(settings.dowloadFilePattern) : settings.dowloadFilePattern != null)
             return false;
-        if (generatedFilePattern != null ? !generatedFilePattern.equals(that.generatedFilePattern) : that.generatedFilePattern != null)
+        if (generatedFilePattern != null ? !generatedFilePattern.equals(settings.generatedFilePattern) : settings.generatedFilePattern != null)
             return false;
-        if (docGeneratorOptions != null ? !docGeneratorOptions.equals(that.docGeneratorOptions) : that.docGeneratorOptions != null)
+        if (docGeneratorOptions != null ? !docGeneratorOptions.equals(settings.docGeneratorOptions) : settings.docGeneratorOptions != null)
             return false;
-        if (downloadTypesInclude != null ? !downloadTypesInclude.equals(that.downloadTypesInclude) : that.downloadTypesInclude != null)
+        if (downloadTypesInclude != null ? !downloadTypesInclude.equals(settings.downloadTypesInclude) : settings.downloadTypesInclude != null)
             return false;
-        return downloadTypesExclude != null ? downloadTypesExclude.equals(that.downloadTypesExclude) : that.downloadTypesExclude == null;
+        return downloadTypesExclude != null ? downloadTypesExclude.equals(settings.downloadTypesExclude) : settings.downloadTypesExclude == null;
     }
 
     @Override
@@ -150,6 +161,7 @@ public class MidPointSettings implements Serializable {
         result = 31 * result + (downloadTypesInclude != null ? downloadTypesInclude.hashCode() : 0);
         result = 31 * result + (downloadTypesExclude != null ? downloadTypesExclude.hashCode() : 0);
         result = 31 * result + typesToDownloadLimit;
+        result = 31 * result + restResponseTimeout;
         return result;
     }
 
