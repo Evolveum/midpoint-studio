@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui;
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.util.ObjectTypesConverter;
 import com.intellij.ui.TitledSeparator;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +22,7 @@ public class MidPointSettingsPanel extends JPanel {
     private JTextField typesDownloadLimit;
     private JTextField typesIncluded;
     private JTextField typesExcluded;
-    private TitledSeparator downloadByTypeSeparator;
+    private JTextField restClientTimeout;
 
     private MidPointSettings settings;
 
@@ -39,6 +40,7 @@ public class MidPointSettingsPanel extends JPanel {
         downloadPattern.setText(settings.getDowloadFilePattern());
         generatedPattern.setText(settings.getGeneratedFilePattern());
         logRestCommunication.setSelected(settings.isPrintRestCommunicationToConsole());
+        restClientTimeout.setText(Integer.toString(settings.getRestResponseTimeout()));
 
         ObjectTypesConverter converter = new ObjectTypesConverter();
         typesIncluded.setText(converter.toString(settings.getDownloadTypesInclude()));
@@ -53,6 +55,9 @@ public class MidPointSettingsPanel extends JPanel {
         settings.setDowloadFilePattern(downloadPattern.getText());
         settings.setGeneratedFilePattern(generatedPattern.getText());
         settings.setPrintRestCommunicationToConsole(logRestCommunication.isSelected());
+        if (StringUtils.isNumeric(restClientTimeout.getText())) {
+            settings.setRestResponseTimeout(Integer.parseInt(restClientTimeout.getText()));
+        }
 
         ObjectTypesConverter converter = new ObjectTypesConverter();
         settings.setDownloadTypesInclude(converter.fromString(typesIncluded.getText()));
