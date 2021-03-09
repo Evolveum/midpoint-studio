@@ -157,6 +157,8 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             filesCount++;
 
             RunnableUtils.runWriteActionAndWait(() -> {
+                MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
+
                 try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                     String xml = IOUtils.toString(in);
 

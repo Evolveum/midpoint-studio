@@ -123,7 +123,7 @@ public class RefreshAction extends BackgroundAction {
             List<MidPointObject> objects = new ArrayList<>();
 
             RunnableUtils.runWriteActionAndWait(() -> {
-                file.refresh(false, true);
+                MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
 
                 List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
                 obj = MidPointObjectUtils.filterObjectTypeOnly(obj);

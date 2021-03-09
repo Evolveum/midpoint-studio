@@ -35,8 +35,11 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
@@ -53,6 +56,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
@@ -66,7 +70,7 @@ import javax.swing.table.TableColumn;
 import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.awt.*;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
@@ -812,5 +816,20 @@ public class MidPointUtils {
             }
         }
         return rv;
+    }
+
+    public static void forceSaveAndRefresh(Project project, VirtualFile file) {
+        file.refresh(false, true);
+
+        FileEditor[] editors = FileEditorManager.getInstance(project).getEditors(file);
+        for (FileEditor editor : editors) {
+            if (!(editor instanceof TextEditor)) {
+                continue;
+            }
+
+            TextEditor textEditor = (TextEditor) editor;
+            Document doc = textEditor.getEditor().getDocument();
+            FileDocumentManager.getInstance().saveDocument(doc);
+        }
     }
 }
