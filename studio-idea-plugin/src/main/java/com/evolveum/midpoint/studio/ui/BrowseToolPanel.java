@@ -361,7 +361,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         int selected = 0;
         int count = 0;
 
-        if (model != null) {
+        if (model != null && results != null) {
             selected = model.getSelectedObjects(results).size();
             count = model.getObjects().size();
         }
