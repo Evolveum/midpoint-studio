@@ -146,7 +146,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     private void processFiles(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
         AtomicInteger success = new AtomicInteger(0);
         AtomicInteger fail = new AtomicInteger(0);
-        int filesCount = 0;
+        AtomicInteger filesCount = new AtomicInteger(0);
         AtomicInteger failedFilesCount = new AtomicInteger(0);
 
         for (VirtualFile file : files) {
@@ -154,7 +154,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 break;
             }
 
-            filesCount++;
+            filesCount.incrementAndGet();
 
             RunnableUtils.runWriteActionAndWait(() -> {
                 MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
@@ -172,7 +172,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             });
         }
 
-        showNotificationAfterFinish(filesCount, failedFilesCount.get(), success.get(), fail.get());
+        showNotificationAfterFinish(filesCount.get(), failedFilesCount.get(), success.get(), fail.get());
     }
 
     private ProcessState processText(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, String text, VirtualFile file) {

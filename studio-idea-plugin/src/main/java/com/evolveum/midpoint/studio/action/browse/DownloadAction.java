@@ -1,7 +1,5 @@
 package com.evolveum.midpoint.studio.action.browse;
 
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismSerializer;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.*;
@@ -92,13 +90,12 @@ public class DownloadAction extends BackgroundAction {
     }
 
     public void showOnly(AnActionEvent evt, ProgressIndicator indicator) {
+        indicator.setIndeterminate(true);
+
         LOG.debug("Setting up midpoint client");
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
 
         Project project = evt.getProject();
-
-        PrismContext ctx = client.getPrismContext();
-        PrismSerializer<String> serializer = ctx.serializerFor(PrismContext.LANG_XML);
 
         RunnableUtils.runWriteActionAndWait(() -> {
             BufferedWriter out = null;
@@ -152,10 +149,10 @@ public class DownloadAction extends BackgroundAction {
     }
 
     public void download(AnActionEvent evt, ProgressIndicator indicator) {
+        indicator.setIndeterminate(true);
+
         LOG.debug("Setting up midpoint client");
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
-
-        PrismContext ctx = client.getPrismContext();
 
         BufferedWriter out = null;
         try {

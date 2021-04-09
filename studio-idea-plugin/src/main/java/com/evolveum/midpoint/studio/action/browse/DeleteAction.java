@@ -7,7 +7,6 @@ import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.client.DeleteOptions;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
-import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -42,36 +41,36 @@ public class DeleteAction extends BackgroundAction {
 
     @Override
     protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
+        indicator.setIndeterminate(true);
+
         MidPointService mm = MidPointService.getInstance(evt.getProject());
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
 
         AtomicInteger success = new AtomicInteger(0);
         AtomicInteger fail = new AtomicInteger(0);
 
-        RunnableUtils.runWriteActionAndWait(() -> {
-            try {
-                indicator.setFraction(0d);
+        try {
+            indicator.setFraction(0d);
 
-                int i = 0;
-                for (Pair<String, ObjectTypes> pair : oids) {
-                    i++;
-                    indicator.setFraction(i / oids.size());
+            int i = 0;
+            for (Pair<String, ObjectTypes> pair : oids) {
+                i++;
+                indicator.setFraction(i / oids.size());
 
-                    try {
-                        client.delete(pair.getSecond().getClassDefinition(), pair.getFirst(), new DeleteOptions().raw(raw));
-                        success.incrementAndGet();
-                    } catch (Exception ex) {
-                        fail.incrementAndGet();
+                try {
+                    client.delete(pair.getSecond().getClassDefinition(), pair.getFirst(), new DeleteOptions().raw(raw));
+                    success.incrementAndGet();
+                } catch (Exception ex) {
+                    fail.incrementAndGet();
 
-                        publishException(mm, "Exception occurred when deleting '" + pair.getFirst()
-                                + "' (" + pair.getSecond().getTypeQName().getLocalPart() + ")", ex);
-                    }
+                    publishException(mm, "Exception occurred when deleting '" + pair.getFirst()
+                            + "' (" + pair.getSecond().getTypeQName().getLocalPart() + ")", ex);
                 }
-            } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(environment, DeleteAction.class, NOTIFICATION_KEY,
-                        "Exception occurred when deleting objects ", ex);
             }
-        });
+        } catch (Exception ex) {
+            MidPointUtils.publishExceptionNotification(environment, DeleteAction.class, NOTIFICATION_KEY,
+                    "Exception occurred when deleting objects ", ex);
+        }
 
         showNotificationAfterFinish(success.get(), fail.get());
     }
