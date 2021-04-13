@@ -30,7 +30,7 @@
         <asciidoctorj.tabbed.code.version>0.3</asciidoctorj.tabbed.code.version>
         <commons.io.version>2.6</commons.io.version>
         <velocity.version>2.2</velocity.version>
-        <midpoint.version>4.3-M2</midpoint.version>
+        <midpoint.version>4.3</midpoint.version>
         <testng.version>7.1.0</testng.version>
         <xml.apis.version>1.4.01</xml.apis.version>
     </properties>
@@ -58,11 +58,6 @@
             <id>evolveum-snapshots</id>
             <name>Evolveum Snapshots</name>
             <url>https://nexus.evolveum.com/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <id>jcenter</id>
-            <name>JCenter</name>
-            <url>https://jcenter.bintray.com/</url>
         </repository>
     </repositories>
 
