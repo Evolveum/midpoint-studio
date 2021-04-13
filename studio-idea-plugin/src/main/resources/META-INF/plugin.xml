@@ -21,14 +21,15 @@
 
     <change-notes><![CDATA[
 
-        <h1>Nightly 4.3</h1>
+        <h1>Release 4.3</h1>
         <ul>
             <li>Bugfixes</li>
+            <li>Using MidPoint 4.3 libs</li>
             <li>Delete object directly from browse tool window</li>
             <li>Bulk refresh predefined objects</li>
             <li>Import/export encrypted properties</li>
             <li>Updated documentation generator</li>
-            <li>Test connection only for resources</li>
+            <li>Test connection only for resource objects</li>
             <li>Environment properties inlayed to xml for better readability</li>
             <li>Xml diff simplified UI, multiple diff strategies available</li>
         </ul>
