@@ -3,7 +3,7 @@ allprojects {
         mavenCentral()
         mavenLocal()
         maven {
-            url 'http://nexus.evolveum.com/nexus/content/repositories/releases/'
+            url 'https://nexus.evolveum.com/nexus/content/repositories/releases/'
         }
         maven {
             url 'https://nexus.evolveum.com/nexus/content/groups/public/'
@@ -20,7 +20,7 @@ allprojects {
 subprojects {
     apply plugin: 'java'
 
-    version '4.2'
+    version '4.3'
 
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion

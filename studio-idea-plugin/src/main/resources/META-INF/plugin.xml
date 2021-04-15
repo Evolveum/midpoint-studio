@@ -21,6 +21,19 @@
 
     <change-notes><![CDATA[
 
+        <h1>Release 4.3</h1>
+        <ul>
+            <li>Bugfixes</li>
+            <li>Using MidPoint 4.3 libs</li>
+            <li>Delete object directly from browse tool window</li>
+            <li>Bulk refresh predefined objects</li>
+            <li>Import/export encrypted properties</li>
+            <li>Updated documentation generator</li>
+            <li>Test connection only for resource objects</li>
+            <li>Environment properties inlayed to xml for better readability</li>
+            <li>Xml diff simplified UI, multiple diff strategies available</li>
+        </ul>
+
         <h1>Release 4.2</h1>
         <ul>
             <li>Browse/Upload with raw options for both operations</li>
@@ -45,7 +58,7 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>
 
-<!--        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.ConnectorXmlSchemaCacheService"/>-->
+<!--        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ConnectorXmlSchemaCacheService"/>-->
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService"/>
 
@@ -137,8 +150,9 @@
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
-        <!--        todo finish -->
-<!--        <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>-->
+<!--        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.ConnectorXmlSchemaReferenceContributor"/>-->
+
+<!--        <xml.elementDescriptorProvider implementation="com.evolveum.midpoint.studio.impl.psi.ConnectorXmlSchemaDescriptorProvider"/>-->
 
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
         <!--        <xml.namespaceHelper implementation="com.evolveum.midpoint.studio.impl.lang.MidPointNamespaceHelper"/>-->
@@ -149,6 +163,8 @@
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.DeprecatedElementAnnotator"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.TaskHandlerAnnotatorCompletionProvider"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
@@ -158,6 +174,7 @@
 
         <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
 
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.delta.ObjectDeltaEditorProvider"/>
 
         <diff.lang.DiffIgnoredRangeProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
@@ -190,6 +207,10 @@
                 description="Generate Random OID"/>
 
         <!-- TRANSFER RELATED -->
+
+        <action id="MidPoint.Action.DownloadSelectedTypes" class="com.evolveum.midpoint.studio.action.transfer.DownloadSelectedTypes"
+                text="Download Selected Types"
+                icon="AllIcons.Actions.Download"/>
 
         <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecute"
                 text="Upload/Execute"
@@ -227,6 +248,11 @@
                 text="Upload/Test/Validate Resource"
                 icon="/icons/uploadTestValidate.svg"/>
 
+        <action id="MidPoint.Action.TestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.TestResource"
+                text="Test Resource"
+                icon="/icons/testConnection.svg"/>
+
         <action id="MidPoint.Action.DeleteRaw"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
                 text="Delete (raw)"
@@ -263,6 +289,10 @@
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
+                <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
+
+                <separator/>
+
                 <reference ref="MidPoint.Action.UploadExecute"/>
                 <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
 
@@ -271,6 +301,10 @@
                 <reference ref="MidPoint.Action.UploadRecompute"/>
                 <reference ref="MidPoint.Action.UploadTestResource"/>
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.TestResource"/>
 
                 <separator/>
 
@@ -351,6 +385,14 @@
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
+                <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.TestResource"/>
+
+                <separator/>
+
                 <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
 
@@ -379,20 +421,6 @@
             <add-to-group group-id="NavBarToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
         </group>
-
-        <!-- todo create icon diff with server, example AllIcons.Actions.diffWithClipboard -->
-        <!--<action id="MidPoint.Action.CompareFileWithServerAction"
-                class="com.evolveum.midpoint.studio.action.CompareFileWithServerAction"
-                icon="AllIcons.Actions.Diff"/>
-
-        <group id="MidPoint.Group.Compare">
-            <reference id="MidPoint.Action.CompareFileWithServerAction"/>
-
-            <add-to-group group-id="CompareActions" anchor="last"/>
-            <add-to-group group-id="Diff.KeymapGroup" anchor="last"/>
-            <add-to-group group-id="EditorPopupMenu" relative-to-action="CompareClipboardWithSelection" anchor="after"/>
-        </group>
-        -->
 
         <group id="MidPoint.Group.Menu.Editor">
             <reference ref="MidPoint.Group.Menu"/>

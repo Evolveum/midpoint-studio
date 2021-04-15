@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -15,25 +16,30 @@ import javax.swing.*;
 public class TextAction extends AnAction implements CustomComponentAction {
 
     private JLabel label;
-    private String text;
+
+    public TextAction() {
+        label = new JLabel("presentation.getText()");
+        label.setMinimumSize(new Dimension(30, 30));
+        label.setMaximumSize(new Dimension(500, 30));
+    }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         // intentionally left empty
     }
 
-    public void setText(String text) {
-        this.text = text;
-    }
-
     @Override
     public void update(@NotNull AnActionEvent e) {
-        super.update(e);
+        String text = createText(e);
 
         e.getPresentation().setText(text);
         if (label != null) {
             label.setText(text);
         }
+    }
+
+    protected String createText(AnActionEvent evt) {
+        return "";
     }
 
     @Override
@@ -50,7 +56,6 @@ public class TextAction extends AnAction implements CustomComponentAction {
     @NotNull
     @Override
     public JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
-        label = new JLabel(presentation.getText());
         return label;
     }
 }

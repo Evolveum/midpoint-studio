@@ -85,7 +85,8 @@ public class MidPointClient {
                     .proxyServerType(environment.getProxyServerType())
                     .proxyUsername(environment.getProxyUsername())
                     .proxyPassword(environment.getProxyPassword())
-                    .ignoreSSLErrors(environment.isIgnoreSslErrors());
+                    .ignoreSSLErrors(environment.isIgnoreSslErrors())
+                    .responseTimeout(midPointManager.getSettings().getRestResponseTimeout());
 
             factory.messageListener((message) -> {
 
@@ -94,14 +95,14 @@ public class MidPointClient {
                 }
 
                 if (!suppressConsole) {
-                    midPointManager.printToConsole(MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+                    midPointManager.printToConsole(environment, MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
                 }
             });
 
             client = factory.create();
 
             if (midPointManager != null && !suppressConsole) {
-                midPointManager.printToConsole(MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+                midPointManager.printToConsole(environment, MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
             }
         } catch (Exception ex) {
             handleGenericException("Couldn't create rest client", ex);
@@ -124,7 +125,7 @@ public class MidPointClient {
 
     private void printToConsole(String message) {
         if (midPointManager != null && !suppressConsole) {
-            midPointManager.printToConsole(MidPointClient.class, message);
+            midPointManager.printToConsole(getEnvironment(), MidPointClient.class, message);
         }
     }
 
@@ -147,7 +148,7 @@ public class MidPointClient {
 
         printToConsole("Starting objects search for " + type.getSimpleName() + ", " + options);
 
-        SearchResult result = null;
+        SearchResult result = new SearchResult();
         try {
             result = client.search(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
 
@@ -191,7 +192,7 @@ public class MidPointClient {
 
     private void handleGenericException(String message, Exception ex) {
         if (!suppressNotifications) {
-            MidPointUtils.handleGenericException(project, MidPointClient.class, NOTIFICATION_KEY, message, ex);
+            MidPointUtils.handleGenericException(project, getEnvironment(), MidPointClient.class, NOTIFICATION_KEY, message, ex);
         }
     }
 
@@ -200,8 +201,11 @@ public class MidPointClient {
 
         MidPointObject result = null;
         try {
-            Collection<SelectorOptions<GetOperationOptions>> options =
-                    SelectorOptions.createCollection(GetOperationOptions.createRaw());
+            Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
+            if (opts.raw()) {
+                options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
+            }
+
             result = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
 
             printToConsole("Get done");
@@ -338,5 +342,13 @@ public class MidPointClient {
 
     public TestConnectionResult testConnection() {
         return client.testServiceConnection();
+    }
+
+    public List<String> getSourceProfiles() throws IOException {
+        return client.getSourceProfiles();
+    }
+
+    public List<ScriptObject> getSourceProfileScripts(String profile) throws IOException {
+        return client.getSourceProfileScripts(profile);
     }
 }

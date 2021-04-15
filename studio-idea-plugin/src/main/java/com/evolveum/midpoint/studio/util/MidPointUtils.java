@@ -1,17 +1,21 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.common.LocalizationService;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.client.ClientException;
+import com.evolveum.midpoint.studio.impl.client.LocalizationServiceImpl;
 import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.annotation.Experimental;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
@@ -31,7 +35,11 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
@@ -43,10 +51,12 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
@@ -60,10 +70,12 @@ import javax.swing.table.TableColumn;
 import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.awt.*;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,6 +91,8 @@ public class MidPointUtils {
     public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart());
 
     public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
+
+    public static final String NS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 
     private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
 
@@ -221,18 +235,18 @@ public class MidPointUtils {
                 .generateServiceName(MidPointSettings.class.getSimpleName(), key));
     }
 
-    public static void publishException(Project project, Class clazz, String notificationKey, String msg, Exception ex) {
+    public static void publishException(Project project, Environment env, Class clazz, String notificationKey, String msg, Exception ex) {
         MidPointService mm = MidPointService.getInstance(project);
-        mm.printToConsole(clazz, msg + ". Reason: " + ex.getMessage());
+        mm.printToConsole(env, clazz, msg + ". Reason: " + ex.getMessage());
 
-        publishExceptionNotification(notificationKey, msg, ex);
+        publishExceptionNotification(env, clazz, notificationKey, msg, ex);
     }
 
-    public static void publishExceptionNotification(String key, String message, Exception ex) {
-        publishExceptionNotification(key, message, ex, new NotificationAction[]{});
+    public static void publishExceptionNotification(Environment env, Class clazz, String key, String message, Exception ex) {
+        publishExceptionNotification(env, clazz, key, message, ex, new NotificationAction[]{});
     }
 
-    public static void publishExceptionNotification(String key, String message, Exception ex, NotificationAction... actions) {
+    public static void publishExceptionNotification(Environment env, Class clazz, String key, String message, Exception ex, NotificationAction... actions) {
         String msg = message + ", reason: " + ex.getMessage();
 
         List<NotificationAction> list = new ArrayList<>();
@@ -243,7 +257,7 @@ public class MidPointUtils {
                 list.add(new ShowResultNotificationAction(result));
             }
         } else {
-            list.add(new ShowExceptionNotificationAction("Exception occurred", ex));
+            list.add(new ShowExceptionNotificationAction("Exception occurred", ex, clazz, env));
         }
 
         list.addAll(Arrays.asList(actions));
@@ -272,7 +286,7 @@ public class MidPointUtils {
         Notifications.Bus.notify(notification);
     }
 
-    public static void handleGenericException(Project project, Class clazz, String key, String message, Exception ex) {
+    public static void handleGenericException(Project project, Environment env, Class clazz, String key, String message, Exception ex) {
         NotificationAction action = null;
         if (ex instanceof ClientException) {
             OperationResult result = ((ClientException) ex).getResult();
@@ -288,7 +302,7 @@ public class MidPointUtils {
 
         if (project != null) {
             MidPointService manager = MidPointService.getInstance(project);
-            manager.printToConsole(clazz, message, ex);
+            manager.printToConsole(env, clazz, message, ex);
         }
     }
 
@@ -577,6 +591,32 @@ public class MidPointUtils {
 
     }
 
+    public static QName elementXsiType(XmlTag tag) {
+        if (tag == null) {
+            return null;
+        }
+
+        XmlAttribute xsiType = tag.getAttribute("type", NS_XSI);
+        if (xsiType == null || xsiType.getValue() == null) {
+            return null;
+        }
+
+        String namespace;
+        String localPart;
+
+        String type = xsiType.getValue();
+        String[] array = type.split(":", -1);
+        if (array.length == 1) {
+            namespace = tag.getNamespace();
+            localPart = array[0];
+        } else {
+            namespace = tag.getNamespaceByPrefix(array[0]);
+            localPart = array[1];
+        }
+
+        return new QName(namespace, localPart);
+    }
+
     public static <R> TableColumnModelExt createTableColumnModel(List<TreeTableColumnDefinition<R, ?>> columnDefinitions) {
         TableColumnModelExt model = new DefaultTableColumnModelExt();
         int index = 0;
@@ -667,24 +707,29 @@ public class MidPointUtils {
         return pane;
     }
 
-    public static void openFile(Project project, VirtualFile file) {
+    public static FileEditor[] openFile(Project project, VirtualFile file) {
         if (file == null) {
-            return;
+            return FileEditor.EMPTY_ARRAY;
         }
 
         FileEditorManager fem = FileEditorManager.getInstance(project);
-        fem.openFile(file, true, true);
+        return fem.openFile(file, true, true);
     }
 
-    public static void updateServerActionState(AnActionEvent evt) {
+    public static boolean visibleWithMidPointFacet(AnActionEvent evt) {
         if (evt.getProject() == null) {
-            return;
+            return false;
         }
 
         boolean hasFacet = MidPointUtils.hasMidPointFacet(evt.getProject());
-        if (!hasFacet) {
-            evt.getPresentation().setVisible(false);
-            return;
+        evt.getPresentation().setVisible(hasFacet);
+
+        return hasFacet;
+    }
+
+    public static boolean enabledIfXmlSelected(AnActionEvent evt) {
+        if (!visibleWithMidPointFacet(evt)) {
+            return false;
         }
 
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
@@ -696,6 +741,8 @@ public class MidPointUtils {
 
         boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
         evt.getPresentation().setEnabled(enabled);
+
+        return enabled;
     }
 
     public static Module guessMidpointModule(Project project) {
@@ -721,5 +768,68 @@ public class MidPointUtils {
         }
 
         return modules[0];
+    }
+
+    public static PrismSerializer<String> getSerializer(PrismContext prismContext) {
+        return prismContext.xmlSerializer()
+                .options(SerializationOptions.createSerializeReferenceNames());
+    }
+
+    public static PrismParser createParser(PrismContext ctx, InputStream data) {
+        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
+        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
+    public static PrismParser createParser(PrismContext ctx, String xml) {
+        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
+        return ctx.parserFor(xml).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
+    public static String serialize(PrismContext prismContext, Object object) throws SchemaException {
+        final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
+
+        PrismSerializer<String> serializer = getSerializer(prismContext);
+
+        String result;
+        if (object instanceof ObjectType) {
+            ObjectType ot = (ObjectType) object;
+            result = serializer.serialize(ot.asPrismObject());
+        } else if (object instanceof PrismObject) {
+            result = serializer.serialize((PrismObject<?>) object);
+        } else if (object instanceof OperationResult) {
+            LocalizationService localizationService = new LocalizationServiceImpl();
+            Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
+            OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
+            result = serializer.serializeAnyData(operationResultType, fakeQName);
+        } else {
+            result = serializer.serializeAnyData(object, fakeQName);
+        }
+
+        return result;
+    }
+
+    public static List<ObjectTypes> getConcreteObjectTypes() {
+        List<ObjectTypes> rv = new ArrayList<>();
+        for (ObjectTypes t : ObjectTypes.values()) {
+            if (!Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
+                rv.add(t);
+            }
+        }
+        return rv;
+    }
+
+    public static void forceSaveAndRefresh(Project project, VirtualFile file) {
+        file.refresh(false, true);
+
+        FileEditor[] editors = FileEditorManager.getInstance(project).getEditors(file);
+        for (FileEditor editor : editors) {
+            if (!(editor instanceof TextEditor)) {
+                continue;
+            }
+
+            TextEditor textEditor = (TextEditor) editor;
+            Document doc = textEditor.getEditor().getDocument();
+            FileDocumentManager.getInstance().saveDocument(doc);
+        }
     }
 }

@@ -13,6 +13,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -132,7 +133,7 @@ public class Expander {
         if (key != null && key.startsWith("@")) {
             String filePath = key.replaceFirst("@", "");
             File contentFile = new File(filePath);
-            if (contentFile.isAbsolute() && file.exists()) {
+            if (contentFile.isAbsolute() && contentFile.exists()) {
                 return true;
             } else {
                 if (file != null) {
@@ -150,6 +151,21 @@ public class Expander {
 
     public String expandKeyFromProperties(String key) {
         return expandKeyFromProperties(key, false);
+    }
+
+    public Set<String> getKeys() {
+        Set<String> set = new HashSet<>();
+        if (encryptionService != null) {
+            set.addAll(encryptionService.list(EncryptedProperty.class).stream().map(p -> p.getKey()).collect(Collectors.toSet()));
+        }
+        if (projectProperties != null) {
+            set.addAll(projectProperties.keySet());
+        }
+        if (environmentProperties != null) {
+            set.addAll(environmentProperties.getKeys());
+        }
+
+        return set;
     }
 
     private String expandKey(String key, VirtualFile file) {

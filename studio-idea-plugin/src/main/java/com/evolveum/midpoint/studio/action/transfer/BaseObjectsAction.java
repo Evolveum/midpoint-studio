@@ -38,6 +38,8 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
     private final String operation;
 
+    private Environment environment;
+
     public BaseObjectsAction(String taskTitle, String notificationKey, String operation) {
         super(taskTitle);
 
@@ -49,19 +51,21 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
-        MidPointUtils.updateServerActionState(evt);
+        MidPointUtils.enabledIfXmlSelected(evt);
     }
 
     @Override
     protected void executeOnBackground(AnActionEvent e, ProgressIndicator indicator) {
         MidPointService mm = MidPointService.getInstance(e.getProject());
-        mm.printToConsole(getClass(), "Initializing " + operation + " action");
 
         LOG.debug("Setting up MidPoint client");
 
         EnvironmentService em = EnvironmentService.getInstance(e.getProject());
-        Environment env = em.getSelected();
-        MidPointClient client = new MidPointClient(e.getProject(), env);
+        environment = em.getSelected();
+
+        mm.printToConsole(environment, getClass(), "Initializing " + operation + " action");
+
+        MidPointClient client = new MidPointClient(e.getProject(), environment);
 
         LOG.debug("MidPoint client setup done");
 
@@ -134,15 +138,15 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     }
 
     private void publishException(MidPointService mm, String msg, Exception ex) {
-        mm.printToConsole(getClass(), msg + ". Reason: " + ex.getMessage());
+        mm.printToConsole(environment, getClass(), msg + ". Reason: " + ex.getMessage());
 
-        MidPointUtils.publishExceptionNotification(notificationKey, msg, ex);
+        MidPointUtils.publishExceptionNotification(environment, getClass(), notificationKey, msg, ex);
     }
 
     private void processFiles(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
         AtomicInteger success = new AtomicInteger(0);
         AtomicInteger fail = new AtomicInteger(0);
-        int filesCount = 0;
+        AtomicInteger filesCount = new AtomicInteger(0);
         AtomicInteger failedFilesCount = new AtomicInteger(0);
 
         for (VirtualFile file : files) {
@@ -150,9 +154,11 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 break;
             }
 
-            filesCount++;
+            filesCount.incrementAndGet();
 
             RunnableUtils.runWriteActionAndWait(() -> {
+                MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
+
                 try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                     String xml = IOUtils.toString(in);
 
@@ -166,7 +172,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             });
         }
 
-        showNotificationAfterFinish(filesCount, failedFilesCount.get(), success.get(), fail.get());
+        showNotificationAfterFinish(filesCount.get(), failedFilesCount.get(), success.get(), fail.get());
     }
 
     private ProcessState processText(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, String text, VirtualFile file) {
@@ -176,7 +182,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
         try {
             List<MidPointObject> objects = MidPointObjectUtils.parseText(text, notificationKey);
-            objects = MidPointObjectUtils.filterObjectTypeOnly(objects);
+            objects = MidPointObjectUtils.filterObjectTypeOnly(objects, false);
 
             int i = 0;
             for (MidPointObject obj : objects) {
@@ -228,14 +234,14 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     protected void printProblem(Project project, String message) {
         MidPointService mm = MidPointService.getInstance(project);
 
-        mm.printToConsole(getClass(), message);
+        mm.printToConsole(environment, getClass(), message);
     }
 
     protected void printAndNotifyProblem(Project project, String operation, String objectName, OperationResult result, Exception ex) {
         MidPointService mm = MidPointService.getInstance(project);
 
         String msg = StringUtils.capitalize(operation) + " status of " + objectName + " was " + result.getStatus();
-        mm.printToConsole(getClass(), msg);
+        mm.printToConsole(environment, getClass(), msg);
 
         MidPointUtils.publishNotification(notificationKey, "Warning", msg,
                 NotificationType.WARNING, new ShowResultNotificationAction(result));
@@ -248,7 +254,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     protected void printSuccess(Project project, String operation, String objectName) {
         MidPointService mm = MidPointService.getInstance(project);
 
-        mm.printToConsole(getClass(), StringUtils.capitalize(operation) + " '" + objectName + "' finished");
+        mm.printToConsole(environment, getClass(), StringUtils.capitalize(operation) + " '" + objectName + "' finished");
     }
 
     protected String getOperation() {

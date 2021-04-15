@@ -44,7 +44,7 @@ public class RefreshAction extends BackgroundAction {
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
-        MidPointUtils.updateServerActionState(evt);
+        MidPointUtils.enabledIfXmlSelected(evt);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class RefreshAction extends BackgroundAction {
             List<MidPointObject> objects = new ArrayList<>();
 
             RunnableUtils.runWriteActionAndWait(() -> {
-                file.refresh(false, true);
+                MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
 
                 List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
                 obj = MidPointObjectUtils.filterObjectTypeOnly(obj);
@@ -133,7 +133,7 @@ public class RefreshAction extends BackgroundAction {
 
             if (objects.isEmpty()) {
                 skipped++;
-                mm.printToConsole(RefreshAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
+                mm.printToConsole(env, RefreshAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
                 continue;
             }
 
@@ -154,13 +154,13 @@ public class RefreshAction extends BackgroundAction {
                     missing++;
                     newObjects.add(object.getContent());
 
-                    mm.printToConsole(RefreshAction.class, "Couldn't find object "
+                    mm.printToConsole(env, RefreshAction.class, "Couldn't find object "
                             + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
                     newObjects.add(object.getContent());
 
-                    mm.printToConsole(RefreshAction.class, "Error getting object"
+                    mm.printToConsole(env, RefreshAction.class, "Error getting object"
                             + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
             }
@@ -183,7 +183,7 @@ public class RefreshAction extends BackgroundAction {
                 } catch (IOException ex) {
                     failed.incrementAndGet();
 
-                    mm.printToConsole(RefreshAction.class, "Failed to write refreshed file " + file.getPath(), ex);
+                    mm.printToConsole(env, RefreshAction.class, "Failed to write refreshed file " + file.getPath(), ex);
                 }
             });
         }

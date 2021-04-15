@@ -22,6 +22,7 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.Consumer;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 
@@ -32,9 +33,9 @@ public class JiraErrorReporter extends ErrorReportSubmitter {
 
     @Override
     public boolean submit(@NotNull IdeaLoggingEvent[] events,
-                          String additionalInfo,
+                          @Nullable String additionalInfo,
                           @NotNull Component parentComponent,
-                          @NotNull Consumer<SubmittedReportInfo> consumer) {
+                          @NotNull Consumer<? super SubmittedReportInfo> consumer) {
 
         DataContext dataContext = DataManager.getInstance().getDataContext(parentComponent);
         IdeaLoggingEvent event = events[0];

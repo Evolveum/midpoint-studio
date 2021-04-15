@@ -14,6 +14,11 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 public class MidPointCompletionContributor extends DefaultCompletionContributor {
 
     public MidPointCompletionContributor() {
+        extend(CompletionType.BASIC,
+                psiElement().inside(
+                        XmlPatterns
+                                .xmlText()),
+                new PropertiesCompletionProvider());
 
         extend(CompletionType.BASIC,
                 psiElement().inside(
@@ -40,6 +45,15 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                                         commonTag("handlerUri").withParent(commonTag("action"))
                                 )),
                 new SyncActionCompletionProvider());
+
+        extend(CompletionType.BASIC,
+                psiElement().inside(
+                        XmlPatterns
+                                .xmlText()
+                                .withParent(
+                                        commonTag("handlerUri").withParent(commonTag("task"))
+                                )),
+                new TaskHandlerAnnotatorCompletionProvider());
 
         extend(CompletionType.BASIC,
                 psiElement().inside(
