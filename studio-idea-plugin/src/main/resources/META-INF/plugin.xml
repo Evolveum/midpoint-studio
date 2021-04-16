@@ -21,9 +21,10 @@
 
     <change-notes><![CDATA[
 
-        <h1>Release 4.3</h1>
+        <h1>Nightly 4.4</h1>
         <ul>
             <li>Bugfixes</li>
+            <li>Improved inlay properties caching</li>
         </ul>
 
         <h1>Release 4.3</h1>

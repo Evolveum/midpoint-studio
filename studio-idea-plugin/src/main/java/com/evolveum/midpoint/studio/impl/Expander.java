@@ -46,6 +46,10 @@ public class Expander {
         initProjectProperties(project);
     }
 
+    public Environment getEnvironment() {
+        return environment;
+    }
+
     private void initProjectProperties(Project project) {
         if (project == null) {
             return;
