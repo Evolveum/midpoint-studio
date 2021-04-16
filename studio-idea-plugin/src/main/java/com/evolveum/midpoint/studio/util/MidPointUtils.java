@@ -56,7 +56,6 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
@@ -70,7 +69,7 @@ import javax.swing.table.TableColumn;
 import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.awt.*;
-import java.io.*;
+import java.io.InputStream;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
@@ -716,7 +715,7 @@ public class MidPointUtils {
         return fem.openFile(file, true, true);
     }
 
-    public static boolean visibleWithMidPointFacet(AnActionEvent evt) {
+    public static boolean isVisibleWithMidPointFacet(AnActionEvent evt) {
         if (evt.getProject() == null) {
             return false;
         }
@@ -727,22 +726,27 @@ public class MidPointUtils {
         return hasFacet;
     }
 
-    public static boolean enabledIfXmlSelected(AnActionEvent evt) {
-        if (!visibleWithMidPointFacet(evt)) {
+    public static boolean shouldEnableAction(AnActionEvent evt) {
+        if (!isVisibleWithMidPointFacet(evt)) {
             return false;
         }
 
+        return isEnvironmentAndFileSelected(evt);
+    }
+
+    public static boolean isMidpointObjectFileSelected(AnActionEvent evt) {
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
                 (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
 
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
+        return toProcess.size() > 0;
+    }
+
+    public static boolean isEnvironmentAndFileSelected(AnActionEvent evt) {
         EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
 
-        boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
-        evt.getPresentation().setEnabled(enabled);
-
-        return enabled;
+        return em.getSelected() != null && isMidpointObjectFileSelected(evt);
     }
 
     public static Module guessMidpointModule(Project project) {

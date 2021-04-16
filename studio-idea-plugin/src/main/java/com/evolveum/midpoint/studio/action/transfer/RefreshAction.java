@@ -44,7 +44,8 @@ public class RefreshAction extends BackgroundAction {
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
-        MidPointUtils.enabledIfXmlSelected(evt);
+        boolean enabled = MidPointUtils.shouldEnableAction(evt);
+        evt.getPresentation().setEnabled(enabled);
     }
 
     @Override

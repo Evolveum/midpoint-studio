@@ -41,7 +41,7 @@ public class DownloadSelectedTypes extends BackgroundAction {
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
-        MidPointUtils.visibleWithMidPointFacet(evt);
+        MidPointUtils.isVisibleWithMidPointFacet(evt);
     }
 
     @Override

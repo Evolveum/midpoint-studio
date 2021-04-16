@@ -9,11 +9,16 @@ import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.browse.*;
+import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
+import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
+import com.evolveum.midpoint.studio.action.browse.DownloadAction;
+import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.browse.*;
+import com.evolveum.midpoint.studio.impl.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -490,10 +495,17 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void deletePerformed(AnActionEvent evt, boolean rawDownload) {
-        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
-        Environment env = em.getSelected();
+        DeleteAction da = new DeleteAction(getResultsModel().getSelectedOids(results)) {
 
-        DeleteAction da = new DeleteAction(env, getResultsModel().getSelectedOids(results), rawDownload);
+            @Override
+            public DeleteOptions createOptions() {
+                DeleteOptions opts = super.createOptions();
+                opts.raw(rawDownload);
+
+                return opts;
+            }
+        };
+
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
 

@@ -43,6 +43,9 @@ public interface Service {
     <O extends ObjectType> MidPointObject get(Class<O> type, String oid, Collection<SelectorOptions<GetOperationOptions>> options)
             throws ObjectNotFoundException, AuthenticationException, IOException;
 
+    <O extends ObjectType> OperationResult recompute(Class<O> type, String oid)
+            throws ObjectNotFoundException, AuthenticationException, IOException, SchemaException;
+
     <O extends ObjectType> void delete(Class<O> type, String oid)
             throws ObjectNotFoundException, AuthenticationException, IOException;
 

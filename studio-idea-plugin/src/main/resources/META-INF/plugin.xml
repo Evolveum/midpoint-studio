@@ -213,6 +213,9 @@
                 description="Generate Random OID"/>
 
         <!-- TRANSFER RELATED -->
+        <action id="MidPoint.Action.Recompute" class="com.evolveum.midpoint.studio.action.transfer.RecomputeAction"
+                text="Recompute"
+                icon="AllIcons.Actions.Compile"/>
 
         <action id="MidPoint.Action.DownloadSelectedTypes" class="com.evolveum.midpoint.studio.action.transfer.DownloadSelectedTypes"
                 text="Download Selected Types"
@@ -295,6 +298,7 @@
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
+                <reference ref="MidPoint.Action.Recompute"/>
                 <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
 
                 <separator/>
@@ -391,6 +395,7 @@
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
+                <reference ref="MidPoint.Action.Recompute"/>
                 <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
 
                 <separator/>

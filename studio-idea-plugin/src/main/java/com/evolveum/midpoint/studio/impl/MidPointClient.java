@@ -344,6 +344,18 @@ public class MidPointClient {
         return client.testServiceConnection();
     }
 
+    public <O extends ObjectType> OperationResult recompute(Class<O> type, String oid) {
+        printToConsole("Starting recompute for " + oid + "(" + type.getSimpleName() + ")");
+
+        try {
+            return client.recompute(type, oid);
+        } catch (Exception ex) {
+            handleGenericException("Error occurred while recomputing object", ex);
+        }
+
+        return null;
+    }
+
     public List<String> getSourceProfiles() throws IOException {
         return client.getSourceProfiles();
     }
