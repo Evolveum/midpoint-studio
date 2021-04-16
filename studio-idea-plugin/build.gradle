@@ -82,7 +82,7 @@ intellij {
     pluginName 'intellij-midpoint-studio'
     updateSinceUntilBuild false
     plugins = [
-            'PsiViewer:211-SNAPSHOT',
+            'PsiViewer:211.6305.21-EAP-SNAPSHOT',
             'com.jetbrains.hackathon.indices.viewer:1.16',
             'java',
             'Groovy',
