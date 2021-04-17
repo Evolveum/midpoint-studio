@@ -10,6 +10,7 @@ import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.client.ClientException;
 import com.evolveum.midpoint.studio.impl.client.LocalizationServiceImpl;
 import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
+import com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -696,7 +697,7 @@ public class MidPointUtils {
                         .withParent(
                                 XmlPatterns.xmlAttribute("oid").withParent(
                                         XmlPatterns.xmlTag().withNamespace(SchemaConstantsGenerated.NS_COMMON)
-                                                .withName(NAMES)))).accepts(element);
+                                                .withLocalName(NAMES)))).accepts(element);
     }
 
     public static JBScrollPane borderlessScrollPane(@NotNull JComponent component) {
