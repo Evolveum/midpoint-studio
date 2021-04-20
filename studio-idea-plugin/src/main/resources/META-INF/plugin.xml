@@ -68,6 +68,8 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService"/>
 
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ItemPathCacheService"/>
+
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
