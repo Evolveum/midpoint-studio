@@ -47,6 +47,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.UIAction;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,6 +55,8 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.xml.namespace.QName;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
@@ -61,6 +64,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
 
@@ -195,11 +199,64 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             }
         });
         this.results.setOpaque(false);
+        this.results.getActionMap().put("copy", new UIAction("copy") {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                copySelectedObjectOids();
+            }
+        });
+
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem item = new JMenuItem("Copy oids");
+        item.addActionListener(e -> copySelectedObjectOids());
+        popup.add(item);
+
+        item = new JMenuItem("Copy names");
+        item.addActionListener(e -> copySelectedObjectNames());
+        popup.add(item);
+
+        this.results.setComponentPopupMenu(popup);
 
         this.results.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         results.add(new JBScrollPane(this.results), BorderLayout.CENTER);
 
         return results;
+    }
+
+    private void copySelectedObjectNames() {
+        List<ObjectType> objects = getResultsModel().getSelectedObjects(results);
+        if (objects.isEmpty()) {
+            return;
+        }
+
+        List<String> names = objects.stream().map(o -> MidPointUtils.getName(o.asPrismObject())).collect(Collectors.toList());
+        String text = StringUtils.join(names, '\n');
+
+        putStringToClipboard(text);
+    }
+
+    private void copySelectedObjectOids() {
+        List<Pair<String, ObjectTypes>> oidTypes = getResultsModel().getSelectedOids(results);
+
+        if (oidTypes.isEmpty()) {
+            return;
+        }
+
+        List<String> oids = oidTypes.stream().map(p -> p.getFirst()).collect(Collectors.toList());
+        String text = StringUtils.join(oids, '\n');
+
+        putStringToClipboard(text);
+    }
+
+    private void putStringToClipboard(String str) {
+        if (str == null) {
+            str = "";
+        }
+
+        StringSelection selection = new StringSelection(str);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection, selection);
     }
 
     private DefaultActionGroup createQueryActionGroup() {

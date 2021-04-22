@@ -25,6 +25,8 @@
         <ul>
             <li>Bugfixes</li>
             <li>Improved inlay properties caching</li>
+            <li>Simple autocomplete for source/target path elements</li>
+            <li>Copy selected objects oid/name from browse results</li>
         </ul>
 
         <h1>Release 4.3</h1>
