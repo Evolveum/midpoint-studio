@@ -67,6 +67,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.awt.*;
@@ -796,11 +797,10 @@ public class MidPointUtils {
         PrismSerializer<String> serializer = getSerializer(prismContext);
 
         String result;
-        if (object instanceof ObjectType) {
-            ObjectType ot = (ObjectType) object;
-            result = serializer.serialize(ot.asPrismObject());
-        } else if (object instanceof PrismObject) {
-            result = serializer.serialize((PrismObject<?>) object);
+        if (object instanceof ObjectType || object instanceof PrismObject) {
+            PrismObject o = object instanceof  PrismObject ? (PrismObject) object : ((ObjectType)object).asPrismObject();
+            ObjectTypes type = ObjectTypes.getObjectType(o.getCompileTimeClass());
+            result = serializer.serialize(new JAXBElement(type.getElementName(), o.getClass(), o.asObjectable()));
         } else if (object instanceof OperationResult) {
             LocalizationService localizationService = new LocalizationServiceImpl();
             Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);

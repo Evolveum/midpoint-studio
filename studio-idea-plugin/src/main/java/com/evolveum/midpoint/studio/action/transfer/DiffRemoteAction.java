@@ -36,7 +36,7 @@ public class DiffRemoteAction extends BackgroundAction {
     public static final String NOTIFICATION_KEY = "Diff Remote Action";
 
     public DiffRemoteAction() {
-        super(NOTIFICATION_KEY, AllIcons.Actions.Diff, NOTIFICATION_KEY);
+        super("Diff Remote", AllIcons.Actions.Diff, NOTIFICATION_KEY);
     }
 
     @Override
