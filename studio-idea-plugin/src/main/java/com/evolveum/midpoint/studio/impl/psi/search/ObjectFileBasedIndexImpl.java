@@ -169,7 +169,7 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
 
     @Override
     public int getVersion() {
-        return 1;
+        return 2;
     }
 
     private static GlobalSearchScope createFilter(final Project project) {
