@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.impl.lang.annotation;
 
-import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
+import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
@@ -11,6 +12,8 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -28,34 +31,42 @@ public class RefOidAnnotator implements Annotator {
 
         XmlAttributeValue value = (XmlAttributeValue) element;
         XmlTag tag = getTag(value);
-        // todo finish
-//        if (!isObjectReference(tag)) {
-//            return;
-//        }
 
-        String oidValue = value.getValue();
-        if (StringUtils.isEmpty(oidValue)) {
-            holder.createErrorAnnotation(element, "Oid not defined");
+        String oid = value.getValue();
+        checkOidFormat(oid, value, holder);
+
+        if (MidPointUtils.isObjectTypeElement(tag)) {
+            checkObjectOidValidity(oid, value, holder);
+        } else if (isObjectReference(tag)) {
+//            checkObjectReferenceValidity(oid, value, holder);
+        }
+
+
+    }
+
+    private void checkObjectOidValidity(String oid, XmlAttributeValue value, AnnotationHolder holder) {
+        List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), value.getProject());
+        if (result != null && result.size() > 1) {
+            holder.createErrorAnnotation(value, "Oid must be unique, found " + result.size() + " objects in total.");
+            return;
+        }
+    }
+
+    private void checkOidFormat(String oid, XmlAttributeValue value, AnnotationHolder holder) {
+        if (StringUtils.isEmpty(oid)) {
+            holder.createErrorAnnotation(value, "Oid not defined");
             return;
         }
 
-        if (oidValue.length() > 36) {
-            holder.createErrorAnnotation(element, "Oid must not be longer than 36 characters");
+        if (oid.length() > 36) {
+            holder.createErrorAnnotation(value, "Oid must not be longer than 36 characters");
             return;
         }
 
-        if (!MidPointUtils.UUID_PATTERN.matcher(oidValue).matches()) {
-            holder.createWarningAnnotation(element, "Oid doesn't match UUID format");
+        if (!MidPointUtils.UUID_PATTERN.matcher(oid).matches()) {
+            holder.createWarningAnnotation(value, "Oid doesn't match UUID format");
             return;
         }
-
-        // todo implement
-//        if (isReferenceValid()) {
-//            // todo check reference and throw error if necessary
-//            holder.createInfoAnnotation(element, "Some object name");
-//        } else {
-//            holder.createWarningAnnotation(element, "Reference not valid. Object with this oid doesn't exist");
-//        }
     }
 
     private boolean isReferenceValid() {

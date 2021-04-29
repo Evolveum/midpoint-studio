@@ -10,9 +10,9 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -22,7 +22,7 @@ public class OidReferenceProvider extends PsiReferenceProvider {
     @NotNull
     @Override
     public PsiReference[] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
-        if (MidPointUtils.isItObjectTypeOidAttribute(element)) {
+        if (!(element instanceof XmlAttributeValue)) {
             return new PsiReference[0];
         }
 
@@ -34,7 +34,12 @@ public class OidReferenceProvider extends PsiReferenceProvider {
             return new PsiReference[0];
         }
 
-        List<OidReference> references = files.stream().map(f -> new OidReference(attrValue, f)).collect(Collectors.toList());
+        Stream<VirtualFile> stream = files.stream();
+        if (files.size() == 1 && MidPointUtils.isItObjectTypeOidAttribute(element)) {
+            stream = stream.filter(f -> !f.equals(element.getContainingFile().getVirtualFile()));
+        }
+
+        List<OidReference> references = stream.map(f -> new OidReference(attrValue, f)).collect(Collectors.toList());
 
         return references.toArray(new PsiReference[references.size()]);
     }
