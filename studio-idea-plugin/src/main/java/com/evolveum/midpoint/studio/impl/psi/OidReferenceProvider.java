@@ -19,6 +19,7 @@ import java.util.stream.Stream;
  */
 public class OidReferenceProvider extends PsiReferenceProvider {
 
+    // todo for object[oid] show only data from /objects folder maybe?
     @NotNull
     @Override
     public PsiReference[] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
@@ -26,16 +27,18 @@ public class OidReferenceProvider extends PsiReferenceProvider {
             return new PsiReference[0];
         }
 
+        boolean isObjectOid = MidPointUtils.isItObjectTypeOidAttribute(element);
+
         XmlAttributeValue attrValue = (XmlAttributeValue) element;
         String oid = attrValue.getValue();
 
-        List<VirtualFile> files = ObjectFileBasedIndexImpl.getVirtualFiles(oid, element.getProject());
+        List<VirtualFile> files = ObjectFileBasedIndexImpl.getVirtualFiles(oid, element.getProject(), isObjectOid);
         if (files == null) {
             return new PsiReference[0];
         }
 
         Stream<VirtualFile> stream = files.stream();
-        if (files.size() == 1 && MidPointUtils.isItObjectTypeOidAttribute(element)) {
+        if (files.size() == 1 && isObjectOid) {
             stream = stream.filter(f -> !f.equals(element.getContainingFile().getVirtualFile()));
         }
 

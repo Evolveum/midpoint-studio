@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.ide.highlighter.XmlFileType;
@@ -24,6 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -172,7 +175,7 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
         return 2;
     }
 
-    private static GlobalSearchScope createFilter(final Project project) {
+    private static GlobalSearchScope createFilter(final Project project, boolean downloadFolderOnly) {
         final GlobalSearchScope projectScope = GlobalSearchScope.allScope(project);
 
         return new GlobalSearchScope(project) {
@@ -189,6 +192,26 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
 
             @Override
             public boolean contains(@NotNull VirtualFile file) {
+                String downloadFilePattern = MidPointService.getInstance(project).getSettings().getDowloadFilePattern();
+                Path path = Paths.get(downloadFilePattern);
+                Path base = Paths.get(project.getBasePath());
+
+                Path downloadRoot = base.resolve(path);
+                while (downloadRoot != null) {
+                    if (!downloadRoot.toString().contains("$")) {
+                        break;
+                    }
+
+                    downloadRoot = downloadRoot.getParent();
+                }
+
+                Path filePath = Paths.get(file.getPath());
+
+                if (downloadFolderOnly && !filePath.startsWith(downloadRoot)) {
+                    // we're not in download folder
+                    return false;
+                }
+
                 final VirtualFile parent = file.getParent();
                 return parent != null && projectScope.contains(file);
             }
@@ -210,11 +233,15 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
     }
 
     public static List<VirtualFile> getVirtualFiles(String oid, Project project) {
+        return getVirtualFiles(oid, project, false);
+    }
+
+    public static List<VirtualFile> getVirtualFiles(String oid, Project project, boolean downloadFolderOnly) {
         if (oid == null) {
             return Collections.emptyList();
         }
 
-        Collection<VirtualFile> files = FileBasedIndex.getInstance().getContainingFiles(NAME, oid, createFilter(project));
+        Collection<VirtualFile> files = FileBasedIndex.getInstance().getContainingFiles(NAME, oid, createFilter(project, downloadFolderOnly));
         if (files == null || files.isEmpty()) {
             return Collections.emptyList();
         }
@@ -226,11 +253,15 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
     }
 
     public static List<OidNameValue> getOidNamesByOid(String oid, Project project) {
+        return getOidNamesByOid(oid, project, false);
+    }
+
+    public static List<OidNameValue> getOidNamesByOid(String oid, Project project, boolean downloadFolderOnly) {
         if (oid == null) {
             return Collections.emptyList();
         }
 
-        Collection<OidNameValue> collection = FileBasedIndex.getInstance().getValues(NAME, oid, createFilter(project));
+        Collection<OidNameValue> collection = FileBasedIndex.getInstance().getValues(NAME, oid, createFilter(project, downloadFolderOnly));
 
         List<OidNameValue> result = new ArrayList<>();
         if (collection != null) {

@@ -40,8 +40,6 @@ public class RefOidAnnotator implements Annotator {
         } else if (isObjectReference(tag)) {
 //            checkObjectReferenceValidity(oid, value, holder);
         }
-
-
     }
 
     private void checkObjectOidValidity(String oid, XmlAttributeValue value, AnnotationHolder holder) {
