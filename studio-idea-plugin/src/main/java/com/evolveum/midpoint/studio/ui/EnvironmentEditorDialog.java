@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.impl.client.ProxyType;
 import com.evolveum.midpoint.studio.impl.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
@@ -64,12 +65,15 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
     private Project project;
 
+    private MidPointSettings settings;
+
     private Selectable<Environment> selectable;
 
-    public EnvironmentEditorDialog(Project project, @Nullable Selectable<Environment> environment) {
+    public EnvironmentEditorDialog(Project project, MidPointSettings settings, @Nullable Selectable<Environment> environment) {
         super(false);
 
         this.project = project;
+        this.settings = settings;
 
         setTitle(environment == null ? "Add environment" : "Edit environment");
 
@@ -249,7 +253,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         populateEnvironment(env);
 
         try {
-            MidPointClient client = new MidPointClient(project, env);
+            MidPointClient client = new MidPointClient(project, env, settings);
             TestConnectionResult result = client.testConnection();
 
             if (result.success()) {

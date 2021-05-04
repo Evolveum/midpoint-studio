@@ -1,10 +1,11 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.intellij.openapi.project.Project;
-import com.intellij.ui.AddEditRemovePanel;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentSettings;
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.util.Selectable;
+import com.intellij.openapi.project.Project;
+import com.intellij.ui.AddEditRemovePanel;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -19,15 +20,18 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     private Project project;
 
-    public EnvironmentsPanel(Project project, EnvironmentSettings settings) {
+    private MidPointSettings settings;
+
+    public EnvironmentsPanel(Project project, MidPointSettings settings, EnvironmentSettings environmentSettings) {
         super(new EnvironmentsModel(), new ArrayList<>(), null);
 
         this.project = project;
+        this.settings = settings;
 
         setPreferredSize(new Dimension(150, 100));
         getTable().setShowColumns(true);
 
-        initData(settings);
+        initData(environmentSettings);
     }
 
     private void initData(EnvironmentSettings settings) {
@@ -65,7 +69,7 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     @Nullable
     private Selectable<Environment> doAddOrEdit(@Nullable Selectable<Environment> environment) {
-        EnvironmentEditorDialog dialog = new EnvironmentEditorDialog(project, environment);
+        EnvironmentEditorDialog dialog = new EnvironmentEditorDialog(project, settings, environment);
         if (!dialog.showAndGet()) {
             return null;
         }

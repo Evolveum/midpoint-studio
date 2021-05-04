@@ -87,7 +87,7 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         printToConsole(env, clazz, message, ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
     }
 
-    public void printToConsole(Environment env, Class clazz, String message, Exception ex, ConsoleViewContentType type) {
+    public void printToConsole(Environment env, @NotNull Class clazz, String message, Exception ex, @NotNull ConsoleViewContentType type) {
         Validate.notNull(clazz, "Class must not be null");
         Validate.notNull(type, "Console view content type must not be null");
 

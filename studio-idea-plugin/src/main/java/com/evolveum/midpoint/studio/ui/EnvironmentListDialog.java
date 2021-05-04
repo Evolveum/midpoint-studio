@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
@@ -22,8 +23,10 @@ public class EnvironmentListDialog extends DialogWrapper {
 
         this.project = project;
 
+        MidPointService ms = MidPointService.getInstance(project);
         EnvironmentService manager = EnvironmentService.getInstance(project);
-        panel = new EnvironmentsPanel(project, manager.getFullSettings());
+
+        panel = new EnvironmentsPanel(project, ms.getSettings(), manager.getFullSettings());
 
         setTitle("Edit Environments");
 

@@ -15,7 +15,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
-import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -29,10 +28,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * TODO CLEAN THIS WHOLE CLASS AND UNDERLYING CLIENT API, IT'S A MESS.
- * <p>
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointClient {
@@ -45,32 +43,51 @@ public class MidPointClient {
 
     private Environment environment;
 
-    private MidPointService midPointManager;
-
-    private Service client;
-
     private boolean suppressNotifications;
 
     private boolean suppressConsole;
 
+    private Optional<Console> console;
+
+    private Service client;
+
     public MidPointClient(Project project, @NotNull Environment environment) {
-        this(project, environment, false, false);
+        this(project, environment, null);
+    }
+
+    public MidPointClient(Project project, @NotNull Environment environment, MidPointSettings settings) {
+        this(project, environment, settings, false, false);
     }
 
     public MidPointClient(Project project, @NotNull Environment environment, boolean suppressNotifications, boolean suppressConsole) {
+        this(project, environment, null, suppressNotifications, suppressConsole);
+    }
+
+    public MidPointClient(Project project, @NotNull Environment environment, MidPointSettings settings, boolean suppressNotifications, boolean suppressConsole) {
         this.project = project;
         this.environment = environment;
         this.suppressNotifications = suppressNotifications;
         this.suppressConsole = suppressConsole;
 
-        if (project != null) {
-            this.midPointManager = MidPointService.getInstance(project);
+        if (settings == null) {
+            if (project != null) {
+                MidPointService ms = MidPointService.getInstance(project);
+                settings = ms.getSettings();
+            } else {
+                settings = MidPointSettings.createDefaultSettings();
+            }
         }
 
-        init();
+        if (project != null) {
+            console = Optional.of(new MidPointManagerConsole(project));
+        } else {
+            console = Optional.ofNullable(null);
+        }
+
+        init(settings);
     }
 
-    private void init() {
+    private void init(MidPointSettings settings) {
         LOG.debug("Initialization of rest client for environment " + environment.getName());
         long time = System.currentTimeMillis();
 
@@ -86,23 +103,21 @@ public class MidPointClient {
                     .proxyUsername(environment.getProxyUsername())
                     .proxyPassword(environment.getProxyPassword())
                     .ignoreSSLErrors(environment.isIgnoreSslErrors())
-                    .responseTimeout(midPointManager.getSettings().getRestResponseTimeout());
+                    .responseTimeout(settings.getRestResponseTimeout());
 
             factory.messageListener((message) -> {
 
-                if (midPointManager == null || !midPointManager.getSettings().isPrintRestCommunicationToConsole()) {
+                if (!settings.isPrintRestCommunicationToConsole() || suppressConsole) {
                     return;
                 }
 
-                if (!suppressConsole) {
-                    midPointManager.printToConsole(environment, MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
-                }
+                console.ifPresent(c -> c.printToConsole(environment, MidPointClient.class, message, null, Console.ContentType.INFO_OUTPUT));
             });
 
             client = factory.create();
 
-            if (midPointManager != null && !suppressConsole) {
-                midPointManager.printToConsole(environment, MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+            if (!suppressConsole) {
+                console.ifPresent(c -> c.printToConsole(environment, MidPointClient.class, "Client created", null, Console.ContentType.INFO_OUTPUT));
             }
         } catch (Exception ex) {
             handleGenericException("Couldn't create rest client", ex);
@@ -124,9 +139,11 @@ public class MidPointClient {
     }
 
     private void printToConsole(String message) {
-        if (midPointManager != null && !suppressConsole) {
-            midPointManager.printToConsole(getEnvironment(), MidPointClient.class, message);
+        if (suppressConsole) {
+            return;
         }
+
+        console.ifPresent(c -> c.printToConsole(getEnvironment(), MidPointClient.class, message));
     }
 
     private Collection<SelectorOptions<GetOperationOptions>> buildSearchSelectorOptions(boolean raw) {
@@ -164,7 +181,7 @@ public class MidPointClient {
      * todo "move" to MidPointObject like apis, not PrismObject here if not necessary
      */
     @Deprecated
-    public <O extends ObjectType> SearchResultList list(Class<O> type, ObjectQuery query, boolean raw) {
+    public <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query, boolean raw) {
         Collection<SelectorOptions<GetOperationOptions>> options = buildSearchSelectorOptions(raw);
 
         return list(type, query, options);
