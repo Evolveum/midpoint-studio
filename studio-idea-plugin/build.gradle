@@ -76,14 +76,14 @@ println "Plugin version: " + fullVersion
 println "Publish channel: " + publishChannel
 
 intellij {
-    version '2021.1'
+    version '2021.1.1'
     type 'IC'
     downloadSources true
     pluginName 'intellij-midpoint-studio'
     updateSinceUntilBuild false
     plugins = [
             'PsiViewer:211.6305.21-EAP-SNAPSHOT',
-            'com.jetbrains.hackathon.indices.viewer:1.16',
+            'com.jetbrains.hackathon.indices.viewer:1.13',
             'java',
             'Groovy',
             'maven'
@@ -97,7 +97,7 @@ intellij {
         // available versions
         // simple https://data.services.jetbrains.com/products?fields=code,name,releases.version,releases.build,releases.type&code=IIC
         // full https://data.services.jetbrains.com/products?fields=code,name,releases.downloads,releases.version,releases.build,releases.type&code=IIC
-        ideVersions = ["IC-2020.3.2", "IC-2021.1"]
+        ideVersions = ["IC-2020.3.2", "IC-2021.1.1"]
     }
     publishPlugin {
         channels publishChannel
