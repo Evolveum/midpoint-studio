@@ -1,6 +1,9 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.PrismParser;
+import com.evolveum.midpoint.prism.PrismSerializer;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.RetrieveOption;
@@ -346,15 +349,13 @@ public class MidPointClient {
     public PrismParser createParser(InputStream data) {
         PrismContext ctx = getPrismContext();
 
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
+        return MidPointUtils.createParser(ctx, data);
     }
 
     public PrismParser createParser(String xml) {
         PrismContext ctx = getPrismContext();
 
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(xml).language(PrismContext.LANG_XML).context(parsingContext);
+        return MidPointUtils.createParser(ctx, xml);
     }
 
     public TestConnectionResult testConnection() {

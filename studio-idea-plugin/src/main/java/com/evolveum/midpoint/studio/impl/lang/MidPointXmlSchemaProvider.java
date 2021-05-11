@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.lang;
 import com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.xml.XmlSchemaProvider;
@@ -28,7 +29,12 @@ public class MidPointXmlSchemaProvider extends XmlSchemaProvider {
             return null;
         }
 
-        XmlSchemaCacheService service = baseFile.getProject().getService(XmlSchemaCacheService.class);
+        Project project = baseFile.getProject();
+        if (project == null) {
+            return null;
+        }
+
+        XmlSchemaCacheService service = project.getService(XmlSchemaCacheService.class);
         return service.getSchema(url, baseFile);
     }
 }
