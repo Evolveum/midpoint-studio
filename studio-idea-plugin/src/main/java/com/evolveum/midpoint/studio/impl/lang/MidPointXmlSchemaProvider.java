@@ -19,7 +19,20 @@ public class MidPointXmlSchemaProvider extends XmlSchemaProvider {
 
     @Override
     public boolean isAvailable(@NotNull XmlFile file) {
-        return true; //MidPointFileTypeFactory.isMidPoint(file);
+        if (file == null || file.getRootTag() == null) {
+            return false;
+        }
+
+        String namespace = file.getRootTag().getNamespace();
+        if (namespace == null) {
+            return false;
+        }
+
+        if (!namespace.startsWith("http://midpoint.evolveum.com") && !namespace.startsWith("http://prism.evolveum.com")) {
+            return false;
+        }
+
+        return true;
     }
 
     @Nullable
