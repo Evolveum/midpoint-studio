@@ -372,7 +372,7 @@
 
         <group id="MidPoint.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
-<!--                        <reference ref="MidPoint.Action.TestAction"/>-->
+            <reference ref="MidPoint.Action.TestAction"/>
 
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>

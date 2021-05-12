@@ -1,64 +1,53 @@
 package com.evolveum.midpoint.studio.action;
 
-import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.client.ScriptObject;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.studio.ui.ResourceWizardKt;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.ui.DialogWrapper;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import javax.swing.*;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TestAction extends BackgroundAction {
+public class TestAction extends AnAction {
 
     public TestAction() {
-        super("Downloading mapping");
+        super("Test Action");
     }
 
     @Override
-    protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
+    public void update(@NotNull AnActionEvent e) {
+        super.update(e);
+    }
+
+    @Override
+    public void actionPerformed(@NotNull AnActionEvent evt) {
         if (evt.getProject() == null) {
             return;
         }
 
         Project project = evt.getProject();
 
-        try {
-            EnvironmentService environmentService = EnvironmentService.getInstance(project);
-            Environment env = environmentService.getSelected();
+        DialogWrapper dialog = new MyDialog(project);
+        dialog.show();
+    }
 
-            MidPointClient client = new MidPointClient(project, env, true, false);
+    private static class MyDialog extends DialogWrapper {
 
-            List<ScriptObject> sos = client.getSourceProfileScripts("null");
-            if (sos.isEmpty()) {
-                return;
-            }
+        public MyDialog(@Nullable Project project) {
+            super(project);
 
-            ScriptObject so = sos.get(0);
+            setTitle("Resource Editor");
+            init();
+        }
 
-            RunnableUtils.runWriteActionAndWait(() -> {
-                try {
-                    VirtualFile lvf = project.getBaseDir().findFileByRelativePath("/src/main/java")
-                            .createChildData(    this, URLDecoder.decode(so.getClassName(), StandardCharsets.UTF_8) + ".groovy");
-                    lvf.setBinaryContent(URLDecoder.decode(so.getKey(), StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8));
-
-                    MidPointUtils.openFile(project, lvf);
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            });
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        @Override
+        protected @Nullable JComponent createCenterPanel() {
+            return ResourceWizardKt.wizard();
         }
     }
 }
