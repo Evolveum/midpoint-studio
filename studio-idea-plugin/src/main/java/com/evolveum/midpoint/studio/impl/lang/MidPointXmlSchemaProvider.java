@@ -19,7 +19,7 @@ public class MidPointXmlSchemaProvider extends XmlSchemaProvider {
 
     @Override
     public boolean isAvailable(@NotNull XmlFile file) {
-        return true; //MidPointFileTypeFactory.isMidPoint(file);
+        return true;
     }
 
     @Nullable
