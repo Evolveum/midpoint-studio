@@ -6,7 +6,6 @@ import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -148,15 +147,19 @@ public class RefreshAction extends BackgroundAction {
                 ObjectTypes type = object.getType();
                 try {
                     MidPointObject newObject = client.get(type.getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    if (newObject == null) {
+                        missing++;
+                        newObjects.add(object.getContent());
+
+                        mm.printToConsole(env, RefreshAction.class, "Couldn't find object "
+                                + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+
+                        continue;
+                    }
+
                     newObjects.add(newObject.getContent());
 
                     reloaded.incrementAndGet();
-                } catch (ObjectNotFoundException ex) {
-                    missing++;
-                    newObjects.add(object.getContent());
-
-                    mm.printToConsole(env, RefreshAction.class, "Couldn't find object "
-                            + type.getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
                     newObjects.add(object.getContent());
