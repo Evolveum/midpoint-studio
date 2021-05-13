@@ -6,6 +6,7 @@ import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.intellij.icons.AllIcons;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -36,7 +37,7 @@ public class RefreshAction extends BackgroundAction {
     public static final String NOTIFICATION_KEY = "Refresh Action";
 
     public RefreshAction() {
-        super("Refresh From Server", MidPointIcons.ACTION_BUILD_LOAD_CHANGES, "Refresh From Server");
+        super("Refresh From Server", AllIcons.Actions.BuildLoadChanges, "Refresh From Server");
     }
 
     @Override
