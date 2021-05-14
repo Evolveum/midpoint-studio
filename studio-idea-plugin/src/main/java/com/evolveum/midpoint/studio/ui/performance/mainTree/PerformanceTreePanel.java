@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui.performance.mainTree;
 
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.performance.OperationPerformance;
+import com.evolveum.midpoint.studio.impl.performance.OperationStatistics;
 import com.evolveum.midpoint.studio.impl.performance.PerformanceOptions;
 import com.evolveum.midpoint.studio.impl.performance.PerformanceTree;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
@@ -11,6 +12,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -20,6 +22,7 @@ import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
 import org.jdesktop.swingx.table.TableColumnExt;
+import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -95,9 +98,26 @@ public class PerformanceTreePanel extends JPanel {
 
         group.add(MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> treeTable.expandAll()));
         group.add(MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> treeTable.collapseAll()));
+        group.add(MidPointUtils.createAnAction("Stats", AllIcons.Actions.Show, this::showInvoked));
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("PerformanceViewPanelMainToolbar", group, true);
         return resultsActionsToolbar.getComponent();
+    }
+
+    private void showInvoked(AnActionEvent e) {
+        int[] selectedIndices = treeTable.getSelectionModel().getSelectedIndices();
+        double sum = 0;
+        for (int selectedIndex : selectedIndices) {
+            TreePath path = treeTable.getPathForRow(selectedIndex);
+            Object component = path.getLastPathComponent();
+            OperationPerformance operationPerformance = ((PerformanceTreeTableNode) component).getUserObject();
+            OperationStatistics statistics = operationPerformance.getOperationStatistics();
+            if (statistics.getInvocations() > 0) {
+                sum += (double) statistics.getTotalTime() / statistics.getInvocations() / 1000.0;
+            }
+            System.out.println(operationPerformance);
+        }
+        System.out.println("Summary time per invocation: " + sum);
     }
 
     private void traceTreeTableSelectionChanged(TreeSelectionEvent e) {

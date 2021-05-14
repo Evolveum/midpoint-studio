@@ -7,6 +7,7 @@ import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.model.AbstractOpTreeTableNode;
+import com.evolveum.midpoint.studio.ui.trace.mainTree.model.CacheAnalyzer;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.model.OpTreeTableModel;
 import com.evolveum.midpoint.studio.ui.trace.presentation.AbstractOpNodePresentation;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -131,9 +132,19 @@ public class OpTreePanel extends JPanel {
         group.add(MidPointUtils.createAnAction("Show all children", AllIcons.Actions.ShowAsTree, e -> setChildrenVisible(true)));
         group.add(MidPointUtils.createAnAction("Hide selected", AllIcons.General.HideToolWindow, e -> hideSelected(false)));
         group.add(MidPointUtils.createAnAction("Hide selected (tree)", MidPointIcons.ACTION_DELETE_TAG_HOVER, e -> hideSelected(true)));
+        group.add(MidPointUtils.createAnAction("Analyze", AllIcons.Actions.Show, e -> analyzeSelected()));
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceViewPanelMainToolbar", group, true);
         return resultsActionsToolbar.getComponent();
+    }
+
+    private void analyzeSelected() {
+        List<TreePath> selectedPaths = getSelectedPaths();
+        List<OpNode> selectedNodes = selectedPaths.stream()
+                .map(selectedPath -> (AbstractOpTreeTableNode) selectedPath.getLastPathComponent())
+                .map(AbstractOpTreeTableNode::getUserObject)
+                .collect(Collectors.toList());
+        CacheAnalyzer.analyze(selectedNodes);
     }
 
     private void hideSelected(boolean deep) {

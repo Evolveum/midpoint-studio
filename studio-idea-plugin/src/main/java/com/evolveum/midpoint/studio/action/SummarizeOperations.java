@@ -3,6 +3,8 @@ package com.evolveum.midpoint.studio.action;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.TraceParser;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.performance.PerformanceTree;
 import com.evolveum.midpoint.studio.impl.performance.output.AsciiWriter;
@@ -15,17 +17,15 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.Collections.emptyList;
 
@@ -50,7 +50,8 @@ public class SummarizeOperations extends BackgroundAction {
         }
 
         MidPointService mm = getMidpointService(evt);
-        summarizeFiles(files, mm, evt.getProject());
+        EnvironmentService es = EnvironmentService.getInstance(Objects.requireNonNull(evt.getProject()));
+        summarizeFiles(files, mm, es, evt.getProject());
     }
 
     private MidPointService getMidpointService(AnActionEvent evt) {
@@ -59,7 +60,8 @@ public class SummarizeOperations extends BackgroundAction {
         return MidPointService.getInstance(project);
     }
 
-    private void summarizeFiles(List<VirtualFile> files, MidPointService mm, Project project) {
+    private void summarizeFiles(List<VirtualFile> files, MidPointService mm,
+            EnvironmentService es, Project project) {
         PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
         TraceParser traceParser = new TraceParser(prismContext);
 
@@ -67,23 +69,25 @@ public class SummarizeOperations extends BackgroundAction {
 
         for (VirtualFile file : files) {
             RunnableUtils.runWriteActionAndWait(() -> {
+                Environment env = es.getSelected();
                 try {
                     TracingOutputType tracingOutput = traceParser.parse(file.getInputStream(), true, true, file.getCanonicalPath());
                     OperationResultType operationResult = tracingOutput.getResult();
                     if (operationResult != null) {
                         performanceTree.addSample(operationResult);
-                        mm.printToConsole(getClass(), "Processed " + file.getName());
+                        mm.printToConsole(env, getClass(), "Processed " + file.getName());
                     } else {
-                        mm.printToConsole(getClass(), "No operation result in " + file.getName());
+                        mm.printToConsole(env, getClass(), "No operation result in " + file.getName());
                     }
                 } catch (Exception ex) {
                     String msg = "Exception occurred when loading file '" + file.getName() + "'";
-                    processException(msg, ex, mm);
+                    processException(msg, ex, mm, es);
                 }
             });
         }
 
-        mm.printToConsole(getClass(), "Parsed " + performanceTree.getSamples() + " samples");
+        Environment env = es.getSelected();
+        mm.printToConsole(env, getClass(), "Parsed " + performanceTree.getSamples() + " samples");
         if (performanceTree.getSamples() > 0) {
             performanceTree.computeStatistics();
             System.out.println(performanceTree.dump());
@@ -106,7 +110,7 @@ public class SummarizeOperations extends BackgroundAction {
                             "Summary written to " + newSummaryFile.getCanonicalPath(), NotificationType.INFORMATION);
                     summaryFileHolder.setValue(newSummaryFile);
                 } catch (IOException e) {
-                    processException("Couldn't write summary file", e, mm);
+                    processException("Couldn't write summary file", e, mm, es);
                 }
             });
 
@@ -129,9 +133,10 @@ public class SummarizeOperations extends BackgroundAction {
         return String.format("_summary%d.perf-sum", index);
     }
 
-    private void processException(String msg, Exception ex, MidPointService mm) {
-        mm.printToConsole(getClass(), msg + ". Reason: " + ex.getMessage());
-        MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, msg, ex);
+    private void processException(String msg, Exception ex, MidPointService mm, EnvironmentService es) {
+        Environment env = es.getSelected();
+        mm.printToConsole(env, getClass(), msg + ". Reason: " + ex.getMessage());
+        MidPointUtils.publishExceptionNotification(env, getClass(), NOTIFICATION_KEY, msg, ex);
     }
 
     private List<VirtualFile> getFilesToProcess(AnActionEvent evt) {
