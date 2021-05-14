@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.browse.Constants;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -152,8 +153,10 @@ public class MidPointObjectUtils {
     }
 
     private static MidPointObject parseElement(Element element) {
+        String namespace = element.getNamespaceURI();
         String localName = element.getLocalName();
-        boolean executable = Constants.SCRIPTING_ACTIONS.contains(localName);
+
+        boolean executable = SchemaConstantsGenerated.NS_SCRIPTING.equals(namespace) && Constants.SCRIPTING_ACTIONS.contains(localName);
         ObjectTypes type = getObjectType(element);
 
         MidPointObject o = new MidPointObject(DOMUtil.serializeDOMToString(element), type, executable);

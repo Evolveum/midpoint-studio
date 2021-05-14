@@ -8,13 +8,17 @@ import com.evolveum.midpoint.prism.impl.query.EqualFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
-import com.evolveum.midpoint.schema.SearchResultMetadata;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.browse.*;
+import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
+import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
+import com.evolveum.midpoint.studio.action.browse.DownloadAction;
+import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.browse.*;
+import com.evolveum.midpoint.studio.impl.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -43,6 +47,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.UIAction;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,6 +55,8 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.xml.namespace.QName;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
@@ -57,6 +64,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
 
@@ -191,46 +199,64 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             }
         });
         this.results.setOpaque(false);
+        this.results.getActionMap().put("copy", new UIAction("copy") {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                copySelectedObjectOids();
+            }
+        });
+
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem item = new JMenuItem("Copy oids");
+        item.addActionListener(e -> copySelectedObjectOids());
+        popup.add(item);
+
+        item = new JMenuItem("Copy names");
+        item.addActionListener(e -> copySelectedObjectNames());
+        popup.add(item);
+
+        this.results.setComponentPopupMenu(popup);
 
         this.results.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         results.add(new JBScrollPane(this.results), BorderLayout.CENTER);
 
-        // todo finish nice paging
-//        DefaultActionGroup pagingActions = createPagingActionGroup();
-//
-//        ActionToolbar pagingActionsToolbar = ActionManager.getInstance().createActionToolbar("BrowseResultsPagingActions",
-//                pagingActions, true);
-//        results.add(pagingActionsToolbar.getComponent(), BorderLayout.SOUTH);
-
         return results;
     }
 
-    private DefaultActionGroup createPagingActionGroup() {
-        DefaultActionGroup group = new DefaultActionGroup();
+    private void copySelectedObjectNames() {
+        List<ObjectType> objects = getResultsModel().getSelectedObjects(results);
+        if (objects.isEmpty()) {
+            return;
+        }
 
-        // todo create external actions, they should be able to show progress
-        previous = createAnAction("Previous", AllIcons.General.ArrowLeft, null, null);
-        group.add(previous);
+        List<String> names = objects.stream().map(o -> MidPointUtils.getName(o.asPrismObject())).collect(Collectors.toList());
+        String text = StringUtils.join(names, '\n');
 
-        next = createAnAction("Next", AllIcons.General.ArrowRight, null, null);
-        group.add(next);
+        putStringToClipboard(text);
+    }
 
-        group.addSeparator();
+    private void copySelectedObjectOids() {
+        List<Pair<String, ObjectTypes>> oidTypes = getResultsModel().getSelectedOids(results);
 
-        pagingText = new TextAction() {
+        if (oidTypes.isEmpty()) {
+            return;
+        }
 
-            @NotNull
-            @Override
-            public JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
-                JComponent comp = super.createCustomComponent(presentation, place);
-                comp.setBorder(new CompoundBorder(comp.getBorder(), JBUI.Borders.empty(0, 5)));
+        List<String> oids = oidTypes.stream().map(p -> p.getFirst()).collect(Collectors.toList());
+        String text = StringUtils.join(oids, '\n');
 
-                return comp;
-            }
-        };
-        group.add(pagingText);
+        putStringToClipboard(text);
+    }
 
-        return group;
+    private void putStringToClipboard(String str) {
+        if (str == null) {
+            str = "";
+        }
+
+        StringSelection selection = new StringSelection(str);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection, selection);
     }
 
     private DefaultActionGroup createQueryActionGroup() {
@@ -365,10 +391,48 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         processAction = createAnAction("Process", AllIcons.Actions.RealIntentionBulb,
                 e -> processPerformed(e),
-                e -> e.getPresentation().setEnabled(isResultSelected()));
+                e -> e.getPresentation().setEnabled(isResultSelected() || StringUtils.isNotEmpty(query.getText())));
         group.add(processAction);
 
+
+        group.add(new Separator());
+
+        pagingText = new TextAction() {
+
+            @NotNull
+            @Override
+            public JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
+                JComponent comp = super.createCustomComponent(presentation, place);
+                comp.setBorder(new CompoundBorder(comp.getBorder(), JBUI.Borders.empty(0, 5)));
+
+                return comp;
+            }
+
+            @Override
+            protected String createText(AnActionEvent evt) {
+                return createPagingText(evt);
+            }
+        };
+        group.add(pagingText);
+
         return group;
+    }
+
+    private String createPagingText(AnActionEvent evt) {
+        BrowseTableModel model = getResultsModel();
+        int selected = 0;
+        int count = 0;
+
+        if (model != null && results != null) {
+            selected = model.getSelectedObjects(results).size();
+            count = model.getObjects().size();
+        }
+
+        if (count == 0) {
+            return "Empty";
+        }
+
+        return "Returned " + count + " results. Selected " + selected + " objects";
     }
 
     private void processPerformed(AnActionEvent evt) {
@@ -448,9 +512,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         // update result table
         updateTableModel(result);
-
-        // todo finish nice paging
-        // updatePagingAction(result, query.getOffset());
     }
 
     private void handleGenericException(Environment env, String message, Exception ex) {
@@ -491,10 +552,17 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void deletePerformed(AnActionEvent evt, boolean rawDownload) {
-        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
-        Environment env = em.getSelected();
+        DeleteAction da = new DeleteAction(getResultsModel().getSelectedOids(results)) {
 
-        DeleteAction da = new DeleteAction(env, getResultsModel().getSelectedOids(results), rawDownload);
+            @Override
+            public DeleteOptions createOptions() {
+                DeleteOptions opts = super.createOptions();
+                opts.raw(rawDownload);
+
+                return opts;
+            }
+        };
+
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
 
@@ -506,23 +574,11 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         });
     }
 
-    private void updatePagingAction(SearchResultList result, int from) {
-        SearchResultMetadata metadata = result.getMetadata();
-
-        int to = from + result.getList().size();
-        Integer of = 0;
-        if (metadata != null) {
-            of = metadata.getApproxNumberOfAllResults();
+    private BrowseTableModel getResultsModel() {
+        if (results == null) {
+            return null;
         }
 
-        int selected = getResultsModel().getSelectedOids(results).size();
-
-        String ofStr = of == null ? "unknown" : Integer.toString(of);
-
-        pagingText.setText("From " + from + " to " + to + " of " + ofStr + ". Selected " + selected + " objects");
-    }
-
-    private BrowseTableModel getResultsModel() {
         return (BrowseTableModel) results.getTreeTableModel();
     }
 

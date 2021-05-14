@@ -191,4 +191,10 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
     public boolean isDumbAware() {
         return false;
     }
+
+    @NotNull
+    @Override
+    public @Nullable VirtualFile getFile() {
+        return file;
+    }
 }

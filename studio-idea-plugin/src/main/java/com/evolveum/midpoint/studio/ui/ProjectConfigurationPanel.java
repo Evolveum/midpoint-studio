@@ -69,7 +69,7 @@ public class ProjectConfigurationPanel extends JPanel {
 
     private void createUIComponents() {
         midpointSettingsPanel = new MidPointSettingsPanel(settings.getMidPointSettings());
-        environmentsPanel = new EnvironmentsPanel(null, settings.getEnvironmentSettings());
+        environmentsPanel = new EnvironmentsPanel(null, settings.getMidPointSettings(), settings.getEnvironmentSettings());
     }
 
     /**

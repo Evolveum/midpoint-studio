@@ -6,6 +6,8 @@ import com.evolveum.midpoint.studio.ui.common.ColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.DisplayUtil;
 
 import javax.swing.table.TableCellRenderer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.function.Function;
 
 import static com.evolveum.midpoint.studio.util.MidPointUtils.formatPercent;
@@ -21,7 +23,12 @@ public enum TraceTreeViewColumn implements ColumnDefinition<OpNode> {
     EXECUTION_WAVE("EW", 35, OpNode::getExecutionWave),
     STATUS("Status", 100, o -> o.getResult().getStatus().toString()),
     IMPORTANCE("W", 20, OpNode::getImportanceSymbol),
-    START("Start", 60, o -> Long.toString(o.getStart(0))),
+    START("Start", 60, o -> {
+        long start = o.getStart(0);
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
+        return df.format(new Date(start));
+    }),
     TIME("Time", 80, o -> formatTime(o.getResult().getMicroseconds())),
     TYPE("Type", 100, o -> o.getType().toString()),
     OVERHEAD("OH", 50, o -> formatPercent(o.getOverhead())),

@@ -1,19 +1,32 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.EncryptedProperty;
-import com.evolveum.midpoint.studio.impl.EncryptionService;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.util.EncryptedPropertiesParser;
+import com.evolveum.midpoint.studio.util.EncryptedPropertiesSerializer;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.fileChooser.*;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogBuilder;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.intellij.ui.AddEditRemovePanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -85,8 +98,105 @@ public class EncryptedPropertiesPanel extends AddEditRemovePanel<EncryptedProper
 
                         initData();
                     }
+                },
+                new Separator(),
+                new AnAction("Export", "Export As Properties File", AllIcons.ToolbarDecorator.Export) {
+
+                    @Override
+                    public void actionPerformed(@NotNull AnActionEvent e) {
+                        exportPerformed(e);
+                    }
+                },
+                new AnAction("Import", "Import Properties File", AllIcons.ToolbarDecorator.Import) {
+
+                    @Override
+                    public void actionPerformed(@NotNull AnActionEvent e) {
+                        importPerformed(e);
+                    }
                 }
         };
+    }
+
+    private void exportPerformed(AnActionEvent evt) {
+        FileSaverDialog dialog = FileChooserFactory.getInstance()
+                .createSaveFileDialog(new FileSaverDescriptor("Export properties", "Export encrypted properties", "properties"), project);
+
+        VirtualFileWrapper target = dialog.save(evt.getProject().getBaseDir(), project.getName() + ".properties");
+        if (target != null) {
+            Task.Backgroundable task = new Task.Backgroundable(project, "Exporting encrypted properties") {
+
+                @Override
+                public void run(@NotNull ProgressIndicator indicator) {
+                    RunnableUtils.runWriteActionAndWait(() -> exportProperties(target.getFile()));
+                }
+            };
+            ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
+        }
+    }
+
+    private void exportProperties(File file) {
+        EncryptionService es = EncryptionService.getInstance(project);
+        try {
+            List<EncryptedProperty> properties = es.list(EncryptedProperty.class);
+
+            EncryptedPropertiesSerializer serializer = new EncryptedPropertiesSerializer(environmentService);
+            serializer.serialize(properties, file);
+        } catch (IOException ex) {
+            MidPointService mm = MidPointService.getInstance(project);
+            mm.printToConsole(environmentService.getSelected(), OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+        }
+    }
+
+    private void importPerformed(AnActionEvent evt) {
+        FileChooserDialog dialog = FileChooserFactory.getInstance()
+                .createFileChooser(FileChooserDescriptorFactory.createSingleFileDescriptor("properties"), project, this);
+
+        VirtualFile[] files = dialog.choose(project);
+
+        if (files == null || files.length == 0) {
+            return;
+        }
+
+        VirtualFile file = files[0];
+        Task.Backgroundable task = new Task.Backgroundable(project, "Importing encrypted properties") {
+
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                RunnableUtils.runWriteActionAndWait(() -> importProperties(VfsUtil.virtualToIoFile(file)));
+            }
+        };
+        ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
+    }
+
+    private void importProperties(File file) {
+        EncryptionService es = EncryptionService.getInstance(project);
+        try {
+            EncryptedPropertiesParser parser = new EncryptedPropertiesParser(environmentService) {
+
+                @Override
+                protected String mapEnvironment(String envName) {
+                    MatchEnvironmentPanel panel = new MatchEnvironmentPanel(envName, environmentService.getEnvironments());
+
+                    DialogBuilder db = new DialogBuilder();
+                    db.centerPanel(panel);
+                    db.addActionDescriptor(new DialogBuilder.CancelActionDescriptor());
+                    db.addActionDescriptor(new DialogBuilder.OkActionDescriptor());
+
+                    if (!db.showAndGet()) {
+                        return null;
+                    }
+
+                    Environment env = panel.getEnvironment();
+                    return env != null ? env.getId() : null;
+                }
+            };
+            List<EncryptedProperty> properties = parser.parse(file);
+
+            properties.forEach(p -> es.add(p));
+        } catch (IOException ex) {
+            MidPointService mm = MidPointService.getInstance(project);
+            mm.printToConsole(environmentService.getSelected(), OperationResultDialog.class, "Couldn't import file " + file.getPath() + " for operation result", ex);
+        }
     }
 
     private static class EncryptedPropertyModel extends TableModel<EncryptedProperty> {

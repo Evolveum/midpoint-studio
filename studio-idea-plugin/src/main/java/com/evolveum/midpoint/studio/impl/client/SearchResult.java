@@ -12,16 +12,18 @@ public class SearchResult {
 
     private List<MidPointObject> objects;
 
+    public SearchResult() {
+        this(null);
+    }
+
     public SearchResult(List<MidPointObject> objects) {
-        if (objects == null) {
-            objects = new ArrayList<>();
-        }
-        
         this.objects = objects;
     }
 
     public List<MidPointObject> getObjects() {
-
+        if (objects == null) {
+            objects = new ArrayList<>();
+        }
         return objects;
     }
 }

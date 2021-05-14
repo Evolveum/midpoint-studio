@@ -1,6 +1,9 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.util.ObjectTypesConverter;
+import com.intellij.ui.TitledSeparator;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,6 +19,10 @@ public class MidPointSettingsPanel extends JPanel {
 
     private JPanel root;
     private JCheckBox logRestCommunication;
+    private JTextField typesDownloadLimit;
+    private JTextField typesIncluded;
+    private JTextField typesExcluded;
+    private JTextField restClientTimeout;
 
     private MidPointSettings settings;
 
@@ -33,6 +40,13 @@ public class MidPointSettingsPanel extends JPanel {
         downloadPattern.setText(settings.getDowloadFilePattern());
         generatedPattern.setText(settings.getGeneratedFilePattern());
         logRestCommunication.setSelected(settings.isPrintRestCommunicationToConsole());
+        restClientTimeout.setText(Integer.toString(settings.getRestResponseTimeout()));
+
+        ObjectTypesConverter converter = new ObjectTypesConverter();
+        typesIncluded.setText(converter.toString(settings.getDownloadTypesInclude()));
+        typesExcluded.setText(converter.toString(settings.getDownloadTypesExclude()));
+
+        typesDownloadLimit.setText(Integer.toString(settings.getTypesToDownloadLimit()));
     }
 
     public MidPointSettings getSettings() {
@@ -41,7 +55,20 @@ public class MidPointSettingsPanel extends JPanel {
         settings.setDowloadFilePattern(downloadPattern.getText());
         settings.setGeneratedFilePattern(generatedPattern.getText());
         settings.setPrintRestCommunicationToConsole(logRestCommunication.isSelected());
+        if (StringUtils.isNumeric(restClientTimeout.getText())) {
+            settings.setRestResponseTimeout(Integer.parseInt(restClientTimeout.getText()));
+        }
+
+        ObjectTypesConverter converter = new ObjectTypesConverter();
+        settings.setDownloadTypesInclude(converter.fromString(typesIncluded.getText()));
+        settings.setDownloadTypesExclude(converter.fromString(typesExcluded.getText()));
+
+        settings.setTypesToDownloadLimit(Integer.parseInt(typesDownloadLimit.getText()));
 
         return settings;
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
     }
 }

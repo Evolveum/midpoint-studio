@@ -25,7 +25,7 @@ public class EnvironmentProperties {
     public EnvironmentProperties(@NotNull Environment environment) {
         this.environment = environment != null ? new Environment(environment) : null;
 
-        load(environment);
+        load(this.environment);
     }
 
     private void load(Environment env) {

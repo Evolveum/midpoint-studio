@@ -25,8 +25,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class ServiceFactory {
 
-    public static final int TIMEOUT = 60;
-
     public static final PrismContext DEFAULT_PRISM_CONTEXT;
 
     static {
@@ -72,6 +70,8 @@ public class ServiceFactory {
     private String proxyPassword;
 
     private MessageListener messageListener;
+
+    private int responseTimeout = 60;
 
     public ServiceFactory url(final String url) {
         this.url = url;
@@ -123,14 +123,19 @@ public class ServiceFactory {
         return this;
     }
 
+    public ServiceFactory responseTimeout(final int responseTimeout) {
+        this.responseTimeout = responseTimeout;
+        return this;
+    }
+
     public Service create() throws Exception {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.followSslRedirects(false);
         builder.followRedirects(false);
 
-        builder.writeTimeout(TIMEOUT, TimeUnit.SECONDS);
-        builder.readTimeout(TIMEOUT, TimeUnit.SECONDS);
-        builder.connectTimeout(TIMEOUT, TimeUnit.SECONDS);
+        builder.writeTimeout(responseTimeout, TimeUnit.SECONDS);
+        builder.readTimeout(responseTimeout, TimeUnit.SECONDS);
+        builder.connectTimeout(responseTimeout, TimeUnit.SECONDS);
 
         if (username != null || password != null) {
             builder.authenticator((route, response) -> {

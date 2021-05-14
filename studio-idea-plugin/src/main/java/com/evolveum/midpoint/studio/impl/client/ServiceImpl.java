@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.QueryConverter;
 import com.evolveum.midpoint.schema.GetOperationOptions;
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
@@ -15,6 +16,7 @@ import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectListType;
+import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.BuildInformationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -24,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.util.*;
 
@@ -195,7 +198,7 @@ public class ServiceImpl implements Service {
         return executeRequest(req, ExecuteScriptResponseType.class);
     }
 
-    private <T> T executeRequest(Request req, Class<T> bodyType) throws IOException, SchemaException, AuthenticationException {
+    private <T> T executeRequest(Request req, Class<T> bodyType) throws IOException, SchemaException, AuthenticationException, ClientException {
         OkHttpClient client = context.getClient();
         try (Response response = client.newCall(req).execute()) {
             context.validateResponse(response);
@@ -215,6 +218,17 @@ public class ServiceImpl implements Service {
             }
 
             PrismParser parser = context.getParser(body);
+
+            if (response.code() == 240 || response.code() == 250) {
+                // body will contain operation result
+                OperationResultType res = parser.parseRealValue(OperationResultType.class);
+                if (bodyType.isAssignableFrom(OperationResultType.class)) {
+                    return (T) res;
+                } else {
+                    throw new ClientException("Client error", OperationResult.createOperationResult(res));
+                }
+            }
+
             return parser.parseRealValue(bodyType);
         }
     }
@@ -330,6 +344,52 @@ public class ServiceImpl implements Service {
     }
 
     @Override
+    public <O extends ObjectType> OperationResult recompute(Class<O> type, String oid)
+            throws ObjectNotFoundException, AuthenticationException, IOException, SchemaException {
+
+        Map<String, Object> options = new HashMap<>();
+        options.put("options", "reconcile");
+
+        String path = ObjectTypes.getRestTypeFromClass(type);
+
+        ObjectModificationType modification = new ObjectModificationType();
+        modification.oid(oid);
+
+        String xml = context.getSerializer().serialize(new JAXBElement(SchemaConstantsGenerated.O_OBJECT_MODIFICATION, ObjectModificationType.class, modification));
+
+        Request.Builder builder = context.build("/" + path + "/" + oid, options)
+                .post(RequestBody.create(xml, ServiceContext.APPLICATION_XML));
+
+        Request req = builder.build();
+
+        OkHttpClient client = context.getClient();
+        try (okhttp3.Response response = client.newCall(req).execute()) {
+            validateResponseCode(response, oid);
+
+            if (javax.ws.rs.core.Response.Status.NO_CONTENT.getStatusCode() == response.code()) {
+                return null;
+            }
+
+            if (javax.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
+                throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
+            }
+
+            return buildOperationResult(response.body());
+        }
+    }
+
+    private OperationResult buildOperationResult(ResponseBody body) throws SchemaException, IOException {
+        if (body == null) {
+            return null;
+        }
+
+        PrismParser parser = context.getParser(body.string());
+        OperationResultType result = parser.parseRealValue(OperationResultType.class);
+
+        return result != null ? OperationResult.createOperationResult(result) : null;
+    }
+
+    @Override
     public OperationResult testResourceConnection(String oid)
             throws ObjectNotFoundException, AuthenticationException, IOException, SchemaException {
 
@@ -348,15 +408,7 @@ public class ServiceImpl implements Service {
                 throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
             }
 
-            ResponseBody body = response.body();
-            if (body == null) {
-                return null;
-            }
-
-            PrismParser parser = context.getParser(body.string());
-            OperationResultType result = parser.parseRealValue(OperationResultType.class);
-
-            return result != null ? OperationResult.createOperationResult(result) : null;
+            return buildOperationResult(response.body());
         }
     }
 

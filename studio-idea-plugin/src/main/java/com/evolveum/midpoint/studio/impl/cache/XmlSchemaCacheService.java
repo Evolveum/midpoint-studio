@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.cache;
 
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiFile;
@@ -55,6 +56,11 @@ public class XmlSchemaCacheService {
 
         if (!url.startsWith("http://midpoint.evolveum.com")
                 && !url.startsWith("http://prism.evolveum.com")) {
+            return null;
+        }
+
+        if (SchemaConstantsGenerated.NS_ICF_CONFIGURATION.equals(url)) {
+            // this url is handled via ConnectorXmlSchemaCacheService
             return null;
         }
 
