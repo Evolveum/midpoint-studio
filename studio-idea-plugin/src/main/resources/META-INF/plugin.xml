@@ -3,58 +3,6 @@
     <name>MidPoint Studio</name>
     <vendor email="midpoint.studio@evolveum.com" url="https://evolveum.com/">Evolveum</vendor>
 
-    <description><![CDATA[
-        Integrated development environment for MidPoint configuration.
-
-        <b>Features</b>
-        <ul>
-            <li>Browse/Upload with raw options for both operations</li>
-            <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
-            <li>XML tags autocompletion, links to documentation</li>
-            <li>Groovy syntax highlighting and groovy code completion</li>
-            <li>Groovy code common variables injection</li>
-            <li>Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
-            <li>Simple OID generator</li>
-            <li>Trace files viewer</li>
-        </ul>
-    ]]></description>
-
-    <change-notes><![CDATA[
-
-        <h1>Nightly 4.4</h1>
-        <ul>
-            <li>Bugfixes</li>
-            <li>Improved inlay properties caching</li>
-            <li>Simple autocomplete for source/target path elements</li>
-            <li>Copy selected objects oid/name from browse results</li>
-        </ul>
-
-        <h1>Release 4.3</h1>
-        <ul>
-            <li>Bugfixes</li>
-            <li>Using MidPoint 4.3 libs</li>
-            <li>Delete object directly from browse tool window</li>
-            <li>Bulk refresh predefined objects</li>
-            <li>Import/export encrypted properties</li>
-            <li>Updated documentation generator</li>
-            <li>Test connection only for resource objects</li>
-            <li>Environment properties inlayed to xml for better readability</li>
-            <li>Xml diff simplified UI, multiple diff strategies available</li>
-        </ul>
-
-        <h1>Release 4.2</h1>
-        <ul>
-            <li>Browse/Upload with raw options for both operations</li>
-            <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
-            <li>XML tags autocompletion, links to documentation</li>
-            <li>Groovy syntax highlighting and groovy code completion</li>
-            <li>Groovy code common variables injection</li>
-            <li>Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)</li>
-            <li>Simple OID generator</li>
-        </ul>
-
-    ]]></change-notes>
-
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>org.intellij.groovy</depends>

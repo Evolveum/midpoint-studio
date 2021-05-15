@@ -14,6 +14,7 @@ allprojects {
         maven {
             url = uri("https://www.jetbrains.com/intellij-repository/snapshots/")
         }
+        jcenter()
     }
 }
 

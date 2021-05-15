@@ -12,12 +12,14 @@ fun wizard(): JPanel {
             row {
                 label("Doe")
                 textField({ "sample" }, {})
-                        .comment("test another comment")
+                    .comment("test another comment")
             }
             row {
-                checkBox("checkbox",
-                        true,
-                        comment = "comment some")
+                checkBox(
+                    "checkbox",
+                    true,
+                    comment = "comment some"
+                )
             }
             row("Label", separated = true) {
                 textField({ "abc" }, {}).comment("comment")
