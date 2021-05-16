@@ -78,6 +78,12 @@ dependencies {
     }
 }
 
+var version = properties("pluginVersion")
+var channels = version.split('-').getOrElse(1) { "default" }.split('.').first()
+
+println("Plugin version: $version")
+println("Publish channel: $channels")
+
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
@@ -112,7 +118,6 @@ detekt {
 }
 
 tasks {
-    // Set the compatibility versions to 1.8
     withType<JavaCompile> {
         sourceCompatibility = properties("javaVersion")
         targetCompatibility = properties("javaVersion")
@@ -163,6 +168,6 @@ tasks {
         // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first())
+        channels(channels)
     }
 }
