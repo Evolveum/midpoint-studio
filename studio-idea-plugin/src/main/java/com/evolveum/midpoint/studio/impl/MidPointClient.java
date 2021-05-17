@@ -11,7 +11,7 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.impl.client.*;
+import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -349,13 +349,13 @@ public class MidPointClient {
     public PrismParser createParser(InputStream data) {
         PrismContext ctx = getPrismContext();
 
-        return MidPointUtils.createParser(ctx, data);
+        return ClientUtils.createParser(ctx, data);
     }
 
     public PrismParser createParser(String xml) {
         PrismContext ctx = getPrismContext();
 
-        return MidPointUtils.createParser(ctx, xml);
+        return ClientUtils.createParser(ctx, xml);
     }
 
     public TestConnectionResult testConnection() {

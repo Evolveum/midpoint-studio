@@ -1,24 +1,17 @@
-package com.evolveum.midpoint.studio.impl.client;
+package com.evolveum.midpoint.studio.client;
 
-import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import okhttp3.*;
 
-import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -78,11 +71,11 @@ public class ServiceContext {
     }
 
     public PrismSerializer<String> getSerializer() {
-        return MidPointUtils.getSerializer(prismContext);
+        return ClientUtils.getSerializer(prismContext);
     }
 
     public String serialize(Object object) throws SchemaException {
-        return MidPointUtils.serialize(prismContext, object);
+        return ClientUtils.serialize(prismContext, object);
     }
 
     public <T> T parse(String text, Class<T> type) throws SchemaException, IOException {

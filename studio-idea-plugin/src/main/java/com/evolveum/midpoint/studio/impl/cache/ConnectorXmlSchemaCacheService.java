@@ -8,8 +8,10 @@ import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.client.SearchResult;
+import com.evolveum.midpoint.studio.client.SearchResult;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -272,7 +274,7 @@ public class ConnectorXmlSchemaCacheService {
                     String xml = updateNamespaces(filter);
 
                     PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
-                    PrismParser parser = MidPointUtils.createParser(ctx, xml);
+                    PrismParser parser = ClientUtils.createParser(ctx, xml);
 
                     SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
                     of = ctx.getQueryConverter().parseFilter(filterType, ConnectorType.class);

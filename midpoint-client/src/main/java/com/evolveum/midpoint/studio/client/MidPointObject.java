@@ -1,7 +1,8 @@
-package com.evolveum.midpoint.studio.impl;
+package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.intellij.openapi.vfs.VirtualFile;
+
+import java.io.File;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -14,7 +15,7 @@ public class MidPointObject {
 
     private boolean executable;
 
-    private VirtualFile file;                    // used to derive output file names (and to delete files)
+    private File file;                    // used to derive output file names (and to delete files)
 
     private int objectIndex;                    // object number in the resource (if applicable)
 
@@ -78,11 +79,11 @@ public class MidPointObject {
         this.executable = executable;
     }
 
-    public VirtualFile getFile() {
+    public File getFile() {
         return file;
     }
 
-    public void setFile(VirtualFile file) {
+    public void setFile(File file) {
         this.file = file;
     }
 

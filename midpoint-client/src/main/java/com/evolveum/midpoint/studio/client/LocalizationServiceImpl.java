@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.client;
+package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.polystring.PolyString;

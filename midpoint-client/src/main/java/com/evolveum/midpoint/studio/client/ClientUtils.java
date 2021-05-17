@@ -1,26 +1,51 @@
-package com.evolveum.midpoint.studio.impl;
+package com.evolveum.midpoint.studio.client;
 
+import com.evolveum.midpoint.common.LocalizationService;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.impl.browse.Constants;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.DOMUtil;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.evolveum.midpoint.util.LocalizableMessage;
+import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MidPointObjectUtils {
+public class ClientUtils {
+
+    public static final List<String> SCRIPTING_ACTIONS = Arrays.asList(
+            "executeScript",
+            "scriptingExpression",
+            "sequence",
+            "pipeline",
+            "search",
+            "filter",
+            "select",
+            "foreach",
+            "action"
+    );
 
     public static final String OBJECTS_XML_PREFIX = "<objects xmlns=\"http://midpoint.evolveum.com/xml/ns/public/common/common-3\">\n";
 
@@ -44,64 +69,31 @@ public class MidPointObjectUtils {
         ).collect(Collectors.toList());
     }
 
-    public static List<MidPointObject> parseText(String text, String notificationKey) {
-        return parseText(text, null, notificationKey);
+    public static List<MidPointObject> parseText(String text) {
+        return parseText(text, null);
     }
 
-    public static List<MidPointObject> parseProjectFile(VirtualFile file, String notificationKey) {
-        try (InputStream is = file.getInputStream()) {
-            String text = IOUtils.toString(is, file.getCharset());
-            return parseText(text, file, notificationKey);
-        } catch (IOException ex) {
-            if (notificationKey != null) {
-                MidPointUtils.publishExceptionNotification(null, MidPointObjectUtils.class, notificationKey,
-                        "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
-            }
-            return null;
+    public static List<MidPointObject> parseProjectFile(File file, Charset charset) throws IOException {
+        try (InputStream is = new FileInputStream(file)) {
+            String text = IOUtils.toString(is, charset);
+            return parseText(text, file);
         }
     }
 
-    private static List<MidPointObject> parseText(String text, VirtualFile file, String notificationKey) {
-        try {
-            Document doc = DOMUtil.parseDocument(text);
-            List<MidPointObject> objects = parseDocument(doc, file, file != null ? file.getPath() : null);
+    private static List<MidPointObject> parseText(String text, File file) {
+        Document doc = DOMUtil.parseDocument(text);
+        String displayName = file != null ? file.getPath() : null;
 
-            if (objects.size() == 1) {
-                objects.get(0).setWholeFile(true);
-            }
+        List<MidPointObject> objects = parseDocument(doc, file, displayName);
 
-            return objects;
-        } catch (RuntimeException ex) {
-            String msg;
-            if (file != null) {
-                msg = "Couldn't parse file " + file.getName();
-            } else {
-                msg = "Couldn't parse text '" + StringUtils.abbreviate(text, 10) + "'";
-            }
-
-            if (notificationKey != null) {
-                MidPointUtils.publishExceptionNotification(null, MidPointObjectUtils.class, notificationKey, msg, ex);
-            }
-
-            return new ArrayList<>();
+        if (objects.size() == 1) {
+            objects.get(0).setWholeFile(true);
         }
 
+        return objects;
     }
 
-    public static Document parseProjectFileToDOM(VirtualFile file, String notificationKey) {
-        try (InputStream is = file.getInputStream()) {
-            return DOMUtil.parse(is);
-        } catch (IOException ex) {
-            if (notificationKey != null) {
-                MidPointUtils.publishExceptionNotification(null, MidPointObjectUtils.class, notificationKey,
-                        "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
-            }
-
-            return null;
-        }
-    }
-
-    private static List<MidPointObject> parseDocument(Document doc, VirtualFile file, String displayName) {
+    private static List<MidPointObject> parseDocument(Document doc, File file, String displayName) {
         List<MidPointObject> rv = new ArrayList<>();
         if (doc == null) {
             return rv;
@@ -109,7 +101,7 @@ public class MidPointObjectUtils {
 
         Element root = doc.getDocumentElement();
         String localName = root.getLocalName();
-        String xsiType = root.getAttributeNS(MidPointUtils.NS_XSI, "type");
+        String xsiType = root.getAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type");
         if ("actions".equals(localName) || "objects".equals(localName) || (xsiType != null && xsiType.contains("ObjectListType"))) {
             for (Element child : DOMUtil.listChildElements(root)) {
                 DOMUtil.fixNamespaceDeclarations(child);
@@ -156,7 +148,7 @@ public class MidPointObjectUtils {
         String namespace = element.getNamespaceURI();
         String localName = element.getLocalName();
 
-        boolean executable = SchemaConstantsGenerated.NS_SCRIPTING.equals(namespace) && Constants.SCRIPTING_ACTIONS.contains(localName);
+        boolean executable = SchemaConstantsGenerated.NS_SCRIPTING.equals(namespace) && SCRIPTING_ACTIONS.contains(localName);
         ObjectTypes type = getObjectType(element);
 
         MidPointObject o = new MidPointObject(DOMUtil.serializeDOMToString(element), type, executable);
@@ -172,7 +164,7 @@ public class MidPointObjectUtils {
     }
 
     private static ObjectTypes getObjectType(Element element) {
-        String xsiType = element.getAttributeNS(MidPointUtils.NS_XSI, "type");
+        String xsiType = element.getAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type");
         if (xsiType != null) {
             xsiType = xsiType.replaceFirst("^.*:", "");
 
@@ -195,5 +187,42 @@ public class MidPointObjectUtils {
         }
 
         return null;
+    }
+
+    public static PrismSerializer<String> getSerializer(PrismContext prismContext) {
+        return prismContext.xmlSerializer()
+                .options(SerializationOptions.createSerializeReferenceNames());
+    }
+
+    public static PrismParser createParser(PrismContext ctx, InputStream data) {
+        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
+        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
+    public static PrismParser createParser(PrismContext ctx, String xml) {
+        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
+        return ctx.parserFor(xml).language(PrismContext.LANG_XML).context(parsingContext);
+    }
+
+    public static String serialize(PrismContext prismContext, Object object) throws SchemaException {
+        final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
+
+        PrismSerializer<String> serializer = getSerializer(prismContext);
+
+        String result;
+        if (object instanceof ObjectType || object instanceof PrismObject) {
+            PrismObject o = object instanceof PrismObject ? (PrismObject) object : ((ObjectType) object).asPrismObject();
+            ObjectTypes type = ObjectTypes.getObjectType(o.getCompileTimeClass());
+            result = serializer.serialize(new JAXBElement(type.getElementName(), o.getClass(), o.asObjectable()));
+        } else if (object instanceof OperationResult) {
+            LocalizationService localizationService = new LocalizationServiceImpl();
+            Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
+            OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
+            result = serializer.serializeAnyData(operationResultType, fakeQName);
+        } else {
+            result = serializer.serializeAnyData(object, fakeQName);
+        }
+
+        return result;
     }
 }

@@ -3,6 +3,8 @@ package com.evolveum.midpoint.studio.action.transfer;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -127,7 +129,7 @@ public class RefreshAction extends BackgroundAction {
                 MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
 
                 List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
-                obj = MidPointObjectUtils.filterObjectTypeOnly(obj);
+                obj = ClientUtils.filterObjectTypeOnly(obj);
 
                 objects.addAll(obj);
             });
@@ -169,7 +171,7 @@ public class RefreshAction extends BackgroundAction {
             RunnableUtils.runWriteActionAndWait(() -> {
                 try (Writer writer = new OutputStreamWriter(file.getOutputStream(this), file.getCharset())) {
                     if (newObjects.size() > 1) {
-                        writer.write(MidPointObjectUtils.OBJECTS_XML_PREFIX);
+                        writer.write(ClientUtils.OBJECTS_XML_PREFIX);
                         writer.write('\n');
                     }
 
@@ -178,7 +180,7 @@ public class RefreshAction extends BackgroundAction {
                     }
 
                     if (newObjects.size() > 1) {
-                        writer.write(MidPointObjectUtils.OBJECTS_XML_SUFFIX);
+                        writer.write(ClientUtils.OBJECTS_XML_SUFFIX);
                         writer.write('\n');
                     }
                 } catch (IOException ex) {

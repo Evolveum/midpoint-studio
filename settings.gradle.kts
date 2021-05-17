@@ -7,4 +7,6 @@ pluginManagement {
     }
 }
 
+include("midpoint-client")
 include("studio-idea-plugin")
+

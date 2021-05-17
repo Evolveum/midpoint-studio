@@ -1,6 +1,4 @@
-package com.evolveum.midpoint.studio.impl.client;
-
-import com.evolveum.midpoint.studio.impl.MidPointObject;
+package com.evolveum.midpoint.studio.client;
 
 import java.util.ArrayList;
 import java.util.List;

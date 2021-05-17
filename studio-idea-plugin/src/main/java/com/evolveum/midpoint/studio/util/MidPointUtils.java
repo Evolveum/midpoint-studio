@@ -1,22 +1,17 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.common.LocalizationService;
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.client.ClientException;
+import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.client.ClientException;
-import com.evolveum.midpoint.studio.impl.client.LocalizationServiceImpl;
-import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
-import com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
-import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.annotation.Experimental;
-import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
@@ -67,16 +62,14 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
-import javax.xml.bind.JAXBElement;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.awt.*;
-import java.io.InputStream;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -92,8 +85,6 @@ public class MidPointUtils {
     public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart());
 
     public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
-
-    public static final String NS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 
     private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
 
@@ -597,7 +588,7 @@ public class MidPointUtils {
             return null;
         }
 
-        XmlAttribute xsiType = tag.getAttribute("type", NS_XSI);
+        XmlAttribute xsiType = tag.getAttribute("type", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
         if (xsiType == null || xsiType.getValue() == null) {
             return null;
         }
@@ -774,43 +765,6 @@ public class MidPointUtils {
         }
 
         return modules[0];
-    }
-
-    public static PrismSerializer<String> getSerializer(PrismContext prismContext) {
-        return prismContext.xmlSerializer()
-                .options(SerializationOptions.createSerializeReferenceNames());
-    }
-
-    public static PrismParser createParser(PrismContext ctx, InputStream data) {
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
-    }
-
-    public static PrismParser createParser(PrismContext ctx, String xml) {
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(xml).language(PrismContext.LANG_XML).context(parsingContext);
-    }
-
-    public static String serialize(PrismContext prismContext, Object object) throws SchemaException {
-        final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
-
-        PrismSerializer<String> serializer = getSerializer(prismContext);
-
-        String result;
-        if (object instanceof ObjectType || object instanceof PrismObject) {
-            PrismObject o = object instanceof  PrismObject ? (PrismObject) object : ((ObjectType)object).asPrismObject();
-            ObjectTypes type = ObjectTypes.getObjectType(o.getCompileTimeClass());
-            result = serializer.serialize(new JAXBElement(type.getElementName(), o.getClass(), o.asObjectable()));
-        } else if (object instanceof OperationResult) {
-            LocalizationService localizationService = new LocalizationServiceImpl();
-            Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
-            OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
-            result = serializer.serializeAnyData(operationResultType, fakeQName);
-        } else {
-            result = serializer.serializeAnyData(object, fakeQName);
-        }
-
-        return result;
     }
 
     public static List<ObjectTypes> getConcreteObjectTypes() {

@@ -27,6 +27,8 @@ version = properties("pluginVersion")
 dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.16.0")
 
+    implementation(project(":midpoint-client"))
+
     compile("com.evolveum.midpoint.model:model-common:" + properties("midpointVersion")) {
         isTransitive = false
     }

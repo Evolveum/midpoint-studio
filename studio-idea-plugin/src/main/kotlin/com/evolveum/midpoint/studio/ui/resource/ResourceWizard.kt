@@ -27,6 +27,9 @@ fun wizard(): JPanel {
             row("Label", separated = true) {
                 textField({ "abc" }, {}).comment("comment")
             }
+            row("Combobox", separated=true) {
+
+            }
         }
     }
 }

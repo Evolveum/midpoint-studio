@@ -2,8 +2,12 @@ package com.evolveum.midpoint.studio.action.browse;
 
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.client.SearchResult;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.client.SearchResult;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -107,7 +111,7 @@ public class DownloadAction extends BackgroundAction {
 
                 out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
                 if (oids.size() > 1) {
-                    out.write(MidPointObjectUtils.OBJECTS_XML_PREFIX);
+                    out.write(ClientUtils.OBJECTS_XML_PREFIX);
                 }
 
                 if (oids != null) {
@@ -117,7 +121,7 @@ public class DownloadAction extends BackgroundAction {
                 }
 
                 if (oids.size() > 1) {
-                    out.write(MidPointObjectUtils.OBJECTS_XML_SUFFIX);
+                    out.write(ClientUtils.OBJECTS_XML_SUFFIX);
                 }
 
                 MidPointUtils.openFile(project, file);

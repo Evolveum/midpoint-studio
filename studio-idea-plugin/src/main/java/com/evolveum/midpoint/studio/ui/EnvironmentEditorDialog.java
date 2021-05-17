@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
-import com.evolveum.midpoint.studio.impl.client.ProxyType;
-import com.evolveum.midpoint.studio.impl.client.TestConnectionResult;
+import com.evolveum.midpoint.studio.client.ProxyType;
+import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.util.MidPointUtils;

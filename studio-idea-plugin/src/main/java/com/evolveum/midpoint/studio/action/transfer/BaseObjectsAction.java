@@ -3,6 +3,8 @@ package com.evolveum.midpoint.studio.action.transfer;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -17,6 +19,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -257,12 +260,12 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         ProcessState state = new ProcessState();
 
         try {
-            List<MidPointObject> objects = MidPointObjectUtils.parseText(text, notificationKey);
-            objects = MidPointObjectUtils.filterObjectTypeOnly(objects, false);
+            List<MidPointObject> objects = ClientUtils.parseText(text, notificationKey);
+            objects = ClientUtils.filterObjectTypeOnly(objects, false);
 
             int i = 0;
             for (MidPointObject obj : objects) {
-                obj.setFile(file);
+                obj.setFile(VfsUtil.virtualToIoFile(file));
 
                 i++;
                 indicator.setFraction(i / objects.size());

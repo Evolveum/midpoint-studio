@@ -3,6 +3,8 @@ package com.evolveum.midpoint.studio.impl.browse;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.action.transfer.UploadExecute;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -82,7 +84,7 @@ public class GeneratorAction extends BackgroundAction {
 
         MidPointClient client = new MidPointClient(evt.getProject(), env);
 
-        List<MidPointObject> objects = MidPointObjectUtils.parseText(content, NOTIFICATION_KEY);
+        List<MidPointObject> objects = ClientUtils.parseText(content, NOTIFICATION_KEY);
 
         int fail = 0;
         int success = 0;

@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.client;
+package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
@@ -10,8 +10,6 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.impl.MidPointObject;
-import com.evolveum.midpoint.studio.impl.MidPointObjectUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -107,15 +105,25 @@ public class ServiceImpl implements Service {
 
         Map<String, Object> params = buildSearchParams(options, prismContext());
 
+        String result = null;
         try {
             Request req = buildSearchRequest(type, query, params);
 
-            String result = executeRequest(req, String.class);
-
-            List<MidPointObject> objects = MidPointObjectUtils.parseText(result, "Search objects");
-            return new SearchResult(objects);
+            result = executeRequest(req, String.class);
         } catch (SchemaException ex) {
             throw new ClientException("Couldn't create query", ex);
+        }
+
+        try {
+            if (result == null) {
+                return new SearchResult();
+            }
+
+            List<MidPointObject> objects = ClientUtils.parseText(result);
+
+            return new SearchResult(objects);
+        } catch (Exception ex) {
+            throw new ClientException("Couldn't process search results", ex);
         }
     }
 
@@ -300,7 +308,7 @@ public class ServiceImpl implements Service {
             }
 
             String content = response.body().string();
-            List<MidPointObject> objects = MidPointObjectUtils.parseText(content, null);
+            List<MidPointObject> objects = ClientUtils.parseText(content);
 
             if (objects.size() == 1) {
                 return objects.get(0);
