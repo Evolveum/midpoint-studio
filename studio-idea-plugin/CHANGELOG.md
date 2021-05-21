@@ -11,7 +11,7 @@
 ### Fixed
 - TODO
 
-## 4.3.0
+## 4.3
 ### Added
 - Bulk refresh predefined objects
 - Import/export encrypted properties
@@ -27,7 +27,7 @@
 ### Fixed
 - TODO
 
-## 4.2.0
+## 4.2
 ### Added
 - Browse/Upload with raw options for both operations
 - Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project
