@@ -8,9 +8,11 @@ import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.studio.util.Selectable;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.ide.actions.ActionsCollector;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -81,6 +83,12 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
         colorPanel.setBorder(JBUI.Borders.empty(3, 3));
         testConnection.setBorder(JBUI.Borders.empty(3, 3));
+
+        Color background = EditorColorsManager.getInstance().getGlobalScheme().getDefaultBackground();
+        if (background != null) {
+            testConnection.setOpaque(true);
+            testConnection.setBackground(background);
+        }
 
         properties.addBrowseFolderListener("Select source folder", "Properties file where MidPoint object xml file parameters are stored", project,
                 FileChooserDescriptorFactory.createSingleFileDescriptor("properties"));
@@ -257,21 +265,21 @@ public class EnvironmentEditorDialog extends DialogWrapper {
             TestConnectionResult result = client.testConnection();
 
             if (result.success()) {
-                updateInAwtThread(JBColor.GREEN, "Version: " + result.version() + ", revision: " + result.revision());
+                updateInAwtThread(ConsoleViewContentType.NORMAL_OUTPUT_KEY.getDefaultAttributes().getForegroundColor(), "Version: " + result.version() + ", revision: " + result.revision());
             } else {
                 String msg = result.exception() != null ? result.exception().getMessage() : null;
-                updateInAwtThread(JBColor.RED, msg);
+                updateInAwtThread(ConsoleViewContentType.LOG_ERROR_OUTPUT_KEY.getDefaultAttributes().getForegroundColor(), msg);
             }
         } catch (Exception ex) {
             LOG.error("Couldn't test connection", ex);
 
-            updateInAwtThread(JBColor.RED, ex.getMessage());
+            updateInAwtThread(ConsoleViewContentType.LOG_ERROR_OUTPUT_KEY.getDefaultAttributes().getForegroundColor(), ex.getMessage());
         }
     }
 
-    private void updateInAwtThread(JBColor color, String text) {
+    private void updateInAwtThread(Color color, String text) {
         ApplicationManager.getApplication().invokeAndWait(() -> {
-            testConnection.setForeground(color.darker());
+            testConnection.setForeground(color);
             testConnection.setText(text);
         });
     }

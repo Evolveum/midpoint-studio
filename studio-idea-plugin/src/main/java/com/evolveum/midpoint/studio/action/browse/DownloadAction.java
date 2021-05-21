@@ -138,6 +138,9 @@ public class DownloadAction extends BackgroundAction {
         for (Pair<String, ObjectTypes> oid : oids) {
             try {
                 MidPointObject object = client.get(oid.getSecond().getClassDefinition(), oid.getFirst(), new SearchOptions().raw(raw));
+                if (object == null) {
+                    continue;
+                }
 
                 IOUtils.write(object.getContent(), out);
             } catch (Exception ex) {

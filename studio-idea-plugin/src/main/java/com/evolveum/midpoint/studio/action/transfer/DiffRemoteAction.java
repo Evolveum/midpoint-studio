@@ -8,7 +8,6 @@ import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 import com.intellij.icons.AllIcons;
@@ -119,17 +118,20 @@ public class DiffRemoteAction extends BackgroundAction {
 
                 try {
                     MidPointObject newObject = client.get(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    if (newObject == null) {
+                        missing++;
+
+                        mm.printToConsole(env, DiffRemoteAction.class, "Couldn't find object "
+                                + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+
+                        continue;
+                    }
 
                     MidPointObject obj = MidPointObject.copy(object);
                     obj.setContent(newObject.getContent());
                     remoteObjects.put(obj.getOid(), obj);
 
                     diffed.incrementAndGet();
-                } catch (ObjectNotFoundException ex) {
-                    missing++;
-
-                    mm.printToConsole(env, DiffRemoteAction.class, "Couldn't find object "
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
 

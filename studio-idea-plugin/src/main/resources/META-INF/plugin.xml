@@ -172,17 +172,17 @@
 
         <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecute"
                 text="Upload/Execute"
-                icon="/icons/uploadExecute.svg"/>
+                icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
 
         <action id="MidPoint.Action.UploadExecuteStopOnError"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
                 text="Upload/Execute (stop on error)"
-                icon="/icons/uploadExecuteStop.svg"/>
+                icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecuteStop"/>
 
         <action id="MidPoint.Action.Refresh"
                 class="com.evolveum.midpoint.studio.action.transfer.RefreshAction"
                 text="Refresh From Server"
-                icon="/icons/buildLoadChanges.svg"/>
+                icon="AllIcons.Actions.BuildLoadChanges"/>
 
         <action id="MidPoint.Action.DiffRemote"
                 class="com.evolveum.midpoint.studio.action.transfer.DiffRemoteAction"
@@ -199,22 +199,22 @@
         <action id="MidPoint.Action.UploadTestResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestResource"
                 text="Upload/Test Resource"
-                icon="/icons/uploadTest.svg"/>
+                icon="com.evolveum.midpoint.studio.MidPointIcons.UploadTest"/>
 
         <action id="MidPoint.Action.UploadTestValidateResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestValidateResourceAction"
                 text="Upload/Test/Validate Resource"
-                icon="/icons/uploadTestValidate.svg"/>
+                icon="com.evolveum.midpoint.studio.MidPointIcons.UploadTestValidate"/>
 
         <action id="MidPoint.Action.TestResource"
                 class="com.evolveum.midpoint.studio.action.transfer.TestResource"
                 text="Test Resource"
-                icon="/icons/testConnection.svg"/>
+                icon="com.evolveum.midpoint.studio.MidPointIcons.TestConnection"/>
 
         <action id="MidPoint.Action.DeleteRaw"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
                 text="Delete (raw)"
-                icon="/icons/removeRaw.svg"/>
+                icon="com.evolveum.midpoint.studio.MidPointIcons.RemoveRaw"/>
 
         <action id="MidPoint.Action.Delete"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
@@ -280,7 +280,7 @@
 
             <group id="MidPoint.Group.Menu.ServerLog"
                    text="Server Log"
-                   icon="/icons/serverLog.svg"
+                   icon="com.evolveum.midpoint.studio.MidPointIcons.ServerLog"
                    popup="true">
 
                 <group id="MidPoint.Group.Menu.ServerLog.ModelLogging"
