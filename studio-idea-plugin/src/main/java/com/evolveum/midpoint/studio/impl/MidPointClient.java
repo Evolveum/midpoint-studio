@@ -216,7 +216,7 @@ public class MidPointClient {
         }
     }
 
-    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) throws ObjectNotFoundException {
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) {
         printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
 
         MidPointObject result = null;

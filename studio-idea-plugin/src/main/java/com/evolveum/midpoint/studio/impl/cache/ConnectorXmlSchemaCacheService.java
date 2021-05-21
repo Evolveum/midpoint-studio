@@ -8,6 +8,7 @@ import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.client.SearchResult;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -23,6 +24,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.messages.MessageBus;
@@ -229,8 +231,8 @@ public class ConnectorXmlSchemaCacheService {
         }
 
         XmlTag rootTag = file.getRootTag();
-
         QName root = MidPointUtils.createQName(rootTag);
+
         if (DOMUtil.XSD_SCHEMA_ELEMENT.equals(root)) {
             String fileName = file.getVirtualFile().getName();
             String uuid = fileName.replaceFirst("^connector-", "").replaceFirst("-schema.xsd$", "");
@@ -240,8 +242,16 @@ public class ConnectorXmlSchemaCacheService {
             }
         }
 
-        if (!SchemaConstantsGenerated.C_RESOURCE.equals(root)) {
-            // todo improve for c:objects/c:resource
+        if (SchemaConstants.C_OBJECTS.equals(root)) {
+            XmlTag[] tags = rootTag.getSubTags();
+            if (tags.length > 0) {
+                rootTag = tags[0];
+                root = MidPointUtils.createQName(rootTag);
+            }
+        }
+
+        if (!SchemaConstantsGenerated.C_RESOURCE.equals(root)
+                && !isResourceUsingXsi(rootTag)) {
             return null;
         }
 
@@ -277,7 +287,7 @@ public class ConnectorXmlSchemaCacheService {
                     SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
                     of = ctx.getQueryConverter().parseFilter(filterType, ConnectorType.class);
                 } catch (Exception ex) {
-                    LOG.error("Couldn't parse connectorRef filter defined in resource", ex);
+                    LOG.debug("Couldn't parse connectorRef filter defined in resource", ex);
                 }
 
                 if (of == null) {
@@ -309,6 +319,29 @@ public class ConnectorXmlSchemaCacheService {
         }
 
         return null;
+    }
+
+    private boolean isResourceUsingXsi(XmlTag tag) {
+        XmlAttribute attr = tag.getAttribute("type", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+        if (attr == null || StringUtils.isEmpty(attr.getValue())) {
+            return false;
+        }
+
+        String value = attr.getValue();
+        String[] array = value.split(":", -1);
+
+        String local;
+        if (array.length == 2) {
+            String ns = tag.getNamespaceByPrefix(array[0]);
+            local = array[1];
+            if (!ResourceType.COMPLEX_TYPE.getNamespaceURI().equals(ns)) {
+                return false;
+            }
+        } else {
+            local = array[0];
+        }
+
+        return ResourceType.COMPLEX_TYPE.getLocalPart().equals(local);
     }
 
     private String updateNamespaces(XmlTag filter) {
