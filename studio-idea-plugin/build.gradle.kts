@@ -21,6 +21,7 @@ plugins {
 }
 
 group = properties("pluginGroup")
+version = properties("pluginVersion")
 
 // Configure project's dependencies
 dependencies {
@@ -79,8 +80,7 @@ dependencies {
     }
 }
 
-var version = properties("pluginVersion")
-var channels = version.split('-').getOrElse(1) { "default" }.split('.').first()
+var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
 
 // until we move to semantic versioning and use only stable/nightly (without milestone) channels
 // we'll modify "recommended" versions and channel
@@ -96,22 +96,22 @@ if (gitLocalBranch == "nightly" || gitLocalBranch == "milestone") {
 }
 
 var channelSuffix = ""
-if (!publishChannel?.isBlank()) {
+if (!publishChannel.isBlank()) {
     var channel = publishChannel.toLowerCase()
     if (channel == "nightly") {
-        channelSuffix = "-" + buildNumber + "-" + channel
+        channelSuffix = "-$buildNumber-$channel"
     } else if (channel == "milestone") {
-        channelSuffix = "-" + buildNumber
+        channelSuffix = "-$buildNumber"
     }
 }
 
 version = "$version$channelSuffix"
-channels = publishChannel
+channel = publishChannel
 
 // end of version/channel override
 
 println("Plugin version: $version")
-println("Publish channel: $channels")
+println("Publish channel: $channel")
 
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
@@ -161,7 +161,7 @@ tasks {
     }
 
     patchPluginXml {
-        version(properties("pluginVersion"))
+        version(version)
         sinceBuild(properties("pluginSinceBuild"))
         untilBuild(properties("pluginUntilBuild"))
 
@@ -198,6 +198,6 @@ tasks {
         // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels(channels)
+        channels(channel)
     }
 }
