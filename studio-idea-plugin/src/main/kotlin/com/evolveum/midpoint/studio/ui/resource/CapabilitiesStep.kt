@@ -26,7 +26,7 @@ class CapabilitiesStep : AbstractWizardStepEx("Capabilities") {
 
     override fun getPreferredFocusedComponent(): JComponent? {
         return null
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun getStepId(): Any {
@@ -43,7 +43,7 @@ class CapabilitiesStep : AbstractWizardStepEx("Capabilities") {
 
     override fun isComplete(): Boolean {
         return true
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     @Suppress("EXPOSED_PARAMETER_TYPE")
