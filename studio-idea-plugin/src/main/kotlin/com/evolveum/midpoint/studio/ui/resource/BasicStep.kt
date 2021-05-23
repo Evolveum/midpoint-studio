@@ -39,7 +39,7 @@ class BasicStep : AbstractWizardStepEx("Basic") {
 
     override fun getPreferredFocusedComponent(): JComponent? {
         return null
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun getStepId(): Any {
@@ -56,7 +56,7 @@ class BasicStep : AbstractWizardStepEx("Basic") {
 
     override fun isComplete(): Boolean {
         return true
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     @Suppress("EXPOSED_PARAMETER_TYPE")
