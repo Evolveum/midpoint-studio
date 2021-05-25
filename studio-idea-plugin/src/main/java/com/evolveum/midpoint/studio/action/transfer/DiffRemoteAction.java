@@ -97,7 +97,7 @@ public class DiffRemoteAction extends BackgroundAction {
             RunnableUtils.runWriteActionAndWait(() -> {
                 MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
 
-                List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                List<MidPointObject> obj = MidPointUtils.parseProjectFile(file, NOTIFICATION_KEY);
                 obj = ClientUtils.filterObjectTypeOnly(obj);
 
                 objects.addAll(obj);

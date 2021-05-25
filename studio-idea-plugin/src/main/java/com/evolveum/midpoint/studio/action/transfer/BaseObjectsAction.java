@@ -260,7 +260,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         ProcessState state = new ProcessState();
 
         try {
-            List<MidPointObject> objects = ClientUtils.parseText(text, notificationKey);
+            List<MidPointObject> objects = MidPointUtils.parseText(text, notificationKey);
             objects = ClientUtils.filterObjectTypeOnly(objects, false);
 
             int i = 0;

@@ -84,7 +84,7 @@ public class GeneratorAction extends BackgroundAction {
 
         MidPointClient client = new MidPointClient(evt.getProject(), env);
 
-        List<MidPointObject> objects = ClientUtils.parseText(content, NOTIFICATION_KEY);
+        List<MidPointObject> objects = MidPointUtils.parseText(content, NOTIFICATION_KEY);
 
         int fail = 0;
         int success = 0;

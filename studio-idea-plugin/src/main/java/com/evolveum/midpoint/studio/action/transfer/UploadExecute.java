@@ -11,6 +11,7 @@ import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResp
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.vcsUtil.VcsUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class UploadExecute extends BaseObjectsAction {
                 result = OperationResult.createOperationResult(res);
             }
         } else {
-            UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, obj.getFile());
+            UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, VcsUtil.getVirtualFile(obj.getFile()));
             result = resp.getResult();
         }
 

@@ -7,6 +7,8 @@ import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.ClientException;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
@@ -43,6 +45,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManagerEx;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.XmlPatterns;
@@ -66,6 +69,7 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.awt.*;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
@@ -789,6 +793,32 @@ public class MidPointUtils {
             TextEditor textEditor = (TextEditor) editor;
             Document doc = textEditor.getEditor().getDocument();
             FileDocumentManager.getInstance().saveDocument(doc);
+        }
+    }
+
+    public static List<MidPointObject> parseText(String text, String notificationKey) {
+        try {
+            return ClientUtils.parseText(text);
+        } catch (RuntimeException ex) {
+            String msg = "Couldn't parse text '" + org.apache.commons.lang.StringUtils.abbreviate(text, 10) + "'";
+
+            if (notificationKey != null) {
+                MidPointUtils.publishExceptionNotification(null, MidPointUtils.class, notificationKey, msg, ex);
+            }
+
+            return new ArrayList<>();
+        }
+    }
+
+    public static List<MidPointObject> parseProjectFile(VirtualFile file, String notificationKey) {
+        try {
+            return ClientUtils.parseProjectFile(VfsUtil.virtualToIoFile(file), file.getCharset());
+        } catch (IOException ex) {
+            if (notificationKey != null) {
+                MidPointUtils.publishExceptionNotification(null, MidPointUtils.class, notificationKey,
+                        "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
+            }
+            return new ArrayList<>();
         }
     }
 }
