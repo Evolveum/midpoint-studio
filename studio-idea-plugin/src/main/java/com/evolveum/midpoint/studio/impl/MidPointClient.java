@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismSerializer;
+import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.RetrieveOption;
@@ -16,6 +17,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
 import com.intellij.openapi.diagnostic.Logger;
@@ -224,6 +226,11 @@ public class MidPointClient {
             Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
             if (opts.raw()) {
                 options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
+            }
+
+            if (LookupTableType.class.equals(type)) {
+                options.add(SelectorOptions.create(UniformItemPath.create(LookupTableType.F_ROW),
+                        GetOperationOptions.createRetrieve(RetrieveOption.INCLUDE)));
             }
 
             result = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
