@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.util.ObjectTypesConverter;
-import com.intellij.ui.TitledSeparator;
+import com.intellij.openapi.options.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -49,6 +49,15 @@ public class MidPointSettingsPanel extends JPanel {
         typesDownloadLimit.setText(Integer.toString(settings.getTypesToDownloadLimit()));
     }
 
+    public boolean isModified() {
+        try {
+            validateData();
+            return !settings.equals(getSettings());
+        } catch (Exception ex) {
+            return true;
+        }
+    }
+
     public MidPointSettings getSettings() {
         MidPointSettings settings = MidPointSettings.createDefaultSettings();
         settings.setProjectId(this.settings.getProjectId());    // we don't want to replace projectId with random id
@@ -68,7 +77,35 @@ public class MidPointSettingsPanel extends JPanel {
         return settings;
     }
 
+    public void validateData() throws ConfigurationException {
+        String downloadLimit = typesDownloadLimit.getText();
+        validateInteger(downloadLimit, "Download limit");
+
+        validateTypes(typesIncluded.getText(), "Types to download - Include: ");
+        validateTypes(typesExcluded.getText(), "Types to download - Exclude: ");
+
+        String restTimeout = restClientTimeout.getText();
+        validateInteger(restTimeout, "Rest client timeout");
+    }
+
+    private void validateInteger(String number, String message) throws ConfigurationException {
+        if (StringUtils.isNotEmpty(number)) {
+            try {
+                Integer.parseInt(number);
+            } catch (Exception ex) {
+                throw new ConfigurationException(message + " not in range (0, " + Integer.MAX_VALUE + ")");
+            }
+        }
+    }
+
+    private void validateTypes(String types, String message) throws ConfigurationException {
+        try {
+            ObjectTypesConverter.fromString(types, false);
+        } catch (RuntimeException ex) {
+            throw new ConfigurationException(message + ex.getMessage());
+        }
+    }
+
     private void createUIComponents() {
-        // TODO: place custom component creation code here
     }
 }

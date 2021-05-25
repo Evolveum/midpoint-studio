@@ -22,25 +22,28 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     private MidPointSettings settings;
 
+    private EnvironmentSettings environmentSettings;
+
     public EnvironmentsPanel(Project project, MidPointSettings settings, EnvironmentSettings environmentSettings) {
         super(new EnvironmentsModel(), new ArrayList<>(), null);
 
         this.project = project;
         this.settings = settings;
+        this.environmentSettings = environmentSettings;
 
         setPreferredSize(new Dimension(150, 100));
         getTable().setShowColumns(true);
 
-        initData(environmentSettings);
+        initData();
     }
 
-    private void initData(EnvironmentSettings settings) {
+    private void initData() {
         List<Selectable<Environment>> selectables = new ArrayList<>();
 
-        Environment selected = settings.getSelected();
+        Environment selected = environmentSettings.getSelected();
 
-        settings.getEnvironments().forEach(e -> {
-            Selectable s = new Selectable(e);
+        environmentSettings.getEnvironments().forEach(e -> {
+            Selectable s = new Selectable(new Environment(e));
             if (selected != null) {
                 s.setSelected(Objects.equals(e.getId(), selected.getId()));
             }
@@ -136,5 +139,9 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
                     return null;
             }
         }
+    }
+
+    public boolean isModified() {
+        return !environmentSettings.equals(getFullSettings());
     }
 }

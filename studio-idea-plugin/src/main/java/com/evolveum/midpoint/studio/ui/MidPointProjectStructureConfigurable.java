@@ -94,19 +94,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
     @Override
     public boolean isModified() {
-        if (settings == null || settings.getSettings() == null) {
-            return false;
-        }
-
-        ProjectSettings pSettings = new ProjectSettings();
-
-        MidPointService mm = MidPointService.getInstance(project);
-        pSettings.setMidPointSettings(mm.getSettings());
-
-        EnvironmentService em = EnvironmentService.getInstance(project);
-        pSettings.setEnvironmentSettings(em.getFullSettings());
-
-        return !Objects.equals(pSettings, settings.getSettings());
+        return settings != null && settings.isModified();
     }
 
     @Override
