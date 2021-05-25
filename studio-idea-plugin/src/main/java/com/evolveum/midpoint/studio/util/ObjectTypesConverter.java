@@ -14,10 +14,9 @@ import java.util.List;
  */
 public class ObjectTypesConverter extends Converter<List<ObjectTypes>> {
 
-    @Override
-    public @Nullable List<ObjectTypes> fromString(@NotNull String value) {
+    public static @Nullable List<ObjectTypes> fromString(@NotNull String value, boolean ignoreWrongValue) {
         if (value == null || value.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<ObjectTypes> result = new ArrayList<>();
@@ -29,12 +28,19 @@ public class ObjectTypesConverter extends Converter<List<ObjectTypes>> {
                 if (ot != null) {
                     result.add(ot);
                 }
-            } catch (Exception ex) {
-                // ignore
+            } catch (RuntimeException ex) {
+                if (!ignoreWrongValue) {
+                    throw ex;
+                }
             }
         }
 
         return result;
+    }
+
+    @Override
+    public @Nullable List<ObjectTypes> fromString(@NotNull String value) {
+        return fromString(value, true);
     }
 
     @Override

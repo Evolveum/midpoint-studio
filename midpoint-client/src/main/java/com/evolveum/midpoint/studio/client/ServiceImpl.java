@@ -2,12 +2,11 @@ package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.QueryConverter;
-import com.evolveum.midpoint.schema.GetOperationOptions;
-import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.schema.SearchResultList;
-import com.evolveum.midpoint.schema.SelectorOptions;
+import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
@@ -284,10 +283,36 @@ public class ServiceImpl implements Service {
         }
 
         Map<String, Object> params = new HashMap<>();
+        for (SelectorOptions<GetOperationOptions> option : options) {
+            GetOperationOptions get = option.getOptions();
+
+            if (option.isRoot()) {
+                if (get.getRaw()) {
+                    params.put("options", "raw");
+                }
+                continue;
+            }
+
+            ItemPath path = option.getItemPath(UniformItemPath.empty());
+            RetrieveOption retrieve = get.getRetrieve();
+            if (retrieve != null) {
+                switch (retrieve) {
+                    case EXCLUDE:
+                        params.put("exclude", path.toString());
+                        break;
+                    case INCLUDE:
+                        params.put("include", path.toString());
+                        break;
+                    default:
+                }
+            }
+        }
         GetOperationOptions root = SelectorOptions.findRootOptions(options);
         if (root != null && root.getRaw()) {
-            params.put("options", "raw");
+
         }
+
+
 
         String path = "/" + ObjectTypes.getRestTypeFromClass(type) + "/" + oid;
         Request.Builder builder = context.build(path, params)
