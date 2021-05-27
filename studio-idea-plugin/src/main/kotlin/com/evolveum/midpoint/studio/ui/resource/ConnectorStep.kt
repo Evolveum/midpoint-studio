@@ -17,7 +17,11 @@ class ConnectorStep : AbstractWizardStepEx("Connector") {
     var root: JPanel = panel {
         row {
             row("Connector Configuration", separated = true) {
-
+                for (i in 1..10) {
+                    row ("sample $i") {
+                        textField({ "" }, {})
+                    }
+                }
             }
             row("Pooling", separated = true) {
 

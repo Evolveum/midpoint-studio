@@ -15,8 +15,12 @@ import java.util.List;
  */
 public class ResourceWizard extends AbstractWizardEx {
 
-    public ResourceWizard(@Nullable Project project, List<? extends AbstractWizardStepEx> steps) {
+    private ResourceWizardModel model;
+
+    public ResourceWizard(@Nullable Project project, List<? extends AbstractWizardStepEx> steps, ResourceWizardModel model) {
         super("Resource Wizard", project, steps);
+
+        this.model = model;
     }
 
     @Override
@@ -24,10 +28,12 @@ public class ResourceWizard extends AbstractWizardEx {
         return super.createContentPane();
     }
 
-    public static ResourceWizard createWizard(@Nullable Project project) {
+    public static ResourceWizard createWizard(@NotNull Project project) {
+        ResourceWizardModel model = new ResourceWizardModel(project);
+
         List<AbstractWizardStepEx> steps = new ArrayList<>();
 
-        BasicStep basic = new BasicStep();
+        BasicStep basic = new BasicStep(model);
         steps.add(basic);
 
         ConnectorStep connector = new ConnectorStep();
@@ -39,6 +45,6 @@ public class ResourceWizard extends AbstractWizardEx {
         ObjectTypesStep objectTypes = new ObjectTypesStep();
         steps.add(objectTypes);
 
-        return new ResourceWizard(project, steps);
+        return new ResourceWizard(project, steps, model);
     }
 }
