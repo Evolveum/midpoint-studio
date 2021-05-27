@@ -13,7 +13,10 @@ import com.intellij.psi.xml.XmlTag;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.xml.namespace.QName;
 import java.util.List;
+
+import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -89,7 +92,16 @@ public class RefOidAnnotator implements Annotator {
         }
 
         XmlTag xsdElement = (XmlTag) element;
+        QName qname = MidPointUtils.createQName(xsdElement);
+        if (!qname.equals(new QName(W3C_XML_SCHEMA_NS_URI, "element").equals(xsdElement))) {
+            return false;
+        }
+
         XmlAttribute type = xsdElement.getAttribute("type");
+        if (type == null) {
+            return false;
+        }
+
         String typeValue = type.getValue();
         if (typeValue != null && typeValue.endsWith(":ObjectReferenceType")) {
             // we probably doesn't have to resolve this reference further
