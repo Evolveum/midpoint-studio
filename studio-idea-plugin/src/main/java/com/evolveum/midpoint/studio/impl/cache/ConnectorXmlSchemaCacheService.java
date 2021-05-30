@@ -11,11 +11,12 @@ import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.client.SearchResult;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
@@ -288,7 +289,7 @@ public class ConnectorXmlSchemaCacheService {
 
                     SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
                     of = ctx.getQueryConverter().parseFilter(filterType, ConnectorType.class);
-                } catch (Exception ex) {
+                } catch (SchemaException ex) {
                     LOG.debug("Couldn't parse connectorRef filter defined in resource", ex);
                 }
 
@@ -303,7 +304,7 @@ public class ConnectorXmlSchemaCacheService {
                         if (!match) {
                             continue;
                         }
-                    } catch (Exception ex) {
+                    } catch (SchemaException ex) {
                         LOG.error("Couldn't match connector with connectorRef filter defined in resource", ex);
                     }
 
