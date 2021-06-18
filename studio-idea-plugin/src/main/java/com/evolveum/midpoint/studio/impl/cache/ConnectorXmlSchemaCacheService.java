@@ -83,6 +83,11 @@ public class ConnectorXmlSchemaCacheService {
 
         cache.clear();
 
+        if (env == null) {
+            LOG.info("Refresh skipped, no environment selected");
+            return;
+        }
+
         MidPointClient client = new MidPointClient(project, env, true, true);
         SearchResult result = client.search(ConnectorType.class, null, true);
         for (MidPointObject object : result.getObjects()) {
