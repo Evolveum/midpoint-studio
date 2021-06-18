@@ -46,7 +46,7 @@ public class RefOidAnnotator implements Annotator {
     }
 
     private void checkObjectOidValidity(String oid, XmlAttributeValue value, AnnotationHolder holder) {
-        List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), value.getProject());
+        List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), value.getProject(), true);
         if (result != null && result.size() > 1) {
             holder.createErrorAnnotation(value, "Oid must be unique, found " + result.size() + " objects in total.");
             return;
