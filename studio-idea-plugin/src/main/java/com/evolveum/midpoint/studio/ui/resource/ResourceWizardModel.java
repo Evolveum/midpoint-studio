@@ -21,6 +21,10 @@ public class ResourceWizardModel {
 
     private List<ConnectorType> connectors;
 
+    private boolean source;
+
+    private boolean target;
+
     public ResourceWizardModel(@NotNull Project project) {
         this.project = project;
     }
@@ -38,6 +42,22 @@ public class ResourceWizardModel {
             connectors = new ArrayList<>();
         }
         return connectors;
+    }
+
+    public boolean getSource() {
+        return source;
+    }
+
+    public void setSource(boolean source) {
+        this.source = source;
+    }
+
+    public boolean getTarget() {
+        return target;
+    }
+
+    public void setTarget(boolean target) {
+        this.target = target;
     }
 
     private void refreshConnectors() {

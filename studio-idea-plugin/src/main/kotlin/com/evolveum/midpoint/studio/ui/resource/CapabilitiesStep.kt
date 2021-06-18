@@ -16,12 +16,11 @@ class CapabilitiesStep : AbstractWizardStepEx("Capabilities") {
 
     var root: JPanel = panel {
         row {
-
         }
     }
 
     override fun getComponent(): JComponent {
-        return root;
+        return root
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {

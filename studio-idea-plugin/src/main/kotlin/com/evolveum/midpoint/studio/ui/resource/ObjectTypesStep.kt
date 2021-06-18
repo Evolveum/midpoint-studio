@@ -16,7 +16,6 @@ class ObjectTypesStep : AbstractWizardStepEx("Object Types") {
 
     var root: JPanel = panel {
         row {
-
         }
     }
 

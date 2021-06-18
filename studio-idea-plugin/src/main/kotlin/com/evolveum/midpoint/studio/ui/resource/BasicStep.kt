@@ -1,11 +1,16 @@
 package com.evolveum.midpoint.studio.ui.resource
 
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringType
 import com.intellij.ide.wizard.AbstractWizardStepEx
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.panel
 import org.jetbrains.annotations.NotNull
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -21,48 +26,62 @@ class BasicStep(model: ResourceWizardModel) : AbstractWizardStepEx("Basic") {
 
     var model: ResourceWizardModel
 
-    var root: JPanel
+    val root: JPanel
+
+    lateinit var name: JBTextField
+    lateinit var connector: ComboBox<ConnectorType>
+    lateinit var source: JBCheckBox
+    lateinit var target: JBCheckBox
 
     init {
         this.model = model
 
-        var resource = this.model.resource
+        val resource = this.model.resource
 
         root = panel {
             row {
                 row("Name") {
-                    textField({ resource.name?.orig?.toString().orEmpty() }, { resource.name })
+                    name = textField(
+                        { resource.name?.orig?.toString().orEmpty() },
+                        { resource.name = PolyStringType.fromOrig(it) },
+                    )
+                        .component
                 }
                 row("Description") {
-                    textField({ resource.description?.toString().orEmpty() }, { resource.description })
+                    textField({ resource.description?.toString().orEmpty() }, { resource.description = it })
                 }
                 row("Connector") {
-                    ComboBox(DefaultComboBoxModel(arrayOf("asd", "asd")))()
+                    connector = ComboBox(DefaultComboBoxModel())
                     button("Refresh", { e -> refreshConnectors(ModalityState.NON_MODAL) })
                 }
                 row {
                     buttonGroup("Type") {
-                        row { checkBox("Source", comment = "Data synchronized to MidPoint") }
-                        row { checkBox("Target", comment = "Data synchronized from MidPoint") }
+                        row { checkBox("Source", model.source, comment = "Data synchronized to MidPoint") }
+                        row { checkBox("Target", model.target, comment = "Data synchronized from MidPoint") }
                     }
                 }
             }
         }
+
+        name.addKeyListener(object : KeyAdapter() {
+
+            override fun keyReleased(e: KeyEvent?) {
+                fireStateChanged()
+            }
+        })
+        connector.addActionListener { fireStateChanged() }
     }
 
     fun refreshConnectors(modalityState: @NotNull ModalityState) {
-        ApplicationManager.getApplication().invokeLater({
-            fireStateChanged()
-        }, modalityState)
+        return
     }
 
     override fun getComponent(): JComponent {
-        return root;
+        return root
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
-        return null
-//        TODO("Not yet implemented")
+        return name
     }
 
     override fun getStepId(): Any {
@@ -78,10 +97,7 @@ class BasicStep(model: ResourceWizardModel) : AbstractWizardStepEx("Basic") {
     }
 
     override fun isComplete(): Boolean {
-        var resource = model.resource
-
-        return !resource.name?.orig.isNullOrEmpty()
-//        TODO("Not yet implemented")
+        return !name?.text.isNullOrEmpty() && connector.selectedItem != null
     }
 
     @Suppress("EXPOSED_PARAMETER_TYPE")
