@@ -15,7 +15,7 @@ plugins {
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
     id("org.jetbrains.changelog") version "1.1.2"
     // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
-    id("io.gitlab.arturbosch.detekt") version "1.16.0"
+    id("io.gitlab.arturbosch.detekt") version "1.17.0"
     // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
     id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
 }
@@ -27,33 +27,33 @@ version = properties("pluginVersion")
 dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.16.0")
 
-    implementation(project(":midpoint-client"))
+    implementation(projects.midpointClient)
 
-    compile("com.evolveum.midpoint.model:model-common:" + properties("midpointVersion")) {
+    compile(libs.model.common) {
         isTransitive = false
     }
-    compile("com.evolveum.midpoint.model:model-api:" + properties("midpointVersion")) {
+    compile(libs.model.api) {
         isTransitive = false
     }
-    compile("com.evolveum.midpoint.model:model-impl:" + properties("midpointVersion")) {
+    compile(libs.model.impl) {
         isTransitive = false
     }
-    compile("com.evolveum.midpoint.infra:common:" + properties("midpointVersion")) {
+    compile(libs.common) {
         exclude("org.springframework")
         exclude("net.sf.jasperreports")
         exclude("org.apache.cxf")
         exclude("org.slf4j")
         exclude("ch.qos.logback")
     }
-    compile("com.evolveum.midpoint.repo:security-api:" + properties("midpointVersion")) {
+    compile(libs.security.api) {
         isTransitive = false
     }
-    compile("com.evolveum.midpoint.model:notifications-api:" + properties("midpointVersion")) {
+    compile(libs.notifications.api) {
         isTransitive = false
     }
-    compile("com.evolveum.midpoint:midpoint-localization:" + properties("midpointVersion"))
+    compile(libs.midpoint.localization)
 
-    compile("com.evolveum.midpoint:midscribe-core:" + properties("midscribeVersion")) {
+    compile(libs.midscribe.core) {
         exclude("org.springframework")
         exclude("net.sf.jasperreports")
         exclude("org.apache.cxf", "cxf-rt-wsdl")
@@ -61,21 +61,21 @@ dependencies {
         exclude("org.slf4j")
         exclude("ch.qos.logback")
     }
-    implementation("com.bmuschko:asciidoctorj-tabbed-code-extension:0.3")
+    implementation(libs.asciidoctorj.tabbed.code)
 
-    compile("de.slackspace:openkeepass:" + properties("openkeepass"))
-    compile("org.apache.commons:commons-lang3:" + properties("commonsLang"))
-//    compile( "org.knowm.xchart:xchart:" + properties("xchartVersion")
-    compile("org.slf4j:slf4j-log4j12:" + properties("slf4jVersion"))
-    compile("com.squareup.okhttp3:okhttp:" + properties("okHttpVersion"))
-    compile("com.squareup.okhttp3:logging-interceptor:" + properties("okHttpVersion"))
+    compile(libs.openkeepass)
+    compile(libs.commons.lang)
+    // compile(libs.xchart)
+    compile(libs.slf4j.log4j12)
+    compile(libs.okhttp3)
+    compile(libs.okhttp.logging)
 
-    compile("stax:stax:" + properties("staxVersion"))
-    compile("xml-apis:xml-apis:" + properties("xmlApisVersion"))
+    compile(libs.stax)
+    compile(libs.xml.apis)
 
-    runtime("org.glassfish.jaxb:jaxb-runtime:2.3.2") // needed because of NamespacePrefixMapper class
-    runtime("org.springframework:spring-core:5.0.7.RELEASE") {
-        // needed because of DebugDumpable impl uses spring ReflectionUtils class
+    runtime(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
+    runtime(libs.spring.core) {
+        // spring-core needed because of DebugDumpable impl uses spring ReflectionUtils class
         isTransitive = false
     }
 }
@@ -131,7 +131,8 @@ intellij {
 changelog {
     version = properties("pluginVersion")
     groups = emptyList()
-    headerParserRegex = "\\d+\\.\\d+"       // this can be remove when we'll start using semantic versioning (e.g. 4.4.0)
+    headerParserRegex =
+        "\\d+\\.\\d+"       // this can be remove when we'll start using semantic versioning (e.g. 4.4.0)
 }
 
 // Configure detekt plugin.

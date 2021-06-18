@@ -2,14 +2,14 @@
 fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
-    id("java")
+    id("java-library")
 }
 
 group = "com.evolveum.midpoint.studio"
 version = "4.4"
 
 dependencies {
-    implementation("com.evolveum.midpoint.infra:common:" + properties("midpointVersion")) {
+    api(libs.common) {
         exclude("org.springframework")
         exclude("net.sf.jasperreports")
         exclude("org.apache.cxf")
@@ -17,11 +17,11 @@ dependencies {
         exclude("ch.qos.logback")
     }
 
-    implementation("com.squareup.okhttp3:okhttp:" + properties("okHttpVersion"))
-    implementation("com.squareup.okhttp3:logging-interceptor:" + properties("okHttpVersion"))
+    implementation(libs.okhttp3)
+    implementation(libs.okhttp.logging)
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation(libs.jupiter.api)
+    testRuntimeOnly(libs.jupiter.engine)
 }
 
 tasks.getByName<Test>("test") {
