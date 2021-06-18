@@ -148,7 +148,7 @@ public class ClientUtils {
         String namespace = element.getNamespaceURI();
         String localName = element.getLocalName();
 
-        boolean executable = SchemaConstantsGenerated.NS_SCRIPTING.equals(namespace) && SCRIPTING_ACTIONS.contains(localName);
+        boolean executable = (namespace == null || SchemaConstantsGenerated.NS_SCRIPTING.equals(namespace)) && SCRIPTING_ACTIONS.contains(localName);
         ObjectTypes type = getObjectType(element);
 
         MidPointObject o = new MidPointObject(DOMUtil.serializeDOMToString(element), type, executable);
