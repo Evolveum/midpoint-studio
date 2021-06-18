@@ -24,6 +24,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.XmlSchemaType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.ControlFlowException;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFileFactory;
@@ -54,9 +55,9 @@ public class ConnectorXmlSchemaCacheService {
 
     private static final String ICF_NS_PREFIX = "http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/";
 
-    private Project project;
+    private final Project project;
 
-    private final ConcurrentHashMap<ConnectorType, CacheValue> cache = new ConcurrentHashMap();
+    private final ConcurrentHashMap<ConnectorType, CacheValue> cache = new ConcurrentHashMap<>();
 
     private static final MatchingRuleRegistry MATCHING_REGISTRY = MatchingRuleRegistryFactory.createRegistry();
 
@@ -92,7 +93,7 @@ public class ConnectorXmlSchemaCacheService {
         SearchResult result = client.search(ConnectorType.class, null, true);
         for (MidPointObject object : result.getObjects()) {
             try {
-                PrismObject prismObject = client.parseObject(object.getContent());
+                PrismObject<?> prismObject = client.parseObject(object.getContent());
                 ConnectorType connectorType = (ConnectorType) prismObject.asObjectable();
 
                 cache.put(connectorType, new CacheValue(connectorType, buildIcfSchema(object), buildConnectorSchema(object)));
@@ -144,9 +145,6 @@ public class ConnectorXmlSchemaCacheService {
             }
 
             List<Element> list = DOMUtil.getChildElements(seq, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "element"));
-            if (list == null) {
-                return;
-            }
 
             for (Element el : list) {
                 Element cloned = (Element) el.cloneNode(true);
@@ -184,9 +182,6 @@ public class ConnectorXmlSchemaCacheService {
             }
 
             List<Element> list = DOMUtil.getChildElements(sequence, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "element"));
-            if (list == null) {
-                return;
-            }
 
             for (Element element : list) {
                 Element cloned = (Element) element.cloneNode(true);
@@ -215,12 +210,7 @@ public class ConnectorXmlSchemaCacheService {
             return null;
         }
 
-        Element xsdSchema = DOMUtil.getChildElement(definition, DOMUtil.XSD_SCHEMA_ELEMENT);
-        if (xsdSchema == null) {
-            return null;
-        }
-
-        return xsdSchema;
+        return DOMUtil.getChildElement(definition, DOMUtil.XSD_SCHEMA_ELEMENT);
     }
 
     private XmlFile getSchema(String url, String connectorOid) {
@@ -323,7 +313,9 @@ public class ConnectorXmlSchemaCacheService {
         try {
             return callable.call();
         } catch (Exception ex) {
-            LOG.error("Couldn't find connector schema", ex);
+            if (!(ex instanceof ControlFlowException)) {
+                LOG.error("Couldn't find connector schema", ex);
+            }
         }
 
         return null;
