@@ -114,12 +114,12 @@ if (!publishChannel.isBlank()) {
     }
 }
 
-version = "$version$channelSuffix"
+var pluginVersion = "$version$channelSuffix"
 channel = publishChannel
 
 // end of version/channel override
 
-println("Plugin version: $version")
+println("Plugin version: $pluginVersion")
 println("Publish channel: $channel")
 
 // Configure gradle-intellij-plugin plugin.
@@ -171,7 +171,7 @@ tasks {
     }
 
     patchPluginXml {
-        version.set(properties("pluginVersion"))
+        version.set(pluginVersion)
         sinceBuild.set(properties("pluginSinceBuild"))
         untilBuild.set(properties("pluginUntilBuild"))
 
