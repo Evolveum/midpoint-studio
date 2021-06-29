@@ -23,14 +23,15 @@ import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
 import com.intellij.facet.FacetManager;
-import com.intellij.ide.DataManager;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
@@ -111,12 +112,6 @@ public class MidPointUtils {
         }
 
         NAMES = names.toArray(new String[names.size()]);
-    }
-
-    @Deprecated
-    public static Project getCurrentProject() {
-        DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
-        return DataKeys.PROJECT.getData(dataContext);
     }
 
     public static Color generateAwtColor() {

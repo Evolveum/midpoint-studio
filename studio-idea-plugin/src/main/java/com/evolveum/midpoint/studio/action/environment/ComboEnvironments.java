@@ -1,15 +1,15 @@
 package com.evolveum.midpoint.studio.action.environment;
 
+import com.evolveum.midpoint.studio.MidPointConstants;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.panels.NonOpaquePanel;
 import com.intellij.util.ui.JBUI;
-import com.evolveum.midpoint.studio.MidPointConstants;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -43,8 +43,9 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
     public void actionPerformed(AnActionEvent e) {
     }
 
+    @NotNull
     @Override
-    public JComponent createCustomComponent(final Presentation presentation) {
+    public JComponent createCustomComponent(@NotNull Presentation presentation, @NotNull String place) {
         ComboBoxButton button = new ComboBoxButton(presentation) {
 
             @Override
@@ -67,7 +68,7 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
     protected DefaultActionGroup createPopupActionGroup(JComponent jComponent) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        Project project = MidPointUtils.getCurrentProject();
+        Project project = DataManager.getInstance().getDataContext(jComponent).getData(CommonDataKeys.PROJECT);
         EnvironmentService manager = EnvironmentService.getInstance(project);
 
         for (Environment env : manager.getEnvironments()) {

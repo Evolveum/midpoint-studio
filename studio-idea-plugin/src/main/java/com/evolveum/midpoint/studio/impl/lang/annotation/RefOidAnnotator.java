@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.xml.XmlAttribute;
@@ -48,24 +49,32 @@ public class RefOidAnnotator implements Annotator {
     private void checkObjectOidValidity(String oid, XmlAttributeValue value, AnnotationHolder holder) {
         List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), value.getProject(), true);
         if (result != null && result.size() > 1) {
-            holder.createErrorAnnotation(value, "Oid must be unique, found " + result.size() + " objects in total.");
+            holder.newAnnotation(HighlightSeverity.ERROR, "Oid must be unique, found " + result.size() + " objects in total.")
+                    .range(value)
+                    .create();
             return;
         }
     }
 
     private void checkOidFormat(String oid, XmlAttributeValue value, AnnotationHolder holder) {
         if (StringUtils.isEmpty(oid)) {
-            holder.createErrorAnnotation(value, "Oid not defined");
+            holder.newAnnotation(HighlightSeverity.ERROR, "Oid not defined")
+                    .range(value)
+                    .create();
             return;
         }
 
         if (oid.length() > 36) {
-            holder.createErrorAnnotation(value, "Oid must not be longer than 36 characters");
+            holder.newAnnotation(HighlightSeverity.ERROR, "Oid must not be longer than 36 characters")
+                    .range(value)
+                    .create();
             return;
         }
 
         if (!MidPointUtils.UUID_PATTERN.matcher(oid).matches()) {
-            holder.createWarningAnnotation(value, "Oid doesn't match UUID format");
+            holder.newAnnotation(HighlightSeverity.WARNING, "Oid doesn't match UUID format")
+                    .range(value)
+                    .create();
             return;
         }
     }
