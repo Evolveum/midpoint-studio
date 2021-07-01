@@ -12,6 +12,7 @@ import org.w3c.dom.Element;
 import javax.xml.namespace.QName;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 public class BulkActionGenerator extends Generator {
 
@@ -121,7 +122,14 @@ public class BulkActionGenerator extends Generator {
             createAction(pipe, options, objects);
 
             if (task != null) {
-                DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "taskIdentifier", "c")).setTextContent(generateTaskIdentifier());
+                // task oid
+                task.setAttribute("oid", UUID.randomUUID().toString());
+                // task archetype (bulk non-iterative for now)
+                Element assignment = DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "assignment", "c"));
+                Element targetRef = DOMUtil.createSubElement(assignment, new QName(Constants.COMMON_NS, "targetRef", "c"));
+                targetRef.setAttribute("oid", "00000000-0000-0000-0000-000000000508");
+                targetRef.setAttribute("type", "c:ArchetypeType");
+
                 DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "ownerRef", "c")).setAttribute("oid", "00000000-0000-0000-0000-000000000002");
                 DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "executionStatus", "c")).setTextContent(
                         options.isCreateSuspended() ? "suspended" : "runnable"
