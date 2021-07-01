@@ -7,6 +7,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -53,6 +54,8 @@ public class Environment implements Serializable, Comparable<Environment> {
 
     private String propertiesFilePath;
 
+    private List<String> nodeUrls;
+
     public Environment() {
         this(UUID.randomUUID().toString());
     }
@@ -76,6 +79,7 @@ public class Environment implements Serializable, Comparable<Environment> {
         this.proxyUsername = other.proxyUsername;
         this.proxyPassword = other.proxyPassword;
         this.propertiesFilePath = other.propertiesFilePath;
+        this.nodeUrls = other.nodeUrls;
     }
 
     public String getId() {
@@ -207,6 +211,14 @@ public class Environment implements Serializable, Comparable<Environment> {
         this.proxyPassword = proxyPassword;
     }
 
+    public List<String> getNodeUrls() {
+        return nodeUrls;
+    }
+
+    public void setNodeUrls(List<String> nodeUrls) {
+        this.nodeUrls = nodeUrls;
+    }
+
     @Override
     public int compareTo(@NotNull Environment o) {
         return String.CASE_INSENSITIVE_ORDER.compare(name, o.name);
@@ -236,7 +248,9 @@ public class Environment implements Serializable, Comparable<Environment> {
             return false;
         if (proxyPassword != null ? !proxyPassword.equals(that.proxyPassword) : that.proxyPassword != null)
             return false;
-        return propertiesFilePath != null ? propertiesFilePath.equals(that.propertiesFilePath) : that.propertiesFilePath == null;
+        if (propertiesFilePath != null ? !propertiesFilePath.equals(that.propertiesFilePath) : that.propertiesFilePath != null)
+            return false;
+        return nodeUrls != null ? nodeUrls.equals(that.nodeUrls) : that.nodeUrls == null;
     }
 
     @Override
@@ -255,6 +269,7 @@ public class Environment implements Serializable, Comparable<Environment> {
         result = 31 * result + (proxyUsername != null ? proxyUsername.hashCode() : 0);
         result = 31 * result + (proxyPassword != null ? proxyPassword.hashCode() : 0);
         result = 31 * result + (propertiesFilePath != null ? propertiesFilePath.hashCode() : 0);
+        result = 31 * result + (nodeUrls != null ? nodeUrls.hashCode() : 0);
         return result;
     }
 
