@@ -1,0 +1,8 @@
+<user xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      oid="bd94298c-485d-4c69-8978-2f2b4b5be04e">
+
+    <name>jdoe</name>
+    <description>Test user</description>
+    <givenName>John</givenName>
+    <familyName>Doe</familyName>
+</user>

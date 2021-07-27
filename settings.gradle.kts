@@ -61,4 +61,5 @@ dependencyResolutionManagement {
 
 include("midpoint-client")
 include("studio-idea-plugin")
+include("studio-cmd")
 

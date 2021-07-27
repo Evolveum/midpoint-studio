@@ -807,7 +807,7 @@ public class MidPointUtils {
 
     public static List<MidPointObject> parseProjectFile(VirtualFile file, String notificationKey) {
         try {
-            return ClientUtils.parseProjectFile(VfsUtil.virtualToIoFile(file), file.getCharset());
+            return ClientUtils.parseFile(VfsUtil.virtualToIoFile(file), file.getCharset());
         } catch (IOException ex) {
             if (notificationKey != null) {
                 MidPointUtils.publishExceptionNotification(null, MidPointUtils.class, notificationKey,

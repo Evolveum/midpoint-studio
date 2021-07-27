@@ -74,7 +74,7 @@ public class ClientUtils {
         return parseText(text, null);
     }
 
-    public static List<MidPointObject> parseProjectFile(File file, Charset charset) throws IOException {
+    public static List<MidPointObject> parseFile(File file, Charset charset) throws IOException {
         try (InputStream is = new FileInputStream(file)) {
             String text = IOUtils.toString(is, charset);
             return parseText(text, file);
