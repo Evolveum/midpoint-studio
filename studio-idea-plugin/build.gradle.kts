@@ -140,8 +140,7 @@ intellij {
 changelog {
     version = properties("pluginVersion")
     groups = emptyList()
-    headerParserRegex =
-        "\\d+\\.\\d+"       // this can be remove when we'll start using semantic versioning (e.g. 4.4.0)
+    headerParserRegex = "\\d+\\.\\d+" // this can be removed when we'll start using semantic versioning (e.g. 4.4.0)
 }
 
 // Configure detekt plugin.
@@ -191,7 +190,6 @@ tasks {
         // Get the latest available change notes from the changelog file
         changeNotes.set(provider { changelog.getLatest().toHTML() })
     }
-
 
     runPluginVerifier {
         ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
