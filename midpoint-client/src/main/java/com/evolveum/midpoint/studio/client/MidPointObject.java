@@ -15,6 +15,8 @@ public class MidPointObject {
 
     private boolean executable;
 
+    private boolean delta;
+
     private File file;                    // used to derive output file names (and to delete files)
 
     private int objectIndex;                    // object number in the resource (if applicable)
@@ -51,6 +53,7 @@ public class MidPointObject {
         o.wholeFile = object.wholeFile;
         o.oid = object.oid;
         o.name = object.name;
+        o.delta = object.delta;
 
         return o;
     }
@@ -141,5 +144,13 @@ public class MidPointObject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isDelta() {
+        return delta;
+    }
+
+    public void setDelta(boolean delta) {
+        this.delta = delta;
     }
 }

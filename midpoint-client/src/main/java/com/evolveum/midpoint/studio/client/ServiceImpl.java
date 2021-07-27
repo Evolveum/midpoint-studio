@@ -159,6 +159,48 @@ public class ServiceImpl implements Service {
     }
 
     @Override
+    public String modify(MidPointObject object, List<String> opts) throws IOException, AuthenticationException {
+        if (!object.isDelta()) {
+            throw new ClientException("Object " + object + " is not object delta");
+        }
+
+        if (StringUtils.isEmpty(object.getOid())) {
+            throw new ClientException("Object delta doesn't contain oid");
+        }
+
+        if (opts == null) {
+            opts = new ArrayList<>();
+        }
+
+        Map<String, Object> options = new HashMap<>();
+        opts.forEach(o -> options.put("options", o));
+
+        MidPointObject toBeModified;
+        try {
+            toBeModified = get(ObjectTypes.OBJECT.getClassDefinition(), object.getOid(), GetOperationOptions.createRawCollection());
+
+            if (toBeModified == null) {
+                throw new ObjectNotFoundException("Couldn't fetch object before modificaction to find out proper type");
+            }
+        } catch (IOException | ObjectNotFoundException ex) {
+            throw new ClientException("Couldn't fetch object before modification to find out proper type", ex);
+        }
+
+        String path = "/" + ObjectTypes.getRestTypeFromClass(toBeModified.getType().getClassDefinition()) + "/" + object.getOid();
+
+        Request req = context.build(path, options)
+                .patch(RequestBody.create(object.getContent(), ServiceContext.APPLICATION_XML))
+                .build();
+
+        try {
+            return executeRequest(req, String.class);
+        } catch (SchemaException ex) {
+            // shouldn't happen, there's no parsing involved
+            throw new ClientException("Couldn't modify object", ex);
+        }
+    }
+
+    @Override
     public String add(MidPointObject object) throws IOException, AuthenticationException {
         return add(object, null);
     }
@@ -311,7 +353,6 @@ public class ServiceImpl implements Service {
         if (root != null && root.getRaw()) {
 
         }
-
 
 
         String path = "/" + ObjectTypes.getRestTypeFromClass(type) + "/" + oid;

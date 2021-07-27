@@ -276,7 +276,13 @@ public class MidPointClient {
 
         UploadResponse response = new UploadResponse();
 
-        String oid = client.add(obj, options);
+        String oid;
+        if (obj.isDelta()) {
+            oid = client.modify(obj, options);
+        } else {
+            oid = client.add(obj, options);
+        }
+
         if (oid == null && obj.getOid() != null) {
             oid = obj.getOid();
         }

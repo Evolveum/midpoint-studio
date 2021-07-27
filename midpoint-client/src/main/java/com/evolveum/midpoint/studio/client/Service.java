@@ -33,6 +33,9 @@ public interface Service {
     String add(MidPointObject object, List<String> opts)
             throws IOException, AuthenticationException;
 
+    String modify(MidPointObject object, List<String> opts)
+            throws IOException, AuthenticationException;
+
     ExecuteScriptResponseType execute(String input)
             throws IOException, SchemaException, AuthenticationException;
 
