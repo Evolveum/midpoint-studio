@@ -30,6 +30,7 @@ dependencyResolutionManagement {
             version("testng", "6.14.3")
             version("xchart", "3.5.4")
             version("xml-apis", "1.4.01")
+            version("jackson", "2.12.3")
 
             alias("asciidoctorj-tabbed-code").to("com.bmuschko", "asciidoctorj-tabbed-code-extension").versionRef("asciidoctorj-tabbed-code")
             alias("common").to("com.evolveum.midpoint.infra", "common").versionRef("midpoint")
@@ -55,6 +56,8 @@ dependencyResolutionManagement {
             alias("stax").to("stax", "stax").versionRef("stax")
             alias("xchart").to("org.knowm.xchart", "xchart").versionRef("xchart")
             alias("xml-apis").to("xml-apis", "xml-apis").versionRef("xml-apis")
+            alias("jackson-databind").to("com.fasterxml.jackson.core", "jackson-databind").versionRef("jackson")
+            alias("jackson-dataformat-yaml").to("com.fasterxml.jackson.dataformat", "jackson-dataformat-yaml").versionRef("jackson")
         }
     }
 }

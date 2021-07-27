@@ -16,6 +16,9 @@ dependencies {
     implementation(libs.commons.lang)
     implementation(libs.logback.classic)
 
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.dataformat.yaml)
+
     testImplementation(libs.jupiter.api)
     testRuntimeOnly(libs.jupiter.engine)
 }
