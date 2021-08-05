@@ -7,8 +7,11 @@ import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.cmd.opts.EnvironmentOptions;
 import com.evolveum.midpoint.studio.cmd.opts.UploadOptions;
 import com.evolveum.midpoint.studio.cmd.util.StudioUtil;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,7 +22,19 @@ public class UploadAction extends Action<UploadOptions> {
 
     @Override
     public void execute() throws Exception {
+        String value = options.getData().getValue();
+        if (value != null) {
+            // todo process input
+
+            return;
+        }
+
+        File[] filesToProcess = StudioUtil.listFiles(options.getData());
+
+
+
         List<MidPointObject> objects = ClientUtils.parseFile(options.getData().getReference(), Charset.forName(options.getCharset()));
+        List<MidPointObject> filtered = ClientUtils.filterObjectTypeOnly(objects, false);
 
         // overwrite, isImport, raw
         Service service = buildClient();

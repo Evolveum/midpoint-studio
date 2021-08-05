@@ -4,11 +4,16 @@ import com.beust.jcommander.JCommander;
 import com.evolveum.midpoint.studio.cmd.Command;
 import com.evolveum.midpoint.studio.cmd.opts.BaseOptions;
 import com.evolveum.midpoint.studio.cmd.opts.EnvironmentOptions;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -93,5 +98,30 @@ public class StudioUtil {
         ex.printStackTrace(new PrintWriter(writer));
 
         return writer.toString();
+    }
+
+    public static File[] listFiles(FileReference ref, String... extensions) {
+        if (ref.getReference() == null) {
+            return new File[0];
+        }
+
+        List<File> result = new ArrayList<>();
+
+        File file = ref.getReference();
+
+        if (!file.exists()) {
+            return new File[0];
+        }
+
+        if (file.isDirectory()) {
+            result.addAll(FileUtils.listFiles(file, extensions, true));
+        } else {
+            String ext = FilenameUtils.getExtension(file.getName());
+            if (Arrays.asList(extensions).contains(ext)) {
+                result.add(file);
+            }
+        }
+
+        return result.toArray(new File[result.size()]);
     }
 }
