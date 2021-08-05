@@ -233,6 +233,11 @@
                 text="Generate Documentation"
                 icon="AllIcons.Actions.Annotate"/>
 
+        <action id="MidPoint.Action.CleanupFile"
+                class="com.evolveum.midpoint.studio.action.CleanupFileAction"
+                text="Cleanup File"
+                icon="AllIcons.Actions.ShowHiddens"/>
+
         <action id="MidPoint.Action.TestAction"
                 class="com.evolveum.midpoint.studio.action.TestAction"
                 text="Test Action"
@@ -270,6 +275,8 @@
                 <reference ref="MidPoint.Action.Refresh"/>
 
                 <reference ref="MidPoint.Action.DiffRemote"/>
+
+                <reference ref="MidPoint.Action.CleanupFile"/>
 
                 <separator/>
 
@@ -355,6 +362,10 @@
 
                 <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.CleanupFile"/>
 
             </group>
 
