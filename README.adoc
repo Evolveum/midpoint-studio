@@ -1,6 +1,6 @@
 = midscribe
 
-Tool that is able to generate documentation from midpoint configuration objects in asciidoc format and HTML export. Export to PDF is not implemented yet.
+Tool that is able to generate documentation from midpoint configuration objects in asciidoc format and HTML export.
 
 == How To Build
 
@@ -35,20 +35,23 @@ Usage: java [-Dlogback.configurationFile=logback.xml] -jar midscribe.jar [option
           -ao, --adoc-output
             AsciiDoc output file
           -e, --exclude
-            Exclude
+            Exclude files
             Default: []
           -ef, --export-format
             Export format
             Possible Values: [PDF, HTML]
           -eo, --export-output
             Export output file
+          -pf, --properties-file
+            Properties file
+            Default: midscribe.properties
           -i, --include
-            Include
+            Include files
             Default: []
           -s, --source-directory
-            Source directory
+            Source directory with XML files
           -t, --template
-            Template file
+            Template file. File should be ZIP containing "template" directory with Velocity templates or path to directory with templates. Main template is "documentation.vm"
 ```
 
 === Examples
