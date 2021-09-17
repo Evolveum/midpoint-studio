@@ -2,11 +2,12 @@ package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 import com.intellij.icons.AllIcons;
@@ -36,14 +37,15 @@ public class DiffRemoteAction extends BackgroundAction {
     public static final String NOTIFICATION_KEY = "Diff Remote Action";
 
     public DiffRemoteAction() {
-        super(NOTIFICATION_KEY, AllIcons.Actions.Diff, NOTIFICATION_KEY);
+        super("Diff Remote", AllIcons.Actions.Diff, NOTIFICATION_KEY);
     }
 
     @Override
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
-        MidPointUtils.updateServerActionState(evt);
+        boolean enabled = MidPointUtils.shouldEnableAction(evt);
+        evt.getPresentation().setEnabled(enabled);
     }
 
     @Override
@@ -93,10 +95,10 @@ public class DiffRemoteAction extends BackgroundAction {
             List<MidPointObject> objects = new ArrayList<>();
 
             RunnableUtils.runWriteActionAndWait(() -> {
-                file.refresh(false, true);
+                MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
 
-                List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
-                obj = MidPointObjectUtils.filterObjectTypeOnly(obj);
+                List<MidPointObject> obj = MidPointUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                obj = ClientUtils.filterObjectTypeOnly(obj);
 
                 objects.addAll(obj);
             });
@@ -116,17 +118,20 @@ public class DiffRemoteAction extends BackgroundAction {
 
                 try {
                     MidPointObject newObject = client.get(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    if (newObject == null) {
+                        missing++;
+
+                        mm.printToConsole(env, DiffRemoteAction.class, "Couldn't find object "
+                                + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+
+                        continue;
+                    }
 
                     MidPointObject obj = MidPointObject.copy(object);
                     obj.setContent(newObject.getContent());
                     remoteObjects.put(obj.getOid(), obj);
 
                     diffed.incrementAndGet();
-                } catch (ObjectNotFoundException ex) {
-                    missing++;
-
-                    mm.printToConsole(env, DiffRemoteAction.class, "Couldn't find object "
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
 
@@ -165,7 +170,7 @@ public class DiffRemoteAction extends BackgroundAction {
                     writer = new OutputStreamWriter(vf.getOutputStream(this), vf.getCharset());
 
                     if (deltas.size() > 1) {
-                        writer.write(MidPointObjectUtils.DELTAS_XML_PREFIX);
+                        writer.write(ClientUtils.DELTAS_XML_PREFIX);
                         writer.write('\n');
                     }
 
@@ -174,7 +179,7 @@ public class DiffRemoteAction extends BackgroundAction {
                     }
 
                     if (deltas.size() > 1) {
-                        writer.write(MidPointObjectUtils.DELTAS_XML_SUFFIX);
+                        writer.write(ClientUtils.DELTAS_XML_SUFFIX);
                         writer.write('\n');
                     }
                 } catch (Exception ex) {

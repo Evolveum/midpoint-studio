@@ -1,6 +1,10 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.PrismParser;
+import com.evolveum.midpoint.prism.PrismSerializer;
+import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.RetrieveOption;
@@ -8,14 +12,14 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.impl.client.*;
+import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
-import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -29,10 +33,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * TODO CLEAN THIS WHOLE CLASS AND UNDERLYING CLIENT API, IT'S A MESS.
- * <p>
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointClient {
@@ -45,32 +48,51 @@ public class MidPointClient {
 
     private Environment environment;
 
-    private MidPointService midPointManager;
-
-    private Service client;
-
     private boolean suppressNotifications;
 
     private boolean suppressConsole;
 
+    private Optional<Console> console;
+
+    private Service client;
+
     public MidPointClient(Project project, @NotNull Environment environment) {
-        this(project, environment, false, false);
+        this(project, environment, null);
+    }
+
+    public MidPointClient(Project project, @NotNull Environment environment, MidPointSettings settings) {
+        this(project, environment, settings, false, false);
     }
 
     public MidPointClient(Project project, @NotNull Environment environment, boolean suppressNotifications, boolean suppressConsole) {
+        this(project, environment, null, suppressNotifications, suppressConsole);
+    }
+
+    public MidPointClient(Project project, @NotNull Environment environment, MidPointSettings settings, boolean suppressNotifications, boolean suppressConsole) {
         this.project = project;
         this.environment = environment;
         this.suppressNotifications = suppressNotifications;
         this.suppressConsole = suppressConsole;
 
-        if (project != null) {
-            this.midPointManager = MidPointService.getInstance(project);
+        if (settings == null) {
+            if (project != null) {
+                MidPointService ms = MidPointService.getInstance(project);
+                settings = ms.getSettings();
+            } else {
+                settings = MidPointSettings.createDefaultSettings();
+            }
         }
 
-        init();
+        if (project != null) {
+            console = Optional.of(new MidPointManagerConsole(project));
+        } else {
+            console = Optional.ofNullable(null);
+        }
+
+        init(settings);
     }
 
-    private void init() {
+    private void init(MidPointSettings settings) {
         LOG.debug("Initialization of rest client for environment " + environment.getName());
         long time = System.currentTimeMillis();
 
@@ -85,23 +107,22 @@ public class MidPointClient {
                     .proxyServerType(environment.getProxyServerType())
                     .proxyUsername(environment.getProxyUsername())
                     .proxyPassword(environment.getProxyPassword())
-                    .ignoreSSLErrors(environment.isIgnoreSslErrors());
+                    .ignoreSSLErrors(environment.isIgnoreSslErrors())
+                    .responseTimeout(settings.getRestResponseTimeout());
 
             factory.messageListener((message) -> {
 
-                if (midPointManager == null || !midPointManager.getSettings().isPrintRestCommunicationToConsole()) {
+                if (!settings.isPrintRestCommunicationToConsole() || suppressConsole) {
                     return;
                 }
 
-                if (!suppressConsole) {
-                    midPointManager.printToConsole(environment, MidPointClient.class, message, null, ConsoleViewContentType.LOG_INFO_OUTPUT);
-                }
+                console.ifPresent(c -> c.printToConsole(environment, MidPointClient.class, message, null, Console.ContentType.INFO_OUTPUT));
             });
 
             client = factory.create();
 
-            if (midPointManager != null && !suppressConsole) {
-                midPointManager.printToConsole(environment, MidPointClient.class, "Client created", null, ConsoleViewContentType.LOG_INFO_OUTPUT);
+            if (!suppressConsole) {
+                console.ifPresent(c -> c.printToConsole(environment, MidPointClient.class, "Client created", null, Console.ContentType.INFO_OUTPUT));
             }
         } catch (Exception ex) {
             handleGenericException("Couldn't create rest client", ex);
@@ -123,9 +144,11 @@ public class MidPointClient {
     }
 
     private void printToConsole(String message) {
-        if (midPointManager != null && !suppressConsole) {
-            midPointManager.printToConsole(getEnvironment(), MidPointClient.class, message);
+        if (suppressConsole) {
+            return;
         }
+
+        console.ifPresent(c -> c.printToConsole(getEnvironment(), MidPointClient.class, message));
     }
 
     private Collection<SelectorOptions<GetOperationOptions>> buildSearchSelectorOptions(boolean raw) {
@@ -147,7 +170,7 @@ public class MidPointClient {
 
         printToConsole("Starting objects search for " + type.getSimpleName() + ", " + options);
 
-        SearchResult result = null;
+        SearchResult result = new SearchResult();
         try {
             result = client.search(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
 
@@ -163,7 +186,7 @@ public class MidPointClient {
      * todo "move" to MidPointObject like apis, not PrismObject here if not necessary
      */
     @Deprecated
-    public <O extends ObjectType> SearchResultList list(Class<O> type, ObjectQuery query, boolean raw) {
+    public <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query, boolean raw) {
         Collection<SelectorOptions<GetOperationOptions>> options = buildSearchSelectorOptions(raw);
 
         return list(type, query, options);
@@ -195,13 +218,21 @@ public class MidPointClient {
         }
     }
 
-    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) throws ObjectNotFoundException {
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) {
         printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
 
         MidPointObject result = null;
         try {
-            Collection<SelectorOptions<GetOperationOptions>> options =
-                    SelectorOptions.createCollection(GetOperationOptions.createRaw());
+            Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
+            if (opts.raw()) {
+                options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
+            }
+
+            if (LookupTableType.class.equals(type)) {
+                options.add(SelectorOptions.create(UniformItemPath.create(LookupTableType.F_ROW),
+                        GetOperationOptions.createRetrieve(RetrieveOption.INCLUDE)));
+            }
+
             result = client.get(ObjectTypes.getObjectType(type).getClassDefinition(), oid, options);
 
             printToConsole("Get done");
@@ -245,7 +276,13 @@ public class MidPointClient {
 
         UploadResponse response = new UploadResponse();
 
-        String oid = client.add(obj, options);
+        String oid;
+        if (obj.isDelta()) {
+            oid = client.modify(obj, options);
+        } else {
+            oid = client.add(obj, options);
+        }
+
         if (oid == null && obj.getOid() != null) {
             oid = obj.getOid();
         }
@@ -325,19 +362,29 @@ public class MidPointClient {
     public PrismParser createParser(InputStream data) {
         PrismContext ctx = getPrismContext();
 
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
+        return ClientUtils.createParser(ctx, data);
     }
 
     public PrismParser createParser(String xml) {
         PrismContext ctx = getPrismContext();
 
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(xml).language(PrismContext.LANG_XML).context(parsingContext);
+        return ClientUtils.createParser(ctx, xml);
     }
 
     public TestConnectionResult testConnection() {
         return client.testServiceConnection();
+    }
+
+    public <O extends ObjectType> OperationResult recompute(Class<O> type, String oid) {
+        printToConsole("Starting recompute for " + oid + "(" + type.getSimpleName() + ")");
+
+        try {
+            return client.recompute(type, oid);
+        } catch (Exception ex) {
+            handleGenericException("Error occurred while recomputing object", ex);
+        }
+
+        return null;
     }
 
     public List<String> getSourceProfiles() throws IOException {

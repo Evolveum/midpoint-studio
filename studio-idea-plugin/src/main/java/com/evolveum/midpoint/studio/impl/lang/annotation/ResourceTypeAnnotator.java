@@ -9,6 +9,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.SynchronizationActio
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SynchronizationReactionType;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
@@ -92,13 +93,17 @@ public class ResourceTypeAnnotator implements Annotator {
             found = true;
 
             if (action.isDeprecated()) {
-                holder.createWarningAnnotation(element, "Synchronization action handlerUri is deprecated");
+                holder.newAnnotation(HighlightSeverity.WARNING, "Synchronization action handlerUri is deprecated")
+                        .range(element)
+                        .create();
                 break;
             }
         }
 
         if (!found) {
-            holder.createErrorAnnotation(element, "Unknown synchronization action handlerUri");
+            holder.newAnnotation(HighlightSeverity.ERROR, "Unknown synchronization action handlerUri")
+                    .range(element)
+                    .create();
         }
     }
 
@@ -154,8 +159,10 @@ public class ResourceTypeAnnotator implements Annotator {
         }
 
         if (inboundFound && !outboundFound) {
-            holder.createWarningAnnotation(element, "Tolerant=false means MidPoint will try to remove values " +
-                    "even if there's no outbound in this attribute mapping.");
+            holder.newAnnotation(HighlightSeverity.WARNING, "Tolerant=false means MidPoint will try to remove values " +
+                    "even if there's no outbound in this attribute mapping.")
+                    .range(element)
+                    .create();
         }
     }
 }

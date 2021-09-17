@@ -1,21 +1,19 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.common.LocalizationService;
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.client.ClientException;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.client.ClientException;
-import com.evolveum.midpoint.studio.impl.client.LocalizationServiceImpl;
-import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
-import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.annotation.Experimental;
-import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
@@ -25,18 +23,22 @@ import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
 import com.intellij.facet.FacetManager;
-import com.intellij.ide.DataManager;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
@@ -44,6 +46,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManagerEx;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.XmlPatterns;
@@ -63,15 +66,15 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import java.awt.Color;
 import java.awt.*;
-import java.io.InputStream;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,8 +90,6 @@ public class MidPointUtils {
     public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart());
 
     public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
-
-    public static final String NS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 
     private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
 
@@ -111,12 +112,6 @@ public class MidPointUtils {
         }
 
         NAMES = names.toArray(new String[names.size()]);
-    }
-
-    @Deprecated
-    public static Project getCurrentProject() {
-        DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
-        return DataKeys.PROJECT.getData(dataContext);
     }
 
     public static Color generateAwtColor() {
@@ -602,7 +597,7 @@ public class MidPointUtils {
             return null;
         }
 
-        XmlAttribute xsiType = tag.getAttribute("type", NS_XSI);
+        XmlAttribute xsiType = tag.getAttribute("type", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
         if (xsiType == null || xsiType.getValue() == null) {
             return null;
         }
@@ -711,7 +706,7 @@ public class MidPointUtils {
                         .withParent(
                                 XmlPatterns.xmlAttribute("oid").withParent(
                                         XmlPatterns.xmlTag().withNamespace(SchemaConstantsGenerated.NS_COMMON)
-                                                .withName(NAMES)))).accepts(element);
+                                                .withLocalName(NAMES)))).accepts(element);
     }
 
     public static JBScrollPane borderlessScrollPane(@NotNull JComponent component) {
@@ -730,26 +725,38 @@ public class MidPointUtils {
         return fem.openFile(file, true, true);
     }
 
-    public static void updateServerActionState(AnActionEvent evt) {
+    public static boolean isVisibleWithMidPointFacet(AnActionEvent evt) {
         if (evt.getProject() == null) {
-            return;
+            return false;
         }
 
         boolean hasFacet = MidPointUtils.hasMidPointFacet(evt.getProject());
-        if (!hasFacet) {
-            evt.getPresentation().setVisible(false);
-            return;
+        evt.getPresentation().setVisible(hasFacet);
+
+        return hasFacet;
+    }
+
+    public static boolean shouldEnableAction(AnActionEvent evt) {
+        if (!isVisibleWithMidPointFacet(evt)) {
+            return false;
         }
 
+        return isEnvironmentAndFileSelected(evt);
+    }
+
+    public static boolean isMidpointObjectFileSelected(AnActionEvent evt) {
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
                 (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
 
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
+        return toProcess.size() > 0;
+    }
+
+    public static boolean isEnvironmentAndFileSelected(AnActionEvent evt) {
         EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
 
-        boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
-        evt.getPresentation().setEnabled(enabled);
+        return em.getSelected() != null && isMidpointObjectFileSelected(evt);
     }
 
     public static Module guessMidpointModule(Project project) {
@@ -777,41 +784,54 @@ public class MidPointUtils {
         return modules[0];
     }
 
-    public static PrismSerializer<String> getSerializer(PrismContext prismContext) {
-        return prismContext.xmlSerializer()
-                .options(SerializationOptions.createSerializeReferenceNames());
-    }
-
-    public static PrismParser createParser(PrismContext ctx, InputStream data) {
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
-    }
-
-    public static PrismParser createParser(PrismContext ctx, String xml) {
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(xml).language(PrismContext.LANG_XML).context(parsingContext);
-    }
-
-    public static String serialize(PrismContext prismContext, Object object) throws SchemaException {
-        final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
-
-        PrismSerializer<String> serializer = getSerializer(prismContext);
-
-        String result;
-        if (object instanceof ObjectType) {
-            ObjectType ot = (ObjectType) object;
-            result = serializer.serialize(ot.asPrismObject());
-        } else if (object instanceof PrismObject) {
-            result = serializer.serialize((PrismObject<?>) object);
-        } else if (object instanceof OperationResult) {
-            LocalizationService localizationService = new LocalizationServiceImpl();
-            Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
-            OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
-            result = serializer.serializeAnyData(operationResultType, fakeQName);
-        } else {
-            result = serializer.serializeAnyData(object, fakeQName);
+    public static List<ObjectTypes> getConcreteObjectTypes() {
+        List<ObjectTypes> rv = new ArrayList<>();
+        for (ObjectTypes t : ObjectTypes.values()) {
+            if (!Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
+                rv.add(t);
+            }
         }
+        return rv;
+    }
 
-        return result;
+    public static void forceSaveAndRefresh(Project project, VirtualFile file) {
+        file.refresh(false, true);
+
+        FileEditor[] editors = FileEditorManager.getInstance(project).getEditors(file);
+        for (FileEditor editor : editors) {
+            if (!(editor instanceof TextEditor)) {
+                continue;
+            }
+
+            TextEditor textEditor = (TextEditor) editor;
+            Document doc = textEditor.getEditor().getDocument();
+            FileDocumentManager.getInstance().saveDocument(doc);
+        }
+    }
+
+    public static List<MidPointObject> parseText(String text, String notificationKey) {
+        try {
+            return ClientUtils.parseText(text);
+        } catch (RuntimeException ex) {
+            String msg = "Couldn't parse text '" + org.apache.commons.lang.StringUtils.abbreviate(text, 10) + "'";
+
+            if (notificationKey != null) {
+                MidPointUtils.publishExceptionNotification(null, MidPointUtils.class, notificationKey, msg, ex);
+            }
+
+            return new ArrayList<>();
+        }
+    }
+
+    public static List<MidPointObject> parseProjectFile(VirtualFile file, String notificationKey) {
+        try {
+            return ClientUtils.parseProjectFile(VfsUtil.virtualToIoFile(file), file.getCharset());
+        } catch (IOException ex) {
+            if (notificationKey != null) {
+                MidPointUtils.publishExceptionNotification(null, MidPointUtils.class, notificationKey,
+                        "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
+            }
+            return new ArrayList<>();
+        }
     }
 }

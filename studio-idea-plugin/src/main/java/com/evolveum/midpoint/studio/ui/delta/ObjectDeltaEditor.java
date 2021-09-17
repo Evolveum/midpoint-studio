@@ -93,4 +93,10 @@ public class ObjectDeltaEditor implements FileEditor, UserDataHolder, DumbAware 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T value) {
     }
+
+    @NotNull
+    @Override
+    public @Nullable VirtualFile getFile() {
+        return file;
+    }
 }

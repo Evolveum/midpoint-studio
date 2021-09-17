@@ -35,6 +35,10 @@ public class Constants {
 	public static final QName Q_PATH = new QName(QUERY_NS, "path");
 	public static final QName Q_TYPE = new QName(QUERY_NS, "type");
 
+	/**
+	 * now in client/midpointutils
+	 */
+	@Deprecated
 	public static final List<String> SCRIPTING_ACTIONS = Arrays.asList(
 			"executeScript",
 			"scriptingExpression",
