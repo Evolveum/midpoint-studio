@@ -51,6 +51,7 @@ public class MappingEvaluationOverviewProvider implements OverviewProvider<Mappi
             PrismValueNode.create("Text trace", trace.getTextTrace(), root);
             PrismValueNode.create("Containing object", trace.getContainingObjectRef(), root);
             TextNode.create("Context", node.getContext(), root);
+            PrismValueNode.create("State properties", trace.getStateProperties(), root);
         }
     }
 
