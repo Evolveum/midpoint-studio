@@ -38,6 +38,7 @@ public class BrowseTableModel extends AbstractTreeTableModel {
 
     public void setData(List<ObjectType> data) {
         this.objects = data;
+
         root = new DefaultMutableTreeTableNode();
 
         if (data == null || data.isEmpty()) {
@@ -122,6 +123,9 @@ public class BrowseTableModel extends AbstractTreeTableModel {
     }
 
     public List<ObjectType> getObjects() {
+        if (objects == null) {
+            objects = new ArrayList<>();
+        }
         return objects;
     }
 
@@ -143,12 +147,16 @@ public class BrowseTableModel extends AbstractTreeTableModel {
                 ObjectTypes type = (ObjectTypes) obj;
                 data.forEach(o -> {
                     if (type.getClassDefinition().equals(o.getClass())) {
-                        selected.add(o);
+                        if (!selected.contains(o)) {
+                            selected.add(o);
+                        }
                     }
                 });
             } else if (obj instanceof ObjectType) {
                 ObjectType o = (ObjectType) obj;
-                selected.add(o);
+                if (!selected.contains(o)) {
+                    selected.add(o);
+                }
             }
         }
 

@@ -51,6 +51,10 @@ public class ProjectConfigurationPanel extends JPanel {
 
     }
 
+    public boolean isModified() {
+        return midpointSettingsPanel.isModified() || environmentsPanel.isModified();
+    }
+
     public ProjectSettings getSettings() {
         ProjectSettings settings = new ProjectSettings();
 
@@ -69,7 +73,7 @@ public class ProjectConfigurationPanel extends JPanel {
 
     private void createUIComponents() {
         midpointSettingsPanel = new MidPointSettingsPanel(settings.getMidPointSettings());
-        environmentsPanel = new EnvironmentsPanel(null, settings.getEnvironmentSettings());
+        environmentsPanel = new EnvironmentsPanel(null, settings.getMidPointSettings(), settings.getEnvironmentSettings());
     }
 
     /**
@@ -97,6 +101,8 @@ public class ProjectConfigurationPanel extends JPanel {
         if (!Objects.equals(pwd1, pwd2)) {
             throw new ConfigurationException("Master passwords doesn't match");
         }
+
+        midpointSettingsPanel.validateData();
 
         return true;
     }

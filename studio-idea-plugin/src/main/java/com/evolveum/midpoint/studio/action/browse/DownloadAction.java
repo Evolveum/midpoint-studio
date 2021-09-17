@@ -1,13 +1,12 @@
 package com.evolveum.midpoint.studio.action.browse;
 
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismSerializer;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.client.SearchResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointObjectUtils;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -16,7 +15,6 @@ import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -51,8 +49,12 @@ public class DownloadAction extends BackgroundAction {
 
     private List<Pair<String, ObjectTypes>> oids;
 
+    private boolean overwrite;
+
+    private boolean openAfterDownload = true;
+
     public DownloadAction(@NotNull Environment environment, @NotNull ObjectTypes type, ObjectQuery query,
-                          boolean showOnly, boolean raw) {
+                          boolean showOnly, boolean raw, boolean overwrite) {
         super(TASK_TITLE);
 
         this.type = type;
@@ -61,6 +63,7 @@ public class DownloadAction extends BackgroundAction {
         this.environment = environment;
         this.showOnly = showOnly;
         this.raw = raw;
+        this.overwrite = overwrite;
     }
 
     public DownloadAction(@NotNull Environment environment, @NotNull List<Pair<String, ObjectTypes>> oids, boolean showOnly, boolean raw) {
@@ -73,6 +76,14 @@ public class DownloadAction extends BackgroundAction {
         this.raw = raw;
     }
 
+    public boolean isOpenAfterDownload() {
+        return openAfterDownload;
+    }
+
+    public void setOpenAfterDownload(boolean openAfterDownload) {
+        this.openAfterDownload = openAfterDownload;
+    }
+
     @Override
     protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
         if (showOnly) {
@@ -82,14 +93,13 @@ public class DownloadAction extends BackgroundAction {
         }
     }
 
-    private void showOnly(AnActionEvent evt, ProgressIndicator indicator) {
+    public void showOnly(AnActionEvent evt, ProgressIndicator indicator) {
+        indicator.setIndeterminate(true);
+
         LOG.debug("Setting up midpoint client");
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
 
         Project project = evt.getProject();
-
-        PrismContext ctx = client.getPrismContext();
-        PrismSerializer<String> serializer = ctx.serializerFor(PrismContext.LANG_XML);
 
         RunnableUtils.runWriteActionAndWait(() -> {
             BufferedWriter out = null;
@@ -101,22 +111,22 @@ public class DownloadAction extends BackgroundAction {
 
                 out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
                 if (oids.size() > 1) {
-                    out.write(MidPointObjectUtils.OBJECTS_XML_PREFIX);
+                    out.write(ClientUtils.OBJECTS_XML_PREFIX);
                 }
 
                 if (oids != null) {
-                    showByOid(client, serializer, out);
+                    showByOid(client, out);
                 } else {
-                    showByQuery(client, serializer, out);
+                    showByQuery(client, out);
                 }
 
                 if (oids.size() > 1) {
-                    out.write(MidPointObjectUtils.OBJECTS_XML_SUFFIX);
+                    out.write(ClientUtils.OBJECTS_XML_SUFFIX);
                 }
 
                 MidPointUtils.openFile(project, file);
             } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
                         "Exception occurred when preparing show only file " + (file != null ? file.getName() : null), ex);
             } finally {
                 IOUtils.closeQuietly(out);
@@ -124,101 +134,137 @@ public class DownloadAction extends BackgroundAction {
         });
     }
 
-    private void showByOid(MidPointClient client, PrismSerializer<String> serializer, Writer out) {
+    private void showByOid(MidPointClient client, Writer out) {
         for (Pair<String, ObjectTypes> oid : oids) {
             try {
-                PrismObject object = client.get(oid.getSecond().getClassDefinition(), oid.getFirst(), new SearchOptions().raw(raw));
-                String xml = serializer.serialize(object.getValue(), object.getElementName().asSingleName());
+                MidPointObject object = client.get(oid.getSecond().getClassDefinition(), oid.getFirst(), new SearchOptions().raw(raw));
+                if (object == null) {
+                    continue;
+                }
 
-                IOUtils.write(xml, out);
+                IOUtils.write(object.getContent(), out);
             } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
                         "Exception occurred when getting object " + oid.getFirst() + " ("
                                 + oid.getSecond().getTypeQName().getLocalPart() + ")", ex);
             }
         }
     }
 
-    private void showByQuery(MidPointClient client, PrismSerializer<String> serializer, Writer out) {
+    private void showByQuery(MidPointClient client, Writer out) {
         // todo implement later
     }
 
-    private void download(AnActionEvent evt, ProgressIndicator indicator) {
+    public void download(AnActionEvent evt, ProgressIndicator indicator) {
+        indicator.setIndeterminate(true);
+
         LOG.debug("Setting up midpoint client");
         MidPointClient client = new MidPointClient(evt.getProject(), environment);
-
-        PrismContext ctx = client.getPrismContext();
-        PrismSerializer<String> serializer = ctx.serializerFor(PrismContext.LANG_XML);
 
         BufferedWriter out = null;
         try {
             indicator.setFraction(0d);
 
             if (oids != null) {
-                downloadByOid(evt.getProject(), client, serializer);
+                downloadByOid(evt.getProject(), client);
             } else {
-                downloadByQuery(client, serializer);
+                downloadByQuery(client);
             }
         } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY, "Exception occurred during download", ex);
+            MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY, "Exception occurred during download", ex);
         } finally {
             IOUtils.closeQuietly(out);
         }
     }
 
-    private void downloadByOid(Project project, MidPointClient client, PrismSerializer<String> serializer) {
+    private void downloadByOid(Project project, MidPointClient client) {
         List<VirtualFile> files = new ArrayList<>();
 
         for (Pair<String, ObjectTypes> pair : oids) {
             try {
                 LOG.debug("Downloading " + pair);
 
-                PrismObject obj = client.get(pair.getSecond().getClassDefinition(), pair.getFirst(), new SearchOptions().raw(raw));
+                MidPointObject obj = client.get(pair.getSecond().getClassDefinition(), pair.getFirst(), new SearchOptions().raw(raw));
                 if (obj == null) {
                     continue;
                 }
-
-                LOG.debug("Serializing object " + obj);
-                String xml = serializer.serialize(obj);
 
                 LOG.debug("Storing file");
 
                 RunnableUtils.runWriteActionAndWait(() -> {
 
-                    VirtualFile file = null;
-                    Writer out = null;
-                    try {
-                        file = FileUtils.createFile(project, environment,
-                                obj.getCompileTimeClass(), obj.getOid(), MidPointUtils.getOrigFromPolyString(obj.getName()));
-
-                        out = new BufferedWriter(
-                                new OutputStreamWriter(file.getOutputStream(DownloadAction.this), file.getCharset()));
-
-                        IOUtils.write(xml, out);
-
+                    VirtualFile file = saveFile(project, obj);
+                    if (file != null) {
                         files.add(file);
-                    } catch (IOException ex) {
-                        MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
-                                "Exception occurred when serializing object to file " + (file != null ? file.getName() : null), ex);
-                    } finally {
-                        IOUtils.closeQuietly(out);
                     }
                 });
 
                 LOG.debug("File saved");
             } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(NOTIFICATION_KEY,
+                MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
                         "Exception occurred when getting object " + pair.getFirst() + " ("
                                 + pair.getSecond().getTypeQName().getLocalPart() + ")", ex);
             }
         }
 
-        if (!files.isEmpty()) {
+        if (!files.isEmpty() && openAfterDownload) {
             ApplicationManager.getApplication().invokeAndWait(() -> MidPointUtils.openFile(project, files.get(0)));
         }
     }
 
-    private void downloadByQuery(MidPointClient client, PrismSerializer<String> serializer) {
-        // todo implement later
+    private void downloadByQuery(MidPointClient client) {
+        List<VirtualFile> files = new ArrayList<>();
+
+        Project project = client.getProject();
+
+        try {
+            SearchResult result = client.search(type.getClassDefinition(), query, raw);
+            if (result == null || result.getObjects() == null) {
+                return;
+            }
+
+            LOG.debug("Storing file");
+
+            RunnableUtils.runWriteActionAndWait(() -> {
+
+                for (MidPointObject obj : result.getObjects()) {
+                    VirtualFile file = saveFile(project, obj);
+                    if (file != null) {
+                        files.add(file);
+                    }
+                }
+            });
+
+            LOG.debug("Files saved");
+        } catch (Exception ex) {
+            MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
+                    "Exception occurred when searching for " + type.getValue(), ex);
+        }
+
+        if (!files.isEmpty() && openAfterDownload) {
+            ApplicationManager.getApplication().invokeAndWait(() -> MidPointUtils.openFile(project, files.get(0)));
+        }
+    }
+
+    private VirtualFile saveFile(Project project, MidPointObject obj) {
+        VirtualFile file = null;
+        Writer out = null;
+        try {
+            file = FileUtils.createFile(project, environment, obj.getType().getClassDefinition(), obj.getOid(), obj.getName(), overwrite);
+
+            out = new BufferedWriter(
+                    new OutputStreamWriter(file.getOutputStream(DownloadAction.this), file.getCharset()));
+
+            IOUtils.write(obj.getContent(), out);
+
+            return file;
+        } catch (IOException ex) {
+            MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
+                    "Exception occurred when serializing object to file " + (file != null ? file.getName() : null), ex);
+        } finally {
+            IOUtils.closeQuietly(out);
+        }
+
+        return null;
     }
 }

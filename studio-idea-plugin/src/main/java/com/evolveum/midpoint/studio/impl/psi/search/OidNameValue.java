@@ -2,6 +2,8 @@ package com.evolveum.midpoint.studio.impl.psi.search;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 
+import java.util.Objects;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -45,10 +47,10 @@ public class OidNameValue {
 
         OidNameValue that = (OidNameValue) o;
 
-        if (oid != null ? !oid.equals(that.oid) : that.oid != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (!Objects.equals(oid, that.oid)) return false;
+        if (!Objects.equals(name, that.name)) return false;
         if (type != that.type) return false;
-        return source != null ? source.equals(that.source) : that.source == null;
+        return Objects.equals(source, that.source);
     }
 
     @Override

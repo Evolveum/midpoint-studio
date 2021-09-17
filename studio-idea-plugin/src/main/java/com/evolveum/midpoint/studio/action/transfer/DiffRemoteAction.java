@@ -1,16 +1,15 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.delta.ObjectDelta;
-import com.evolveum.midpoint.schema.DeltaConvertor;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
+import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
+import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 import com.intellij.icons.AllIcons;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -22,7 +21,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -39,14 +37,15 @@ public class DiffRemoteAction extends BackgroundAction {
     public static final String NOTIFICATION_KEY = "Diff Remote Action";
 
     public DiffRemoteAction() {
-        super(NOTIFICATION_KEY, AllIcons.Actions.Diff, NOTIFICATION_KEY);
+        super("Diff Remote", AllIcons.Actions.Diff, NOTIFICATION_KEY);
     }
 
     @Override
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
-        MidPointUtils.updateServerActionState(evt);
+        boolean enabled = MidPointUtils.shouldEnableAction(evt);
+        evt.getPresentation().setEnabled(enabled);
     }
 
     @Override
@@ -96,15 +95,17 @@ public class DiffRemoteAction extends BackgroundAction {
             List<MidPointObject> objects = new ArrayList<>();
 
             RunnableUtils.runWriteActionAndWait(() -> {
-                file.refresh(false, true);
+                MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
 
-                List<MidPointObject> obj = MidPointObjectUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                List<MidPointObject> obj = MidPointUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                obj = ClientUtils.filterObjectTypeOnly(obj);
+
                 objects.addAll(obj);
             });
 
             if (objects.isEmpty()) {
                 skipped++;
-                mm.printToConsole(DiffRemoteAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
+                mm.printToConsole(env, DiffRemoteAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
                 continue;
             }
 
@@ -116,22 +117,25 @@ public class DiffRemoteAction extends BackgroundAction {
                 }
 
                 try {
-                    String newObject = client.getRaw(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    MidPointObject newObject = client.get(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    if (newObject == null) {
+                        missing++;
+
+                        mm.printToConsole(env, DiffRemoteAction.class, "Couldn't find object "
+                                + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+
+                        continue;
+                    }
 
                     MidPointObject obj = MidPointObject.copy(object);
-                    obj.setContent(newObject);
+                    obj.setContent(newObject.getContent());
                     remoteObjects.put(obj.getOid(), obj);
 
                     diffed.incrementAndGet();
-                } catch (ObjectNotFoundException ex) {
-                    missing++;
-
-                    mm.printToConsole(DiffRemoteAction.class, "Couldn't find object "
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
                 } catch (Exception ex) {
                     failed.incrementAndGet();
 
-                    mm.printToConsole(DiffRemoteAction.class, "Error getting object"
+                    mm.printToConsole(env, DiffRemoteAction.class, "Error getting object"
                             + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
             }
@@ -149,13 +153,15 @@ public class DiffRemoteAction extends BackgroundAction {
                             continue;
                         }
 
+                        // todo expand local content before its used for comparing
                         PrismObject localObject = client.parseObject(local.getContent());
                         PrismObject remoteObject = client.parseObject(remote.getContent());
 
-                        ObjectDelta delta = localObject.diff(remoteObject);
-                        ObjectDeltaType odt = DeltaConvertor.toObjectDeltaType(delta);
+                        ObjectDeltaObjectType odo = new ObjectDeltaObjectType();
+                        odo.setOldObject((ObjectType) localObject.asObjectable());
+                        odo.setNewObject((ObjectType) remoteObject.asObjectable());
 
-                        String xml = client.serialize(odt);
+                        String xml = client.serialize(odo);
                         deltas.add(xml);
                     }
 
@@ -164,7 +170,7 @@ public class DiffRemoteAction extends BackgroundAction {
                     writer = new OutputStreamWriter(vf.getOutputStream(this), vf.getCharset());
 
                     if (deltas.size() > 1) {
-                        writer.write(MidPointObjectUtils.DELTAS_XML_PREFIX);
+                        writer.write(ClientUtils.DELTAS_XML_PREFIX);
                         writer.write('\n');
                     }
 
@@ -173,13 +179,13 @@ public class DiffRemoteAction extends BackgroundAction {
                     }
 
                     if (deltas.size() > 1) {
-                        writer.write(MidPointObjectUtils.DELTAS_XML_SUFFIX);
+                        writer.write(ClientUtils.DELTAS_XML_SUFFIX);
                         writer.write('\n');
                     }
-                } catch (SchemaException | IOException ex) {
+                } catch (Exception ex) {
                     failed.incrementAndGet();
 
-                    mm.printToConsole(DiffRemoteAction.class, "Failed to compare file " + file.getPath(), ex);
+                    mm.printToConsole(env, DiffRemoteAction.class, "Failed to compare file " + file.getPath(), ex);
                 } finally {
                     IOUtils.closeQuietly(writer);
                 }

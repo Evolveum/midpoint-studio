@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.FacetType;
 import com.intellij.facet.FacetTypeRegistry;
@@ -93,19 +94,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
     @Override
     public boolean isModified() {
-        if (settings == null || settings.getSettings() == null) {
-            return false;
-        }
-
-        ProjectSettings pSettings = new ProjectSettings();
-
-        MidPointService mm = MidPointService.getInstance(project);
-        pSettings.setMidPointSettings(mm.getSettings());
-
-        EnvironmentService em = EnvironmentService.getInstance(project);
-        pSettings.setEnvironmentSettings(em.getFullSettings());
-
-        return !Objects.equals(pSettings, settings.getSettings());
+        return settings != null && settings.isModified();
     }
 
     @Override
@@ -162,13 +151,14 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
     }
 
     private void validateFacet() {
-        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-        ModuleManager mm = ModuleManager.getInstance(project);
-        Module[] modules = mm.getModules();
-        if (modules == null || modules.length == 0) {
+        Module module = MidPointUtils.guessMidpointModule(project);
+        if (module == null) {
             return;
         }
-        FacetManager fm = FacetManager.getInstance(modules[0]);
+
+        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
+        FacetManager fm = FacetManager.getInstance(module);
+
         if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) == null) {
             fm.addFacet(facetType, facetType.getDefaultFacetName(), null);
         }

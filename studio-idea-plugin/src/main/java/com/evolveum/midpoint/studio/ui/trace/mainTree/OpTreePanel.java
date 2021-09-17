@@ -128,10 +128,10 @@ public class OpTreePanel extends JPanel {
 
         group.add(MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> traceTreeTable.expandAll()));
         group.add(MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> traceTreeTable.collapseAll()));
-        group.add(MidPointUtils.createAnAction("Show direct children", AllIcons.Welcome.CreateNewProject, e -> setChildrenVisible(false)));
+        group.add(MidPointUtils.createAnAction("Show direct children", AllIcons.Welcome.CreateNewProjectTab, e -> setChildrenVisible(false)));
         group.add(MidPointUtils.createAnAction("Show all children", AllIcons.Actions.ShowAsTree, e -> setChildrenVisible(true)));
         group.add(MidPointUtils.createAnAction("Hide selected", AllIcons.General.HideToolWindow, e -> hideSelected(false)));
-        group.add(MidPointUtils.createAnAction("Hide selected (tree)", MidPointIcons.ACTION_DELETE_TAG_HOVER, e -> hideSelected(true)));
+        group.add(MidPointUtils.createAnAction("Hide selected (tree)", AllIcons.Actions.DeleteTagHover, e -> hideSelected(true)));
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceViewPanelMainToolbar", group, true);
         return resultsActionsToolbar.getComponent();

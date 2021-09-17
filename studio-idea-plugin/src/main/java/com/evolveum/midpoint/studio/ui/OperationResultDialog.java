@@ -194,7 +194,7 @@ public class OperationResultDialog extends DialogWrapper {
         FileSaverDialog saver = FileChooserFactory.getInstance().createSaveFileDialog(
                 new FileSaverDescriptor("Save Operation Result As Xml", "Save to", "xml"), project);
 
-        VirtualFileWrapper target = saver.save(null, project.getName() + ".xml");
+        VirtualFileWrapper target = saver.save((VirtualFile) null, project.getName() + ".xml");
         if (target != null) {
             Task.Backgroundable task = new Task.Backgroundable(project, "Saving Operation Result Xml") {
 
@@ -229,7 +229,7 @@ public class OperationResultDialog extends DialogWrapper {
 
                 file.createNewFile();
             } catch (IOException ex) {
-                mm.printToConsole(OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
             }
 
             VirtualFile vFile = fileWrapper.getVirtualFile();
@@ -246,7 +246,7 @@ public class OperationResultDialog extends DialogWrapper {
 
                 IOUtils.write(xml, out);
             } catch (IOException | SchemaException ex) {
-                mm.printToConsole(OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
             }
         });
     }

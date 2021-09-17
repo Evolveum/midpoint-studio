@@ -1,10 +1,11 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.intellij.openapi.project.Project;
-import com.intellij.ui.AddEditRemovePanel;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentSettings;
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.util.Selectable;
+import com.intellij.openapi.project.Project;
+import com.intellij.ui.AddEditRemovePanel;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -19,24 +20,30 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     private Project project;
 
-    public EnvironmentsPanel(Project project, EnvironmentSettings settings) {
+    private MidPointSettings settings;
+
+    private EnvironmentSettings environmentSettings;
+
+    public EnvironmentsPanel(Project project, MidPointSettings settings, EnvironmentSettings environmentSettings) {
         super(new EnvironmentsModel(), new ArrayList<>(), null);
 
         this.project = project;
+        this.settings = settings;
+        this.environmentSettings = environmentSettings;
 
         setPreferredSize(new Dimension(150, 100));
         getTable().setShowColumns(true);
 
-        initData(settings);
+        initData();
     }
 
-    private void initData(EnvironmentSettings settings) {
+    private void initData() {
         List<Selectable<Environment>> selectables = new ArrayList<>();
 
-        Environment selected = settings.getSelected();
+        Environment selected = environmentSettings.getSelected();
 
-        settings.getEnvironments().forEach(e -> {
-            Selectable s = new Selectable(e);
+        environmentSettings.getEnvironments().forEach(e -> {
+            Selectable s = new Selectable(new Environment(e));
             if (selected != null) {
                 s.setSelected(Objects.equals(e.getId(), selected.getId()));
             }
@@ -48,7 +55,7 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     @Override
     protected boolean removeItem(Selectable<Environment> environment) {
-        return getData().remove(environment);
+        return getData().contains(environment);
     }
 
     @Nullable
@@ -65,7 +72,7 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     @Nullable
     private Selectable<Environment> doAddOrEdit(@Nullable Selectable<Environment> environment) {
-        EnvironmentEditorDialog dialog = new EnvironmentEditorDialog(project, environment);
+        EnvironmentEditorDialog dialog = new EnvironmentEditorDialog(project, settings, environment);
         if (!dialog.showAndGet()) {
             return null;
         }
@@ -132,5 +139,9 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
                     return null;
             }
         }
+    }
+
+    public boolean isModified() {
+        return !environmentSettings.equals(getFullSettings());
     }
 }

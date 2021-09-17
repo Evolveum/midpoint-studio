@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -23,7 +25,7 @@ public class EnvironmentProperties {
     public EnvironmentProperties(@NotNull Environment environment) {
         this.environment = environment != null ? new Environment(environment) : null;
 
-        load(environment);
+        load(this.environment);
     }
 
     private void load(Environment env) {
@@ -45,7 +47,7 @@ public class EnvironmentProperties {
         try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             properties.load(reader);
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(EnvironmentService.NOTIFICATION_KEY,
+            MidPointUtils.publishExceptionNotification(env, EnvironmentProperties.class, EnvironmentService.NOTIFICATION_KEY,
                     "Couldn't load environment properties", ex);
         }
 
@@ -58,5 +60,13 @@ public class EnvironmentProperties {
         }
 
         return properties.getProperty(key);
+    }
+
+    public Set<String> getKeys() {
+        if (properties == null) {
+            return new HashSet<>();
+        }
+
+        return (Set) properties.keySet();
     }
 }
