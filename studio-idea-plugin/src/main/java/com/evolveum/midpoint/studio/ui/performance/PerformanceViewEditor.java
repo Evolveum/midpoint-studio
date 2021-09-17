@@ -164,4 +164,9 @@ public class PerformanceViewEditor implements FileEditor, PossiblyDumbAware {
             performanceTreePanel.applyOptions(options);
         }
     }
+
+    @Override
+    public @NotNull VirtualFile getFile() {
+        return file;
+    }
 }
