@@ -175,22 +175,12 @@ public class BulkActionGenerator extends Generator {
                 Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
 
                 if (originalQuery != null) {
-                    Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "searchFilter", "s"));
+                    Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "query", "s"));
 
                     DOMUtil.fixNamespaceDeclarations(originalQuery);
-                    filter.appendChild(root.getOwnerDocument().adoptNode(originalQuery));
-                }
 
-// now there's no "<query>" just a filter, might change in a bit
-//                Element originalFilter = DOMUtil.getChildElement(originalQuery, "filter");
-//                if (originalFilter != null) {
-//                    Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "searchFilter", "s"));
-//                    List<Element> children = DOMUtil.listChildElements(originalFilter);
-//                    for (Element child : children) {
-//                        DOMUtil.fixNamespaceDeclarations(child);
-//                        filter.appendChild(root.getOwnerDocument().adoptNode(child));
-//                    }
-//                }
+                    DOMUtil.listChildElements(originalQuery).forEach(e -> filter.appendChild(root.getOwnerDocument().adoptNode(e)));
+                }
             } catch (RuntimeException e) {
                 MidPointUtils.publishExceptionNotification(null, BulkActionGenerator.class,
                         GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
