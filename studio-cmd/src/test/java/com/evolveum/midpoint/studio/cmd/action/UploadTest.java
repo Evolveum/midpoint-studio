@@ -12,7 +12,7 @@ public class UploadTest {
     public void simpleUpload() throws Exception {
         StudioCmdMain.main(new String[]{
                 "-U",
-                "https://demo.evolveum.com/midpoint",
+                "http://localhost:8080/midpoint",
                 "-u",
                 "administrator",
                 "-p",

@@ -2,7 +2,7 @@ fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
     id("java")
-    id("org.springframework.boot") version "2.5.0"
+    id("org.springframework.boot") version "2.5.5"
 }
 
 group = "com.evolveum.midpoint.studio"
