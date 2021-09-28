@@ -393,6 +393,9 @@ public class MidPointUtils {
 
             TableColumn column = table.getColumnModel().getColumn(i);
             column.setPreferredWidth(columnDef.getSize());
+            if (columnDef.getMinimalSize() != null) {
+                column.setMinWidth(columnDef.getMinimalSize());
+            }
             if (columnDef.getTableCellRenderer() != null) {
                 column.setCellRenderer(columnDef.getTableCellRenderer());
             }
@@ -617,6 +620,9 @@ public class MidPointUtils {
             column.setIdentifier(columnDefinition.getHeader());
             column.setEditable(false);
             column.setTitle(columnDefinition.getHeader());
+            if (columnDefinition.getMinimalSize() != null) {
+                column.setMinWidth(columnDefinition.getMinimalSize());
+            }
             model.addColumn(column);
         }
         return model;

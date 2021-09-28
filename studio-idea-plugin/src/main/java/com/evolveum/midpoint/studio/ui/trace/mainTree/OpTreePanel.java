@@ -134,6 +134,7 @@ public class OpTreePanel extends JPanel {
         group.add(MidPointUtils.createAnAction("Hide selected (tree)", AllIcons.Actions.DeleteTagHover, e -> hideSelected(true)));
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceViewPanelMainToolbar", group, true);
+        resultsActionsToolbar.setTargetComponent(this);
         return resultsActionsToolbar.getComponent();
     }
 

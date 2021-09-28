@@ -26,6 +26,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
+import com.intellij.tools.ToolEditorDialog;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
@@ -59,8 +60,8 @@ public class OperationResultDialog extends DialogWrapper {
     public OperationResultDialog(@NotNull OperationResult result) {
         super(false);
 
-        setTitle(result.getOperation());
-        setSize(200, 100);
+        setTitle("Result: " + result.getOperation());
+        setSize(1000, 500);
 
         this.panel = new BorderLayoutPanel();
 
@@ -72,8 +73,10 @@ public class OperationResultDialog extends DialogWrapper {
         columns.add(new TreeTableColumnDefinition<OperationResult, Object>("Status", 50,
                 r -> String.valueOf(r.getStatus()))
                 .tableCellRenderer(createStatusTableCellRenderer()));
-        columns.add(new TreeTableColumnDefinition<>("Message", 500,
-                r -> r.getMessage() != null ? r.getMessage() : ""));
+        TreeTableColumnDefinition def = new TreeTableColumnDefinition<OperationResult, Object>("Message", 500,
+                r -> r.getMessage() != null ? r.getMessage() : "");
+        def.setMinimalSize(200);
+        columns.add(def);
         columns.add(new TreeTableColumnDefinition<>("Context", 150,
                 r -> {
 
@@ -87,6 +90,7 @@ public class OperationResultDialog extends DialogWrapper {
                 }));
 
         JXTreeTable table = MidPointUtils.createTable(new OperationResultModel(result, columns), (List) columns);
+        table.expandAll();
         table.setRootVisible(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -182,6 +186,8 @@ public class OperationResultDialog extends DialogWrapper {
         group.add(export);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("OperationResultDialogToolbar", group, true);
+        toolbar.setTargetComponent(panel);
+
         return toolbar.getComponent();
     }
 

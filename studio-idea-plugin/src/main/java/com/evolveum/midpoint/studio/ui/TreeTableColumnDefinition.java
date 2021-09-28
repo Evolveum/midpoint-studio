@@ -14,6 +14,8 @@ public class TreeTableColumnDefinition<R, V> {
 
     private final int size;
 
+    private Integer minimalSize;
+
     private final Function<R, V> value;
 
     private TableCellRenderer tableCellRenderer;
@@ -72,6 +74,14 @@ public class TreeTableColumnDefinition<R, V> {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public Integer getMinimalSize() {
+        return minimalSize;
+    }
+
+    public void setMinimalSize(Integer minimalSize) {
+        this.minimalSize = minimalSize;
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,8 +41,8 @@ public abstract class SetModuleLoggingGroupAction extends DefaultActionGroup imp
         evt.getPresentation().setEnabled(em.getSelected() != null);
     }
 
-    protected void addAction(SetBasicLoggerAction action) {
-        String id = getClass().getSimpleName()+ "." + action.getLevel().value();
+    protected synchronized void addAction(SetBasicLoggerAction action) {
+        String id = getClass().getSimpleName() + "." + action.getLevel().value();
 
         ActionManager am = ActionManager.getInstance();
         AnAction a = am.getAction(id);

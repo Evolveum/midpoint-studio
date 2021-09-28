@@ -10,7 +10,7 @@ plugins {
     // Kotlin support
     id("org.jetbrains.kotlin.jvm") version "1.5.10"
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.0"
+    id("org.jetbrains.intellij") version "1.1.6"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
     id("org.jetbrains.changelog") version "1.1.2"
     // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
@@ -98,7 +98,7 @@ var gitLocalBranch = properties("gitLocalBranch")
 var publishChannel = properties("publishChannel")
 var buildNumber = properties("buildNumber")
 
-if (gitLocalBranch == "nightly" || gitLocalBranch == "milestone") {
+if (gitLocalBranch == "nightly") {
     publishChannel = gitLocalBranch
 } else if (gitLocalBranch == "stable") {
     publishChannel = "default"
@@ -109,8 +109,6 @@ if (!publishChannel.isBlank()) {
     var channel = publishChannel.toLowerCase()
     if (channel == "nightly") {
         channelSuffix = "-$buildNumber-$channel"
-    } else if (channel == "milestone") {
-        channelSuffix = "-$buildNumber"
     }
 }
 

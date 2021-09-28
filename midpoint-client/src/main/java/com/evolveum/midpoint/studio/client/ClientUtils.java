@@ -4,7 +4,6 @@ import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.LocalizableMessage;
@@ -150,7 +149,8 @@ public class ClientUtils {
         String localName = element.getLocalName();
 
         boolean executable = (namespace == null || SchemaConstantsGenerated.NS_SCRIPTING.equals(namespace)) && SCRIPTING_ACTIONS.contains(localName);
-        boolean delta = (namespace == null || SchemaConstants.NS_API_TYPES.equals(namespace)) && SchemaConstantsGenerated.O_OBJECT_MODIFICATION.getLocalPart().equals(localName);
+        boolean delta = (namespace == null || SchemaConstantsGenerated.O_OBJECT_MODIFICATION.getNamespaceURI().equals(namespace))
+                && SchemaConstantsGenerated.O_OBJECT_MODIFICATION.getLocalPart().equals(localName);
 
         ObjectTypes type = getObjectType(element);
 
