@@ -144,6 +144,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("BrowseQueryActions",
                 group, true);
+        toolbar.setTargetComponent(this);
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
         query = new JBTextArea();
@@ -160,6 +161,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("BrowseResultsActions",
                 resultsActions, true);
+        resultsActionsToolbar.setTargetComponent(this);
         results.add(resultsActionsToolbar.getComponent(), BorderLayout.NORTH);
 
         List<TreeTableColumnDefinition<ObjectType, ?>> columns = new ArrayList<>();
