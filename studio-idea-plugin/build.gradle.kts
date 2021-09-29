@@ -98,7 +98,7 @@ var gitLocalBranch = properties("gitLocalBranch")
 var publishChannel = properties("publishChannel")
 var buildNumber = properties("buildNumber")
 
-if (gitLocalBranch == "nightly") {
+if (gitLocalBranch == "nightly" || gitLocalBranch == "milestone") {
     publishChannel = gitLocalBranch
 } else if (gitLocalBranch == "stable") {
     publishChannel = "default"
@@ -109,6 +109,8 @@ if (!publishChannel.isBlank()) {
     var channel = publishChannel.toLowerCase()
     if (channel == "nightly") {
         channelSuffix = "-$buildNumber-$channel"
+    } else if (channel == "milestone") {
+        channelSuffix = "-$buildNumber"
     }
 }
 
