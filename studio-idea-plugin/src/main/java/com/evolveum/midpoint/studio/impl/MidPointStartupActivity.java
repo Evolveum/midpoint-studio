@@ -62,7 +62,7 @@ public class MidPointStartupActivity implements StartupActivity {
     }
 
     private void showVersioningChangeNotification() {
-        IdeaPluginDescriptor descriptor = PluginManager.getInstance().findEnabledPlugin(PluginId.findId("com.evolveum.midpoint.studio"));
+        IdeaPluginDescriptor descriptor = PluginManager.getInstance().findEnabledPlugin(PluginId.getId("com.evolveum.midpoint.studio"));
         if (descriptor == null) {
             return;
         }
