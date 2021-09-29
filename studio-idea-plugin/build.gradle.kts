@@ -1,6 +1,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -193,13 +194,10 @@ tasks {
 
     runPluginVerifier {
         ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
-//        setFailureLevel(
-//            EnumSet.of(
-//                RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-//                RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
-//                RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN
-//            )
-//        )
+        failureLevel.set(listOf(
+            RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
+            RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN))
     }
 
     publishPlugin {
