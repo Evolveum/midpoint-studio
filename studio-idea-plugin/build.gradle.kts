@@ -91,27 +91,15 @@ dependencies {
 
 var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
 
-// until we move to semantic versioning and use only stable/nightly (without milestone) channels
-// we'll modify "recommended" versions and channel
-
 var gitLocalBranch = properties("gitLocalBranch")
 var publishChannel = properties("publishChannel")
 var buildNumber = properties("buildNumber")
 
-if (gitLocalBranch == "nightly" || gitLocalBranch == "milestone") {
-    publishChannel = gitLocalBranch
-} else if (gitLocalBranch == "stable") {
-    publishChannel = "default"
-}
+publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
 
 var channelSuffix = ""
-if (!publishChannel.isBlank()) {
-    var channel = publishChannel.toLowerCase()
-    if (channel == "nightly") {
-        channelSuffix = "-$buildNumber-$channel"
-    } else if (channel == "milestone") {
-        channelSuffix = "-$buildNumber"
-    }
+if (!publishChannel.isBlank() && publishChannel.toLowerCase() != "default") {
+    channelSuffix = "-$publishChannel-$buildNumber"
 }
 
 var pluginVersion = "$version$channelSuffix"
