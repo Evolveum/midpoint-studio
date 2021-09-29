@@ -12,6 +12,14 @@ import java.util.List;
  */
 public class SetAllToInfoAction extends SetLoggerAction {
 
+    public SetAllToInfoAction() {
+        super(null);
+    }
+
+    public SetAllToInfoAction(String text) {
+        super(text);
+    }
+
     @Override
     public List<ClassLoggerConfigurationType> buildClassLoggers() {
         List<ClassLoggerConfigurationType> list = new ArrayList<>();

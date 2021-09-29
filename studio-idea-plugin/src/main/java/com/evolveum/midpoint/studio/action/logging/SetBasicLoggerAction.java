@@ -2,8 +2,6 @@ package com.evolveum.midpoint.studio.action.logging;
 
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ClassLoggerConfigurationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LoggingLevelType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +16,8 @@ public class SetBasicLoggerAction extends SetLoggerAction {
     private LoggingLevelType level;
 
     public SetBasicLoggerAction(ModuleLogger logger, LoggingLevelType level) {
+        super("Set to " + level.value());
+
         this.logger = logger;
         this.level = level;
     }
@@ -28,13 +28,6 @@ public class SetBasicLoggerAction extends SetLoggerAction {
 
     public LoggingLevelType getLevel() {
         return level;
-    }
-
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        super.update(e);
-
-        e.getPresentation().setText("Set to " + level.value());
     }
 
     @Override

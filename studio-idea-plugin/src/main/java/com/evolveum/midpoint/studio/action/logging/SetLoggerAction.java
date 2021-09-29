@@ -28,8 +28,8 @@ public class SetLoggerAction extends BackgroundAction {
 
     private static final String NOTIFICATION_KEY = "Update logging configuration";
 
-    public SetLoggerAction() {
-        super("Updating logging configuration");
+    public SetLoggerAction(String text) {
+        super(text, null, "Updating logging configuration");
     }
 
     @Override
