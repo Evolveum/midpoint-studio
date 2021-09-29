@@ -95,7 +95,9 @@ var gitLocalBranch = properties("gitLocalBranch")
 var publishChannel = properties("publishChannel")
 var buildNumber = properties("buildNumber")
 
-publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
+if (publishChannel == null || publishChannel.isBlank()) {
+    publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
+}
 
 var channelSuffix = ""
 if (!publishChannel.isBlank() && publishChannel.toLowerCase() != "default") {
