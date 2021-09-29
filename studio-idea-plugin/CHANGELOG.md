@@ -2,14 +2,21 @@
 
 ## [Unreleased]
 ### Added
-- Simple autocomplete for source/target path elements
+- xml autocompletion
+    - OIDs for existing objects in workspace
+    - Simple autocomplete for source/target path elements
+    - Connector configuration elements in resource
 - Copy selected objects oid/name from browse results
+- Clickable oid references in xml
+- Reconcile/recompute action added
+- Upload of object delta now works (executes modify)
+- MidPoint xml file cleanup action added to remove operational (useless) elements
 
 ### Changed
 - Improved inlay properties caching
 
 ### Fixed
-- TODO
+- Small UI fixes when using Darcula theme
 
 ## 4.3
 ### Added
