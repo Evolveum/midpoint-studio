@@ -2,15 +2,16 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.intellij.codeInspection.InspectionManager;
-import com.intellij.codeInspection.ex.InspectionManagerEx;
 import com.intellij.codeInspection.ex.InspectionProfileImpl;
-import com.intellij.codeInspection.ex.InspectionToolWrapper;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManager;
 import com.intellij.javaee.ExternalResourceManagerEx;
+import com.intellij.notification.BrowseNotificationAction;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
-import com.intellij.profile.codeInspection.InspectionProfileManager;
 import com.intellij.profile.codeInspection.ProjectInspectionProfileManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,5 +57,27 @@ public class MidPointStartupActivity implements StartupActivity {
         ProjectInspectionProfileManager pipManager = ProjectInspectionProfileManager.getInstance(project);
         InspectionProfileImpl profile = pipManager.getCurrentProfile();
         profile.disableToolByDefault(Arrays.asList("CheckValidXmlInScriptTagBody"), project);
+
+        showVersioningChangeNotification();
+    }
+
+    private void showVersioningChangeNotification() {
+        IdeaPluginDescriptor descriptor = PluginManager.getInstance().findEnabledPlugin(PluginId.getId("com.evolveum.midpoint.studio"));
+        if (descriptor == null) {
+            return;
+        }
+
+        String version = descriptor.getVersion();
+        if (version.matches("\\d\\.\\d\\.\\d.*")) {
+            return;
+        }
+
+        MidPointUtils.publishNotification("VERSION_CHANGE", "Release cycle changes",
+                "Release cycle for MidPoint Studio plugin will change with release 4.4. " +
+                        "There will be only two channels snapshot and stable (default).\n" +
+                        "If you're using nightly/milestone channel, please uninstall MidPoint Studio plugin, switch to 'snapshot' channel and install it again. " +
+                        "You will not loose any project environment configurations.",
+                NotificationType.INFORMATION,
+                new BrowseNotificationAction("More info...", "https://docs.evolveum.com/midpoint/tools/studio/builds/"));
     }
 }

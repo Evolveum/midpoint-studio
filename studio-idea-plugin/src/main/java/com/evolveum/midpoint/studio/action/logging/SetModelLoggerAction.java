@@ -2,8 +2,6 @@ package com.evolveum.midpoint.studio.action.logging;
 
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ClassLoggerConfigurationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LoggingLevelType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,18 +14,13 @@ public class SetModelLoggerAction extends SetLoggerAction {
     private ModelLogger logger;
 
     public SetModelLoggerAction(ModelLogger logger) {
+        super("Set to " + logger.getLabel());
+
         this.logger = logger;
     }
 
     public ModelLogger getLogger() {
         return logger;
-    }
-
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        super.update(e);
-
-        e.getPresentation().setText("Set to " + logger.getLabel());
     }
 
     @Override
