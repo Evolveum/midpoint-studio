@@ -7,11 +7,9 @@ import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.cmd.opts.EnvironmentOptions;
 import com.evolveum.midpoint.studio.cmd.opts.UploadOptions;
 import com.evolveum.midpoint.studio.cmd.util.StudioUtil;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +30,6 @@ public class UploadAction extends Action<UploadOptions> {
         File[] filesToProcess = StudioUtil.listFiles(options.getData());
 
 
-
         List<MidPointObject> objects = ClientUtils.parseFile(options.getData().getReference(), Charset.forName(options.getCharset()));
         List<MidPointObject> filtered = ClientUtils.filterObjectTypeOnly(objects, false);
 
@@ -51,15 +48,14 @@ public class UploadAction extends Action<UploadOptions> {
         factory
                 .url(env.getUrl())
                 .username(env.getUsername())
-                .password(env.getOrAskPassword());
-        // todo implement
-//                .proxyServer(environment.getProxyServerHost())
-//                .proxyServerPort(environment.getProxyServerPort())
-//                .proxyServerType(environment.getProxyServerType())
-//                .proxyUsername(environment.getProxyUsername())
-//                .proxyPassword(environment.getProxyPassword())
-//                .ignoreSSLErrors(environment.isIgnoreSslErrors())
-//                .responseTimeout(settings.getRestResponseTimeout());
+                .password(env.getOrAskPassword())
+                .proxyServer(env.getProxyHost())
+                .proxyServerPort(env.getProxyPort())
+                .proxyServerType(env.getProxyType())
+                .proxyUsername(env.getProxyUsername())
+                .proxyPassword(env.getOrAskProxyPassword())
+                .ignoreSSLErrors(env.isIgnoreSSLErrors())
+                .responseTimeout(env.getResponseTimeout());
 
         factory.messageListener(message -> System.out.println(message));
 
