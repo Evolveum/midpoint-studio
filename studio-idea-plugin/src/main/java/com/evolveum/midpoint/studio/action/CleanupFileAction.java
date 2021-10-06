@@ -65,7 +65,6 @@ public class CleanupFileAction extends AnAction {
                 ItemPath.create(TaskType.F_RESULT_STATUS),
                 ItemPath.create(TaskType.F_OPERATION_STATS),
                 ItemPath.create(TaskType.F_COMPLETION_TIMESTAMP),
-                ItemPath.create(TaskType.F_EXECUTION_STATUS),
                 ItemPath.create(TaskType.F_LAST_RUN_FINISH_TIMESTAMP),
                 ItemPath.create(TaskType.F_LAST_RUN_START_TIMESTAMP),
                 ItemPath.create(new QName(SchemaConstants.NS_C, "workState")),  // TaskType.F_WORK_STATE, not available in 4.4 schema

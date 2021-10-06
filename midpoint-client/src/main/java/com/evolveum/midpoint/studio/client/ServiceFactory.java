@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.client;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.util.MiscUtil;
 import okhttp3.Credentials;

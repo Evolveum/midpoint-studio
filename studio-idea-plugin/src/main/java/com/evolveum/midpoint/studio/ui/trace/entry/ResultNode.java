@@ -63,11 +63,9 @@ public class ResultNode extends Node<OpNode> {
     private String getImportanceString(OperationResultType result) {
         if (result.getImportance() != null) {
             return result.getImportance().toString();
-        } else if (Boolean.TRUE.equals(result.isMinor())) {
-            return OperationResultImportanceType.MINOR.toString();
-        } else {
-            return OperationResultImportanceType.NORMAL.toString();
         }
+
+        return OperationResultImportanceType.NORMAL.toString();
     }
 
     private String toString(Object o) {
