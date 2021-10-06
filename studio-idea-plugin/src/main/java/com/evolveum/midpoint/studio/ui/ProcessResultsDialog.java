@@ -142,6 +142,17 @@ public class ProcessResultsDialog extends DialogWrapper {
         return new GenerateAction();
     }
 
+    @Override
+    protected @Nullable ValidationInfo doValidate() {
+        GeneratorOptions opts = buildGeneratorOptions();
+
+        if (opts.isBatchByOids() && selected.isEmpty()) {
+            return new ValidationInfo("Batch by OIDs selected by selection is empty");
+        }
+
+        return null;
+    }
+
     private void doGenerateAction(ActionEvent evt) {
         close(GENERATE_EXIT_CODE);
     }

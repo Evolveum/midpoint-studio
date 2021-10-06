@@ -7,6 +7,7 @@ import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.UserType;
 import com.intellij.notification.NotificationType;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
@@ -172,7 +173,10 @@ public class BulkActionGenerator extends Generator {
             }
         } else {
             try {
-                Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
+                Element originalQuery = null;
+                if (StringUtils.isNotEmpty(options.getOriginalQuery())) {
+                    originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
+                }
 
                 if (originalQuery != null) {
                     Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "query", "s"));

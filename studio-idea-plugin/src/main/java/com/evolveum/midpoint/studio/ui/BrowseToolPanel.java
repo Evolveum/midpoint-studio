@@ -717,14 +717,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private void performGenerate(List<ObjectType> selected, ProcessResultsOptions options, boolean execute) {
         GeneratorOptions opts = options.getOptions();
 
-        if (opts.isBatchByOids() && selected.isEmpty()) {
-            return;
-        }
-
-        if (opts.isBatchUsingOriginalQuery() && StringUtils.isEmpty(opts.getOriginalQuery())) {
-            return;
-        }
-
         Generator generator = options.getGenerator();
         GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);
 
