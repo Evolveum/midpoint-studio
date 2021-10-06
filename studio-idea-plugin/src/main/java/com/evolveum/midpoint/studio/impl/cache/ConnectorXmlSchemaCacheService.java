@@ -284,8 +284,8 @@ public class ConnectorXmlSchemaCacheService {
 
                     SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
                     of = ctx.getQueryConverter().parseFilter(filterType, ConnectorType.class);
-                } catch (SchemaException ex) {
-                    LOG.debug("Couldn't parse connectorRef filter defined in resource", ex);
+                } catch (Exception ex) {
+                    LOG.debug("Couldn't parse connectorRef filter defined in resource, reason: " + ex.getMessage() + "(" + ex.getClass().getName() + ")");
                 }
 
                 if (of == null) {
