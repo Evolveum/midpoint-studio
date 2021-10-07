@@ -69,10 +69,6 @@ public class OpDumpPanel extends BorderLayoutPanel {
         sb.append("Importance: ");
         if (result.getImportance() != null) {
             sb.append(result.getImportance());
-        } else if (Boolean.TRUE.equals(result.isMinor())) {
-            sb.append(OperationResultImportanceType.MINOR);
-        } else {
-            sb.append(OperationResultImportanceType.NORMAL);
         }
         sb.append("\n");
         sb.append("Status:     ").append(result.getStatus());

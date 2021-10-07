@@ -60,7 +60,6 @@ public class ProcessResultsDialog extends DialogWrapper {
     private JComboBox<Generator> generate;
     private JComboBox<Execution> execution;
     private JTextField n;
-    private JCheckBox wrapCreatedBulkActionCheckBox;
     private JCheckBox createTasksInSuspendedCheckBox;
     private JCheckBox executeInRawModeCheckBox;
     private JCheckBox executeInDryRunCheckBox;
@@ -119,7 +118,6 @@ public class ProcessResultsDialog extends DialogWrapper {
         executeInDryRunCheckBox.setSelected(opts.isDryRun());
         useSymbolicReferencesCheckBox.setSelected(opts.isSymbolicReferences());
         runtimeResolutionCheckBox.setSelected(opts.isSymbolicReferencesRuntime());
-        wrapCreatedBulkActionCheckBox.setSelected(opts.isWrapActions());
     }
 
     @Nullable
@@ -140,6 +138,17 @@ public class ProcessResultsDialog extends DialogWrapper {
 
     private Action getGenerateAction() {
         return new GenerateAction();
+    }
+
+    @Override
+    protected @Nullable ValidationInfo doValidate() {
+        GeneratorOptions opts = buildGeneratorOptions();
+
+        if (opts.isBatchByOids() && selected.isEmpty()) {
+            return new ValidationInfo("Batch by OIDs selected by selection is empty");
+        }
+
+        return null;
     }
 
     private void doGenerateAction(ActionEvent evt) {
@@ -163,7 +172,6 @@ public class ProcessResultsDialog extends DialogWrapper {
         opts.setRaw(executeInRawModeCheckBox.isSelected());
         opts.setSymbolicReferences(useSymbolicReferencesCheckBox.isSelected());
         opts.setSymbolicReferencesRuntime(runtimeResolutionCheckBox.isSelected());
-        opts.setWrapActions(wrapCreatedBulkActionCheckBox.isSelected());
 
         Execution exec = (Execution) execution.getSelectedItem();
         if (exec == null) {

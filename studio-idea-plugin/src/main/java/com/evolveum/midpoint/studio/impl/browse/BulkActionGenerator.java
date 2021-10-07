@@ -1,18 +1,22 @@
 package com.evolveum.midpoint.studio.impl.browse;
 
+import com.evolveum.midpoint.model.api.ModelPublicConstants;
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.UserType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.notification.NotificationType;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import static com.evolveum.midpoint.studio.impl.browse.Constants.*;
 
 public class BulkActionGenerator extends Generator {
 
@@ -43,8 +47,14 @@ public class BulkActionGenerator extends Generator {
         NOTIFY("send notifications", "notify", ObjectTypes.OBJECT, false, false, false);
 
         private final String displayName, actionName;
+
         private final ObjectTypes applicableTo;
-        private final boolean supportsRaw, supportsDryRun, requiresConfirmation;
+
+        private final boolean supportsRaw;
+
+        private final boolean supportsDryRun;
+
+        private final boolean requiresConfirmation;
 
         Action(String displayName, String actionName, ObjectTypes applicableTo, boolean supportsRaw, boolean supportsDryRun, boolean requiresConfirmation) {
             this.displayName = displayName;
@@ -69,8 +79,6 @@ public class BulkActionGenerator extends Generator {
 
     @Override
     public String generate(List<ObjectType> objects, GeneratorOptions options) {
-        Element top = null;
-
         List<Batch> batches;
         if (action != Action.ASSIGN_THIS) {
             batches = createBatches(objects, options, action.applicableTo);
@@ -85,70 +93,92 @@ public class BulkActionGenerator extends Generator {
             batch.getObjects().add(new UserType());
             batches = Collections.singletonList(batch);
         }
-        Element root;
+
+        Element root = null;
         if (batches.size() > 1) {
-            top = root = DOMUtil.getDocument(new QName(Constants.COMMON_NS, options.isWrapActions() ? "objects" : "actions", "c")).getDocumentElement();
-        } else {
-            root = null;
+            root = DOMUtil.getDocument(new QName(Constants.COMMON_NS, "objects", "c")).getDocumentElement();
         }
 
         for (Batch batch : batches) {
-            Element batchRoot;
-            Element task = null;
-            if (options.isWrapActions()) {
-                if (root == null) {
-                    task = DOMUtil.getDocument(new QName(Constants.COMMON_NS, "task", "c")).getDocumentElement();
-                    top = task;
-                } else {
-                    task = DOMUtil.createSubElement(root, new QName(Constants.COMMON_NS, "task", "c"));
-                }
-                DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "name", "c")).setTextContent("Execute " + action.displayName + " on objects " + (batch.getFirst() + 1) + " to " + (batch.getLast() + 1));
-                Element extension = DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "extension", "c"));
-                Element executeScript = DOMUtil.createSubElement(extension, new QName(Constants.SCEXT_NS, "executeScript", "scext"));
-                batchRoot = executeScript;
+            Element task;
+
+
+            if (batches.size() == 1) {
+                task = DOMUtil.getDocument(SchemaConstantsGenerated.C_TASK).getDocumentElement();
+                task.setAttribute("xmlns:c", SchemaConstantsGenerated.NS_COMMON);
+                root = task;
             } else {
-                batchRoot = root;
+                task = DOMUtil.createSubElement(root, new QName(Constants.COMMON_NS, "task", "c"));
             }
 
-            Element pipe;
-            if (batchRoot == null) {
-                pipe = DOMUtil.getDocument(new QName(Constants.SCRIPT_NS, "pipeline", "s")).getDocumentElement();
-                top = pipe;
-            } else {
-                pipe = DOMUtil.createSubElement(batchRoot, new QName(Constants.SCRIPT_NS, "pipeline", "s"));
-            }
+            task.setAttribute("oid", UUID.randomUUID().toString());
 
-            createSearch(pipe, options, batch);
-            createAction(pipe, options, objects);
+            DOMUtil.createSubElement(task, TaskType.F_NAME)
+                    .setTextContent("Execute " + action.displayName + " on objects " + (batch.getFirst() + 1) + " to " + (batch.getLast() + 1));
 
-            if (task != null) {
-                // task oid
-                task.setAttribute("oid", UUID.randomUUID().toString());
-                // task archetype (bulk non-iterative for now)
-                Element assignment = DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "assignment", "c"));
-                Element targetRef = DOMUtil.createSubElement(assignment, new QName(Constants.COMMON_NS, "targetRef", "c"));
-                targetRef.setAttribute("oid", "00000000-0000-0000-0000-000000000508");
-                targetRef.setAttribute("type", "c:ArchetypeType");
+            Element extension = DOMUtil.createSubElement(task, TaskType.F_EXTENSION);
 
-                DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "ownerRef", "c")).setAttribute("oid", "00000000-0000-0000-0000-000000000002");
-                DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "executionStatus", "c")).setTextContent(
-                        options.isCreateSuspended() ? "suspended" : "runnable"
-                );
-                DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "category", "c")).setTextContent("BulkActions");
-                DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "handlerUri", "c")).setTextContent("http://midpoint.evolveum.com/xml/ns/public/model/scripting/handler-3");
-                DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "recurrence", "c")).setTextContent("single");
-            }
+            createSearch(extension, options, batch);
+            createAction(extension, options, objects);
+
+            DOMUtil.createComment(extension, "<!-- <mext:workerThreads xmlns:mext=\"http://midpoint.evolveum.com/xml/ns/public/model/extension-3\">1</mext:workerThreads> -->");
+
+            Element assignment = DOMUtil.createSubElement(task, TaskType.F_ASSIGNMENT);
+            Element targetRef = DOMUtil.createSubElement(assignment, AssignmentType.F_TARGET_REF);
+            targetRef.setAttribute("oid", SystemObjectsType.ARCHETYPE_ITERATIVE_BULK_ACTION_TASK.value());
+            targetRef.setAttribute("type", "c:ArchetypeType");
+
+            Element ownerRef = DOMUtil.createSubElement(task, TaskType.F_OWNER_REF);
+            ownerRef.setAttribute("oid", SystemObjectsType.USER_ADMINISTRATOR.value());
+            ownerRef.setAttribute("type", "c:UserType");
+
+            DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "executionStatus")).setTextContent(
+                    options.isCreateSuspended() ? "suspended" : "runnable"
+            );
+
+            DOMUtil.createSubElement(task, TaskType.F_CATEGORY).setTextContent("BulkActions");
+            DOMUtil.createSubElement(task, TaskType.F_HANDLER_URI).setTextContent(ModelPublicConstants.ITERATIVE_SCRIPT_EXECUTION_TASK_HANDLER_URI);
+            DOMUtil.createSubElement(task, TaskType.F_RECURRENCE).setTextContent(TaskRecurrenceType.SINGLE.value());
         }
 
-        return DOMUtil.serializeDOMToString(top);
+        return DOMUtil.serializeDOMToString(root);
     }
 
     public static String generateTaskIdentifier() {
         return System.currentTimeMillis() + ":" + Math.round(Math.random() * 1000000000.0);
     }
 
-    public void createSearch(Element root, GeneratorOptions options, Batch batch) {
+    private ObjectTypes findMostConcreteType(List<ObjectType> objects, ObjectTypes applicableTo) {
+        ObjectTypes concrete = null;
 
+        for (ObjectType object : objects) {
+            if (!MidPointUtils.isAssignableFrom(action.applicableTo, ObjectTypes.getObjectType(object.getClass()))) {
+                continue;
+            }
+
+            if (concrete == null) {
+                concrete = ObjectTypes.getObjectType(object.getClass());
+            } else {
+                Class clazz = concrete.getClassDefinition();
+                while (clazz != null) {
+                    if (clazz.isAssignableFrom(object.getClass())) {
+                        break;
+                    }
+
+                    clazz = clazz.getSuperclass();
+                }
+                if (clazz != null) {
+                    concrete = ObjectTypes.getObjectType(clazz);
+                } else {
+                    concrete = action.applicableTo;
+                }
+            }
+        }
+
+        return concrete;
+    }
+
+    private void createSearch(Element extension, GeneratorOptions options, Batch batch) {
         ObjectTypes type = action.applicableTo;
         if (options.isBatchUsingOriginalQuery()) {
             if (options.getOriginalQueryTypes().size() == 1) {
@@ -157,29 +187,34 @@ public class BulkActionGenerator extends Generator {
                     type = selected;
                 }
             }
+        } else {
+            ObjectTypes concrete = findMostConcreteType(batch.getObjects(), action.applicableTo);
+            if (concrete != null) {
+                type = concrete;
+            }
         }
 
-        Element search = DOMUtil.createSubElement(root, new QName(Constants.SCRIPT_NS, "expression", "s"));
-        DOMUtil.setXsiType(search, new QName(Constants.SCRIPT_NS, "SearchExpressionType", "s"));
-        DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "type", "s")).setTextContent(type.getTypeQName().getLocalPart());
+        Element objectType = DOMUtil.createSubElement(extension, MEXT_OBJECT_TYPE_PREFIXED);
+        objectType.setTextContent(type.getTypeQName().getLocalPart());
+
+        Element objectQuery = DOMUtil.createSubElement(extension, MEXT_OBJECT_QUERY_PREFIXED);
 
         if (options.isBatchByOids()) {
-            Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "searchFilter", "s"));
-            Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
+            Element filter = DOMUtil.createSubElement(objectQuery, Q_FILTER_PREFIXED);
+            Element inOid = DOMUtil.createSubElement(filter, Q_IN_OID_PREFIXED);
             for (ObjectType o : batch.getObjects()) {
-                DOMUtil.createSubElement(inOid, Constants.Q_VALUE_Q).setTextContent(o.getOid());
+                DOMUtil.createSubElement(inOid, Q_VALUE_PREFIXED).setTextContent(o.getOid());
                 DOMUtil.createComment(inOid, " " + o.getName() + " ");
             }
         } else {
             try {
-                Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
+                Element originalQuery = null;
+                if (StringUtils.isNotEmpty(options.getOriginalQuery())) {
+                    originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
+                }
 
                 if (originalQuery != null) {
-                    Element filter = DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "query", "s"));
-
-                    DOMUtil.fixNamespaceDeclarations(originalQuery);
-
-                    DOMUtil.listChildElements(originalQuery).forEach(e -> filter.appendChild(root.getOwnerDocument().adoptNode(e)));
+                    DOMUtil.listChildElements(originalQuery).forEach(e -> objectQuery.appendChild(objectQuery.getOwnerDocument().adoptNode(e)));
                 }
             } catch (RuntimeException e) {
                 MidPointUtils.publishExceptionNotification(null, BulkActionGenerator.class,
@@ -211,9 +246,10 @@ public class BulkActionGenerator extends Generator {
     }
 
     // objects should be non-null for ASSIGN_THIS action
-    public void createAction(Element root, GeneratorOptions options, List<ObjectType> objects) {
-        Element actionE = DOMUtil.createSubElement(root, new QName(Constants.SCRIPT_NS, "expression", "s"));
-        DOMUtil.setXsiType(actionE, new QName(Constants.SCRIPT_NS, "ActionExpressionType", "s"));
+    public void createAction(Element extension, GeneratorOptions options, List<ObjectType> objects) {
+        Element executeScript = DOMUtil.createSubElement(extension, new QName(Constants.SCEXT_NS, "executeScript", "scext"));
+
+        Element actionE = DOMUtil.createSubElement(executeScript, new QName(Constants.SCRIPT_NS, "action", "s"));
         DOMUtil.createSubElement(actionE, new QName(Constants.SCRIPT_NS, "type", "s")).setTextContent(action.actionName);
         if (options.isRaw() && supportsRawOption()) {
             Element rawParam = DOMUtil.createSubElement(actionE, new QName(Constants.SCRIPT_NS, "parameter", "s"));
@@ -307,11 +343,6 @@ public class BulkActionGenerator extends Generator {
     @Override
     public boolean isExecutable() {
         return action != Action.MODIFY && action != Action.EXECUTE_SCRIPT;
-    }
-
-    @Override
-    public boolean supportsWrapIntoTask() {
-        return true;
     }
 
     public String generateFromSourceObject(MidPointObject object, GeneratorOptions options) {
