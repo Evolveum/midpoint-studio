@@ -14,11 +14,11 @@ import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
 import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
+import com.evolveum.midpoint.studio.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.browse.*;
-import com.evolveum.midpoint.studio.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -27,7 +27,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
-import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
@@ -455,17 +454,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 LOG.debug("Translating object query");
                 ObjectQuery objectQuery = buildQuery(client);
 
+                ObjectPaging paging = objectQuery.getPaging();
+                if (paging != null) {
+                    // cleanup ordering, not necessary for bulk processing
+                    paging.setOrdering(new ObjectOrdering[0]);
+                }
+
                 PrismContext ctx = client.getPrismContext();
                 QueryConverter converter = ctx.getQueryConverter();
                 QueryType q = converter.createQueryType(objectQuery);
-
-                SearchFilterType filter = q.getFilter();
 
                 RunnableUtils.PluginClassCallable<String> callable = new RunnableUtils.PluginClassCallable<>() {
 
                     @Override
                     public String callWithPluginClassLoader() throws Exception {
-                        return ctx.serializerFor(PrismContext.LANG_XML).serialize(filter.getFilterClauseAsRootXNode());
+                        return ctx.serializerFor(PrismContext.LANG_XML).serializeRealValue(q);
                     }
                 };
 

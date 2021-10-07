@@ -79,10 +79,10 @@ public class TaskGenerator extends Generator {
             DOMUtil.createSubElement(extension, new QName(Constants.MEXT_NS, "objectType", "mext")).setTextContent(type.getTypeQName().getLocalPart());
             Element objectQuery = DOMUtil.createSubElement(extension, new QName(Constants.MEXT_NS, "objectQuery", "mext"));
             if (options.isBatchByOids()) {
-                Element filter = DOMUtil.createSubElement(objectQuery, Constants.Q_FILTER_Q);
-                Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
+                Element filter = DOMUtil.createSubElement(objectQuery, Constants.Q_FILTER_PREFIXED);
+                Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_PREFIXED);
                 for (ObjectType o : batch.getObjects()) {
-                    DOMUtil.createSubElement(inOid, Constants.Q_VALUE_Q).setTextContent(o.getOid());
+                    DOMUtil.createSubElement(inOid, Constants.Q_VALUE_PREFIXED).setTextContent(o.getOid());
                     DOMUtil.createComment(inOid, " " + o.getName() + " ");
                 }
             } else {
@@ -160,11 +160,6 @@ public class TaskGenerator extends Generator {
     @Override
     public boolean isExecutable() {
         return action != Action.MODIFY;
-    }
-
-    @Override
-    public boolean supportsWrapIntoTask() {
-        return false;
     }
 
     @Override

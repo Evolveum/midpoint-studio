@@ -66,17 +66,6 @@ public abstract class Generator {
         return "name";
     }
 
-    protected void createInOidQueryFilter(Element filter, List<ObjectType> objects) {
-        Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID);
-        for (ObjectType o : objects) {
-            DOMUtil.createSubElement(inOid, Constants.Q_VALUE).setTextContent(o.getOid());
-        }
-    }
-
-    public boolean supportsWrapIntoTask() {
-        return false;
-    }
-
     public boolean supportsCreateSuspended() {
         return false;
     }
