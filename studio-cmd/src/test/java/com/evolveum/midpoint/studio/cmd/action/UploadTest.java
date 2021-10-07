@@ -9,6 +9,13 @@ import org.junit.jupiter.api.Test;
 public class UploadTest {
 
     @Test
+    public void listOptions() throws Exception {
+        StudioCmdMain.main(new String[]{
+                "-h"
+        });
+    }
+
+    @Test
     public void simpleUpload() throws Exception {
         StudioCmdMain.main(new String[]{
                 "-U",

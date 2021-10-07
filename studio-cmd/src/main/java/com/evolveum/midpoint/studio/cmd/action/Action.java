@@ -6,6 +6,8 @@
  */
 package com.evolveum.midpoint.studio.cmd.action;
 
+import com.evolveum.midpoint.studio.client.Service;
+import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.cmd.StudioContext;
 import com.evolveum.midpoint.studio.cmd.opts.EnvironmentOptions;
 import com.evolveum.midpoint.studio.cmd.util.Log;
@@ -56,6 +58,28 @@ public abstract class Action<T> {
 //            }
 //        }
 //    }
+
+    protected Service buildClient() throws Exception {
+        EnvironmentOptions env = context.getEnvironmentOptions();
+
+        ServiceFactory factory = new ServiceFactory();
+        factory
+                .url(env.getUrl())
+                .username(env.getUsername())
+                .password(env.getOrAskPassword())
+                .proxyServer(env.getProxyHost())
+                .proxyServerPort(env.getProxyPort())
+                .proxyServerType(env.getProxyType())
+                .proxyUsername(env.getProxyUsername())
+                .proxyPassword(env.getOrAskProxyPassword())
+                .ignoreSSLErrors(env.isIgnoreSSLErrors())
+                .responseTimeout(env.getResponseTimeout());
+
+        // todo fix logging
+        factory.messageListener(message -> System.out.println(message));
+
+        return factory.create();
+    }
 
     public abstract void execute() throws Exception;
 }

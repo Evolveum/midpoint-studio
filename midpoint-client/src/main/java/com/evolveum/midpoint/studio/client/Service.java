@@ -20,6 +20,10 @@ import java.util.List;
  */
 public interface Service {
 
+    String OPTION_RAW = "raw";
+
+    String OPTION_IS_IMPORT = "isImport";
+
     @Deprecated
     <O extends ObjectType> SearchResultList<O> list(Class<O> type, ObjectQuery query, Collection<SelectorOptions<GetOperationOptions>> options)
             throws IOException, AuthenticationException;
