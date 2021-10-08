@@ -2,11 +2,11 @@
 
 ## [Unreleased]
 ### Added
-- xml autocompletion
+- Xml autocompletion
     - OIDs for existing objects in workspace
     - Simple autocomplete for source/target path elements
     - Connector configuration elements in resource
-- Copy selected objects oid/name from browse results
+- Copy selected objects oid/name from browse results using mouse right click
 - Clickable oid references in xml
 - Reconcile/recompute action added
 - Upload of object delta now works (executes modify)
@@ -34,9 +34,6 @@
 - Using MidPoint 4.3 libs
 - Xml diff simplified UI, multiple diff strategies available
 - Updated documentation generator
-
-### Fixed
-- TODO
 
 ## 4.2
 ### Added
