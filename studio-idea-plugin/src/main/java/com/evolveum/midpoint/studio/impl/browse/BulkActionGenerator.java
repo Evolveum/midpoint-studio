@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.browse;
 import com.evolveum.midpoint.model.api.ModelPublicConstants;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -96,19 +97,21 @@ public class BulkActionGenerator extends Generator {
 
         Element root = null;
         if (batches.size() > 1) {
-            root = DOMUtil.getDocument(new QName(Constants.COMMON_NS, "objects", "c")).getDocumentElement();
+            root = DOMUtil.getDocument(new QName(Constants.COMMON_NS, "objects")).getDocumentElement();
+            addStandardNamespaceDefinitions(root);
         }
 
         for (Batch batch : batches) {
             Element task;
 
-
             if (batches.size() == 1) {
                 task = DOMUtil.getDocument(SchemaConstantsGenerated.C_TASK).getDocumentElement();
-                task.setAttribute("xmlns:c", SchemaConstantsGenerated.NS_COMMON);
+                addStandardNamespaceDefinitions(task);
+
                 root = task;
             } else {
-                task = DOMUtil.createSubElement(root, new QName(Constants.COMMON_NS, "task", "c"));
+                task = DOMUtil.createSubElement(root, new QName(Constants.COMMON_NS, "object"));
+                task.setAttribute("xsi:type", "c:TaskType");
             }
 
             task.setAttribute("oid", UUID.randomUUID().toString());
@@ -121,7 +124,7 @@ public class BulkActionGenerator extends Generator {
             createSearch(extension, options, batch);
             createAction(extension, options, objects);
 
-            DOMUtil.createComment(extension, "<!-- <mext:workerThreads xmlns:mext=\"http://midpoint.evolveum.com/xml/ns/public/model/extension-3\">1</mext:workerThreads> -->");
+            DOMUtil.createComment(extension, "<mext:workerThreads xmlns:mext=\"http://midpoint.evolveum.com/xml/ns/public/model/extension-3\">1</mext:workerThreads>");
 
             Element assignment = DOMUtil.createSubElement(task, TaskType.F_ASSIGNMENT);
             Element targetRef = DOMUtil.createSubElement(assignment, AssignmentType.F_TARGET_REF);

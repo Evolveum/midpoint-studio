@@ -14,6 +14,10 @@
 
 ### Changed
 - Improved inlay properties caching
+- Bulk action tasks generator
+  - Wrap action into task option removed
+  - Bulk tasks are now created as iterative-script tasks
+  - Generated XML much cleaner
 
 ### Fixed
 - Small UI fixes when using Darcula theme
