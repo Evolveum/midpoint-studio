@@ -11,6 +11,7 @@
 - Reconcile/recompute action added
 - Upload of object delta now works (executes modify)
 - MidPoint xml file cleanup action added to remove operational (useless) elements
+- Objects verification using schemas bundled with MidPoint studio (can't be changed for now)
 
 ### Changed
 - Improved inlay properties caching
