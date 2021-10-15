@@ -8,6 +8,7 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBus;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +21,8 @@ import java.util.stream.Collectors;
  * Created by Viliam Repan (lazyman).
  */
 public class ItemPathCacheService {
+
+    private static final Logger LOG = Logger.getInstance(ItemPathCacheService.class);
 
     private static final Set<ItemName> IGNORED;
 
@@ -54,7 +57,11 @@ public class ItemPathCacheService {
     }
 
     public void refresh(Environment env) {
+        LOG.info("Invoking refresh");
+
         ApplicationManager.getApplication().invokeLaterOnWriteThread(() -> {
+            LOG.info("Refreshing started");
+
             MidPointClient client = new MidPointClient(project, env);
             PrismContext context = client.getPrismContext();
             SchemaRegistry registry = context.getSchemaRegistry();
@@ -71,7 +78,11 @@ public class ItemPathCacheService {
             }
 
             paths = map;
+
+            LOG.info("Refresh finished");
         });
+
+        LOG.info("Refresh invoked");
     }
 
     private void buildPaths(IdentityHashMap<Definition, Boolean> visited, Definition definition, String parentPath, Set<String> allPaths) {

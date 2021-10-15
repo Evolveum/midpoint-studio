@@ -119,10 +119,12 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
 
     @Override
     public void select(String id) {
+        LOG.info("Selecting new environment");
+
         Environment selected = getSelected();
         Environment newSelected = get(id);
 
-        LOG.debug("Selecting new environment " + newSelected + ", old one " + selected);
+        LOG.debug("New environment " + newSelected + ", old one " + selected);
 
         if (Objects.equals(selected, newSelected)) {
             return;
@@ -131,7 +133,11 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
         getSettings().setSelectedId(id);
         settingsUpdated();
 
+        LOG.info("New environment selected, publishing notification on message bus");
+
         messageBus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentChanged(selected, newSelected);
+
+        LOG.info("New environment selection finished");
     }
 
     @Override

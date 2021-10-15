@@ -22,7 +22,7 @@ public class ConnectorXmlSchemaProvider extends XmlSchemaProvider {
 
     @Override
     public boolean isAvailable(@NotNull XmlFile file) {
-        if (file == null || file.getRootTag() == null) {
+        if (file.getRootTag() == null) {
             return false;
         }
 
@@ -48,7 +48,7 @@ public class ConnectorXmlSchemaProvider extends XmlSchemaProvider {
     @Override
     public XmlFile getSchema(@NotNull String url, @Nullable Module module, @NotNull PsiFile baseFile) {
         Project project = baseFile.getProject();
-        if (project == null || !(baseFile instanceof XmlFile)) {
+        if (!(baseFile instanceof XmlFile)) {
             return null;
         }
 

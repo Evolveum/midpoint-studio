@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.cache;
 import com.evolveum.midpoint.studio.impl.*;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.codeInsight.hints.ParameterHintsPassFactory;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -22,6 +23,8 @@ import java.util.Set;
  * Created by Viliam Repan (lazyman).
  */
 public class PropertiesInlayCacheService {
+
+    private static final Logger LOG = Logger.getInstance(PropertiesInlayCacheService.class);
 
     private Project project;
 
@@ -78,6 +81,8 @@ public class PropertiesInlayCacheService {
     }
 
     private void refresh(Environment environment) {
+        LOG.info("Starting refresh");
+
         if (environment == null) {
             expander = null;
             return;
@@ -90,6 +95,8 @@ public class PropertiesInlayCacheService {
         ParameterHintsPassFactory.forceHintsUpdateOnNextPass();
         DaemonCodeAnalyzer dca = DaemonCodeAnalyzer.getInstance(project);
         dca.restart();
+
+        LOG.info("Refresh finished");
     }
 
     public String expandKeyForInlay(String key, VirtualFile file) {

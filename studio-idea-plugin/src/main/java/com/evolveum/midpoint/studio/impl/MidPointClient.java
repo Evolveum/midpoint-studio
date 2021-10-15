@@ -144,6 +144,8 @@ public class MidPointClient {
     }
 
     private void printToConsole(String message) {
+        LOG.debug(message);
+
         if (suppressConsole) {
             return;
         }
@@ -213,6 +215,8 @@ public class MidPointClient {
     }
 
     private void handleGenericException(String message, Exception ex) {
+        LOG.debug(message, ex);
+
         if (!suppressNotifications) {
             MidPointUtils.handleGenericException(project, getEnvironment(), MidPointClient.class, NOTIFICATION_KEY, message, ex);
         }

@@ -1,8 +1,11 @@
 package com.evolveum.midpoint.studio.util;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
+import org.jetbrains.concurrency.CancellablePromise;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 /**
@@ -92,5 +95,15 @@ public abstract class RunnableUtils {
         ApplicationManager.getApplication().invokeAndWait(() -> {
             runWriteAction(runnable);
         });
+    }
+
+    public static CancellablePromise<Void> submitNonBlockingReadAction(Runnable runnable, ExecutorService executor) {
+        return ReadAction.nonBlocking(new PluginClasspathRunnable() {
+
+            @Override
+            public void runWithPluginClassLoader() {
+                runnable.run();
+            }
+        }).submit(executor);
     }
 }

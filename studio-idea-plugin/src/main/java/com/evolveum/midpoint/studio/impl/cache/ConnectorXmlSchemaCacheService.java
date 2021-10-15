@@ -31,6 +31,7 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBus;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
@@ -80,29 +81,36 @@ public class ConnectorXmlSchemaCacheService {
     }
 
     private void refresh(Environment env) {
-        LOG.info("Refreshing");
+        LOG.info("Invoking refresh");
 
-        cache.clear();
+        RunnableUtils.submitNonBlockingReadAction(() -> {
 
-        if (env == null) {
-            LOG.info("Refresh skipped, no environment selected");
-            return;
-        }
+            LOG.info("Refreshing");
 
-        MidPointClient client = new MidPointClient(project, env, true, true);
-        SearchResult result = client.search(ConnectorType.class, null, true);
-        for (MidPointObject object : result.getObjects()) {
-            try {
-                PrismObject<?> prismObject = client.parseObject(object.getContent());
-                ConnectorType connectorType = (ConnectorType) prismObject.asObjectable();
+            cache.clear();
 
-                cache.put(connectorType, new CacheValue(connectorType, buildIcfSchema(object), buildConnectorSchema(object)));
-            } catch (Exception ex) {
-                LOG.error("Couldn't parse connector object", ex);
+            if (env == null) {
+                LOG.info("Refresh skipped, no environment selected");
+                return;
             }
-        }
 
-        LOG.info("Refresh finished");
+            MidPointClient client = new MidPointClient(project, env, true, true);
+            SearchResult result = client.search(ConnectorType.class, null, true);
+            for (MidPointObject object : result.getObjects()) {
+                try {
+                    PrismObject<?> prismObject = client.parseObject(object.getContent());
+                    ConnectorType connectorType = (ConnectorType) prismObject.asObjectable();
+
+                    cache.put(connectorType, new CacheValue(connectorType, buildIcfSchema(object), buildConnectorSchema(object)));
+                } catch (Exception ex) {
+                    LOG.error("Couldn't parse connector object", ex);
+                }
+            }
+
+            LOG.info("Refresh finished, " + cache.size() + " objects in cache");
+        }, AppExecutorUtil.getAppExecutorService());
+
+        LOG.info("Invoke done");
     }
 
     private XmlFile buildIcfSchema(MidPointObject object) {
