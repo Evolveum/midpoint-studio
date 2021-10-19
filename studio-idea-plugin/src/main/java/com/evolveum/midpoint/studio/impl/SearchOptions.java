@@ -16,5 +16,10 @@ public class SearchOptions {
         return this;
     }
 
-
+    @Override
+    public String toString() {
+        return "SearchOptions{" +
+                "raw=" + raw +
+                '}';
+    }
 }

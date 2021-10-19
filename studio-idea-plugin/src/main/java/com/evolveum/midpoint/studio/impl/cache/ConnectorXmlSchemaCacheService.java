@@ -26,6 +26,7 @@ import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.ControlFlowException;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlAttribute;
@@ -44,8 +45,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -103,6 +102,9 @@ public class ConnectorXmlSchemaCacheService {
 
                     cache.put(connectorType, new CacheValue(connectorType, buildIcfSchema(object), buildConnectorSchema(object)));
                 } catch (Exception ex) {
+                    if (ex instanceof ProcessCanceledException) {
+                        throw (ProcessCanceledException) ex;
+                    }
                     LOG.error("Couldn't parse connector object", ex);
                 }
             }
@@ -130,20 +132,20 @@ public class ConnectorXmlSchemaCacheService {
         schema.setAttribute("targetNamespace", SchemaConstantsGenerated.NS_ICF_CONFIGURATION);
         schema.setAttribute("elementFormDefault", "qualified");
 
-        Element _import = DOMUtil.createElement(doc, new QName(W3C_XML_SCHEMA_NS_URI, "import", "xsd"));
+        Element _import = DOMUtil.createElement(doc, xsdElement("import"));
         _import.setAttribute("namespace", importNamespace);
         schema.appendChild(_import);
 
-        Element element = DOMUtil.createElement(doc, new QName(W3C_XML_SCHEMA_NS_URI, "element", "xsd"));
+        Element element = DOMUtil.createElement(doc, xsdElement("element"));
         element.setAttribute("name", "configurationProperties");
         element.setAttribute("type", "icfc:ConfigurationPropertiesType");
         schema.appendChild(element);
 
-        Element complex = DOMUtil.createElement(doc, new QName(W3C_XML_SCHEMA_NS_URI, "complexType", "xsd"));
+        Element complex = DOMUtil.createElement(doc, xsdElement("complexType"));
         complex.setAttribute("name", "ConfigurationPropertiesType");
         schema.appendChild(complex);
 
-        Element sequence = DOMUtil.createElement(doc, new QName(W3C_XML_SCHEMA_NS_URI, "sequence", "xsd"));
+        Element sequence = DOMUtil.createElement(doc, xsdElement("sequence"));
         complex.appendChild(sequence);
 
         complexConfigurationPropertiesType.ifPresent(e -> {
@@ -168,6 +170,10 @@ public class ConnectorXmlSchemaCacheService {
         String xsd = DOMUtil.serializeDOMToString(doc);
 
         return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-" + object.getOid() + "-schema.xsd", XMLLanguage.INSTANCE, xsd);
+    }
+
+    private QName xsdElement(String name) {
+        return new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, name, "xsd");
     }
 
     private XmlFile buildConnectorSchema(MidPointObject object) {
