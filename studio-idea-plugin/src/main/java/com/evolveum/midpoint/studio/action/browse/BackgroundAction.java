@@ -23,8 +23,6 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
 
     private boolean running;
 
-    private boolean canceled;
-
     public BackgroundAction(String taskTitle) {
         this.taskTitle = taskTitle;
     }
@@ -103,7 +101,7 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
         e.getPresentation().setEnabled(isEnabled());
     }
 
-    protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
+    protected void executeOnBackground(@NotNull AnActionEvent evt, ProgressIndicator indicator) {
 
     }
 
@@ -120,18 +118,9 @@ public class BackgroundAction extends AnAction implements UpdateInBackground {
     }
 
     protected void onCancel() {
-        canceled = true;
     }
 
     protected void onSuccess() {
 
-    }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    public boolean isCanceled() {
-        return canceled;
     }
 }

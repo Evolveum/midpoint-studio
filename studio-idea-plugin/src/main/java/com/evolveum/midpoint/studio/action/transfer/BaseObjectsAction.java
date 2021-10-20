@@ -17,6 +17,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -119,12 +120,12 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         ProcessState state = new ProcessState();
 
         try {
-            indicator.setFraction(0d);
-
             int i = 0;
             for (Pair<String, ObjectTypes> pair : oids) {
+                ProgressManager.checkCanceled();
+
                 i++;
-                indicator.setFraction(i / oids.size());
+                indicator.setFraction((double) i / oids.size());
 
                 processObject(mm, state, new ExtendedCallable<>() {
 
@@ -231,12 +232,14 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     private void processFiles(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
         ProcessState fullState = new ProcessState();
 
+        int i = 0;
         for (VirtualFile file : files) {
-            if (isCanceled()) {
-                break;
-            }
+            ProgressManager.checkCanceled();
 
             fullState.incrementFiles();
+
+            i++;
+            indicator.setFraction((double) i / files.size());
 
             RunnableUtils.runWriteActionAndWait(() -> {
                 MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
@@ -244,7 +247,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
                 try (Reader in = new BufferedReader(new InputStreamReader(file.getInputStream(), file.getCharset()))) {
                     String xml = IOUtils.toString(in);
 
-                    ProcessState state = processText(evt, mm, indicator, client, xml, file);
+                    ProcessState state = processText(evt, mm, null, client, xml, file);
                     fullState.incrementAll(state);
                 } catch (IOException ex) {
                     fullState.incrementFailedFiles();
@@ -265,10 +268,14 @@ public abstract class BaseObjectsAction extends BackgroundAction {
 
             int i = 0;
             for (MidPointObject obj : objects) {
+                ProgressManager.checkCanceled();
+
                 obj.setFile(VfsUtil.virtualToIoFile(file));
 
                 i++;
-                indicator.setFraction(i / objects.size());
+                if (indicator != null) {
+                    indicator.setFraction((double) i / objects.size());
+                }
 
                 processObject(mm, state, new ExtendedCallable<>() {
 
