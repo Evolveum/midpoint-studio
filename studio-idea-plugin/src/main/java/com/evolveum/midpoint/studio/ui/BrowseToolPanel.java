@@ -18,6 +18,7 @@ import com.evolveum.midpoint.studio.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -695,8 +696,27 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         OrFilter or = qf.createOr();
 
         if (oid) {
-            InOidFilter inOid = qf.createInOid(filtered);
-            or.addCondition(inOid);
+            List<String> filteredOids = filtered;
+
+            if (name) {
+                // if search by name or oid is used, filter out items that can't be used in oid filter
+                filteredOids = filteredOids.stream()
+                        .filter(s -> MidPointUtils.UUID_PATTERN.matcher(s).matches()).collect(Collectors.toList());
+
+                if (filteredOids.size() != filtered.size()) {
+                    MidPointService ms = MidPointService.getInstance(project);
+
+                    EnvironmentService em = EnvironmentService.getInstance(project);
+                    Environment env = em.getSelected();
+                    ms.printToConsole(env, BrowseToolPanel.class,
+                            "Items in search filed that are not valid OIDs were filtered out (" + (filtered.size() - filteredOids.size()) + ").");
+                }
+            }
+
+            if (!filteredOids.isEmpty()) {
+                InOidFilter inOid = qf.createInOid(filteredOids);
+                or.addCondition(inOid);
+            }
         }
 
         if (name) {
