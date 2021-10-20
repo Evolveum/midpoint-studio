@@ -16,6 +16,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
@@ -85,12 +86,10 @@ public class DiffRemoteAction extends BackgroundAction {
 
         int current = 0;
         for (VirtualFile file : files) {
-            if (isCanceled()) {
-                break;
-            }
+            ProgressManager.checkCanceled();
 
             current++;
-            indicator.setFraction(files.size() / current);
+            indicator.setFraction((double) current / files.size());
 
             List<MidPointObject> objects = new ArrayList<>();
 
@@ -112,9 +111,7 @@ public class DiffRemoteAction extends BackgroundAction {
             Map<String, MidPointObject> remoteObjects = new HashMap<>();
 
             for (MidPointObject object : objects) {
-                if (isCanceled()) {
-                    break;
-                }
+                ProgressManager.checkCanceled();
 
                 try {
                     MidPointObject newObject = client.get(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
