@@ -28,6 +28,8 @@ public interface EnvironmentService extends Stateful<EnvironmentSettings> {
 
     String add(Environment env);
 
+    String modify(Environment env);
+
     boolean delete(String id);
 
     Environment get(String id);

@@ -8,7 +8,9 @@ import com.intellij.util.messages.MessageBus;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -45,23 +47,20 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
     public void setSettings(EnvironmentSettings settings) {
         LOG.debug("Setting new settings " + settings);
 
-        Set<String> newIds = new HashSet<>();
+        Environment selected = getSelected();
+
         for (Environment env : settings.getEnvironments()) {
-            add(env);
-            newIds.add(env.getId());
+            createOrUpdateEncryptedData(env);
         }
 
-        Iterator<Environment> iterator = getEnvironments().iterator();
-        while (iterator.hasNext()) {
-            Environment env = iterator.next();
-            if (!newIds.contains(env.getId())) {
-                iterator.remove();
-            }
-        }
+        super.setSettings(settings);
 
         select(settings.getSelectedId());
 
-        super.setSettings(settings);
+        Environment newSelected = getSelected();
+        if (!Objects.equals(selected, newSelected)) {
+            messageBus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentChanged(selected, newSelected);
+        }
     }
 
     @Override
@@ -143,7 +142,20 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
     @Override
     public String add(Environment env) {
         LOG.debug("Adding environment " + env);
+        Environment e = get(env.getId());
+        if (e != null) {
+            return modify(env);
+        }
 
+        createOrUpdateEncryptedData(env);
+
+        getSettings().getEnvironments().add(env);
+        settingsUpdated();
+
+        return env.getId();
+    }
+
+    private void createOrUpdateEncryptedData(Environment env) {
         if (StringUtils.isNotEmpty(env.getUsername()) || StringUtils.isNotEmpty(env.getPassword())) {
             EncryptedCredentials credentials = new EncryptedCredentials(
                     env.getId(), env.getId(), env.getUsername(), env.getPassword(), env.getName());
@@ -155,6 +167,28 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
                     env.getProxyPassword(), env.getName() + DESCRIPTION_PROXY_SUFFIX);
             getEncryptionService().add(credentials);
         }
+    }
+
+    @Override
+    public String modify(Environment env) {
+        LOG.debug("Modifying environment " + env);
+        Environment e = get(env.getId());
+        if (e == null) {
+            return add(env);
+        }
+
+        Environment selected = getSelected();
+
+        String id = createOrUpdateEnvironment(env);
+        if (!Objects.equals(env, selected)) {
+            messageBus.syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentChanged(selected, env);
+        }
+
+        return id;
+    }
+
+    private String createOrUpdateEnvironment(Environment env) {
+        createOrUpdateEncryptedData(env);
 
         getSettings().getEnvironments().add(env);
         settingsUpdated();
