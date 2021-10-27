@@ -18,10 +18,14 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.17.1"
     // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
     id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
+    // git plugin - read more: https://github.com/palantir/gradle-git-version
+    id("com.palantir.git-version") version "0.12.2"
 }
 
 group = properties("pluginGroup")
 version = properties("pluginVersion")
+
+val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 
 val pluginImplementation by configurations.creating {
     extendsFrom(configurations.implementation.get())
@@ -96,7 +100,11 @@ var gitLocalBranch = properties("gitLocalBranch")
 var publishChannel = properties("publishChannel")
 var buildNumber = properties("buildNumber")
 
-if (publishChannel == null || publishChannel.isBlank()) {
+if (gitLocalBranch.isEmpty() || gitLocalBranch == "null") {
+    gitLocalBranch = versionDetails().branchName
+}
+
+if (publishChannel.isBlank() || publishChannel == "null") {
     publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
 }
 

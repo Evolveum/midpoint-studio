@@ -45,7 +45,3 @@
 - Groovy code common variables injection
 - Object diff with option to ignore some parts of xml (metadata, id attributes, etc.)
 - Simple OID generator
-
-
-
-

@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInspection.ex.InspectionProfileImpl;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
@@ -62,7 +63,7 @@ public class MidPointStartupActivity implements StartupActivity {
     }
 
     private void showVersioningChangeNotification() {
-        IdeaPluginDescriptor descriptor = PluginManager.getInstance().findEnabledPlugin(PluginId.getId("com.evolveum.midpoint.studio"));
+        IdeaPluginDescriptor descriptor = PluginManager.getInstance().findEnabledPlugin(PluginId.getId(MidPointConstants.PLUGIN_ID));
         if (descriptor == null) {
             return;
         }
