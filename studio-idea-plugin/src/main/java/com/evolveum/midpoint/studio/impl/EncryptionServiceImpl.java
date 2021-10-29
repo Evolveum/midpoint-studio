@@ -98,7 +98,7 @@ public class EncryptionServiceImpl implements EncryptionService {
 
         String masterPassword = getMasterPassword();
         if (StringUtils.isEmpty(masterPassword)) {
-        MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
+            MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
                 "Credentials file", "Master password not set. All encrypted values will be forgotten after " +
                         "restart, e.g. environment usernames/passwords, encrypted properties. ", NotificationType.WARNING,
                 new UpdateMasterPasswordNotificationAction(false));
@@ -259,6 +259,7 @@ public class EncryptionServiceImpl implements EncryptionService {
     private String getMasterPassword() {
         MidPointSettings settings = MidPointService.getInstance(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
+            LOG.debug("MidPoint settings not available.");
             return null;
         }
 
