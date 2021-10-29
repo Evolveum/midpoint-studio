@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.PrimitiveXNode;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceDictionaryType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TracingOutputType;
@@ -94,14 +95,30 @@ public class FormattingContext {
             public void visit(JaxbVisitable visitable) {
                 resolveVisitable(visitable);
                 if (visitable instanceof RawType && !((RawType) visitable).isParsed()) {
-                    XNode xnode = ((RawType) visitable).getXnode();
-                    if (xnode != null) {
-                        //noinspection unchecked
-                        xnode.accept(this);
-                    }
+                    visitUnparsedRaw((RawType) visitable);
                 } else {
                     JaxbVisitable.visitPrismStructure(visitable, this);
                 }
+            }
+
+            private void visitUnparsedRaw(RawType raw) {
+                XNode xnode = raw.getXnode();
+                if (xnode == null) {
+                    return;
+                }
+
+                // We need to get a mutable clone of the content, to be able to resolve OIDs in it.
+                XNode clone;
+                try {
+                    clone = raw.serializeToXNode();
+                } catch (SchemaException e) {
+                    throw new IllegalStateException(e);
+                }
+                //noinspection unchecked
+                clone.accept(this);
+
+                clone.freeze(); // RawType requires immutable content
+                raw.setRawValue(clone);
             }
 
             @Override
