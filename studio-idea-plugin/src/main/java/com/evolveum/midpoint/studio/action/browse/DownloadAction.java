@@ -126,7 +126,7 @@ public class DownloadAction extends BackgroundAction {
 
                 MidPointUtils.openFile(project, file);
             } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
+                MidPointUtils.publishExceptionNotification(project, environment, DownloadAction.class, NOTIFICATION_KEY,
                         "Exception occurred when preparing show only file " + (file != null ? file.getName() : null), ex);
             } finally {
                 IOUtils.closeQuietly(out);
@@ -144,7 +144,7 @@ public class DownloadAction extends BackgroundAction {
 
                 IOUtils.write(object.getContent(), out);
             } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
+                MidPointUtils.publishExceptionNotification(client.getProject(), environment, DownloadAction.class, NOTIFICATION_KEY,
                         "Exception occurred when getting object " + oid.getFirst() + " ("
                                 + oid.getSecond().getTypeQName().getLocalPart() + ")", ex);
             }
@@ -171,7 +171,8 @@ public class DownloadAction extends BackgroundAction {
                 downloadByQuery(client);
             }
         } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY, "Exception occurred during download", ex);
+            MidPointUtils.publishExceptionNotification(evt.getProject(), environment, DownloadAction.class,
+                    NOTIFICATION_KEY, "Exception occurred during download", ex);
         } finally {
             IOUtils.closeQuietly(out);
         }
@@ -201,7 +202,7 @@ public class DownloadAction extends BackgroundAction {
 
                 LOG.debug("File saved");
             } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
+                MidPointUtils.publishExceptionNotification(project, environment, DownloadAction.class, NOTIFICATION_KEY,
                         "Exception occurred when getting object " + pair.getFirst() + " ("
                                 + pair.getSecond().getTypeQName().getLocalPart() + ")", ex);
             }
@@ -237,7 +238,7 @@ public class DownloadAction extends BackgroundAction {
 
             LOG.debug("Files saved");
         } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
+            MidPointUtils.publishExceptionNotification(project, environment, DownloadAction.class, NOTIFICATION_KEY,
                     "Exception occurred when searching for " + type.getValue(), ex);
         }
 
@@ -259,7 +260,7 @@ public class DownloadAction extends BackgroundAction {
 
             return file;
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(environment, DownloadAction.class, NOTIFICATION_KEY,
+            MidPointUtils.publishExceptionNotification(project, environment, DownloadAction.class, NOTIFICATION_KEY,
                     "Exception occurred when serializing object to file " + (file != null ? file.getName() : null), ex);
         } finally {
             IOUtils.closeQuietly(out);

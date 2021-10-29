@@ -64,7 +64,7 @@ public class DownloadSelectedTypes extends BackgroundAction {
         }
 
         if (settings.getTypesToDownloadLimit() <= 0) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Download Selected Types", "Download limit set to zero. Done.", NotificationType.WARNING);
+            MidPointUtils.publishNotification(project, NOTIFICATION_KEY, "Download Selected Types", "Download limit set to zero. Done.", NotificationType.WARNING);
             return;
         }
 

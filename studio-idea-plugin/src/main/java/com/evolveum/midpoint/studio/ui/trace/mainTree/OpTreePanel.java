@@ -134,6 +134,7 @@ public class OpTreePanel extends JPanel {
         group.add(MidPointUtils.createAnAction("Analyze", AllIcons.Actions.Show, e -> analyzeSelected()));
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceViewPanelMainToolbar", group, true);
+        resultsActionsToolbar.setTargetComponent(this);
         return resultsActionsToolbar.getComponent();
     }
 

@@ -1,6 +1,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -8,19 +9,23 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.5.10"
+    id("org.jetbrains.kotlin.jvm") version "1.5.31"
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.0"
+    id("org.jetbrains.intellij") version "1.2.0"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-    id("org.jetbrains.changelog") version "1.1.2"
+    id("org.jetbrains.changelog") version "1.3.0"
     // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
     id("io.gitlab.arturbosch.detekt") version "1.17.1"
     // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
     id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
+    // git plugin - read more: https://github.com/palantir/gradle-git-version
+    id("com.palantir.git-version") version "0.12.2"
 }
 
 group = properties("pluginGroup")
 version = properties("pluginVersion")
+
+val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 
 val pluginImplementation by configurations.creating {
     extendsFrom(configurations.implementation.get())
@@ -91,27 +96,21 @@ dependencies {
 
 var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
 
-// until we move to semantic versioning and use only stable/nightly (without milestone) channels
-// we'll modify "recommended" versions and channel
-
 var gitLocalBranch = properties("gitLocalBranch")
 var publishChannel = properties("publishChannel")
 var buildNumber = properties("buildNumber")
 
-if (gitLocalBranch == "nightly" || gitLocalBranch == "milestone") {
-    publishChannel = gitLocalBranch
-} else if (gitLocalBranch == "stable") {
-    publishChannel = "default"
+if (gitLocalBranch.isEmpty() || gitLocalBranch == "null") {
+    gitLocalBranch = versionDetails().branchName
+}
+
+if (publishChannel.isBlank() || publishChannel == "null") {
+    publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
 }
 
 var channelSuffix = ""
-if (!publishChannel.isBlank()) {
-    var channel = publishChannel.toLowerCase()
-    if (channel == "nightly") {
-        channelSuffix = "-$buildNumber-$channel"
-    } else if (channel == "milestone") {
-        channelSuffix = "-$buildNumber"
-    }
+if (!publishChannel.isBlank() && publishChannel.toLowerCase() != "default") {
+    channelSuffix = "-$publishChannel-$buildNumber"
 }
 
 var pluginVersion = "$version$channelSuffix"
@@ -138,9 +137,9 @@ intellij {
 // Configure gradle-changelog-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
-    version = properties("pluginVersion")
-    groups = emptyList()
-    headerParserRegex = "\\d+\\.\\d+" // this can be removed when we'll start using semantic versioning (e.g. 4.4.0)
+    version.set(properties("pluginVersion"))
+    groups.set(emptyList())
+    headerParserRegex.set("\\d+(\\.\\d+){1,2}") // this can be removed when we'll start using semantic versioning (e.g. 4.4.0)
 }
 
 // Configure detekt plugin.
@@ -193,13 +192,10 @@ tasks {
 
     runPluginVerifier {
         ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
-//        setFailureLevel(
-//            EnumSet.of(
-//                RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-//                RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
-//                RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN
-//            )
-//        )
+        failureLevel.set(listOf(
+            RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
+            RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN))
     }
 
     publishPlugin {

@@ -1,11 +1,15 @@
 package com.evolveum.midpoint.studio.impl.browse;
 
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.openapi.project.Project;
 import org.w3c.dom.Element;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +20,7 @@ public abstract class Generator {
 
     public abstract String getLabel();
 
-    public abstract String generate(List<ObjectType> objects, GeneratorOptions options);
+    public abstract String generate(Project project, List<ObjectType> objects, GeneratorOptions options);
 
     public boolean supportsRawOption() {
         return false;
@@ -66,17 +70,6 @@ public abstract class Generator {
         return "name";
     }
 
-    protected void createInOidQueryFilter(Element filter, List<ObjectType> objects) {
-        Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID);
-        for (ObjectType o : objects) {
-            DOMUtil.createSubElement(inOid, Constants.Q_VALUE).setTextContent(o.getOid());
-        }
-    }
-
-    public boolean supportsWrapIntoTask() {
-        return false;
-    }
-
     public boolean supportsCreateSuspended() {
         return false;
     }
@@ -111,5 +104,18 @@ public abstract class Generator {
 
     public String getActionDescription() {
         return null;
+    }
+
+    protected void addStandardNamespaceDefinitions(Element element) {
+        if (element == null) {
+            return;
+        }
+
+        element.setAttribute("xmlns:c", SchemaConstantsGenerated.NS_COMMON);
+        element.setAttribute("xmlns:mext", SchemaConstants.NS_MODEL_EXTENSION);
+        element.setAttribute("xmlns:q", SchemaConstants.NS_QUERY);
+        element.setAttribute("xmlns:s", SchemaConstants.NS_SCRIPTING);
+        element.setAttribute("xmlns:scext", SchemaConstants.SCRIPTING_EXTENSION_NS);
+        element.setAttribute("xmlns:xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
     }
 }

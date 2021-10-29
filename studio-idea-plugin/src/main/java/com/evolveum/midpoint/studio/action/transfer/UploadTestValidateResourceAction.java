@@ -35,7 +35,7 @@ public class UploadTestValidateResourceAction extends UploadTestResource {
 
         GeneratorOptions genOptions = new GeneratorOptions();
         BulkActionGenerator gen = new BulkActionGenerator(BulkActionGenerator.Action.VALIDATE);
-        String requestString = gen.generateFromSourceObject(obj, genOptions);
+        String requestString = gen.generateFromSourceObject(obj, genOptions, evt.getProject());
 
         ExecuteScriptResponseType response = client.execute(requestString);
         OperationResultType res = response.getResult();

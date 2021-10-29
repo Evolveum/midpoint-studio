@@ -93,15 +93,16 @@ public class MidPointModuleBuilder extends ModuleBuilder {
         VirtualFile root = createAndGetContentEntry();
         modifiableRootModel.addContentEntry(root);
 
+        Project project = modifiableRootModel.getProject();
+
         try {
             VfsUtil.createDirectories(root.getPath() + "/objects");
             VfsUtil.createDirectories(root.getPath() + "/scratches");
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create directory structure", ex);
+            MidPointUtils.publishExceptionNotification(project, null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create directory structure", ex);
         }
 
         // build pom file
-        Project project = modifiableRootModel.getProject();
         MidPointUtils.runWhenInitialized(project, (DumbAwareRunnable) () -> {
 
             Application am = ApplicationManager.getApplication();
@@ -129,7 +130,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
             createGitIgnoreFile(project, root);
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create pom.xml file", ex);
+            MidPointUtils.publishExceptionNotification(project, null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create pom.xml file", ex);
         }
     }
 

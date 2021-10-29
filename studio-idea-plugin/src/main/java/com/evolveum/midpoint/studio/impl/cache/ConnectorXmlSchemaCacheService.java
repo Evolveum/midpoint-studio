@@ -26,11 +26,13 @@ import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.ControlFlowException;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBus;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
@@ -43,8 +45,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -80,29 +80,39 @@ public class ConnectorXmlSchemaCacheService {
     }
 
     private void refresh(Environment env) {
-        LOG.info("Refreshing");
+        LOG.info("Invoking refresh");
 
-        cache.clear();
+        RunnableUtils.submitNonBlockingReadAction(() -> {
 
-        if (env == null) {
-            LOG.info("Refresh skipped, no environment selected");
-            return;
-        }
+            LOG.info("Refreshing");
 
-        MidPointClient client = new MidPointClient(project, env, true, true);
-        SearchResult result = client.search(ConnectorType.class, null, true);
-        for (MidPointObject object : result.getObjects()) {
-            try {
-                PrismObject<?> prismObject = client.parseObject(object.getContent());
-                ConnectorType connectorType = (ConnectorType) prismObject.asObjectable();
+            cache.clear();
 
-                cache.put(connectorType, new CacheValue(connectorType, buildIcfSchema(object), buildConnectorSchema(object)));
-            } catch (Exception ex) {
-                LOG.error("Couldn't parse connector object", ex);
+            if (env == null) {
+                LOG.info("Refresh skipped, no environment selected");
+                return;
             }
-        }
 
-        LOG.info("Refresh finished");
+            MidPointClient client = new MidPointClient(project, env, true, true);
+            SearchResult result = client.search(ConnectorType.class, null, true);
+            for (MidPointObject object : result.getObjects()) {
+                try {
+                    PrismObject<?> prismObject = client.parseObject(object.getContent());
+                    ConnectorType connectorType = (ConnectorType) prismObject.asObjectable();
+
+                    cache.put(connectorType, new CacheValue(connectorType, buildIcfSchema(object), buildConnectorSchema(object)));
+                } catch (Exception ex) {
+                    if (ex instanceof ProcessCanceledException) {
+                        throw (ProcessCanceledException) ex;
+                    }
+                    LOG.error("Couldn't parse connector object", ex);
+                }
+            }
+
+            LOG.info("Refresh finished, " + cache.size() + " objects in cache");
+        }, AppExecutorUtil.getAppExecutorService());
+
+        LOG.info("Invoke done");
     }
 
     private XmlFile buildIcfSchema(MidPointObject object) {
@@ -122,20 +132,20 @@ public class ConnectorXmlSchemaCacheService {
         schema.setAttribute("targetNamespace", SchemaConstantsGenerated.NS_ICF_CONFIGURATION);
         schema.setAttribute("elementFormDefault", "qualified");
 
-        Element _import = DOMUtil.createElement(doc, new QName(W3C_XML_SCHEMA_NS_URI, "import", "xsd"));
+        Element _import = DOMUtil.createElement(doc, xsdElement("import"));
         _import.setAttribute("namespace", importNamespace);
         schema.appendChild(_import);
 
-        Element element = DOMUtil.createElement(doc, new QName(W3C_XML_SCHEMA_NS_URI, "element", "xsd"));
+        Element element = DOMUtil.createElement(doc, xsdElement("element"));
         element.setAttribute("name", "configurationProperties");
         element.setAttribute("type", "icfc:ConfigurationPropertiesType");
         schema.appendChild(element);
 
-        Element complex = DOMUtil.createElement(doc, new QName(W3C_XML_SCHEMA_NS_URI, "complexType", "xsd"));
+        Element complex = DOMUtil.createElement(doc, xsdElement("complexType"));
         complex.setAttribute("name", "ConfigurationPropertiesType");
         schema.appendChild(complex);
 
-        Element sequence = DOMUtil.createElement(doc, new QName(W3C_XML_SCHEMA_NS_URI, "sequence", "xsd"));
+        Element sequence = DOMUtil.createElement(doc, xsdElement("sequence"));
         complex.appendChild(sequence);
 
         complexConfigurationPropertiesType.ifPresent(e -> {
@@ -160,6 +170,10 @@ public class ConnectorXmlSchemaCacheService {
         String xsd = DOMUtil.serializeDOMToString(doc);
 
         return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-" + object.getOid() + "-schema.xsd", XMLLanguage.INSTANCE, xsd);
+    }
+
+    private QName xsdElement(String name) {
+        return new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, name, "xsd");
     }
 
     private XmlFile buildConnectorSchema(MidPointObject object) {
@@ -284,8 +298,8 @@ public class ConnectorXmlSchemaCacheService {
 
                     SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
                     of = ctx.getQueryConverter().parseFilter(filterType, ConnectorType.class);
-                } catch (SchemaException ex) {
-                    LOG.debug("Couldn't parse connectorRef filter defined in resource", ex);
+                } catch (Exception ex) {
+                    LOG.debug("Couldn't parse connectorRef filter defined in resource, reason: " + ex.getMessage() + "(" + ex.getClass().getName() + ")");
                 }
 
                 if (of == null) {

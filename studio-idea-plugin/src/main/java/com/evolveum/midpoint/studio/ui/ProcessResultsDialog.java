@@ -5,8 +5,6 @@ import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
 import com.evolveum.midpoint.studio.util.LocalizedRenderer;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.ide.actions.ActionsCollector;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogEarthquakeShaker;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
@@ -19,7 +17,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,7 +57,6 @@ public class ProcessResultsDialog extends DialogWrapper {
     private JComboBox<Generator> generate;
     private JComboBox<Execution> execution;
     private JTextField n;
-    private JCheckBox wrapCreatedBulkActionCheckBox;
     private JCheckBox createTasksInSuspendedCheckBox;
     private JCheckBox executeInRawModeCheckBox;
     private JCheckBox executeInDryRunCheckBox;
@@ -119,7 +115,6 @@ public class ProcessResultsDialog extends DialogWrapper {
         executeInDryRunCheckBox.setSelected(opts.isDryRun());
         useSymbolicReferencesCheckBox.setSelected(opts.isSymbolicReferences());
         runtimeResolutionCheckBox.setSelected(opts.isSymbolicReferencesRuntime());
-        wrapCreatedBulkActionCheckBox.setSelected(opts.isWrapActions());
     }
 
     @Nullable
@@ -140,6 +135,17 @@ public class ProcessResultsDialog extends DialogWrapper {
 
     private Action getGenerateAction() {
         return new GenerateAction();
+    }
+
+    @Override
+    protected @Nullable ValidationInfo doValidate() {
+        GeneratorOptions opts = buildGeneratorOptions();
+
+        if (opts.isBatchByOids() && selected.isEmpty()) {
+            return new ValidationInfo("Batch by OIDs selected by selection is empty");
+        }
+
+        return null;
     }
 
     private void doGenerateAction(ActionEvent evt) {
@@ -163,7 +169,6 @@ public class ProcessResultsDialog extends DialogWrapper {
         opts.setRaw(executeInRawModeCheckBox.isSelected());
         opts.setSymbolicReferences(useSymbolicReferencesCheckBox.isSelected());
         opts.setSymbolicReferencesRuntime(runtimeResolutionCheckBox.isSelected());
-        opts.setWrapActions(wrapCreatedBulkActionCheckBox.isSelected());
 
         Execution exec = (Execution) execution.getSelectedItem();
         if (exec == null) {
@@ -204,7 +209,6 @@ public class ProcessResultsDialog extends DialogWrapper {
 
         @Override
         protected void doAction(ActionEvent e) {
-            recordAction("DialogGenerateAction");
             List<ValidationInfo> infoList = doValidateAll();
             if (!infoList.isEmpty()) {
                 ValidationInfo info = infoList.get(0);
@@ -220,16 +224,6 @@ public class ProcessResultsDialog extends DialogWrapper {
                 if (infoList.stream().anyMatch(info1 -> !info1.okEnabled)) return;
             }
             doGenerateAction(e);
-        }
-
-        private void recordAction(String name) {
-            recordAction(name, EventQueue.getCurrentEvent());
-        }
-
-        private void recordAction(String name, AWTEvent event) {
-            if (event instanceof KeyEvent && ApplicationManager.getApplication() != null) {
-                ActionsCollector.getInstance().record(name, (KeyEvent) event, getClass());
-            }
         }
     }
 }

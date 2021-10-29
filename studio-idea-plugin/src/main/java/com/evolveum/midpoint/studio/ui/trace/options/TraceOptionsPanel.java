@@ -114,6 +114,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         group.add(apply);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceOptionsToolbar", group, true);
+        toolbar.setTargetComponent(this);
         add(toolbar.getComponent(), BorderLayout.NORTH);
     }
 

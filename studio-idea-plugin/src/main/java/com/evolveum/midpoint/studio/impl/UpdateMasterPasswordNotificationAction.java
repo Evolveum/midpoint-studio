@@ -44,11 +44,12 @@ public class UpdateMasterPasswordNotificationAction extends NotificationAction {
         try {
             service.changeMasterPassword(null, pwd);
 
-            MidPointUtils.publishNotification(EncryptionService.NOTIFICATION_KEY, "Master Password",
+            MidPointUtils.publishNotification(project, EncryptionService.NOTIFICATION_KEY, "Master Password",
                     "Master password update successful.", NotificationType.INFORMATION);
         } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(null, UpdateMasterPasswordNotificationAction.class, EncryptionService.NOTIFICATION_KEY,
-                    "Couldn't open credentials database with master password", ex, new UpdateMasterPasswordNotificationAction(true));
+            MidPointUtils.publishExceptionNotification(project, null, UpdateMasterPasswordNotificationAction.class,
+                    EncryptionService.NOTIFICATION_KEY, "Couldn't open credentials database with master password",
+                    ex, new UpdateMasterPasswordNotificationAction(true));
         }
     }
 }

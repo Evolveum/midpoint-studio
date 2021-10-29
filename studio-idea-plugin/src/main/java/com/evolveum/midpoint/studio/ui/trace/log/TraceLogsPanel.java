@@ -100,6 +100,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
         group.add(load);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceViewLogsToolbar", group, true);
+        toolbar.setTargetComponent(this);
         add(toolbar.getComponent(), BorderLayout.NORTH);
 
         logs = new JBTextArea();

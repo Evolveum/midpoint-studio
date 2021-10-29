@@ -87,6 +87,7 @@ public class TraceLensContextPanel extends BorderLayoutPanel {
         group.add(collapseAll);
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceLensContextToolbar", group, true);
+        resultsActionsToolbar.setTargetComponent(this);
         return resultsActionsToolbar.getComponent();
     }
 

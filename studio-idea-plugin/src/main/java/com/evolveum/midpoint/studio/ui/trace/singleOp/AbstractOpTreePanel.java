@@ -190,6 +190,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         group.add(variablesWrapText);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceViewVariablesToolbar", group, true);
+        toolbar.setTargetComponent(this);
         left.add(toolbar.getComponent(), BorderLayout.NORTH);
 
         variablesValue = new JBTextArea();
@@ -206,6 +207,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         group.add(collapseAll);
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceTreeToolbar", group, true);
+        resultsActionsToolbar.setTargetComponent(this);
         return resultsActionsToolbar.getComponent();
     }
 

@@ -8,7 +8,6 @@ public class GeneratorOptions {
 
     private boolean symbolicReferences;
     private boolean symbolicReferencesRuntime;
-    private boolean wrapActions;
     private boolean createSuspended;
     private boolean raw;
     private boolean dryRun;
@@ -33,14 +32,6 @@ public class GeneratorOptions {
 
     public void setSymbolicReferencesRuntime(boolean symbolicReferencesRuntime) {
         this.symbolicReferencesRuntime = symbolicReferencesRuntime;
-    }
-
-    public boolean isWrapActions() {
-        return wrapActions;
-    }
-
-    public void setWrapActions(boolean wrapActions) {
-        this.wrapActions = wrapActions;
     }
 
     public boolean isCreateSuspended() {

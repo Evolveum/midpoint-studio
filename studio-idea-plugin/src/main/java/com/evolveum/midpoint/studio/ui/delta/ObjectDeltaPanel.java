@@ -157,7 +157,7 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
             root.add(processor.getComponent(), BorderLayout.CENTER);
             processor.updateRequest();
         } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(null, ObjectDeltaPanel.class, ObjectDeltaEditor.NOTIFICATION_KEY,
+            MidPointUtils.publishExceptionNotification(project, null, ObjectDeltaPanel.class, ObjectDeltaEditor.NOTIFICATION_KEY,
                     "Couldn't create diff, reason: " + ex.getMessage(), ex);
         }
     }

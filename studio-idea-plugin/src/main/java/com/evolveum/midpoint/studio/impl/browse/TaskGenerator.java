@@ -1,10 +1,14 @@
 package com.evolveum.midpoint.studio.impl.browse;
 
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import org.w3c.dom.Document;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.SystemObjectsType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.TaskRecurrenceType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.TaskType;
+import com.intellij.openapi.project.Project;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
@@ -54,10 +58,7 @@ public class TaskGenerator extends Generator {
     }
 
     @Override
-    public String generate(List<ObjectType> objects, GeneratorOptions options) {
-        Document doc = DOMUtil.getDocument(new QName(Constants.COMMON_NS, "objects", "c"));
-        Element root = doc.getDocumentElement();
-
+    public String generate(Project project, List<ObjectType> objects, GeneratorOptions options) {
         // TODO deduplicate with bulk actions
         ObjectTypes type = action.applicableTo;
         if (options.isBatchUsingOriginalQuery()) {
@@ -70,19 +71,37 @@ public class TaskGenerator extends Generator {
         }
 
         List<Batch> batches = createBatches(objects, options, action.applicableTo);
-        for (Batch batch : batches) {
 
-            Element task = DOMUtil.createSubElement(root, new QName(Constants.COMMON_NS, "task", "c"));
-            DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "name", "c")).setTextContent("Execute " + action.getDisplayName() + " on objects " + (batch.getFirst() + 1) + " to " + (batch.getLast() + 1));
-            Element extension = DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "extension", "c"));
-            DOMUtil.setNamespaceDeclaration(extension, "mext", Constants.MEXT_NS);
+        Element root = null;
+        if (batches.size() > 1) {
+            root = DOMUtil.getDocument(new QName(Constants.COMMON_NS, "objects")).getDocumentElement();
+            addStandardNamespaceDefinitions(root);
+        }
+
+        for (Batch batch : batches) {
+            Element task;
+
+            if (batches.size() == 1) {
+                task = DOMUtil.getDocument(SchemaConstantsGenerated.C_TASK).getDocumentElement();
+                addStandardNamespaceDefinitions(task);
+
+                root = task;
+            } else {
+                task = DOMUtil.createSubElement(root, new QName(Constants.COMMON_NS, "object"));
+                task.setAttribute("xsi:type", "c:TaskType");
+            }
+
+            DOMUtil.createSubElement(task, TaskType.F_NAME)
+                    .setTextContent("Execute " + action.getDisplayName() + " on objects " + (batch.getFirst() + 1) + " to " + (batch.getLast() + 1));
+
+            Element extension = DOMUtil.createSubElement(task, TaskType.F_EXTENSION);
             DOMUtil.createSubElement(extension, new QName(Constants.MEXT_NS, "objectType", "mext")).setTextContent(type.getTypeQName().getLocalPart());
             Element objectQuery = DOMUtil.createSubElement(extension, new QName(Constants.MEXT_NS, "objectQuery", "mext"));
             if (options.isBatchByOids()) {
-                Element filter = DOMUtil.createSubElement(objectQuery, Constants.Q_FILTER_Q);
-                Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
+                Element filter = DOMUtil.createSubElement(objectQuery, Constants.Q_FILTER_PREFIXED);
+                Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_PREFIXED);
                 for (ObjectType o : batch.getObjects()) {
-                    DOMUtil.createSubElement(inOid, Constants.Q_VALUE_Q).setTextContent(o.getOid());
+                    DOMUtil.createSubElement(inOid, Constants.Q_VALUE_PREFIXED).setTextContent(o.getOid());
                     DOMUtil.createComment(inOid, " " + o.getName() + " ");
                 }
             } else {
@@ -91,10 +110,10 @@ public class TaskGenerator extends Generator {
                     List<Element> children = DOMUtil.listChildElements(originalQuery);
                     for (Element child : children) {
                         DOMUtil.fixNamespaceDeclarations(child);
-                        objectQuery.appendChild(doc.adoptNode(child));
+                        objectQuery.appendChild(root.getOwnerDocument().adoptNode(child));
                     }
                 } catch (RuntimeException e) {
-                    MidPointUtils.publishExceptionNotification(null, TaskGenerator.class,
+                    MidPointUtils.publishExceptionNotification(project, null, TaskGenerator.class,
                             GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
                     throw e;
                 }
@@ -134,17 +153,16 @@ public class TaskGenerator extends Generator {
                 DOMUtil.createComment(extension, " <mext:diagnose>fetch</mext:diagnose> ");
             }
 
-            DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "taskIdentifier", "c")).setTextContent(MidPointUtils.generateTaskIdentifier());
-            DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "ownerRef", "c")).setAttribute("oid", "00000000-0000-0000-0000-000000000002");
-            DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "executionStatus", "c")).setTextContent(
+            DOMUtil.createSubElement(task, TaskType.F_OWNER_REF).setAttribute("oid", SystemObjectsType.USER_ADMINISTRATOR.value());
+            DOMUtil.createSubElement(task, new QName(SchemaConstantsGenerated.NS_COMMON, "executionStatus")).setTextContent(
                     options.isCreateSuspended() ? "suspended" : "runnable"
             );
-            DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "category", "c")).setTextContent(action.category);
-            DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "handlerUri", "c")).setTextContent(action.handlerUri);
-            DOMUtil.createSubElement(task, new QName(Constants.COMMON_NS, "recurrence", "c")).setTextContent("single");
+            DOMUtil.createSubElement(task, TaskType.F_CATEGORY).setTextContent(action.category);
+            DOMUtil.createSubElement(task, TaskType.F_HANDLER_URI).setTextContent(action.handlerUri);
+            DOMUtil.createSubElement(task, TaskType.F_RECURRENCE).setTextContent(TaskRecurrenceType.SINGLE.value());
         }
 
-        return DOMUtil.serializeDOMToString(doc);
+        return DOMUtil.serializeDOMToString(root);
     }
 
     @Override
@@ -160,11 +178,6 @@ public class TaskGenerator extends Generator {
     @Override
     public boolean isExecutable() {
         return action != Action.MODIFY;
-    }
-
-    @Override
-    public boolean supportsWrapIntoTask() {
-        return false;
     }
 
     @Override

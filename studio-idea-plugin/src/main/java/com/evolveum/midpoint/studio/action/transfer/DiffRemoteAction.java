@@ -16,6 +16,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
@@ -65,7 +66,7 @@ public class DiffRemoteAction extends BackgroundAction {
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, getTaskTitle(),
+            MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, getTaskTitle(),
                     "No files matched for " + getTaskTitle() + " (xml)", NotificationType.WARNING);
             return;
         }
@@ -85,19 +86,17 @@ public class DiffRemoteAction extends BackgroundAction {
 
         int current = 0;
         for (VirtualFile file : files) {
-            if (isCanceled()) {
-                break;
-            }
+            ProgressManager.checkCanceled();
 
             current++;
-            indicator.setFraction(files.size() / current);
+            indicator.setFraction((double) current / files.size());
 
             List<MidPointObject> objects = new ArrayList<>();
 
             RunnableUtils.runWriteActionAndWait(() -> {
                 MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
 
-                List<MidPointObject> obj = MidPointUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                List<MidPointObject> obj = MidPointUtils.parseProjectFile(evt.getProject(), file, NOTIFICATION_KEY);
                 obj = ClientUtils.filterObjectTypeOnly(obj);
 
                 objects.addAll(obj);
@@ -112,9 +111,7 @@ public class DiffRemoteAction extends BackgroundAction {
             Map<String, MidPointObject> remoteObjects = new HashMap<>();
 
             for (MidPointObject object : objects) {
-                if (isCanceled()) {
-                    break;
-                }
+                ProgressManager.checkCanceled();
 
                 try {
                     MidPointObject newObject = client.get(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
@@ -201,6 +198,6 @@ public class DiffRemoteAction extends BackgroundAction {
         msg.append("Missing ").append(missing).append(" objects<br/>");
         msg.append("Failed to compare ").append(failed.get()).append(" objects<br/>");
         msg.append("Skipped ").append(skipped).append(" files");
-        MidPointUtils.publishNotification(NOTIFICATION_KEY, getTaskTitle(), msg.toString(), type);
+        MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, getTaskTitle(), msg.toString(), type);
     }
 }
