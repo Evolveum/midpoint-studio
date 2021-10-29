@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action;
 
+import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
@@ -65,7 +66,8 @@ public class CleanupFileAction extends AnAction {
                 ItemPath.create(TaskType.F_RESULT_STATUS),
                 ItemPath.create(TaskType.F_OPERATION_STATS),
                 ItemPath.create(TaskType.F_COMPLETION_TIMESTAMP),
-                ItemPath.create(TaskType.F_EXECUTION_STATUS),
+                ItemPath.create(new ItemName(SchemaConstants.NS_C, "executionStatus")), // F_EXECUTION_STATE, not available in 4.4 schema
+                ItemPath.create(TaskType.F_EXECUTION_STATE),
                 ItemPath.create(TaskType.F_LAST_RUN_FINISH_TIMESTAMP),
                 ItemPath.create(TaskType.F_LAST_RUN_START_TIMESTAMP),
                 ItemPath.create(new QName(SchemaConstants.NS_C, "workState")),  // TaskType.F_WORK_STATE, not available in 4.4 schema
