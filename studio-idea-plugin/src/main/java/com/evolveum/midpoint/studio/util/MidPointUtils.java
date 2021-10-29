@@ -473,6 +473,14 @@ public class MidPointUtils {
         }
     }
 
+    public static String formatTimePrecise(Long time) {
+        if (time == null) {
+            return "";
+        } else {
+            return String.format(Locale.US, "%.2f", time / 1000.0);
+        }
+    }
+
     public static String formatPercent(Double value) {
         if (value == null) {
             return "";

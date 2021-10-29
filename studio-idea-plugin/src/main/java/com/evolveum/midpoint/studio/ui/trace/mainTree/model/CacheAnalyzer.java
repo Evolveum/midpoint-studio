@@ -26,6 +26,9 @@ public class CacheAnalyzer {
         private final Map<String, Integer> globalPassReasons = new HashMap<>();
         private final Map<String, Integer> localPassReasons = new HashMap<>();
         private int noTrace;
+        private int readOnly;
+        private int notReadOnly;
+        private int repoCacheNodes;
 
         public void processTree(OpNode opNode) {
             processNode(opNode);
@@ -41,10 +44,22 @@ public class CacheAnalyzer {
             if (!(opNode instanceof RepositoryCacheOpNode)) {
                 return;
             }
-
-            System.out.println("Processing " + opNode);
-
             RepositoryCacheOpNode cacheOpNode = (RepositoryCacheOpNode) opNode;
+
+            repoCacheNodes++;
+            System.out.println("Processing #" + repoCacheNodes + ": " + cacheOpNode);
+
+            Boolean isReadOnly = cacheOpNode.isReadOnly();
+            if (isReadOnly != null) {
+                System.out.println("Is read only: " + isReadOnly);
+            }
+
+            if (Boolean.TRUE.equals(isReadOnly)) {
+                readOnly++;
+            } else if (Boolean.FALSE.equals(isReadOnly)) {
+                notReadOnly++;
+            }
+
             RepositoryOperationTraceType trace = cacheOpNode.getTrace();
             if (trace == null) {
                 noTrace++;
@@ -70,11 +85,15 @@ public class CacheAnalyzer {
 
         String dump() {
             StringBuilder sb = new StringBuilder();
+            sb.append("Repo cache operations: ").append(repoCacheNodes).append("\n");
             sb.append("No trace: ").append(noTrace).append("\n");
-            sb.append("Global cache:\n");
+            sb.append("Pass reasons for the global cache:\n");
             dump(sb, globalPassReasons);
-            sb.append("Local cache:\n");
+            sb.append("Pass reasons for the local cache:\n");
             dump(sb, localPassReasons);
+            sb.append("Read-only: ").append(readOnly)
+                    .append(", not read-only: ").append(notReadOnly)
+                    .append(", not applicable: ").append(repoCacheNodes - readOnly - notReadOnly);
             return sb.toString();
         }
 
