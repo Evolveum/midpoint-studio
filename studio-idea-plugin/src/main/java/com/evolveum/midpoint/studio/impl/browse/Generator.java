@@ -6,6 +6,7 @@ import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.openapi.project.Project;
 import org.w3c.dom.Element;
 
 import javax.xml.XMLConstants;
@@ -19,7 +20,7 @@ public abstract class Generator {
 
     public abstract String getLabel();
 
-    public abstract String generate(List<ObjectType> objects, GeneratorOptions options);
+    public abstract String generate(Project project, List<ObjectType> objects, GeneratorOptions options);
 
     public boolean supportsRawOption() {
         return false;

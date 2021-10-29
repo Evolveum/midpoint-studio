@@ -41,7 +41,7 @@ public class Expander {
     public Expander(Environment environment, EncryptionService encryptionService, Project project) {
         this.environment = environment;
         this.encryptionService = encryptionService;
-        this.environmentProperties = new EnvironmentProperties(environment);
+        this.environmentProperties = new EnvironmentProperties(project, environment);
 
         initProjectProperties(project);
     }

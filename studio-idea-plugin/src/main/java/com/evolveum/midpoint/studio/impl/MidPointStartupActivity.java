@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInspection.ex.InspectionProfileImpl;
+import com.intellij.codeInspection.ex.ToolsImpl;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.javaee.ExternalResourceManagerEx;
@@ -57,12 +58,15 @@ public class MidPointStartupActivity implements StartupActivity {
 
         ProjectInspectionProfileManager pipManager = ProjectInspectionProfileManager.getInstance(project);
         InspectionProfileImpl profile = pipManager.getCurrentProfile();
-        profile.disableToolByDefault(Arrays.asList("CheckValidXmlInScriptTagBody"), project);
+        ToolsImpl tool = profile.getToolsOrNull("CheckValidXmlInScriptTagBody", project);
+        if (tool != null) {
+            tool.setEnabled(false);
+        }
 
-        showVersioningChangeNotification();
+        showVersioningChangeNotification(project);
     }
 
-    private void showVersioningChangeNotification() {
+    private void showVersioningChangeNotification(Project project) {
         IdeaPluginDescriptor descriptor = PluginManager.getInstance().findEnabledPlugin(PluginId.getId(MidPointConstants.PLUGIN_ID));
         if (descriptor == null) {
             return;
@@ -73,7 +77,7 @@ public class MidPointStartupActivity implements StartupActivity {
             return;
         }
 
-        MidPointUtils.publishNotification("VERSION_CHANGE", "Release cycle changes",
+        MidPointUtils.publishNotification(project, "VERSION_CHANGE", "Release cycle changes",
                 "Release cycle for MidPoint Studio plugin will change with release 4.4. " +
                         "There will be only two channels snapshot and stable (default).\n" +
                         "If you're using nightly/milestone channel, please uninstall MidPoint Studio plugin, switch to 'snapshot' channel and install it again. " +

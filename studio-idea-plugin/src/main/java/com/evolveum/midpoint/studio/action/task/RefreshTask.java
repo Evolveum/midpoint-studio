@@ -105,7 +105,7 @@ public class RefreshTask extends Task.Backgroundable {
         }
 
         if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, getTitle(),
+            MidPointUtils.publishNotification(getProject(), NOTIFICATION_KEY, getTitle(),
                     "No files matched for " + getTitle() + " (xml)", NotificationType.WARNING);
             return;
         }
@@ -130,7 +130,7 @@ public class RefreshTask extends Task.Backgroundable {
             RunnableUtils.runWriteActionAndWait(() -> {
                 MidPointUtils.forceSaveAndRefresh(getProject(), file);
 
-                List<MidPointObject> obj = MidPointUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                List<MidPointObject> obj = MidPointUtils.parseProjectFile(getProject(), file, NOTIFICATION_KEY);
                 obj = ClientUtils.filterObjectTypeOnly(obj);
 
                 objects.addAll(obj);
@@ -199,7 +199,7 @@ public class RefreshTask extends Task.Backgroundable {
         NotificationType type = state.missing > 0 || state.failed > 0 || state.skipped > 0 ? NotificationType.WARNING : NotificationType.INFORMATION;
         String msg = buildFinishedNotification();
 
-        MidPointUtils.publishNotification(NOTIFICATION_KEY, "Refresh Action", msg, type);
+        MidPointUtils.publishNotification(getProject(), NOTIFICATION_KEY, "Refresh Action", msg, type);
     }
 
     private String buildFinishedNotification() {
@@ -218,7 +218,7 @@ public class RefreshTask extends Task.Backgroundable {
         LOG.info("Refresh action was cancelled");
 
         String msg = "Processed before cancel requested:<br/>" + buildFinishedNotification();
-        MidPointUtils.publishNotification(NOTIFICATION_KEY, "Refresh Action Canceled", msg, NotificationType.WARNING);
+        MidPointUtils.publishNotification(getProject(), NOTIFICATION_KEY, "Refresh Action Canceled", msg, NotificationType.WARNING);
     }
 
     private static class State {

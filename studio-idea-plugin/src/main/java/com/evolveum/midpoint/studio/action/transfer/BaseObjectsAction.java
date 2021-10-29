@@ -146,7 +146,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             publishException(mm, "Exception occurred during " + operation, ex);
         }
 
-        showNotificationAfterFinish(state);
+        showNotificationAfterFinish(state, evt.getProject());
     }
 
     private void processObjectsBySelection(AnActionEvent e, ProgressIndicator indicator, MidPointClient client) {
@@ -167,9 +167,9 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             if (!StringUtils.isEmpty(text)) {
                 BaseObjectsAction.ProcessState state = processText(e, mm, indicator, client, text, e.getDataContext().getData(PlatformDataKeys.VIRTUAL_FILE));
 
-                showNotificationAfterFinish(state);
+                showNotificationAfterFinish(state, e.getProject());
             } else {
-                MidPointUtils.publishNotification(notificationKey, "Error", "Text is empty", NotificationType.ERROR);
+                MidPointUtils.publishNotification(e.getProject(), notificationKey, "Error", "Text is empty", NotificationType.ERROR);
             }
 
             return;
@@ -178,7 +178,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
                 (Computable<VirtualFile[]>) () -> e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
         if (selectedFiles == null || selectedFiles.length == 0) {
-            MidPointUtils.publishNotification(notificationKey, getTaskTitle(),
+            MidPointUtils.publishNotification(e.getProject(), notificationKey, getTaskTitle(),
                     "No files selected for " + operation, NotificationType.WARNING);
             return;
         }
@@ -186,7 +186,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(notificationKey, getTaskTitle(),
+            MidPointUtils.publishNotification(e.getProject(), notificationKey, getTaskTitle(),
                     "No files matched for " + operation + " (xml)", NotificationType.WARNING);
             return;
         }
@@ -194,7 +194,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         processFiles(e, mm, indicator, client, toProcess);
     }
 
-    private void showNotificationAfterFinish(ProcessState state) {
+    private void showNotificationAfterFinish(ProcessState state, Project project) {
         NotificationType type;
         String title;
         StringBuilder sb = new StringBuilder();
@@ -220,13 +220,13 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             sb.append("Failed to process: ").append(state.failedFiles).append("<br/>");
         }
 
-        MidPointUtils.publishNotification(notificationKey, title, sb.toString(), type);
+        MidPointUtils.publishNotification(project, notificationKey, title, sb.toString(), type);
     }
 
     private void publishException(MidPointService mm, String msg, Exception ex) {
         mm.printToConsole(environment, getClass(), msg + ". Reason: " + ex.getMessage());
 
-        MidPointUtils.publishExceptionNotification(environment, getClass(), notificationKey, msg, ex);
+        MidPointUtils.publishExceptionNotification(mm.getProject(), environment, getClass(), notificationKey, msg, ex);
     }
 
     private void processFiles(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, List<VirtualFile> files) {
@@ -256,14 +256,14 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             });
         }
 
-        showNotificationAfterFinish(fullState);
+        showNotificationAfterFinish(fullState, evt.getProject());
     }
 
     private ProcessState processText(AnActionEvent evt, MidPointService mm, ProgressIndicator indicator, MidPointClient client, String text, VirtualFile file) {
         ProcessState state = new ProcessState();
 
         try {
-            List<MidPointObject> objects = MidPointUtils.parseText(text, notificationKey);
+            List<MidPointObject> objects = MidPointUtils.parseText(evt.getProject(), text, notificationKey);
             objects = ClientUtils.filterObjectTypeOnly(objects, false);
 
             int i = 0;
@@ -351,7 +351,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
         String msg = StringUtils.capitalize(operation) + " status of " + objectName + " was " + result.getStatus();
         mm.printToConsole(environment, getClass(), msg);
 
-        MidPointUtils.publishNotification(notificationKey, "Warning", msg,
+        MidPointUtils.publishNotification(project, notificationKey, "Warning", msg,
                 NotificationType.WARNING, new ShowResultNotificationAction(result));
 
         if (ex != null) {

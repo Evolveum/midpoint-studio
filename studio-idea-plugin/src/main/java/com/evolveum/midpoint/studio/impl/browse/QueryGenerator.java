@@ -4,6 +4,7 @@ import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
+import com.intellij.openapi.project.Project;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -17,7 +18,7 @@ public class QueryGenerator extends Generator {
     }
 
     @Override
-    public String generate(List<ObjectType> objects, GeneratorOptions options) {
+    public String generate(Project project, List<ObjectType> objects, GeneratorOptions options) {
         if (objects.isEmpty()) {
             return null;
         }

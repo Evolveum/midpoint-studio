@@ -3,12 +3,12 @@ package com.evolveum.midpoint.studio.impl.browse;
 import com.evolveum.midpoint.model.api.ModelPublicConstants;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.project.Project;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
@@ -79,14 +79,14 @@ public class BulkActionGenerator extends Generator {
     }
 
     @Override
-    public String generate(List<ObjectType> objects, GeneratorOptions options) {
+    public String generate(Project project, List<ObjectType> objects, GeneratorOptions options) {
         List<Batch> batches;
         if (action != Action.ASSIGN_THIS) {
             batches = createBatches(objects, options, action.applicableTo);
         } else {
             // very special case: we assign to (yet) unspecified single object
             if (!options.isBatchByOids()) {
-                MidPointUtils.publishNotification(GeneratorAction.NOTIFICATION_KEY, "Not supported",
+                MidPointUtils.publishNotification(project, GeneratorAction.NOTIFICATION_KEY, "Not supported",
                         "Using original query is not supported for this action.", NotificationType.ERROR);
                 return null;
             }
@@ -121,7 +121,7 @@ public class BulkActionGenerator extends Generator {
 
             Element extension = DOMUtil.createSubElement(task, TaskType.F_EXTENSION);
 
-            createSearch(extension, options, batch);
+            createSearch(extension, options, batch, project);
             createAction(extension, options, objects);
 
             DOMUtil.createComment(extension, "<mext:workerThreads xmlns:mext=\"http://midpoint.evolveum.com/xml/ns/public/model/extension-3\">1</mext:workerThreads>");
@@ -181,7 +181,7 @@ public class BulkActionGenerator extends Generator {
         return concrete;
     }
 
-    private void createSearch(Element extension, GeneratorOptions options, Batch batch) {
+    private void createSearch(Element extension, GeneratorOptions options, Batch batch, Project project) {
         ObjectTypes type = action.applicableTo;
         if (options.isBatchUsingOriginalQuery()) {
             if (options.getOriginalQueryTypes().size() == 1) {
@@ -220,13 +220,13 @@ public class BulkActionGenerator extends Generator {
                     DOMUtil.listChildElements(originalQuery).forEach(e -> objectQuery.appendChild(objectQuery.getOwnerDocument().adoptNode(e)));
                 }
             } catch (RuntimeException e) {
-                MidPointUtils.publishExceptionNotification(null, BulkActionGenerator.class,
+                MidPointUtils.publishExceptionNotification(project, null, BulkActionGenerator.class,
                         GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
             }
         }
     }
 
-    public void createSingleSourceSearch(Element root, MidPointObject object) {
+    public void createSingleSourceSearch(Element root, MidPointObject object, Project project) {
         Element search = DOMUtil.createSubElement(root, new QName(Constants.SCRIPT_NS, "expression", "s"));
         DOMUtil.setXsiType(search, new QName(Constants.SCRIPT_NS, "SearchExpressionType", "s"));
         DOMUtil.createSubElement(search, new QName(Constants.SCRIPT_NS, "type", "s")).setTextContent(object.getType().getTypeQName().getLocalPart());
@@ -240,7 +240,7 @@ public class BulkActionGenerator extends Generator {
             DOMUtil.createSubElement(equal, Constants.Q_PATH_Q).setTextContent("name");
             DOMUtil.createSubElement(equal, Constants.Q_VALUE_Q).setTextContent(object.getName());
         } else {
-            MidPointUtils.publishNotification(GeneratorAction.NOTIFICATION_KEY, "Warning",
+            MidPointUtils.publishNotification(project, GeneratorAction.NOTIFICATION_KEY, "Warning",
                     "No OID nor name provided; action on this object cannot be executed.", NotificationType.WARNING);
 
             Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
@@ -348,9 +348,9 @@ public class BulkActionGenerator extends Generator {
         return action != Action.MODIFY && action != Action.EXECUTE_SCRIPT;
     }
 
-    public String generateFromSourceObject(MidPointObject object, GeneratorOptions options) {
+    public String generateFromSourceObject(MidPointObject object, GeneratorOptions options, Project project) {
         Element pipe = DOMUtil.getDocument(new QName(Constants.SCRIPT_NS, "pipeline", "s")).getDocumentElement();
-        createSingleSourceSearch(pipe, object);
+        createSingleSourceSearch(pipe, object, project);
         if (action == Action.ASSIGN_THIS) {
             throw new IllegalStateException("'Assign this' is not supported here.");
         }

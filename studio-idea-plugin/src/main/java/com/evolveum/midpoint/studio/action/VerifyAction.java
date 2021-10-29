@@ -18,6 +18,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -44,10 +45,12 @@ public class VerifyAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        Project project = e.getProject();
+
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
                 (Computable<VirtualFile[]>) () -> e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
         if (selectedFiles == null || selectedFiles.length == 0) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, ACTION_NAME,
+            MidPointUtils.publishNotification(project, NOTIFICATION_KEY, ACTION_NAME,
                     "No files selected for cleanup", NotificationType.WARNING);
             return;
         }
@@ -55,14 +58,14 @@ public class VerifyAction extends AnAction {
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, ACTION_NAME,
+            MidPointUtils.publishNotification(project, NOTIFICATION_KEY, ACTION_NAME,
                     "No files matched for verification (xml)", NotificationType.WARNING);
             return;
         }
 
-        MidPointService mm = MidPointService.getInstance(e.getProject());
+        MidPointService mm = MidPointService.getInstance(project);
 
-        EnvironmentService em = EnvironmentService.getInstance(e.getProject());
+        EnvironmentService em = EnvironmentService.getInstance(project);
         Environment env = em.getSelected();
 
         mm.focusConsole();
@@ -83,7 +86,7 @@ public class VerifyAction extends AnAction {
         for (VirtualFile file : files) {
             RunnableUtils.runReadAction(() -> {
                 try {
-                    List<MidPointObject> objects = MidPointUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                    List<MidPointObject> objects = MidPointUtils.parseProjectFile(evt.getProject(), file, NOTIFICATION_KEY);
 
                     for (MidPointObject obj : objects) {
                         try {

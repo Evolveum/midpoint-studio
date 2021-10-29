@@ -230,14 +230,14 @@ public class MidPointUtils {
         MidPointService mm = MidPointService.getInstance(project);
         mm.printToConsole(env, clazz, msg + ". Reason: " + ex.getMessage());
 
-        publishExceptionNotification(env, clazz, notificationKey, msg, ex);
+        publishExceptionNotification(project, env, clazz, notificationKey, msg, ex);
     }
 
-    public static void publishExceptionNotification(Environment env, Class clazz, String key, String message, Exception ex) {
-        publishExceptionNotification(env, clazz, key, message, ex, new NotificationAction[]{});
+    public static void publishExceptionNotification(Project project, Environment env, Class clazz, String key, String message, Exception ex) {
+        publishExceptionNotification(project, env, clazz, key, message, ex, new NotificationAction[]{});
     }
 
-    public static void publishExceptionNotification(Environment env, Class clazz, String key, String message, Exception ex, NotificationAction... actions) {
+    public static void publishExceptionNotification(Project project, Environment env, Class clazz, String key, String message, Exception ex, NotificationAction... actions) {
         String msg = message + ", reason: " + ex.getMessage();
 
         List<NotificationAction> list = new ArrayList<>();
@@ -253,7 +253,7 @@ public class MidPointUtils {
 
         list.addAll(Arrays.asList(actions));
 
-        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR, list.toArray(new NotificationAction[list.size()]));
+        MidPointUtils.publishNotification(project, key, "Error", msg, NotificationType.ERROR, list.toArray(new NotificationAction[list.size()]));
 
         if (LOG.isTraceEnabled()) {
             LOG.trace(msg);
@@ -263,18 +263,18 @@ public class MidPointUtils {
         }
     }
 
-    public static void publishNotification(String key, String title, String content, NotificationType type) {
-        publishNotification(key, title, content, type, (NotificationAction[]) null);
+    public static void publishNotification(Project project, String key, String title, String content, NotificationType type) {
+        publishNotification(project, key, title, content, type, (NotificationAction[]) null);
     }
 
-    public static void publishNotification(String key, String title, String content, NotificationType type,
+    public static void publishNotification(Project project, String key, String title, String content, NotificationType type,
                                            NotificationAction... actions) {
         Notification notification = new Notification(key, title, content, type);
         if (actions != null) {
             Arrays.stream(actions).filter(a -> a != null).forEach(a -> notification.addAction(a));
         }
 
-        Notifications.Bus.notify(notification);
+        Notifications.Bus.notify(notification, project);
     }
 
     public static void handleGenericException(Project project, Environment env, Class clazz, String key, String message, Exception ex) {
@@ -287,7 +287,7 @@ public class MidPointUtils {
         }
 
         if (key != null) {
-            MidPointUtils.publishNotification(key, "Error",
+            MidPointUtils.publishNotification(project, key, "Error",
                     message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
         }
 
@@ -797,26 +797,26 @@ public class MidPointUtils {
         }
     }
 
-    public static List<MidPointObject> parseText(String text, String notificationKey) {
+    public static List<MidPointObject> parseText(Project project, String text, String notificationKey) {
         try {
             return ClientUtils.parseText(text);
         } catch (RuntimeException ex) {
             String msg = "Couldn't parse text '" + org.apache.commons.lang.StringUtils.abbreviate(text, 10) + "'";
 
             if (notificationKey != null) {
-                MidPointUtils.publishExceptionNotification(null, MidPointUtils.class, notificationKey, msg, ex);
+                MidPointUtils.publishExceptionNotification(project, null, MidPointUtils.class, notificationKey, msg, ex);
             }
 
             return new ArrayList<>();
         }
     }
 
-    public static List<MidPointObject> parseProjectFile(VirtualFile file, String notificationKey) {
+    public static List<MidPointObject> parseProjectFile(Project project, VirtualFile file, String notificationKey) {
         try {
             return ClientUtils.parseProjectFile(VfsUtil.virtualToIoFile(file), file.getCharset());
         } catch (IOException ex) {
             if (notificationKey != null) {
-                MidPointUtils.publishExceptionNotification(null, MidPointUtils.class, notificationKey,
+                MidPointUtils.publishExceptionNotification(project, null, MidPointUtils.class, notificationKey,
                         "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
             }
             return new ArrayList<>();

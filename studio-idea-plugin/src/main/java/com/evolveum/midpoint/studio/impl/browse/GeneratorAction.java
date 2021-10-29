@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.impl.browse;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
 import com.evolveum.midpoint.studio.action.transfer.UploadExecute;
-import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.FileUtils;
@@ -15,6 +14,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
 
@@ -60,7 +60,7 @@ public class GeneratorAction extends BackgroundAction {
     protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
         EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         if (!em.isEnvironmentSelected()) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Error", "Environment not selected", NotificationType.ERROR);
+            MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, "Error", "Environment not selected", NotificationType.ERROR);
             return;
         }
 
@@ -68,7 +68,7 @@ public class GeneratorAction extends BackgroundAction {
 
         updateIndicator(indicator, "Starting generator");
 
-        String content = generator.generate(objects, options);
+        String content = generator.generate(evt.getProject(), objects, options);
 
         if (!execute) {
             writeContent(evt, indicator, env, content);
@@ -80,11 +80,13 @@ public class GeneratorAction extends BackgroundAction {
     private void uploadContent(AnActionEvent evt, ProgressIndicator indicator, Environment env, String content) {
         updateIndicator(indicator, "Content created, uploading to " + env.getName());
 
-        MidPointService mm = MidPointService.getInstance(evt.getProject());
+        Project project = evt.getProject();
 
-        MidPointClient client = new MidPointClient(evt.getProject(), env);
+        MidPointService mm = MidPointService.getInstance(project);
 
-        List<MidPointObject> objects = MidPointUtils.parseText(content, NOTIFICATION_KEY);
+        MidPointClient client = new MidPointClient(project, env);
+
+        List<MidPointObject> objects = MidPointUtils.parseText(project, content, NOTIFICATION_KEY);
 
         int fail = 0;
         int success = 0;
@@ -99,7 +101,7 @@ public class GeneratorAction extends BackgroundAction {
                     String msg = "Upload status of " + object.getName() + " was " + result.getStatus();
                     mm.printToConsole(env, getClass(), msg);
 
-                    MidPointUtils.publishNotification(NOTIFICATION_KEY, "Warning", msg,
+                    MidPointUtils.publishNotification(project, NOTIFICATION_KEY, "Warning", msg,
                             NotificationType.WARNING, new ShowResultNotificationAction(result));
                 } else {
                     success++;
@@ -111,16 +113,17 @@ public class GeneratorAction extends BackgroundAction {
 
                 mm.printToConsole(env, getClass(), "Couldn't upload generated content. Reason: " + ex.getMessage());
 
-                MidPointUtils.publishExceptionNotification(env, GeneratorAction.class, NOTIFICATION_KEY, "Couldn't upload generated content", ex);
+                MidPointUtils.publishExceptionNotification(project, env, GeneratorAction.class, NOTIFICATION_KEY,
+                        "Couldn't upload generated content", ex);
             }
         }
 
-        showNotificationAfterFinish(success, fail);
+        showNotificationAfterFinish(project, success, fail);
 
         updateIndicator(indicator, "Content uploaded");
     }
 
-    private void showNotificationAfterFinish(int successObjects, int failedObjects) {
+    private void showNotificationAfterFinish(Project project, int successObjects, int failedObjects) {
         NotificationType type;
         String title;
         StringBuilder sb = new StringBuilder();
@@ -141,7 +144,7 @@ public class GeneratorAction extends BackgroundAction {
         sb.append("Processed: ").append(successObjects).append(" objects<br/>");
         sb.append("Failed to process: ").append(failedObjects).append(" objects");
 
-        MidPointUtils.publishNotification(NOTIFICATION_KEY, title, sb.toString(), type);
+        MidPointUtils.publishNotification(project, NOTIFICATION_KEY, title, sb.toString(), type);
     }
 
     private void writeContent(AnActionEvent evt, ProgressIndicator indicator, Environment env, String content) {
@@ -162,7 +165,7 @@ public class GeneratorAction extends BackgroundAction {
                 FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
                 fem.openFile(file, true, true);
             } catch (IOException ex) {
-                MidPointUtils.publishExceptionNotification(env, GeneratorAction.class, NOTIFICATION_KEY,
+                MidPointUtils.publishExceptionNotification(evt.getProject(), env, GeneratorAction.class, NOTIFICATION_KEY,
                         "Couldn't store generated content to file " + (file != null ? file.getName() : "[null]"), ex);
             } finally {
                 IOUtils.closeQuietly(out);

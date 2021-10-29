@@ -88,10 +88,10 @@ public class TestConnectionAction extends AnAction {
                         result.exception(), TestConnectionAction.class, environment);
             }
 
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, "Test connection",
+            MidPointUtils.publishNotification(project, NOTIFICATION_KEY, "Test connection",
                     "Connection test for '" + environment.getName() + "' " + status + "." + versionInfo, type, action);
         } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(environment, TestConnectionAction.class,
+            MidPointUtils.publishExceptionNotification(project, environment, TestConnectionAction.class,
                     NOTIFICATION_KEY, "Connection test for '" + environment.getName() + "' failed with exception", ex);
         }
     }

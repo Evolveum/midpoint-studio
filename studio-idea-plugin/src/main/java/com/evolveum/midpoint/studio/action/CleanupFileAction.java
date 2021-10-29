@@ -90,7 +90,7 @@ public class CleanupFileAction extends AnAction {
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
                 (Computable<VirtualFile[]>) () -> e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
         if (selectedFiles == null || selectedFiles.length == 0) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, ACTION_NAME,
+            MidPointUtils.publishNotification(e.getProject(), NOTIFICATION_KEY, ACTION_NAME,
                     "No files selected for cleanup", NotificationType.WARNING);
             return;
         }
@@ -98,7 +98,7 @@ public class CleanupFileAction extends AnAction {
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, ACTION_NAME,
+            MidPointUtils.publishNotification(e.getProject(), NOTIFICATION_KEY, ACTION_NAME,
                     "No files matched for cleanup (xml)", NotificationType.WARNING);
             return;
         }

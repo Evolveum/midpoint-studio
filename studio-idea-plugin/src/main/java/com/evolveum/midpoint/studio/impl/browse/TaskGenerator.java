@@ -8,7 +8,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SystemObjectsType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TaskRecurrenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TaskType;
-import org.w3c.dom.Document;
+import com.intellij.openapi.project.Project;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
@@ -58,7 +58,7 @@ public class TaskGenerator extends Generator {
     }
 
     @Override
-    public String generate(List<ObjectType> objects, GeneratorOptions options) {
+    public String generate(Project project, List<ObjectType> objects, GeneratorOptions options) {
         // TODO deduplicate with bulk actions
         ObjectTypes type = action.applicableTo;
         if (options.isBatchUsingOriginalQuery()) {
@@ -113,7 +113,7 @@ public class TaskGenerator extends Generator {
                         objectQuery.appendChild(root.getOwnerDocument().adoptNode(child));
                     }
                 } catch (RuntimeException e) {
-                    MidPointUtils.publishExceptionNotification(null, TaskGenerator.class,
+                    MidPointUtils.publishExceptionNotification(project, null, TaskGenerator.class,
                             GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
                     throw e;
                 }

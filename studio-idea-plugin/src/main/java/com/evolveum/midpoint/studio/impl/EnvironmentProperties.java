@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,11 +19,14 @@ public class EnvironmentProperties {
 
     private static final Logger LOG = Logger.getInstance(EnvironmentProperties.class);
 
+    private Project project;
+
     private Environment environment;
 
     private Properties properties;
 
-    public EnvironmentProperties(@NotNull Environment environment) {
+    public EnvironmentProperties(Project project, @NotNull Environment environment) {
+        this.project = project;
         this.environment = environment != null ? new Environment(environment) : null;
 
         load(this.environment);
@@ -47,7 +51,7 @@ public class EnvironmentProperties {
         try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             properties.load(reader);
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(env, EnvironmentProperties.class, EnvironmentService.NOTIFICATION_KEY,
+            MidPointUtils.publishExceptionNotification(project, env, EnvironmentProperties.class, EnvironmentService.NOTIFICATION_KEY,
                     "Couldn't load environment properties", ex);
         }
 

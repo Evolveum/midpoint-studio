@@ -238,6 +238,6 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
     public EnvironmentProperties getSelectedEnvironmentProperties() {
         Environment env = getSelected();
 
-        return new EnvironmentProperties(env);
+        return new EnvironmentProperties(getProject(), env);
     }
 }

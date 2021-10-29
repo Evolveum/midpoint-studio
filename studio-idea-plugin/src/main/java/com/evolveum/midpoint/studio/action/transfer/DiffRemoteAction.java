@@ -66,7 +66,7 @@ public class DiffRemoteAction extends BackgroundAction {
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, getTaskTitle(),
+            MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, getTaskTitle(),
                     "No files matched for " + getTaskTitle() + " (xml)", NotificationType.WARNING);
             return;
         }
@@ -96,7 +96,7 @@ public class DiffRemoteAction extends BackgroundAction {
             RunnableUtils.runWriteActionAndWait(() -> {
                 MidPointUtils.forceSaveAndRefresh(evt.getProject(), file);
 
-                List<MidPointObject> obj = MidPointUtils.parseProjectFile(file, NOTIFICATION_KEY);
+                List<MidPointObject> obj = MidPointUtils.parseProjectFile(evt.getProject(), file, NOTIFICATION_KEY);
                 obj = ClientUtils.filterObjectTypeOnly(obj);
 
                 objects.addAll(obj);
@@ -198,6 +198,6 @@ public class DiffRemoteAction extends BackgroundAction {
         msg.append("Missing ").append(missing).append(" objects<br/>");
         msg.append("Failed to compare ").append(failed.get()).append(" objects<br/>");
         msg.append("Skipped ").append(skipped).append(" files");
-        MidPointUtils.publishNotification(NOTIFICATION_KEY, getTaskTitle(), msg.toString(), type);
+        MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, getTaskTitle(), msg.toString(), type);
     }
 }

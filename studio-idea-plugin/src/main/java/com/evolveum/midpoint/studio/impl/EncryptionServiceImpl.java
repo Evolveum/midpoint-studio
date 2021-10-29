@@ -98,10 +98,10 @@ public class EncryptionServiceImpl implements EncryptionService {
 
         String masterPassword = getMasterPassword();
         if (StringUtils.isEmpty(masterPassword)) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY,
-                    "Credentials file", "Master password not set. All encrypted values will be forgotten after " +
-                            "restart, e.g. environment usernames/passwords, encrypted properties. ", NotificationType.WARNING,
-                    new UpdateMasterPasswordNotificationAction(false));
+        MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
+                "Credentials file", "Master password not set. All encrypted values will be forgotten after " +
+                        "restart, e.g. environment usernames/passwords, encrypted properties. ", NotificationType.WARNING,
+                new UpdateMasterPasswordNotificationAction(false));
             return;
         }
 
@@ -115,7 +115,7 @@ public class EncryptionServiceImpl implements EncryptionService {
             try {
                 database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
             } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(null, EncryptionService.class, NOTIFICATION_KEY,
+                MidPointUtils.publishExceptionNotification(project, null, EncryptionService.class, NOTIFICATION_KEY,
                         "Couldn't open credentials database with master password", ex, new UpdateMasterPasswordNotificationAction(true));
             }
         }
@@ -251,7 +251,8 @@ public class EncryptionServiceImpl implements EncryptionService {
         try (OutputStream os = new FileOutputStream(file)) {
             KeePassDatabase.write(database, masterPassword, os);
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(null, EncryptionService.class, NOTIFICATION_KEY, "Couldn't write credentials", ex);
+            MidPointUtils.publishExceptionNotification(project, null, EncryptionService.class, NOTIFICATION_KEY,
+                    "Couldn't write credentials", ex);
         }
     }
 
