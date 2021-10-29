@@ -65,7 +65,7 @@ public class PerformanceViewEditor implements FileEditor, PossiblyDumbAware {
             EnvironmentService es = EnvironmentService.getInstance(project);
             Environment env = es.getSelected();
             mm.printToConsole(env, getClass(), "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
-            MidPointUtils.publishExceptionNotification(env, getClass(), NOTIFICATION_KEY, "Couldn't load file", ex);
+            MidPointUtils.publishExceptionNotification(mm.getProject(), env, getClass(), NOTIFICATION_KEY, "Couldn't load file", ex);
             ex.printStackTrace();
             tree = null;
         }

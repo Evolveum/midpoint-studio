@@ -106,7 +106,7 @@ public class SummarizeOperations extends BackgroundAction {
                     ObjectOutputStream oos = new ObjectOutputStream(newSummaryFile.getOutputStream(this));
                     oos.writeObject(performanceTree);
                     oos.close();
-                    MidPointUtils.publishNotification(NOTIFICATION_KEY, getTaskTitle(),
+                    MidPointUtils.publishNotification(mm.getProject(), NOTIFICATION_KEY, getTaskTitle(),
                             "Summary written to " + newSummaryFile.getCanonicalPath(), NotificationType.INFORMATION);
                     summaryFileHolder.setValue(newSummaryFile);
                 } catch (IOException e) {
@@ -136,21 +136,21 @@ public class SummarizeOperations extends BackgroundAction {
     private void processException(String msg, Exception ex, MidPointService mm, EnvironmentService es) {
         Environment env = es.getSelected();
         mm.printToConsole(env, getClass(), msg + ". Reason: " + ex.getMessage());
-        MidPointUtils.publishExceptionNotification(env, getClass(), NOTIFICATION_KEY, msg, ex);
+        MidPointUtils.publishExceptionNotification(mm.getProject(), env, getClass(), NOTIFICATION_KEY, msg, ex);
     }
 
     private List<VirtualFile> getFilesToProcess(AnActionEvent evt) {
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
                 (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
         if (selectedFiles == null || selectedFiles.length == 0) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, getTaskTitle(),
+            MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, getTaskTitle(),
                     "No files selected for summarization", NotificationType.WARNING);
             return emptyList();
         }
 
         List<VirtualFile> toProcess = MidPointUtils.filterZipFiles(selectedFiles);
         if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(NOTIFICATION_KEY, getTaskTitle(),
+            MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, getTaskTitle(),
                     "No files matched for summarization (zip)", NotificationType.WARNING);
         }
         return toProcess;
