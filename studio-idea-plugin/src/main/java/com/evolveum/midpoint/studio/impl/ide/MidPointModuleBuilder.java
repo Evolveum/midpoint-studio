@@ -115,8 +115,12 @@ public class MidPointModuleBuilder extends ModuleBuilder {
             WriteAction.run(() -> createProjectFiles(project, root));
         });
 
+        addMidpointFacet(modifiableRootModel);
+    }
+
+    public void addMidpointFacet(ModifiableRootModel model) {
         FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-        FacetManager.getInstance(modifiableRootModel.getModule()).addFacet(facetType, facetType.getDefaultFacetName(), null);
+        FacetManager.getInstance(model.getModule()).addFacet(facetType, facetType.getDefaultFacetName(), null);
     }
 
     public void createProjectFiles(Project project, VirtualFile root) {
