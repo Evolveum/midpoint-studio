@@ -92,6 +92,12 @@ dependencies {
         // spring-core needed because of DebugDumpable impl uses spring ReflectionUtils class
         isTransitive = false
     }
+
+    testImplementation(libs.jupiter.api)
+    testImplementation(libs.remote.robot)
+    testImplementation(libs.remote.fixtures)
+
+    testRuntimeOnly(libs.jupiter.engine)
 }
 
 var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
@@ -205,5 +211,17 @@ tasks {
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels.set(listOf(channel))
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    runIdeForUiTests {
+        systemProperty("robot-server.port", "8082") // default port 8580
+    }
+
+    downloadRobotServerPlugin {
+        setVersion("0.11.7")
     }
 }
