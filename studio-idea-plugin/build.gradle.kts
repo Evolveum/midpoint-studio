@@ -106,11 +106,11 @@ var gitLocalBranch = properties("gitLocalBranch")
 var publishChannel = properties("publishChannel")
 var buildNumber = properties("buildNumber")
 
-if (gitLocalBranch.isEmpty() || gitLocalBranch == "null") {
-    gitLocalBranch = versionDetails().branchName
-}
-
 if (publishChannel.isBlank() || publishChannel == "null") {
+    if (gitLocalBranch.isEmpty() || gitLocalBranch == "null") {
+        gitLocalBranch = versionDetails()?.branchName
+    }
+
     publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
 }
 
