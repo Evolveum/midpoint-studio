@@ -14,6 +14,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.util.ModalityUiUtil;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
@@ -112,6 +113,6 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         sb.append('\n');
 
         MidPointConsoleView console = getConsole();
-        GuiUtils.invokeLaterIfNeeded(() -> console.print(sb.toString(), type), ModalityState.defaultModalityState());
+        ModalityUiUtil.invokeLaterIfNeeded(() -> console.print(sb.toString(), type), ModalityState.defaultModalityState());
     }
 }

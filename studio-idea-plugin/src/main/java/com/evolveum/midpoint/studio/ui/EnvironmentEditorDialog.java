@@ -1,15 +1,14 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.client.ProxyType;
 import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.studio.util.Selectable;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.ide.actions.ActionsCollector;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -25,7 +24,6 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.IdeFocusManager;
-import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBUI;
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
@@ -35,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -292,7 +289,6 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
         @Override
         protected void doAction(ActionEvent e) {
-            recordAction("DialogTestConnectionAction");
             List<ValidationInfo> infoList = doValidateAll();
             if (!infoList.isEmpty()) {
                 ValidationInfo info = infoList.get(0);
@@ -308,16 +304,6 @@ public class EnvironmentEditorDialog extends DialogWrapper {
                 if (infoList.stream().anyMatch(info1 -> !info1.okEnabled)) return;
             }
             doTestConnectionAction(e);
-        }
-
-        private void recordAction(String name) {
-            recordAction(name, EventQueue.getCurrentEvent());
-        }
-
-        private void recordAction(String name, AWTEvent event) {
-            if (event instanceof KeyEvent && ApplicationManager.getApplication() != null) {
-                ActionsCollector.getInstance().record(name, (KeyEvent) event, getClass());
-            }
         }
     }
 }
