@@ -333,7 +333,7 @@
 
         <group id="MidPoint.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
-            <!--<reference ref="MidPoint.Action.TestAction"/>-->
+            <reference ref="MidPoint.Action.TestAction"/>
 
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>
@@ -353,7 +353,7 @@
             <separator/>
 
             <group id="MidPoint.Toolbar.Others"
-                   text="Other Update Actions"
+                   text="Other Actions"
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
