@@ -17,14 +17,14 @@ public class InMemoryFileFilterTest {
 
     @Test
     public void simpleTest() {
-        InMemoryFileFilter filter = new InMemoryFileFilter(null, null);
+        InMemoryFileFilter filter = new InMemoryFileFilter(OBJECTS_FOLDER, null, null);
 
         assertTrue(filter.accept(OBJECTS_FOLDER));
         assertTrue(filter.accept(new File(OBJECTS_FOLDER, "resources")));
 
         assertFalse(filter.accept(new File(OBJECTS_FOLDER, "a.txt")));
-        assertTrue(filter.accept(new File(OBJECTS_FOLDER, "a.XML")));
-        assertTrue(filter.accept(new File(OBJECTS_FOLDER, "a.XmL")));
+        assertFalse(filter.accept(new File(OBJECTS_FOLDER, "a.XML")));
+        assertFalse(filter.accept(new File(OBJECTS_FOLDER, "a.XmL")));
 
         assertTrue(filter.accept(new File(OBJECTS_FOLDER, "resources/hr.xml")));
     }

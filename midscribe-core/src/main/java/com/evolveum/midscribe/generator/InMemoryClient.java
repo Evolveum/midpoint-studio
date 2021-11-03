@@ -64,8 +64,10 @@ public class InMemoryClient implements MidPointClient {
 
         ParsingContext parsingContext = prismContext.createParsingContextForCompatibilityMode();
 
-        Iterator<File> files = FileUtils.iterateFiles(options.getSourceDirectory(),
-                new InMemoryFileFilter(options.getInclude(), options.getExclude()), TrueFileFilter.INSTANCE);
+        File sources = options.getSourceDirectory();
+        Iterator<File> files = FileUtils.iterateFiles(sources,
+                new InMemoryFileFilter(sources, options.getInclude(), options.getExclude()), TrueFileFilter.INSTANCE);
+
         while (files.hasNext()) {
             File file = files.next();
 

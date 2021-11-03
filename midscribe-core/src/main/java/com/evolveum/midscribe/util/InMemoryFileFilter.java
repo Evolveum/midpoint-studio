@@ -1,12 +1,11 @@
 package com.evolveum.midscribe.util;
 
-import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -17,20 +16,22 @@ public class InMemoryFileFilter implements IOFileFilter {
 
     private WildcardFileFilter exclude;
 
-    public InMemoryFileFilter(List<String> includes, List<String> excludes) {
+    public InMemoryFileFilter(File base, List<String> includes, List<String> excludes) {
         if (includes == null || includes.isEmpty()) {
-            includes = Arrays.asList("*.xml");
+            includes = Arrays.asList("**.xml");
         }
-        include = buildFilter(includes);
-        exclude = buildFilter(excludes);
+        include = buildFilter(base, includes);
+        exclude = buildFilter(base, excludes);
     }
 
-    private WildcardFileFilter buildFilter(List<String> wildcards) {
+    private WildcardFileFilter buildFilter(File base, List<String> wildcards) {
         if (wildcards == null || wildcards.isEmpty()) {
             return null;
         }
 
-        return new WildcardFileFilter(wildcards, IOCase.INSENSITIVE);
+        List<String> fullPathWildcards = wildcards.stream().map(s -> base.getPath() + "/" + s).collect(Collectors.toList());
+
+        return new WildcardFileFilter(fullPathWildcards);
     }
 
     @Override
