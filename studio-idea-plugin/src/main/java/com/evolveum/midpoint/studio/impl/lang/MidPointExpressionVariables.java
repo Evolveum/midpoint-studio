@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
+import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.common.refinery.RefinedObjectClassDefinition;
 import com.evolveum.midpoint.model.api.expr.MidpointFunctions;
 import com.evolveum.midpoint.model.common.expression.functions.BasicExpressionFunctions;
@@ -59,7 +60,9 @@ public enum MidPointExpressionVariables {
 
     ASSIGNEE("assignee", UserType.class),
 
-    TRANSPORT_NAME("transportName", String.class);
+    TRANSPORT_NAME("transportName", String.class),
+
+    LOCALIZATION_SERVICE("localizationService",LocalizationService.class);
 
     private String variable;
 
