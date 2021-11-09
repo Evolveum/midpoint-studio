@@ -51,6 +51,8 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
 
     private static final QName XSD_APPINFO = new QName(W3C_XML_SCHEMA_NS_URI, "appinfo");
 
+    private static final QName XSD_ANNOTATION = new QName(W3C_XML_SCHEMA_NS_URI, "annotation");
+
     private static final QName XSD_EXTENSION = new QName(W3C_XML_SCHEMA_NS_URI, "extension");
 
     private static final QName XSD_ENUMERATION = new QName(W3C_XML_SCHEMA_NS_URI, "enumeration");
@@ -60,6 +62,8 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
     private static final QName JAXB_TYPESAFE_ENUM_MEMBER = new QName(NS_JAXB, "typesafeEnumMember");
 
     private static final String ATTRIBUTE_NAME = "name";
+
+    private static final String ATTRIBUTE_VALUE = "value";
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
@@ -207,7 +211,6 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
     private void getProperties(XmlTag tag, Map<String, String> properties, String keyPrefix) {
         QName tagName = MidPointUtils.createQName(tag);
 
-
         if (XSD_SEQUENCE.equals(tagName) || XSD_CHOICE.equals(tagName)) {
             for (XmlTag e : tag.getSubTags()) {
                 getProperties(e, properties, keyPrefix);
@@ -226,12 +229,19 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
         if (XSD_ELEMENT.equals(tagName)) {
             // we already have xsd:element[name]
         } else if (XSD_ENUMERATION.equals(tagName)) {
-            XmlTag appinfo = MidPointUtils.findSubTag(tag, XSD_APPINFO);
-            if (appinfo != null) {
-                XmlTag typesafeEnumMember = MidPointUtils.findSubTag(appinfo, JAXB_TYPESAFE_ENUM_MEMBER);
-                if (typesafeEnumMember != null && typesafeEnumMember.getAttributeValue(ATTRIBUTE_NAME) != null) {
-                    name = typesafeEnumMember.getAttributeValue(ATTRIBUTE_NAME);
+            XmlTag annotation = MidPointUtils.findSubTag(tag, XSD_ANNOTATION);
+            if (annotation != null) {
+                XmlTag appinfo = MidPointUtils.findSubTag(annotation, XSD_APPINFO);
+                if (appinfo != null) {
+                    XmlTag typesafeEnumMember = MidPointUtils.findSubTag(appinfo, JAXB_TYPESAFE_ENUM_MEMBER);
+                    if (typesafeEnumMember != null && typesafeEnumMember.getAttributeValue(ATTRIBUTE_NAME) != null) {
+                        name = typesafeEnumMember.getAttributeValue(ATTRIBUTE_NAME);
+                    }
                 }
+            }
+
+            if (name == null) {
+                name = tag.getAttributeValue(ATTRIBUTE_VALUE);
             }
         }
 
@@ -240,6 +250,10 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
         }
 
         String value = StringUtils.capitalize(name.replaceAll("([A-Z][a-z])", " $1").toLowerCase());
+        if (XSD_ENUMERATION.equals(tagName)) {
+            value = value.replaceAll("_", " ");
+        }
+
         properties.put(keyPrefix + "." + name, value);
     }
 }
