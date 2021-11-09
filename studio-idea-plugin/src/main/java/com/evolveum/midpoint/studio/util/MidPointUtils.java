@@ -643,7 +643,15 @@ public class MidPointUtils {
         return false;
     }
 
+    public static List<VirtualFile> filterXsdFiles(VirtualFile[] files) {
+        return filterXmlFiles(files, "xsd");
+    }
+
     public static List<VirtualFile> filterXmlFiles(VirtualFile[] files) {
+        return filterXmlFiles(files, XmlFileType.DEFAULT_EXTENSION);
+    }
+
+    private static List<VirtualFile> filterXmlFiles(VirtualFile[] files, String extension) {
         List<VirtualFile> result = new ArrayList<>();
         if (files == null) {
             return result;
@@ -653,14 +661,14 @@ public class MidPointUtils {
             if (selected.isDirectory()) {
                 VfsUtilCore.iterateChildrenRecursively(
                         selected,
-                        file -> file.isDirectory() || XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
+                        file -> file.isDirectory() || extension.equalsIgnoreCase(file.getExtension()),
                         file -> {
                             if (!file.isDirectory() && !result.contains(file)) {
                                 result.add(file);
                             }
                             return true;
                         });
-            } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
+            } else if (extension.equalsIgnoreCase(selected.getExtension())) {
                 if (!result.contains(selected)) {
                     result.add(selected);
                 }

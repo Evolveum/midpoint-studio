@@ -242,6 +242,10 @@
                 class="com.evolveum.midpoint.studio.action.VerifyAction"
                 text="Verify"/>
 
+        <action id="MidPoint.Action.ExtractLocalizationPropertiesAction"
+                class="com.evolveum.midpoint.studio.action.ExtractLocalizationPropertiesAction"
+                text="Extract Localization Properties"/>
+
         <action id="MidPoint.Action.TestAction"
                 class="com.evolveum.midpoint.studio.action.TestAction"
                 text="Test Action"
@@ -283,6 +287,10 @@
                 <reference ref="MidPoint.Action.CleanupFile"/>
 
                 <reference ref="MidPoint.Action.VerifyAction"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.ExtractLocalizationPropertiesAction"/>
 
                 <separator/>
 
@@ -374,6 +382,10 @@
                 <reference ref="MidPoint.Action.CleanupFile"/>
 
                 <reference ref="MidPoint.Action.VerifyAction"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.ExtractLocalizationPropertiesAction"/>
 
             </group>
 
