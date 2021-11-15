@@ -222,6 +222,6 @@ tasks {
     }
 
     downloadRobotServerPlugin {
-        setVersion("0.11.7")
+        version.set("0.11.7")
     }
 }
