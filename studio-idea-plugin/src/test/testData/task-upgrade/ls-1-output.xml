@@ -1,0 +1,26 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:apti="http://midpoint.evolveum.com/xml/ns/public/common/api-types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" oid="7e8fa00e-b2ca-4893-988b-59ba89a15a4f" version="29">
+    <name>LiveSync entitlement-token</name>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000504" type="ArchetypeType"/>
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <executionState>runnable</executionState>
+    <binding>loose</binding>
+    <schedule>
+        <interval>$(system.property.livesync)</interval>
+        <misfireAction>reschedule</misfireAction>
+    </schedule>
+    <threadStopAction>reschedule</threadStopAction>
+    <activity>
+        <work>
+            <liveSynchronization>
+                <resourceObjects>
+                    <resourceRef oid="ef2bc95b-76e0-48e2-86d6-3d4f02d420ab"/>
+                    <kind>entitlement</kind>
+                    <intent>token</intent>
+                    <objectclass>ri:CustomTokenObjectClass</objectclass>
+                </resourceObjects>
+            </liveSynchronization>
+        </work>
+    </activity>
+</task>

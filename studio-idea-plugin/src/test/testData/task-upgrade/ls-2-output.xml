@@ -1,0 +1,57 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:apti="http://midpoint.evolveum.com/xml/ns/public/common/api-types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" oid="7e8fa00e-b2ca-4893-988b-59ba89a15a4c">
+    <name>LiveSync account-default</name>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000504" type="ArchetypeType"/>
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <executionState>runnable</executionState>
+    <binding>loose</binding>
+    <executionEnvironment>
+        <cachingProfile>roles-and-shadows</cachingProfile>
+    </executionEnvironment>
+    <schedule>
+        <!--        <interval>$(cud.livesync)</interval>-->
+        <interval>180</interval>
+        <misfireAction>reschedule</misfireAction>
+    </schedule>
+    <threadStopAction>reschedule</threadStopAction>
+    <activity>
+        <work>
+            <liveSynchronization>
+                <resourceObjects>
+                    <resourceRef oid="ef2bc95b-76e0-48e2-86d6-3d4f02d420ab"/>
+                    <kind>account</kind>
+                    <intent>default</intent>
+                    <objectclass>ri:AccountObjectClass</objectclass>
+                </resourceObjects>
+                <batchSize>8000</batchSize>
+            </liveSynchronization>
+        </work>
+        <controlFlow>
+            <errorHandling>
+                <entry>
+                    <situation>
+                        <status>partial_error</status>
+                    </situation>
+                    <reaction>
+                        <retryLater>
+                            <initialInterval>PT1H</initialInterval>
+                            <nextInterval>PT4H</nextInterval>
+                        </retryLater>
+                    </reaction>
+                </entry>
+                <entry>
+                    <situation>
+                        <status>fatal_error</status>
+                    </situation>
+                    <reaction>
+                        <retryLater>
+                            <initialInterval>PT1H</initialInterval>
+                            <nextInterval>PT4H</nextInterval>
+                        </retryLater>
+                    </reaction>
+                </entry>
+            </errorHandling>
+        </controlFlow>
+    </activity>
+</task>

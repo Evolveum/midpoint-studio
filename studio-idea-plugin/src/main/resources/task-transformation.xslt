@@ -49,6 +49,19 @@
     </xsl:template>
 
     <xsl:template name="basic">
+
+        <xsl:if test="/task/@oid">
+            <xsl:attribute name="oid">
+                <xsl:value-of  select="/task/@oid"/>
+            </xsl:attribute>
+        </xsl:if>
+
+        <xsl:if test="/task/@version">
+            <xsl:attribute name="version">
+                <xsl:value-of  select="/task/@version"/>
+            </xsl:attribute>
+        </xsl:if>
+
         <name>
             <xsl:value-of select="/task/name"/>
         </name>

@@ -58,21 +58,38 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
     }
 
     @Test
-    public void testImport1() {
-        myFixture.configureByFiles("import-1-input.xml");
+    public void testImport1Multinode() {
+        testUpgrade("import-1-input.xml", "import-1-output.xml");
+    }
+
+    @Test
+    public void testLivesync1Simple() {
+        testUpgrade("ls-1-input.xml", "ls-1-output.xml");
+    }
+
+    @Test
+    public void testLivesync2ErrorHandlingStrategy() {
+        testUpgrade("ls-2-input.xml", "ls-2-output.xml");
+    }
+
+    private void testUpgrade(String input, String validation) {
+        LOG.info("Testing upgrade for " + input + ", validating using " + validation);
+
+        myFixture.configureByFiles(input);
         myFixture.testAction(new TaskUpgradeAction());
 
         String text = myFixture.getEditor().getDocument().getText();
 
+        LOG.debug(text);
+
         Diff d = DiffBuilder
-                .compare(Input.fromFile(new File(getTestDataPath(), "import-1-output.xml")))
+                .compare(Input.fromFile(new File(getTestDataPath(), validation)))
                 .withTest(Input.fromString(text))
                 .build();
 
         if (d.hasDifferences()) {
             LOG.info(d.fullDescription());
+            fail();
         }
-
-        assertFalse(d.hasDifferences());
     }
 }
