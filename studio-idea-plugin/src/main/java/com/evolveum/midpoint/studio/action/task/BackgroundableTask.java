@@ -8,6 +8,7 @@ import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
@@ -171,8 +172,11 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
             return editor.getDocument().getText();
         });
 
+        VirtualFile file = ApplicationManager.getApplication().runReadAction(
+                (Computable<? extends VirtualFile>) () -> event.getDataContext().getData(PlatformDataKeys.VIRTUAL_FILE));
+
         if (!StringUtils.isEmpty(text)) {
-            processEditorText(indicator, editor, text, event.getDataContext().getData(PlatformDataKeys.VIRTUAL_FILE));
+            processEditorText(indicator, editor, text, file);
         } else {
             MidPointUtils.publishNotification(getProject(), notificationKey, "Error", "Text is empty", NotificationType.ERROR);
         }

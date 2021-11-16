@@ -1,0 +1,48 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:apti="http://midpoint.evolveum.com/xml/ns/public/common/api-types-3"
+      xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3"
+      xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"
+      xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+      xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
+      xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3"
+      xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3"
+      oid="2c7ae82a-01f5-401f-b12e-e122029b317c">
+    <name>Import 1</name>
+    <extension>
+        <mext:kind>account</mext:kind>
+        <mext:intent>default</mext:intent>
+        <mext:objectclass>ri:somePerson</mext:objectclass>
+        <mext:workerThreads>8</mext:workerThreads>
+    </extension>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000503" type="ArchetypeType" /> <!--Import task-->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" type="c:UserType"/>
+    <executionStatus>closed</executionStatus>
+    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3</handlerUri>
+    <objectRef oid="5a55bc1a-95c0-11ea-bc3c-abbaf8e94a00" type="c:ResourceType"/>
+    <workManagement>
+        <taskKind>coordinator</taskKind>
+        <buckets>
+            <stringSegmentation>
+                <discriminator>attributes/ri:uid</discriminator>
+                <boundaryCharacters>0-9a-z</boundaryCharacters>
+                <depth>1</depth>
+                <comparisonMethod>prefix</comparisonMethod>
+            </stringSegmentation>
+        </buckets>
+        <workers>
+            <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3</handlerUri>
+            <workersPerNode>
+                <count>2</count>
+            </workersPerNode>
+        </workers>
+    </workManagement>
+    <recurrence>single</recurrence>
+    <executionEnvironment>
+        <cachingProfile>roles-and-shadows</cachingProfile>
+    </executionEnvironment>
+</task>

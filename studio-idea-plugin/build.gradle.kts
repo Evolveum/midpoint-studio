@@ -96,6 +96,7 @@ dependencies {
     testImplementation(libs.jupiter.api)
     testImplementation(libs.remote.robot)
     testImplementation(libs.remote.fixtures)
+    testImplementation(libs.xmlunit.core)
 
     testRuntimeOnly(libs.jupiter.engine)
 }

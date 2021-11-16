@@ -160,13 +160,12 @@
         </tailoring>
     </xsl:template>
 
+    <xsl:template match="workers/handlerUri" />
+
     <xsl:template match="@*|node()">
-        <xsl:template match="@*|node()">
-            <xsl:copy>
-                <xsl:apply-templates select="@*|node()" />
-            </xsl:copy>
-        </xsl:template>
+        <xsl:copy>
+            <xsl:apply-templates select="@*|node()" />
+        </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="/task/workManagement/workers/handlerUri" />
 </xsl:stylesheet>
