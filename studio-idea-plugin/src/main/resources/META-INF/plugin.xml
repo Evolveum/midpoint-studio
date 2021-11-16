@@ -251,12 +251,18 @@
                 text="Test Action"
                 icon="AllIcons.Debugger.Db_set_breakpoint"/>
 
+
+        <action id="MidPoint.Action.UpgradeTask"
+                class="com.evolveum.midpoint.studio.action.TaskUpgradeAction"
+                text="Upgrade task"
+                icon="AllIcons.Actions.Annotate"/>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
             <group id="MidPoint.Group.Menu.TransferRelated"
-                   text="Update Object Actions"
+                   text="Other Actions"
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
@@ -287,6 +293,8 @@
                 <reference ref="MidPoint.Action.CleanupFile"/>
 
                 <reference ref="MidPoint.Action.VerifyAction"/>
+
+                <reference ref="MidPoint.Action.UpgradeTask"/>
 
                 <separator/>
 
@@ -382,6 +390,8 @@
                 <reference ref="MidPoint.Action.CleanupFile"/>
 
                 <reference ref="MidPoint.Action.VerifyAction"/>
+
+                <reference ref="MidPoint.Action.UpgradeTask"/>
 
                 <separator/>
 
