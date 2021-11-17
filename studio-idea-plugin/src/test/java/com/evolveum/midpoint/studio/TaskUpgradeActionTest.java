@@ -72,6 +72,11 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
         testUpgrade("ls-2-input.xml", "ls-2-output.xml");
     }
 
+    @Test
+    public void testAlreadyProcessed() {
+        testUpgrade("ls-1-output.xml", "ls-1-output.xml");
+    }
+
     private void testUpgrade(String input, String validation) {
         LOG.info("Testing upgrade for " + input + ", validating using " + validation);
 
@@ -80,7 +85,7 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
 
         String text = myFixture.getEditor().getDocument().getText();
 
-        LOG.debug(text);
+        LOG.debug("Created task:\n" + text);
 
         Diff d = DiffBuilder
                 .compare(Input.fromFile(new File(getTestDataPath(), validation)))

@@ -22,6 +22,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,12 +97,20 @@ public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
         writeObjectsToFile(file, newObjects);
     }
 
-    private String transformTask(String xml) throws TransformerException, ParserConfigurationException, IOException, SAXException {
+    private String transformTask(String xml) throws TransformerException, ParserConfigurationException, IOException, SAXException, XPathExpressionException {
         try (InputStream xsltStream = TaskUpgradeTask.class.getClassLoader().getResourceAsStream("task-transformation.xslt")) {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(new ByteArrayInputStream(xml.getBytes()));
             doc.normalize();
+
+            XPathFactory xpf = XPathFactory.newInstance();
+            XPath xpath = xpf.newXPath();
+
+            Boolean exists = (Boolean) xpath.evaluate("/task/activity", doc, XPathConstants.BOOLEAN);
+            if (exists) {
+                return xml;
+            }
 
             StreamSource xsl = new StreamSource(xsltStream);
 

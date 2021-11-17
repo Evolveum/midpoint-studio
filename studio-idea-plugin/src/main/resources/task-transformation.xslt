@@ -71,16 +71,16 @@
         </xsl:if>
 
         <assignment>
-            <xsl:copy-of select="/task/assignment/targetRef" copy-namespaces="no"/>
+            <xsl:copy-of select="/task/assignment/targetRef"/>
         </assignment>
 
-        <xsl:copy-of select="/task/ownerRef" copy-namespaces="no"/>
+        <xsl:copy-of select="/task/ownerRef"/>
 
         <xsl:element name="executionState">
             <xsl:value-of select="/task/executionStatus"/>
         </xsl:element>
 
-        <xsl:copy-of select="/task/binding" copy-namespaces="no"/>
+        <xsl:copy-of select="/task/binding"/>
 
         <xsl:copy-of select="/task/executionEnvironment"/>
         <xsl:copy-of select="/task/schedule"/>
