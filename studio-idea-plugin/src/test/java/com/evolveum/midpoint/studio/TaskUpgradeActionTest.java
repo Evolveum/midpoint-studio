@@ -87,6 +87,26 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
         testUpgrade("recon-2-input.xml", "recon-2-output.xml");
     }
 
+    @Test
+    public void testRecomputation1Simple() {
+        testUpgrade("recomputation-1-input.xml", "recomputation-1-output.xml");
+    }
+
+    @Test
+    public void testRecomputation2Multinode() {
+        testUpgrade("recomputation-2-input.xml", "recomputation-2-output.xml");
+    }
+
+    @Test
+    public void testImport2NoArchetypeMultinode() {
+        testUpgrade("import-2-input.xml", "import-2-output.xml");
+    }
+
+    @Test
+    public void testBulkIterative1Multinode() {
+        testUpgrade("bulk-iterative-1-input.xml", "bulk-iterative-1-output.xml");
+    }
+
     private void testUpgrade(String input, String validation) {
         LOG.info("Testing upgrade for " + input + ", validating using " + validation);
 

@@ -27,11 +27,14 @@
                 <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/live-sync/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000504']">
                     <xsl:call-template name="livesync"/>
                 </xsl:if>
-                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000503']">
+                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000503'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'])">
                     <xsl:call-template name="import"/>
                 </xsl:if>
-                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000502']">
+                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000502'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'])">
                     <xsl:call-template name="recomputation"/>
+                </xsl:if>
+                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000509'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'])">
+                    <xsl:call-template name="iterativeScripting"/>
                 </xsl:if>
 
                 <xsl:if test="/c:task/c:errorHandlingStrategy">
@@ -59,6 +62,8 @@
     <xsl:template match="/c:task/c:extension/mext:objectclass"/>
     <xsl:template match="/c:task/c:extension/mext:workerThreads"/>
     <xsl:template match="/c:task/c:extension/mext:liveSyncBatchSize"/>
+    <xsl:template match="/c:task/c:extension/mext:objectType"/>
+    <xsl:template match="/c:task/c:extension/mext:objectQuery"/>
 
     <!-- todo how to handle extension when we removed all mext items and extension ended up being empty? -->
     <xsl:template match="/c:task/c:extension">
@@ -96,15 +101,30 @@
         </resourceObjects>
     </xsl:template>
 
-    <xsl:template name="distribution">
+    <xsl:template name="distributionComplexActivity">
         <distribution>
-            <xsl:if test="/c:task/c:extension/mext:workerThreads">
-                <workerThreads><xsl:value-of select="/c:task/c:extension/mext:workerThreads"/></workerThreads>
-            </xsl:if>
-            <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'] or /c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3']">
-                <subtasks/>
-            </xsl:if>
+            <xsl:call-template name="distributionBasic"/>
         </distribution>
+    </xsl:template>
+
+    <xsl:template name="distributionSimpleActivity">
+        <distribution>
+            <xsl:if test="/c:task/c:workManagement">
+                <xsl:copy-of select="/c:task/c:workManagement/c:buckets"/>
+                <xsl:apply-templates select="/c:task/c:workManagement/c:workers"/>
+            </xsl:if>
+
+            <xsl:call-template name="distributionBasic"/>
+        </distribution>
+    </xsl:template>
+
+    <xsl:template name="distributionBasic">
+        <xsl:if test="/c:task/c:extension/mext:workerThreads">
+            <workerThreads><xsl:value-of select="/c:task/c:extension/mext:workerThreads"/></workerThreads>
+        </xsl:if>
+        <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'] or /c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3']">
+            <subtasks/>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template name="reconciliation">
@@ -113,7 +133,7 @@
                 <xsl:call-template name="resourceObjects"/>
             </reconciliation>
         </work>
-        <xsl:call-template name="distribution"/>
+        <xsl:call-template name="distributionComplexActivity"/>
         <xsl:if test="/c:task/c:workManagement/c:partitions/c:partition">
             <tailoring>
                 <xsl:if test="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]">
@@ -155,25 +175,26 @@
                 <xsl:call-template name="resourceObjects"/>
             </import>
         </work>
-        <xsl:call-template name="distribution"/>
-        <xsl:if test="/c:task/c:workManagement/c:partitions/c:partition">
-            <tailoring>
-                <change>
-                    <reference>resourceObjects</reference>
-                    <distribution>
-                        <xsl:copy-of select="/c:task/c:workManagement/c:buckets"/>
-                        <xsl:apply-templates select="/c:task/c:workManagement/c:workers"/>
-                    </distribution>
-                </change>
-            </tailoring>
-        </xsl:if>
+        <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
     <xsl:template name="recomputation">
         <work>
             <recomputation>
-
+                <objects>
+                    <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
+                    <query><xsl:copy-of select="/c:task/c:extension/mext:objectQuery/*"/></query>
+                    <!-- todo searchOptions -->
+                </objects>
+                <!-- todo executionOptions -->
             </recomputation>
+        </work>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
+
+    <xsl:template name="iterativeScripting">
+        <work>
+
         </work>
     </xsl:template>
 

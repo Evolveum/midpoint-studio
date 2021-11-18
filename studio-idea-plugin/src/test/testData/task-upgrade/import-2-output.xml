@@ -1,10 +1,6 @@
 <task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:apti="http://midpoint.evolveum.com/xml/ns/public/common/api-types-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="2c7ae82a-01f5-401f-b12e-e122029b327c">
     <name>Import 1</name>
     <extension/>
-    <assignment>
-        <targetRef oid="00000000-0000-0000-0000-000000000503" type="ArchetypeType"/>
-        <!--Import task-->
-    </assignment>
     <ownerRef oid="00000000-0000-0000-0000-000000000002" type="c:UserType"/>
     <executionState>closed</executionState>
     <executionEnvironment>
