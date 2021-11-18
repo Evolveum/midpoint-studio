@@ -21,7 +21,7 @@
             <xsl:copy-of select="@*"/>
             <xsl:apply-templates/>
             <activity>
-                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000501']">
+                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/reconciliation/handler-3'] or /c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000501']">
                     <xsl:call-template name="reconciliation"/>
                 </xsl:if>
                 <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/live-sync/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000504']">
@@ -30,6 +30,10 @@
                 <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000503']">
                     <xsl:call-template name="import"/>
                 </xsl:if>
+                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000502']">
+                    <xsl:call-template name="recomputation"/>
+                </xsl:if>
+
                 <xsl:if test="/c:task/c:errorHandlingStrategy">
                     <controlFlow>
                         <errorHandling>
@@ -43,6 +47,7 @@
 
     <!-- skip these elements -->
     <xsl:template match="/c:task/c:channel"/>
+    <xsl:template match="/c:task/c:category"/>
     <xsl:template match="/c:task/c:handlerUri"/>
     <xsl:template match="/c:task/c:workManagement"/>
     <xsl:template match="/c:task/c:objectRef"/>
@@ -56,6 +61,14 @@
     <xsl:template match="/c:task/c:extension/mext:liveSyncBatchSize"/>
 
     <!-- todo how to handle extension when we removed all mext items and extension ended up being empty? -->
+    <xsl:template match="/c:task/c:extension">
+<!--        <xsl:if test="/c:task/c:extension[mext:kind] or /c:task/c:extension[mext:intent] or /c:task/c:extension[mext:objectclass] or /c:task/c:extension[mext:workerThreads] or /c:task/c:extension[mext:liveSyncBatchSize]">-->
+<!--        <xsl:if test="/c:task/c:extension/*[]">-->
+            <xsl:copy>
+                <xsl:apply-templates/>
+            </xsl:copy>
+<!--        </xsl:if>-->
+    </xsl:template>
 
     <xsl:template match="/c:task/c:executionStatus">
         <executionState><xsl:value-of select="node()"/></executionState>
@@ -101,22 +114,28 @@
             </reconciliation>
         </work>
         <xsl:call-template name="distribution"/>
-        <tailoring>
-            <change>
-                <reference>resourceObjects</reference>
-                <distribution>
-                    <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]/parent::node()/c:workManagement/c:buckets"/>
-                    <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]/parent::node()/c:workManagement/c:workers"/>
-                </distribution>
-            </change>
-            <change>
-                <reference>remainingShadows</reference>
-                <distribution>
-                    <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 3]/parent::node()/c:workManagement/c:buckets"/>
-                    <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 3]/parent::node()/c:workManagement/c:workers"/>
-                </distribution>
-            </change>
-        </tailoring>
+        <xsl:if test="/c:task/c:workManagement/c:partitions/c:partition">
+            <tailoring>
+                <xsl:if test="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]">
+                    <change>
+                        <reference>resourceObjects</reference>
+                        <distribution>
+                            <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]/parent::node()/c:workManagement/c:buckets"/>
+                            <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]/parent::node()/c:workManagement/c:workers"/>
+                        </distribution>
+                    </change>
+                </xsl:if>
+                <xsl:if test="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 3]">
+                    <change>
+                        <reference>remainingShadows</reference>
+                        <distribution>
+                            <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 3]/parent::node()/c:workManagement/c:buckets"/>
+                            <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 3]/parent::node()/c:workManagement/c:workers"/>
+                        </distribution>
+                    </change>
+                </xsl:if>
+            </tailoring>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template name="livesync">
@@ -137,15 +156,25 @@
             </import>
         </work>
         <xsl:call-template name="distribution"/>
-        <tailoring>
-            <change>
-                <reference>resourceObjects</reference>
-                <distribution>
-                    <xsl:copy-of select="/c:task/c:workManagement/c:buckets"/>
-                    <xsl:apply-templates select="/c:task/c:workManagement/c:workers"/>
-                </distribution>
-            </change>
-        </tailoring>
+        <xsl:if test="/c:task/c:workManagement/c:partitions/c:partition">
+            <tailoring>
+                <change>
+                    <reference>resourceObjects</reference>
+                    <distribution>
+                        <xsl:copy-of select="/c:task/c:workManagement/c:buckets"/>
+                        <xsl:apply-templates select="/c:task/c:workManagement/c:workers"/>
+                    </distribution>
+                </change>
+            </tailoring>
+        </xsl:if>
+    </xsl:template>
+
+    <xsl:template name="recomputation">
+        <work>
+            <recomputation>
+
+            </recomputation>
+        </work>
     </xsl:template>
 
 </xsl:stylesheet>

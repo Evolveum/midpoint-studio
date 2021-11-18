@@ -77,6 +77,16 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
         testUpgrade("ls-1-output.xml", "ls-1-output.xml");
     }
 
+    @Test
+    public void testReconcilation1Simple() {
+        testUpgrade("recon-1-input.xml", "recon-1-output.xml");
+    }
+
+    @Test
+    public void testReconcilation2Multinode() {
+        testUpgrade("recon-2-input.xml", "recon-2-output.xml");
+    }
+
     private void testUpgrade(String input, String validation) {
         LOG.info("Testing upgrade for " + input + ", validating using " + validation);
 

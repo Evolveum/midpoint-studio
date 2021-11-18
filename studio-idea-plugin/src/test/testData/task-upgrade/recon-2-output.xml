@@ -1,0 +1,69 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:apti="http://midpoint.evolveum.com/xml/ns/public/common/api-types-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="f51236ee-53a4-464d-b5c0-e59de8cdab70">
+    <name>Resource account-default, segmented</name>
+    <extension>
+        <!--<mext:tracingInterval>1000</mext:tracingInterval>-->
+        <!--<mext:dryRun>true</mext:dryRun>-->
+    </extension>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000501" type="ArchetypeType"/>
+        <!--Reconciliation task-->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" type="c:UserType"/>
+    <executionState>closed</executionState>
+    <executionEnvironment>
+        <cachingProfile>roles-and-shadows</cachingProfile>
+    </executionEnvironment>
+    <activity>
+        <work>
+            <reconciliation>
+                <resourceObjects>
+                    <resourceRef oid="d0811790-1d80-11e4-86b2-3c970e467a76"/>
+                    <kind>account</kind>
+                    <intent>default</intent>
+                    <objectclass>ri:inetOrgPerson</objectclass>
+                </resourceObjects>
+            </reconciliation>
+        </work>
+        <distribution>
+            <workerThreads>4</workerThreads>
+            <subtasks/>
+        </distribution>
+        <tailoring>
+            <change>
+                <reference>resourceObjects</reference>
+                <distribution>
+                    <buckets>
+                        <stringSegmentation>
+                            <discriminator>attributes/ri:nsUniqueId</discriminator>
+                            <boundaryCharacters>0-9a-f</boundaryCharacters>
+                            <!-- todo fix number of buckets -->
+                            <depth>2</depth>
+                            <comparisonMethod>prefix</comparisonMethod>
+                        </stringSegmentation>
+                    </buckets>
+                    <workers>
+                        <workersPerNode>
+                            <count>9</count>
+                        </workersPerNode>
+                    </workers>
+                </distribution>
+            </change>
+            <change>
+                <reference>remainingShadows</reference>
+                <distribution>
+                    <buckets>
+                        <oidSegmentation>
+                            <!-- todo fix number of buckets -->
+                            <depth>2</depth>
+                        </oidSegmentation>
+                    </buckets>
+                    <workers>
+                        <workersPerNode>
+                            <count>9</count>
+                        </workersPerNode>
+                    </workers>
+                </distribution>
+            </change>
+        </tailoring>
+    </activity>
+</task>
