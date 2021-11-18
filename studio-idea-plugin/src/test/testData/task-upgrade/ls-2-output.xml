@@ -1,20 +1,25 @@
-<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:apti="http://midpoint.evolveum.com/xml/ns/public/common/api-types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" oid="7e8fa00e-b2ca-4893-988b-59ba89a15a4c">
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="7e8fa00e-b2ca-4893-988b-59ba89a15a4c">
     <name>LiveSync account-default</name>
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xsi:type="c:ExtensionType">
+        <!--<ls:token xmlns:ls="http://midpoint.evolveum.com/xml/ns/public/provisioning/liveSync-3"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:string">1565803800000</ls:token>-->
+    </extension>
     <assignment>
         <targetRef oid="00000000-0000-0000-0000-000000000504" type="ArchetypeType"/>
+        <!--Live synchronization task-->
     </assignment>
     <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
     <executionState>runnable</executionState>
     <binding>loose</binding>
-    <executionEnvironment>
-        <cachingProfile>roles-and-shadows</cachingProfile>
-    </executionEnvironment>
     <schedule>
-        <!--        <interval>$(cud.livesync)</interval>-->
+        <recurrence>recurring</recurrence>
         <interval>180</interval>
         <misfireAction>reschedule</misfireAction>
     </schedule>
     <threadStopAction>reschedule</threadStopAction>
+    <executionEnvironment>
+        <cachingProfile>roles-and-shadows</cachingProfile>
+    </executionEnvironment>
     <activity>
         <work>
             <liveSynchronization>
