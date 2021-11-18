@@ -1,6 +1,6 @@
 <task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="7e8fa00e-b2ca-4893-988b-59ba89a15a4f" version="29">
     <name>LiveSync entitlement-token</name>
-    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3">
+    <extension>
         <!--<ls:token xmlns:ls="http://midpoint.evolveum.com/xml/ns/public/provisioning/liveSync-3"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:string">1565803800000</ls:token>-->
     </extension>

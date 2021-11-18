@@ -3,8 +3,9 @@
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
                 xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3"
+                xmlns:scext="http://midpoint.evolveum.com/xml/ns/public/model/scripting/extension-3"
                 xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
-                exclude-result-prefixes="mext">
+                exclude-result-prefixes="mext scext">
 
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 
@@ -64,6 +65,7 @@
     <xsl:template match="/c:task/c:extension/mext:liveSyncBatchSize"/>
     <xsl:template match="/c:task/c:extension/mext:objectType"/>
     <xsl:template match="/c:task/c:extension/mext:objectQuery"/>
+    <xsl:template match="/c:task/c:extension/scext:executeScript"/>
 
     <!-- todo how to handle extension when we removed all mext items and extension ended up being empty? -->
     <xsl:template match="/c:task/c:extension">
@@ -118,11 +120,13 @@
         </distribution>
     </xsl:template>
 
+    <!-- todo how to handle empty distribution being created under some conditions? -->
+
     <xsl:template name="distributionBasic">
         <xsl:if test="/c:task/c:extension/mext:workerThreads">
             <workerThreads><xsl:value-of select="/c:task/c:extension/mext:workerThreads"/></workerThreads>
         </xsl:if>
-        <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'] or /c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3']">
+        <xsl:if test="/c:task/c:workManagement/c:workers or /c:task/c:workManagement/c:partitions">
             <subtasks/>
         </xsl:if>
     </xsl:template>
@@ -167,6 +171,7 @@
                 </xsl:if>
             </liveSynchronization>
         </work>
+        <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
     <xsl:template name="import">
@@ -178,14 +183,18 @@
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
+    <xsl:template name="objectDefinition">
+        <objects>
+            <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
+            <query><xsl:copy-of select="/c:task/c:extension/mext:objectQuery/*"/></query>
+            <!-- todo searchOptions -->
+        </objects>
+    </xsl:template>
+
     <xsl:template name="recomputation">
         <work>
             <recomputation>
-                <objects>
-                    <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
-                    <query><xsl:copy-of select="/c:task/c:extension/mext:objectQuery/*"/></query>
-                    <!-- todo searchOptions -->
-                </objects>
+                <xsl:call-template name="objectDefinition"/>
                 <!-- todo executionOptions -->
             </recomputation>
         </work>
@@ -194,8 +203,14 @@
 
     <xsl:template name="iterativeScripting">
         <work>
-
+            <iterativeScripting>
+                <xsl:call-template name="objectDefinition"/>
+                <scriptExecutionRequest>
+                    <xsl:copy-of select="/c:task/c:extension/scext:executeScript/*"/>
+                </scriptExecutionRequest>
+            </iterativeScripting>
         </work>
+        <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
 </xsl:stylesheet>
