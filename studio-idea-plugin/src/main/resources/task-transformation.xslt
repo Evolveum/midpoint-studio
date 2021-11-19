@@ -37,14 +37,6 @@
                 <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000509'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'])">
                     <xsl:call-template name="iterativeScripting"/>
                 </xsl:if>
-
-                <xsl:if test="/c:task/c:errorHandlingStrategy">
-                    <controlFlow>
-                        <errorHandling>
-                            <xsl:copy-of select="/c:task/c:errorHandlingStrategy/*"/>
-                        </errorHandling>
-                    </controlFlow>
-                </xsl:if>
             </activity>
         </xsl:copy>
     </xsl:template>
@@ -120,6 +112,16 @@
         </distribution>
     </xsl:template>
 
+    <xsl:template name="controlFlow">
+        <xsl:if test="/c:task/c:errorHandlingStrategy">
+            <controlFlow>
+                <errorHandling>
+                    <xsl:copy-of select="/c:task/c:errorHandlingStrategy/*"/>
+                </errorHandling>
+            </controlFlow>
+        </xsl:if>
+    </xsl:template>
+
     <!-- todo how to handle empty distribution being created under some conditions? -->
 
     <xsl:template name="distributionBasic">
@@ -137,6 +139,7 @@
                 <xsl:call-template name="resourceObjects"/>
             </reconciliation>
         </work>
+        <xsl:call-template name="controlFlow"/>
         <xsl:call-template name="distributionComplexActivity"/>
         <xsl:if test="/c:task/c:workManagement/c:partitions/c:partition">
             <tailoring>
@@ -171,6 +174,7 @@
                 </xsl:if>
             </liveSynchronization>
         </work>
+        <xsl:call-template name="controlFlow"/>
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
@@ -180,6 +184,7 @@
                 <xsl:call-template name="resourceObjects"/>
             </import>
         </work>
+        <xsl:call-template name="controlFlow"/>
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
@@ -198,6 +203,7 @@
                 <!-- todo executionOptions -->
             </recomputation>
         </work>
+        <xsl:call-template name="controlFlow"/>
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
@@ -210,6 +216,7 @@
                 </scriptExecutionRequest>
             </iterativeScripting>
         </work>
+        <xsl:call-template name="controlFlow"/>
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 

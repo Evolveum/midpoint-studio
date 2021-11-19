@@ -32,9 +32,6 @@
                 <batchSize>8000</batchSize>
             </liveSynchronization>
         </work>
-        <distribution>
-            <workerThreads>20</workerThreads>
-        </distribution>
         <controlFlow>
             <errorHandling>
                 <entry>
@@ -61,5 +58,8 @@
                 </entry>
             </errorHandling>
         </controlFlow>
+        <distribution>
+            <workerThreads>20</workerThreads>
+        </distribution>
     </activity>
 </task>

@@ -1,6 +1,5 @@
 <task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="93e91987-cf1a-42a3-80ec-38bede260af9">
     <name>Recompute Users starting with "a"</name>
-    <extension/>
     <assignment>
         <targetRef oid="00000000-0000-0000-0000-000000000502" type="ArchetypeType"/>
         <!--Recomputation task -->

@@ -1,6 +1,5 @@
 <task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="56acc1f9-ccf3-4a9e-a4d8-54675454adbe">
     <name>Cleanup Users</name>
-    <extension/>
     <assignment>
         <targetRef oid="00000000-0000-0000-0000-000000000509" type="ArchetypeType"/>
     </assignment>

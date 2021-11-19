@@ -8,7 +8,6 @@
       version="29">
     <name>LiveSync entitlement-token</name>
     <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xsi:type="c:ExtensionType">
-        <mext:a>a</mext:a>
         <mext:kind>entitlement</mext:kind>
         <mext:intent>token</mext:intent>
         <mext:objectclass>ri:CustomTokenObjectClass</mext:objectclass>
