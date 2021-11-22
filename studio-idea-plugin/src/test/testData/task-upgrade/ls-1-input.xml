@@ -14,6 +14,7 @@
         <!--<ls:token xmlns:ls="http://midpoint.evolveum.com/xml/ns/public/provisioning/liveSync-3"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:string">1565803800000</ls:token>-->
     </extension>
+    <!-- some comment sample -->
     <assignment>
         <targetRef oid="00000000-0000-0000-0000-000000000504" type="ArchetypeType" /> <!--Live synchronization task-->
     </assignment>
@@ -23,7 +24,7 @@
     <objectRef oid="ef2bc95b-76e0-48e2-86d6-3d4f02d420ab" relation="org:default" type="c:ResourceType"/>
     <recurrence>recurring</recurrence>
     <binding>loose</binding>
-    <schedule>
+    <schedule><!-- defined via property -->
         <interval>$(system.property.livesync)</interval>
         <misfireAction>reschedule</misfireAction>
     </schedule>

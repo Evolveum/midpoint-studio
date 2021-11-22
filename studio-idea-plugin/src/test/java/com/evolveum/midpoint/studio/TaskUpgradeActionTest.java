@@ -115,7 +115,7 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
 
         String text = myFixture.getEditor().getDocument().getText();
 
-        LOG.debug("Created task:\n" + text);
+        LOG.info("Created task:\n" + text);
 
         Diff d = DiffBuilder
                 .compare(Input.fromFile(new File(getTestDataPath(), validation)))

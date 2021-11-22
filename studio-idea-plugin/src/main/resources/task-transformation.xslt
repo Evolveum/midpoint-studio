@@ -46,6 +46,27 @@
     <xsl:template match="/c:task/c:category"/>
     <xsl:template match="/c:task/c:handlerUri"/>
     <xsl:template match="/c:task/c:workManagement"/>
+    <xsl:template match="/c:task/c:structuredProgress"/>
+    <xsl:template match="/c:task/c:workState"/>
+    <xsl:template match="/c:task/c:otherHandlersUriStack"/>
+    <xsl:template match="/c:task/c:operationExecution/c:taskPartUri"/>
+    <xsl:template match="/c:task/c:operationStats/c:iterationInformation"/>
+    <xsl:template match="/c:task/c:operationStats/c:iterativeTaskInformation"/>
+    <xsl:template match="/c:task/c:operationStats/c:synchronizationInformation"/>
+    <xsl:template match="/c:task/c:operationStats/c:actionsExecutedInformation"/>
+    <xsl:template match="/c:task/c:operationStats/c:workBucketManagementPerformanceInformation"/>
+    <xsl:template match="/c:task/c:activityState/c:bucket"/>
+    <xsl:template match="/c:task/c:activityState/c:numberOfBuckets"/>
+
+    <!-- todo relative seem not to work -->
+    <xsl:template match="c:buckets/c:allocation/c:allocateFirst"/>
+    <xsl:template match="c:buckets/c:allocation/c:workAllocationMaxRetries"/>
+    <xsl:template match="c:buckets/c:allocation/c:workAllocationRetryIntervalBase"/>
+    <xsl:template match="c:buckets/c:allocation/c:workAllocationRetryExponentialThreshold"/>
+    <xsl:template match="c:buckets/c:allocation/c:workAllocationRetryIntervalLimit"/>
+
+    <!-- todo ProvisioningStatisticsEntryType??? many removals -->
+
     <xsl:template match="/c:task/c:objectRef"/>
     <xsl:template match="/c:task/c:recurrence"/>
     <xsl:template match="/c:task/c:errorHandlingStrategy"/>
@@ -78,7 +99,7 @@
             <xsl:if test="/c:task/c:recurrence">
                 <recurrence><xsl:value-of select="/c:task/c:recurrence"/></recurrence>
             </xsl:if>
-            <xsl:copy-of select="*"/>
+            <xsl:copy-of select="*|comment()"/>
         </schedule>
     </xsl:template>
 
