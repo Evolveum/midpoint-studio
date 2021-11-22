@@ -254,7 +254,7 @@
 
         <action id="MidPoint.Action.UpgradeTask"
                 class="com.evolveum.midpoint.studio.action.TaskUpgradeAction"
-                text="Upgrade task"
+                text="Upgrade task to activity (4.4)"
                 icon="AllIcons.Actions.Annotate"/>
 
         <!-- GROUPS -->

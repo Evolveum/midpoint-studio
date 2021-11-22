@@ -14,9 +14,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public class TaskUpgradeAction extends AnAction {
 
-    public static final String ACTION_NAME = "Upgrade task";
+    public static final String ACTION_NAME = "Upgrade task to activity (4.4)";
 
-    public static final String NOTIFICATION_KEY = "Upgrade Task File Action";
+    public static final String NOTIFICATION_KEY = "Upgrade task to activity (4.4) action";
 
     public TaskUpgradeAction() {
         super(ACTION_NAME, ACTION_NAME, AllIcons.Actions.Annotate);
