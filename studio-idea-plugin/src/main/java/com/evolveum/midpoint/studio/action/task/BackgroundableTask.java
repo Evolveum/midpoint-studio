@@ -8,7 +8,6 @@ import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
@@ -69,6 +68,12 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
                 doRun(indicator);
             }
         }.run();
+
+        LOG.info("Task finished: " + getClass().getName());
+    }
+
+    public String getNotificationKey() {
+        return notificationKey;
     }
 
     public void setEvent(AnActionEvent event) {
@@ -223,12 +228,16 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
 
     }
 
-    protected void updateEditor(Editor editor, String text) {
-        boolean updateSelection = ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () -> {
+    protected boolean isUpdateSelectionInEditor(Editor editor) {
+        return ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () -> {
 
             String txt = editor.getSelectionModel().getSelectedText();
             return StringUtils.isNotEmpty(txt);
         });
+    }
+
+    protected void updateEditor(Editor editor, String text) {
+        boolean updateSelection = isUpdateSelectionInEditor(editor);
 
         com.intellij.openapi.editor.Document document = editor.getDocument();
         if (updateSelection) {
@@ -301,7 +310,10 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
 
         msg.append("<br/>");
         msg.append("Processed: ").append(state.getProcessed()).append(" objects<br/>");
+        msg.append("Skipped: ").append(state.getSkipped()).append(" objects<br/>");
         msg.append("Failed to process: ").append(state.getFailed()).append(" objects<br/>");
+
+        LOG.info("Task " + getTitle() + " status: " + type.name() + "\n" + msg);
 
         MidPointUtils.publishNotification(getProject(), notificationKey, title, msg.toString(), type);
     }

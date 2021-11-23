@@ -107,6 +107,11 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
         testUpgrade("bulk-iterative-1-input.xml", "bulk-iterative-1-output.xml");
     }
 
+    @Test
+    public void testMultiple() {
+        testUpgrade("multiple-input.xml", "multiple-output.xml");
+    }
+
     private void testUpgrade(String input, String validation) {
         LOG.info("Testing upgrade for " + input + ", validating using " + validation);
 
