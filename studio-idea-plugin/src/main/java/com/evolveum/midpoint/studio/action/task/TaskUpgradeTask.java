@@ -42,13 +42,13 @@ public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
             boolean isUpdateSelection = isUpdateSelectionInEditor(editor);
 
             StringBuilder sb = new StringBuilder();
-            if (!isUpdateSelection) {
+            if (!isUpdateSelection && newObjects.size() > 1) {
                 sb.append(ClientUtils.OBJECTS_XML_PREFIX);
             }
 
             newObjects.forEach(o -> sb.append(o));
 
-            if (!isUpdateSelection) {
+            if (!isUpdateSelection && newObjects.size() > 1) {
                 sb.append(ClientUtils.OBJECTS_XML_SUFFIX);
             }
 

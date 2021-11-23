@@ -11,6 +11,7 @@
         <mext:intent>default</mext:intent>
         <mext:objectclass>ri:AccountObjectClass</mext:objectclass>
         <mext:liveSyncBatchSize>8000</mext:liveSyncBatchSize>
+        <mext:updateLiveSyncTokenInDryRun>true</mext:updateLiveSyncTokenInDryRun>
         <mext:workerThreads>20</mext:workerThreads>
         <!--<ls:token xmlns:ls="http://midpoint.evolveum.com/xml/ns/public/provisioning/liveSync-3"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:string">1565803800000</ls:token>-->

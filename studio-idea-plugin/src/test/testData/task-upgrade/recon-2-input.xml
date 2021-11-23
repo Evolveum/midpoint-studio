@@ -42,8 +42,12 @@
                             <depth>2</depth>
                             <comparisonMethod>prefix</comparisonMethod>
                         </stringSegmentation>
+                        <allocation>
+                            <allocateFirst>10</allocateFirst>
+                        </allocation>
                     </buckets>
                     <workers>
+                        <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3</handlerUri>
                         <workersPerNode>
                             <count>9</count>
                         </workersPerNode>

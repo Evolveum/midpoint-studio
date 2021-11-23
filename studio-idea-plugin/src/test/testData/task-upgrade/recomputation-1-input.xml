@@ -5,7 +5,7 @@
       xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"
       oid="93e91987-cf1a-42a3-80ec-38bede260af9">
     <name>Recompute Users starting with "a"</name>
-    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xsi:type="c:ExtensionType">
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3">
         <mext:objectType>c:UserType</mext:objectType>
         <mext:objectQuery>
             <q:filter>

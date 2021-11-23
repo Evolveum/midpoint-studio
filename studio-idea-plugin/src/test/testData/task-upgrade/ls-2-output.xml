@@ -1,6 +1,6 @@
 <task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="7e8fa00e-b2ca-4893-988b-59ba89a15a4c">
     <name>LiveSync account-default</name>
-    <extension>
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xsi:type="c:ExtensionType">
         <!--<ls:token xmlns:ls="http://midpoint.evolveum.com/xml/ns/public/provisioning/liveSync-3"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:string">1565803800000</ls:token>-->
     </extension>
@@ -9,7 +9,9 @@
         <!--Live synchronization task-->
     </assignment>
     <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <channel>http://midpoint.evolveum.com/xml/ns/public/common/channels-3#liveSync</channel>
     <executionState>runnable</executionState>
+    <objectRef oid="ef2bc95b-76e0-48e2-86d6-3d4f02d420ab" relation="org:default" type="c:ResourceType"/>
     <binding>loose</binding>
     <schedule>
         <recurrence>recurring</recurrence>
@@ -31,6 +33,7 @@
                     <objectclass>ri:AccountObjectClass</objectclass>
                 </resourceObjects>
                 <batchSize>8000</batchSize>
+                <updateLiveSyncTokenInDryRun>true</updateLiveSyncTokenInDryRun>
             </liveSynchronization>
         </work>
         <controlFlow>

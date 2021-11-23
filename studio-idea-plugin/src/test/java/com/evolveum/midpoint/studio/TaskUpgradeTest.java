@@ -24,14 +24,16 @@ public class TaskUpgradeTest {
         check.checkEnvironment(new PrintWriter(sw));
 
         LOG.info(sw.toString());
+        System.out.println(sw.toString());
 
         File parent = new File(".");
-        File datafile = new File(parent, "src/test/testData/task-upgrade/ls-1-input.xml");
+        File datafile = new File(parent, "src/test/testData/task-upgrade/import-1-input.xml");
 
         String input = Files.readString(datafile.toPath());
 
         String output = MidPointUtils.upgradeTaskToUseActivities(input);
 
         LOG.info(output);
+        System.out.println(output);
     }
 }

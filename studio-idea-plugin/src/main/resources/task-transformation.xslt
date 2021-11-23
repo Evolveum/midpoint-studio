@@ -42,13 +42,13 @@
     </xsl:template>
 
     <!-- skip these elements -->
-    <xsl:template match="/c:task/c:channel"/>
     <xsl:template match="/c:task/c:category"/>
     <xsl:template match="/c:task/c:handlerUri"/>
     <xsl:template match="/c:task/c:workManagement"/>
     <xsl:template match="/c:task/c:structuredProgress"/>
     <xsl:template match="/c:task/c:workState"/>
     <xsl:template match="/c:task/c:otherHandlersUriStack"/>
+
     <xsl:template match="/c:task/c:operationExecution/c:taskPartUri"/>
     <xsl:template match="/c:task/c:operationStats/c:iterationInformation"/>
     <xsl:template match="/c:task/c:operationStats/c:iterativeTaskInformation"/>
@@ -58,37 +58,46 @@
     <xsl:template match="/c:task/c:activityState/c:bucket"/>
     <xsl:template match="/c:task/c:activityState/c:numberOfBuckets"/>
 
-    <!-- todo relative seem not to work -->
-    <xsl:template match="c:buckets/c:allocation/c:allocateFirst"/>
-    <xsl:template match="c:buckets/c:allocation/c:workAllocationMaxRetries"/>
-    <xsl:template match="c:buckets/c:allocation/c:workAllocationRetryIntervalBase"/>
-    <xsl:template match="c:buckets/c:allocation/c:workAllocationRetryExponentialThreshold"/>
-    <xsl:template match="c:buckets/c:allocation/c:workAllocationRetryIntervalLimit"/>
+    <xsl:template match="//c:buckets/c:allocation/c:allocateFirst"/>
+    <xsl:template match="//c:buckets/c:allocation/c:workAllocationMaxRetries"/>
+    <xsl:template match="//c:buckets/c:allocation/c:workAllocationRetryIntervalBase"/>
+    <xsl:template match="//c:buckets/c:allocation/c:workAllocationRetryExponentialThreshold"/>
+    <xsl:template match="//c:buckets/c:allocation/c:workAllocationRetryIntervalLimit"/>
 
-    <!-- todo ProvisioningStatisticsEntryType??? many removals -->
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:resource"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:getSuccess"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:getFailure"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:searchSuccess"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:searchFailure"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:createSuccess"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:createFailure"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:updateSuccess"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:updateFailure"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:deleteSuccess"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:deleteFailure"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:syncSuccess"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:syncFailure"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:scriptSuccess"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:scriptFailure"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:otherSuccess"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:otherFailure"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:averageTime"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:minTime"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:maxTime"/>
+    <xsl:template match="//c:provisioningStatistics/c:entry/c:totalTime"/>
+    <xsl:template match="//c:workers/c:handlerUri"/>
 
-    <xsl:template match="/c:task/c:objectRef"/>
     <xsl:template match="/c:task/c:recurrence"/>
     <xsl:template match="/c:task/c:errorHandlingStrategy"/>
-    <xsl:template match="/c:task/c:workManagement/c:workers/c:handlerUri"/>
     <xsl:template match="/c:task/c:extension/mext:kind"/>
     <xsl:template match="/c:task/c:extension/mext:intent"/>
     <xsl:template match="/c:task/c:extension/mext:objectclass"/>
     <xsl:template match="/c:task/c:extension/mext:workerThreads"/>
     <xsl:template match="/c:task/c:extension/mext:liveSyncBatchSize"/>
+    <xsl:template match="/c:task/c:extension/mext:updateLiveSyncTokenInDryRun"/>
     <xsl:template match="/c:task/c:extension/mext:objectType"/>
     <xsl:template match="/c:task/c:extension/mext:objectQuery"/>
     <xsl:template match="/c:task/c:extension/scext:executeScript"/>
-
-    <!-- todo how to handle extension when we removed all mext items and extension ended up being empty? -->
-    <xsl:template match="/c:task/c:extension">
-<!--        <xsl:if test="/c:task/c:extension[mext:kind] or /c:task/c:extension[mext:intent] or /c:task/c:extension[mext:objectclass] or /c:task/c:extension[mext:workerThreads] or /c:task/c:extension[mext:liveSyncBatchSize]">-->
-<!--        <xsl:if test="/c:task/c:extension/*[]">-->
-            <xsl:copy>
-                <xsl:apply-templates/>
-            </xsl:copy>
-<!--        </xsl:if>-->
-    </xsl:template>
 
     <xsl:template match="/c:task/c:executionStatus">
         <executionState><xsl:value-of select="node()"/></executionState>
@@ -125,7 +134,7 @@
     <xsl:template name="distributionSimpleActivity">
         <distribution>
             <xsl:if test="/c:task/c:workManagement">
-                <xsl:copy-of select="/c:task/c:workManagement/c:buckets"/>
+                <xsl:apply-templates select="/c:task/c:workManagement/c:buckets" />
                 <xsl:apply-templates select="/c:task/c:workManagement/c:workers"/>
             </xsl:if>
 
@@ -142,8 +151,6 @@
             </controlFlow>
         </xsl:if>
     </xsl:template>
-
-    <!-- todo how to handle empty distribution being created under some conditions? -->
 
     <xsl:template name="distributionBasic">
         <xsl:if test="/c:task/c:extension/mext:workerThreads">
@@ -168,8 +175,8 @@
                     <change>
                         <reference>resourceObjects</reference>
                         <distribution>
-                            <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]/parent::node()/c:workManagement/c:buckets"/>
-                            <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]/parent::node()/c:workManagement/c:workers"/>
+                            <xsl:apply-templates select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]/parent::node()/c:workManagement/c:buckets"/>
+                            <xsl:apply-templates select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 2]/parent::node()/c:workManagement/c:workers"/>
                         </distribution>
                     </change>
                 </xsl:if>
@@ -177,8 +184,8 @@
                     <change>
                         <reference>remainingShadows</reference>
                         <distribution>
-                            <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 3]/parent::node()/c:workManagement/c:buckets"/>
-                            <xsl:copy-of select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 3]/parent::node()/c:workManagement/c:workers"/>
+                            <xsl:apply-templates select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 3]/parent::node()/c:workManagement/c:buckets"/>
+                            <xsl:apply-templates select="/c:task/c:workManagement/c:partitions/c:partition/c:index[text() = 3]/parent::node()/c:workManagement/c:workers"/>
                         </distribution>
                     </change>
                 </xsl:if>
@@ -192,6 +199,7 @@
                 <xsl:call-template name="resourceObjects"/>
                 <xsl:if test="/c:task/c:extension/mext:liveSyncBatchSize">
                     <batchSize><xsl:value-of select="/c:task/c:extension/mext:liveSyncBatchSize"/></batchSize>
+                    <updateLiveSyncTokenInDryRun><xsl:value-of select="/c:task/c:extension/mext:updateLiveSyncTokenInDryRun"/></updateLiveSyncTokenInDryRun>
                 </xsl:if>
             </liveSynchronization>
         </work>
