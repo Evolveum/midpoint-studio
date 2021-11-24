@@ -19,7 +19,6 @@
                 <resourceObjects>
                     <resourceRef oid="d0811790-1d80-11e4-86b2-3c970e467a76"/>
                     <kind>account</kind>
-                    <intent>applications</intent>
                     <objectclass>ri:inetOrgPerson</objectclass>
                 </resourceObjects>
             </reconciliation>

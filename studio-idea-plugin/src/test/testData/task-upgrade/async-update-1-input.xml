@@ -1,0 +1,24 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"
+      oid="47fc57bd-8c34-4555-9b9f-7087ff179860">
+    <name>Grouper async updates</name>
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3">
+        <mext:workerThreads>1</mext:workerThreads>
+    </extension>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000505" type="ArchetypeType" /> <!-- Asynchronous update task -->
+    </assignment>
+    <taskIdentifier>1552664339630-0-2</taskIdentifier>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType">
+        <!-- administrator -->
+    </ownerRef>
+    <executionStatus>runnable</executionStatus>
+    <category>AsynchronousUpdate</category>
+    <objectRef oid="1eff65de-5bb6-483d-9edf-8cc2c2ee0233" relation="org:default" type="c:ResourceType">
+        <!-- Grouper Resource -->
+    </objectRef>
+    <recurrence>single</recurrence>
+    <binding>loose</binding>
+    <threadStopAction>restart</threadStopAction>
+</task>

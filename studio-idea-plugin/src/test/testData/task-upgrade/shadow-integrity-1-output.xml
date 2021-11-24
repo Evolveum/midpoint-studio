@@ -1,0 +1,37 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" oid="7cf56b36-d6e7-11ea-8362-9f0f1dd4679c">
+    <name>Resource Shadow Integrity Check: Uniqueness</name>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000529" type="ArchetypeType"/>
+        <!--System task-->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" type="UserType"/>
+    <executionState>closed</executionState>
+    <activity>
+        <work>
+            <shadowIntegrityCheck>
+                <shadows>
+                    <query>
+                        <q:filter xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3">
+                            <q:ref>
+                                <q:path>resourceRef</q:path>
+                                <q:value>
+                                    <oid>5a55bc1a-95c0-11ea-bc3c-abbaf8e94a00</oid>
+                                    <!-- Resoure oid -->
+                                </q:value>
+                            </q:ref>
+                        </q:filter>
+                        <q:paging xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3">
+                            <q:orderBy>name</q:orderBy>
+                            <!-- in order to work with repositories that implement iteration by paging (so the order is not changed via fix operations) -->
+                        </q:paging>
+                    </query>
+                </shadows>
+                <diagnose>uniqueness</diagnose>
+                <fix>uniqueness</fix>
+                <checkDuplicatesOnPrimaryIdentifiersOnly>true</checkDuplicatesOnPrimaryIdentifiersOnly>
+                <duplicateShadowsResolver>asdf.Example</duplicateShadowsResolver>
+            </shadowIntegrityCheck>
+        </work>
+        <executionMode>dryRun</executionMode>
+    </activity>
+</task>
