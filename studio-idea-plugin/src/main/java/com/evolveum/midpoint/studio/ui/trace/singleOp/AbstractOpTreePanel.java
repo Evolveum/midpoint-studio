@@ -43,7 +43,7 @@ import java.util.List;
 
 /**
  * Display selected of given OpNode - as a tree.
- *
+ * <p>
  * Created by Viliam Repan (lazyman).
  */
 public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
@@ -225,7 +225,8 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
 
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
-                        AbstractOpTreePanel.FormatComboboxAction.this.setFormat(this.getFormat());
+                        setFormat(this.getFormat());
+                        updateVariablesValue(e);
                     }
                 });
             }
@@ -238,9 +239,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
             super.update(e);
 
             String text = getFormat().getDisplayName();
-            getTemplatePresentation().setText(text);
             e.getPresentation().setText(text);
-            variablesValue.setCaretPosition(0);
         }
 
         public void setFormat(Format format) {
@@ -249,6 +248,10 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
 
         public Format getFormat() {
             return format != null ? format : Format.XML_SIMPLIFIED;
+        }
+
+        private void updateVariablesValue(AnActionEvent e) {
+            variablesValue.setCaretPosition(0);
         }
     }
 

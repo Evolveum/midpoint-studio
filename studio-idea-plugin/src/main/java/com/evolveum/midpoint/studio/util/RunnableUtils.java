@@ -1,7 +1,10 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ReadAction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.concurrency.CancellablePromise;
 
 import java.util.concurrent.Callable;
@@ -105,5 +108,21 @@ public abstract class RunnableUtils {
                 runnable.run();
             }
         }).submit(executor);
+    }
+
+    /**
+     * Use {@link com.intellij.util.ModalityUiUtil} after plugin compatibility changes since 2021.2
+     *
+     * @param runnable
+     * @param modalityState
+     */
+    @Deprecated
+    public static void invokeLaterIfNeeded(@NotNull Runnable runnable, @NotNull ModalityState modalityState) {
+        Application app = ApplicationManager.getApplication();
+        if (app.isDispatchThread()) {
+            runnable.run();
+        } else {
+            app.invokeLater(runnable, modalityState);
+        }
     }
 }

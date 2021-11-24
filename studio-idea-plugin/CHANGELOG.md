@@ -31,6 +31,7 @@
 - Environment properties inlayed to xml for better readability
 - Delete object directly from browse tool window
   
+
 ### Changed
 - Using MidPoint 4.3 libs
 - Xml diff simplified UI, multiple diff strategies available

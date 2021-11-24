@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.action.task.TaskUpgradeTask;
 import com.evolveum.midpoint.studio.client.ClientException;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
@@ -63,14 +64,33 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
+import org.xml.sax.SAXException;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
 import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.awt.Color;
 import java.awt.*;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
@@ -661,15 +681,19 @@ public class MidPointUtils {
         return false;
     }
 
+    public static List<VirtualFile> filterXsdFiles(VirtualFile[] files) {
+        return filterXmlFiles(files, "xsd");
+    }
+
     public static List<VirtualFile> filterXmlFiles(VirtualFile[] files) {
-        return filterFiles(files, XmlFileType.DEFAULT_EXTENSION);
+        return filterXmlFiles(files, XmlFileType.DEFAULT_EXTENSION);
     }
 
     public static List<VirtualFile> filterZipFiles(VirtualFile[] files) {
-        return filterFiles(files, "zip");
+        return filterXmlFiles(files, "zip");
     }
 
-    private static List<VirtualFile> filterFiles(VirtualFile[] files, String extension) {
+    public static List<VirtualFile> filterXmlFiles(VirtualFile[] files, String extension) {
         List<VirtualFile> result = new ArrayList<>();
         if (files == null) {
             return result;
@@ -846,6 +870,71 @@ public class MidPointUtils {
                         "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
             }
             return new ArrayList<>();
+        }
+    }
+
+    public static String upgradeTaskToUseActivities(String taskXml) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException, TransformerException {
+        org.w3c.dom.Document doc = setupDocument(taskXml);
+
+        XPathFactory xpf = XPathFactory.newInstance();
+        XPath xpath = xpf.newXPath();
+        xpath.setNamespaceContext(new NamespaceContext() {
+
+            @Override
+            public String getNamespaceURI(String prefix) {
+                return "c".equals(prefix) ? SchemaConstantsGenerated.NS_COMMON : null;
+            }
+
+            @Override
+            public String getPrefix(String namespaceURI) {
+                return SchemaConstantsGenerated.NS_COMMON.equals(namespaceURI) ? "c" : null;
+            }
+
+            @Override
+            public Iterator<String> getPrefixes(String namespaceURI) {
+                return SchemaConstantsGenerated.NS_COMMON.equals(namespaceURI) ? new org.bouncycastle.util.Arrays.Iterator(new String[]{"c"}) : null;
+            }
+        });
+
+        //Get first match
+        Boolean exists = (Boolean) xpath.evaluate("/c:task/c:activity", doc, XPathConstants.BOOLEAN);
+        if (exists) {
+            return taskXml;
+        }
+
+        String xml = transformTask(doc, "task-transformation.xslt");
+
+        doc = setupDocument(xml);
+        xml = transformTask(doc, "task-cleanup.xslt");
+
+        return xml;
+    }
+
+    private static org.w3c.dom.Document setupDocument(String xml) throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        org.w3c.dom.Document doc = db.parse(new ByteArrayInputStream(xml.getBytes()));
+        doc.normalize();
+
+        return doc;
+    }
+
+    private static String transformTask(org.w3c.dom.Document doc, String stylesheet) throws TransformerException, IOException {
+        try (InputStream is = TaskUpgradeTask.class.getClassLoader().getResourceAsStream(stylesheet)) {
+            StreamSource xsl = new StreamSource(is);
+
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer trans = tf.newTransformer(xsl);
+            trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            trans.setParameter(OutputKeys.INDENT, "yes");
+            trans.setParameter(OutputKeys.ENCODING, "utf-8");
+
+            StringWriter sw = new StringWriter();
+            trans.transform(new DOMSource(doc), new StreamResult(sw));
+
+            return sw.toString();
         }
     }
 }

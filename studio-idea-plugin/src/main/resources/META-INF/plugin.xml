@@ -265,6 +265,10 @@
                 class="com.evolveum.midpoint.studio.action.VerifyAction"
                 text="Verify"/>
 
+        <action id="MidPoint.Action.ExtractLocalizationPropertiesAction"
+                class="com.evolveum.midpoint.studio.action.ExtractLocalizationPropertiesAction"
+                text="Extract Localization Properties"/>
+
         <action id="MidPoint.Action.TestAction"
                 class="com.evolveum.midpoint.studio.action.TestAction"
                 text="Test Action"
@@ -276,12 +280,18 @@
                 class="com.evolveum.midpoint.studio.action.SummarizeOperations"
                 text="Summarize Operations"/>
 
+
+        <action id="MidPoint.Action.UpgradeTask"
+                class="com.evolveum.midpoint.studio.action.TaskUpgradeAction"
+                text="Upgrade task to activity (4.4)"
+                icon="AllIcons.Actions.Annotate"/>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
             <group id="MidPoint.Group.Menu.TransferRelated"
-                   text="Update Object Actions"
+                   text="Other Actions"
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
@@ -312,6 +322,12 @@
                 <reference ref="MidPoint.Action.CleanupFile"/>
 
                 <reference ref="MidPoint.Action.VerifyAction"/>
+
+                <reference ref="MidPoint.Action.UpgradeTask"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.ExtractLocalizationPropertiesAction"/>
 
                 <separator/>
 
@@ -369,7 +385,7 @@
 
         <group id="MidPoint.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
-            <!--<reference ref="MidPoint.Action.TestAction"/>-->
+            <reference ref="MidPoint.Action.TestAction"/>
 
             <reference ref="MidPoint.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>
@@ -389,7 +405,7 @@
             <separator/>
 
             <group id="MidPoint.Toolbar.Others"
-                   text="Other Update Actions"
+                   text="Other Actions"
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
@@ -410,6 +426,12 @@
                 <reference ref="MidPoint.Action.CleanupFile"/>
 
                 <reference ref="MidPoint.Action.VerifyAction"/>
+
+                <reference ref="MidPoint.Action.UpgradeTask"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.ExtractLocalizationPropertiesAction"/>
 
             </group>
 

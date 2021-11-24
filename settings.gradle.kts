@@ -30,8 +30,11 @@ dependencyResolutionManagement {
             version("testng", "6.14.3")
             version("xchart", "3.5.4")
             version("xml-apis", "1.4.01")
+            version("remote-robot", "0.11.7")
+            version("xmlunit", "2.8.3")
 
-            alias("asciidoctorj-tabbed-code").to("com.bmuschko", "asciidoctorj-tabbed-code-extension").versionRef("asciidoctorj-tabbed-code")
+            alias("asciidoctorj-tabbed-code").to("com.bmuschko", "asciidoctorj-tabbed-code-extension")
+                .versionRef("asciidoctorj-tabbed-code")
             alias("common").to("com.evolveum.midpoint.infra", "common").versionRef("midpoint")
             alias("commons-io").to("commons-io", "commons-io").versionRef("commons-io")
             alias("commons-lang").to("org.apache.commons", "commons-lang3").versionRef("commons-lang")
@@ -55,6 +58,9 @@ dependencyResolutionManagement {
             alias("stax").to("stax", "stax").versionRef("stax")
             alias("xchart").to("org.knowm.xchart", "xchart").versionRef("xchart")
             alias("xml-apis").to("xml-apis", "xml-apis").versionRef("xml-apis")
+            alias("remote-robot").to("com.intellij.remoterobot", "remote-robot").versionRef("remote-robot")
+            alias("remote-fixtures").to("com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
+            alias("xmlunit-core").to("org.xmlunit", "xmlunit-core").versionRef("xmlunit")
         }
     }
 }

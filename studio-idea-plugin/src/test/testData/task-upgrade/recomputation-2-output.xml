@@ -1,0 +1,62 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" oid="585ac173-409e-4e3b-ba17-3144db51daca">
+    <name>Recompute users</name>
+    <documentation>
+        one time recompute
+    </documentation>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000502" type="ArchetypeType"/>
+        <!--Recomputation task -->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
+    <executionState>closed</executionState>
+    <unpauseAction>reschedule</unpauseAction>
+    <executionEnvironment>
+        <cachingProfile>roles-and-shadows</cachingProfile>
+    </executionEnvironment>
+    <activity>
+        <work>
+            <recomputation>
+                <objects>
+                    <type>c:UserType</type>
+                    <query>
+                        <q:filter>
+                            <q:type>
+                                <q:type>c:UserType</q:type>
+                                <q:filter>
+                                    <q:and>
+                                        <q:not>
+                                            <q:equal>
+                                                <q:path>employeeNumber</q:path>
+                                            </q:equal>
+                                        </q:not>
+                                        <q:equal>
+                                            <q:path>subtype</q:path>
+                                            <q:value>sample</q:value>
+                                        </q:equal>
+                                    </q:and>
+                                </q:filter>
+                            </q:type>
+                        </q:filter>
+                    </query>
+                </objects>
+            </recomputation>
+        </work>
+        <distribution>
+            <buckets>
+                <stringSegmentation>
+                    <discriminator>#</discriminator>
+                    <boundaryCharacters>0-9a-f</boundaryCharacters>
+                    <boundaryCharacters>\0-9a-f</boundaryCharacters>
+                    <!--<boundaryCharacters>048bf</boundaryCharacters>-->
+                </stringSegmentation>
+            </buckets>
+            <workers>
+                <workersPerNode>
+                    <count>4</count>
+                </workersPerNode>
+            </workers>
+            <workerThreads>4</workerThreads>
+            <subtasks/>
+        </distribution>
+    </activity>
+</task>

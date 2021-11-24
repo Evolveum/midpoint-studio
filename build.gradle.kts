@@ -14,6 +14,9 @@ allprojects {
         maven {
             url = uri("https://www.jetbrains.com/intellij-repository/snapshots/")
         }
+        maven {
+            url = uri("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
+        }
     }
 }
 

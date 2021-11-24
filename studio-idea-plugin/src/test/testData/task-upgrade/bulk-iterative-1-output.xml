@@ -1,0 +1,56 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="56acc1f9-ccf3-4a9e-a4d8-54675454adbe">
+    <name>Cleanup Users</name>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000509" type="ArchetypeType"/>
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
+    <executionState>closed</executionState>
+    <executionEnvironment>
+        <cachingProfile>roles-and-shadows</cachingProfile>
+    </executionEnvironment>
+    <activity>
+        <work>
+            <iterativeScripting>
+                <objects>
+                    <type>UserType</type>
+                    <query>
+                        <q:filter>
+                            <q:not>
+                                <q:equal>
+                                    <q:path>extension/someAttribute</q:path>
+                                </q:equal>
+                            </q:not>
+                        </q:filter>
+                    </query>
+                </objects>
+                <scriptExecutionRequest>
+                    <s:action>
+                        <s:type>execute-script</s:type>
+                        <s:parameter>
+                            <s:name>script</s:name>
+                            <c:value xsi:type="c:ScriptExpressionEvaluatorType">
+                                <c:code>midpoint.executeChanges([delta], null)</c:code>
+                            </c:value>
+                        </s:parameter>
+                    </s:action>
+                </scriptExecutionRequest>
+            </iterativeScripting>
+        </work>
+        <distribution>
+            <buckets>
+                <stringSegmentation>
+                    <discriminator>#</discriminator>
+                    <boundaryCharacters>0-9a-f</boundaryCharacters>
+                    <boundaryCharacters>\0-9a-f</boundaryCharacters>
+                </stringSegmentation>
+            </buckets>
+            <workers>
+                <workersPerNode>
+                    <count>2</count>
+                </workersPerNode>
+            </workers>
+            <workerThreads>4</workerThreads>
+            <subtasks/>
+        </distribution>
+    </activity>
+</task>

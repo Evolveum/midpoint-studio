@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl;
 import com.evolveum.midpoint.studio.ui.MidPointConsolePanel;
 import com.evolveum.midpoint.studio.ui.MidPointConsoleView;
 import com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -14,6 +15,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.util.ModalityUiUtil;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
@@ -112,6 +114,6 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         sb.append('\n');
 
         MidPointConsoleView console = getConsole();
-        GuiUtils.invokeLaterIfNeeded(() -> console.print(sb.toString(), type), ModalityState.defaultModalityState());
+        RunnableUtils.invokeLaterIfNeeded(() -> console.print(sb.toString(), type), ModalityState.defaultModalityState());
     }
 }

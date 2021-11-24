@@ -1,0 +1,40 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="93e91987-cf1a-42a3-80ec-38bede260af9">
+    <name>Recompute Users starting with "a"</name>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000502" type="ArchetypeType"/>
+        <!--Recomputation task -->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <executionState>closed</executionState>
+    <binding>loose</binding>
+    <schedule>
+        <recurrence>single</recurrence>
+        <misfireAction>executeImmediately</misfireAction>
+    </schedule>
+    <threadStopAction>restart</threadStopAction>
+    <executionEnvironment>
+        <cachingProfile>roles-and-shadows</cachingProfile>
+    </executionEnvironment>
+    <activity>
+        <work>
+            <recomputation>
+                <objects>
+                    <type>c:UserType</type>
+                    <query>
+                        <q:filter>
+                            <q:substring>
+                                <q:matching>normIgnoreCase</q:matching>
+                                <q:path>name</q:path>
+                                <q:value>a</q:value>
+                                <q:anchorStart>true</q:anchorStart>
+                            </q:substring>
+                        </q:filter>
+                    </query>
+                </objects>
+            </recomputation>
+        </work>
+        <distribution>
+            <workerThreads>8</workerThreads>
+        </distribution>
+    </activity>
+</task>

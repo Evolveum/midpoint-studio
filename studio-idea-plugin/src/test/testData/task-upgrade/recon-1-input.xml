@@ -1,0 +1,36 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:apti="http://midpoint.evolveum.com/xml/ns/public/common/api-types-3"
+      xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3"
+      xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"
+      xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+      xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
+      xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      oid="f51236ee-53a4-464d-b5c0-e59de8cd8a54">
+
+    <name>Reconciliation 1</name>
+
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xsi:type="c:ExtensionType">
+        <mext:kind>account</mext:kind>
+        <mext:intent>applications</mext:intent>
+        <mext:objectclass>ri:inetOrgPerson</mext:objectclass>
+        <mext:workerThreads>4</mext:workerThreads>
+    </extension>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000501" type="ArchetypeType" /> <!--Reconciliation task-->
+    </assignment>
+
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" type="c:UserType"/>
+    <executionStatus>closed</executionStatus>
+    <category>Reconciliation</category>
+    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/reconciliation/handler-3</handlerUri>
+    <objectRef oid="d0811790-1d80-11e4-86b2-3c970e467a76" type="c:ResourceType"/>
+
+    <recurrence>single</recurrence>
+    <binding>loose</binding>
+    <schedule>
+        <misfireAction>executeImmediately</misfireAction>
+    </schedule>
+    <threadStopAction>restart</threadStopAction>
+</task>
