@@ -50,7 +50,7 @@
     <recurrence>recurring</recurrence>
     <binding>loose</binding>
     <schedule>
-        <!--        <interval>$(cud.livesync)</interval>-->
+        <!--        <interval>$(cuc.livesync)</interval>-->
         <interval>180</interval>
         <misfireAction>reschedule</misfireAction>
     </schedule>

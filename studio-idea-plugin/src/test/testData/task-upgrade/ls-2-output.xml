@@ -15,7 +15,7 @@
     <binding>loose</binding>
     <schedule>
         <recurrence>recurring</recurrence>
-        <!--        <interval>$(cud.livesync)</interval>-->
+        <!--        <interval>$(cuc.livesync)</interval>-->
         <interval>180</interval>
         <misfireAction>reschedule</misfireAction>
     </schedule>

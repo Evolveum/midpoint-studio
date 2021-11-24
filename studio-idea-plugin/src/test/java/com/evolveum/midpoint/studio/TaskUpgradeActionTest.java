@@ -128,6 +128,21 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testScripting1() {
+        testUpgrade("scripting-1-input.xml", "scripting-1-output.xml");
+    }
+
+    @Test
+    public void testReindex1() {
+        testUpgrade("reindex-1-input.xml", "reindex-1-output.xml");
+    }
+
+    @Test
+    public void testReindex2() {
+        testUpgrade("reindex-2-input.xml", "reindex-2-output.xml");
+    }
+
+    @Test
     public void testDelete1() {
         testUpgrade("delete-1-input.xml", "delete-1-output.xml");
     }

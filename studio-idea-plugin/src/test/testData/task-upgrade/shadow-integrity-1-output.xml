@@ -6,6 +6,9 @@
     </assignment>
     <ownerRef oid="00000000-0000-0000-0000-000000000002" type="UserType"/>
     <executionState>closed</executionState>
+    <schedule>
+        <recurrence>single</recurrence>
+    </schedule>
     <activity>
         <work>
             <shadowIntegrityCheck>

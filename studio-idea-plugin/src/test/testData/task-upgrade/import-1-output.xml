@@ -16,6 +16,9 @@
             </provisioningStatistics>
         </environmentalPerformanceInformation>
     </operationStats>
+    <schedule>
+        <recurrence>single</recurrence>
+    </schedule>
     <executionEnvironment>
         <cachingProfile>roles-and-shadows</cachingProfile>
     </executionEnvironment>
