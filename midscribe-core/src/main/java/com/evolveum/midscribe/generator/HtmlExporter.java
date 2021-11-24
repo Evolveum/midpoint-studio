@@ -1,13 +1,11 @@
 package com.evolveum.midscribe.generator;
 
 import org.asciidoctor.Asciidoctor;
-import org.asciidoctor.AttributesBuilder;
-import org.asciidoctor.OptionsBuilder;
+import org.asciidoctor.Options;
 import org.asciidoctor.SafeMode;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -26,15 +24,13 @@ public class HtmlExporter implements Exporter {
         File dir = output.getAbsoluteFile().getParentFile();
         File file = new File(output.getName());
 
-        OptionsBuilder builder = OptionsBuilder.options()
+        Options options = Options.builder()
                 .safe(SafeMode.UNSAFE)
                 .toDir(dir)
                 .toFile(file)
                 .headerFooter(true)
-                .attributes(AttributesBuilder.attributes());
+                .build();
 //                .templateDir(new File("./src/test/resources/css"));
-
-        Map<String, Object> options = builder.asMap();
 
         // this should improve performance of JRuby
         System.setProperty("jruby.compat.version", "RUBY1_9");
