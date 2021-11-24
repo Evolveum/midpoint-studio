@@ -312,6 +312,8 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
         msg.append("Processed: ").append(state.getProcessed()).append(" objects<br/>");
         msg.append("Skipped: ").append(state.getSkipped()).append(" objects<br/>");
         msg.append("Failed to process: ").append(state.getFailed()).append(" objects<br/>");
+        msg.append("Processed files: ").append(state.getProcessedFile()).append("<br/>");
+        msg.append("Skipped files: ").append(state.getSkippedFile()).append("<br/>");
 
         LOG.info("Task " + getTitle() + " status: " + type.name() + "\n" + msg);
 

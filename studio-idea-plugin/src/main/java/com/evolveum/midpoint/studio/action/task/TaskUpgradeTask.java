@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -87,10 +88,15 @@ public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
             }
 
             try {
-                String newContent = MidPointUtils.upgradeTaskToUseActivities(object.getContent());
+                String oldContent = object.getContent();
+                String newContent = MidPointUtils.upgradeTaskToUseActivities(oldContent);
                 newObjects.add(newContent);
 
-                state.incrementProcessed();
+                if (Objects.equals(oldContent, newContent)) {
+                    state.incrementSkipped();
+                } else {
+                    state.incrementProcessed();
+                }
             } catch (Exception ex) {
                 state.incrementFailed();
                 newObjects.add(object.getContent());
