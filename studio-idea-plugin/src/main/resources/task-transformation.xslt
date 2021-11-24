@@ -5,7 +5,7 @@
                 xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3"
                 xmlns:scext="http://midpoint.evolveum.com/xml/ns/public/model/scripting/extension-3"
                 xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
-                exclude-result-prefixes="mext scext">
+                exclude-result-prefixes="mext scext c">
 
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 
@@ -22,23 +22,49 @@
             <xsl:copy-of select="@*"/>
             <xsl:apply-templates/>
             <activity>
-                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/reconciliation/handler-3'] or /c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000501']">
+                <xsl:variable name="URI_WORKERS_CREATION" select="'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'"/>
+                
+                <xsl:variable name="URI_LIVE_SYNC" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/live-sync/handler-3'"/>
+                <xsl:variable name="URI_DELETE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/delete/handler-3'"/>
+                <xsl:variable name="URI_IMPORT" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'"/>
+                <xsl:variable name="URI_RECOMPUTE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'"/>
+                <xsl:variable name="URI_ITERATIVE_SCRIPTING" select="'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'"/>
+                <xsl:variable name="URI_ASYNC_UPDATE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/async-update/handler-3'"/>
+                <xsl:variable name="URI_RECONCILIATION" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/reconciliation/handler-3'"/>
+                <xsl:variable name="URI_PARTITIONED_RECONCILIATION" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'"/>
+                <xsl:variable name="URI_SHADOW_INTEGRITY" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadow-integrity-check/handler-3'"/>
+                <xsl:variable name="URI_SHADOW_REFRESH" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadowRefresh/handler-3'"/>
+
+                <xsl:variable name="taskHandlerUri" select="/c:task/c:handlerUri/text()"/>
+                <xsl:variable name="assignmentTargetOid" select="/c:task/c:assignment/c:targetRef/@oid"/>
+                <xsl:variable name="workersHandlerUri" select="/c:task/c:workManagement/c:workers/c:handlerUri/text()"/>
+
+                <xsl:if test="$taskHandlerUri = $URI_RECONCILIATION or $taskHandlerUri = $URI_PARTITIONED_RECONCILIATION or $assignmentTargetOid = '00000000-0000-0000-0000-000000000501'">
                     <xsl:call-template name="reconciliation"/>
                 </xsl:if>
-                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/live-sync/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000504']">
+                <xsl:if test="$taskHandlerUri = $URI_LIVE_SYNC or $assignmentTargetOid = '00000000-0000-0000-0000-000000000504'">
                     <xsl:call-template name="livesync"/>
                 </xsl:if>
-                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000503'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'])">
+                <xsl:if test="$taskHandlerUri = $URI_IMPORT or $assignmentTargetOid = '00000000-0000-0000-0000-000000000503' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_IMPORT)">
                     <xsl:call-template name="import"/>
                 </xsl:if>
-                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000502'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'])">
+                <xsl:if test="$taskHandlerUri = $URI_RECOMPUTE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000502' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_RECOMPUTE)">
                     <xsl:call-template name="recomputation"/>
                 </xsl:if>
-                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000509'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'])">
+                <xsl:if test="$taskHandlerUri = $URI_ITERATIVE_SCRIPTING or $assignmentTargetOid = '00000000-0000-0000-0000-000000000509' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_ITERATIVE_SCRIPTING)">
                     <xsl:call-template name="iterativeScripting"/>
                 </xsl:if>
-                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/async-update/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000505'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/async-update/handler-3'])">
+                <xsl:if test="$taskHandlerUri = $URI_ASYNC_UPDATE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000505' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_ASYNC_UPDATE)">
                     <xsl:call-template name="asyncUpdate"/>
+                </xsl:if>
+                <xsl:if test="$taskHandlerUri = $URI_DELETE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000528' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_DELETE)">
+                    <xsl:call-template name="deletion"/>
+                </xsl:if>
+                <xsl:if test="$taskHandlerUri = $URI_SHADOW_INTEGRITY or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SHADOW_INTEGRITY)">
+                    <xsl:call-template name="shadowIntegrityCheck"/>
+                </xsl:if>
+                <xsl:if test="$taskHandlerUri = $URI_SHADOW_REFRESH or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SHADOW_REFRESH)">
+                    <xsl:call-template name="shadowRefresh"/>
                 </xsl:if>
 
                 <xsl:if test="/c:task/c:extension/mext:dryRun[text() = 'true']">
@@ -107,6 +133,10 @@
     <xsl:template match="/c:task/c:extension/mext:searchOptions"/>
     <xsl:template match="/c:task/c:extension/mext:modelExecuteOptions"/>
     <xsl:template match="/c:task/c:extension/mext:dryRun"/>
+    <xsl:template match="/c:task/c:extension/mext:diagnose"/>
+    <xsl:template match="/c:task/c:extension/mext:fix"/>
+    <xsl:template match="/c:task/c:extension/mext:checkDuplicatesOnPrimaryIdentifiersOnly"/>
+    <xsl:template match="/c:task/c:extension/mext:duplicateShadowsResolver"/>
     <xsl:template match="/c:task/c:extension/scext:executeScript"/>
 
 <!--    todo optionRaw dryRun lastReconciliationStartTimestamp tracing* -->
@@ -122,6 +152,24 @@
             </xsl:if>
             <xsl:copy-of select="*|comment()"/>
         </schedule>
+    </xsl:template>
+
+    <xsl:template name="objectSet">
+        <xsl:param name="customElementName" select="'objects'" required="no"/>
+
+        <xsl:if test="/c:task/c:extension/mext:objectType or /c:task/c:extension/mext:objectQuery or /c:task/c:extension/mext:searchOptions">
+            <xsl:element name="{$customElementName}">
+                <xsl:if test="/c:task/c:extension/mext:objectType">
+                    <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:objectQuery">
+                    <query><xsl:copy-of select="/c:task/c:extension/mext:objectQuery/node()"/></query>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:searchOptions">
+                    <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
+                </xsl:if>
+            </xsl:element>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template name="resourceObjectSet">
@@ -244,24 +292,10 @@
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
-    <xsl:template name="objectDefinition">
-        <objects>
-            <xsl:if test="/c:task/c:extension/mext:objectType">
-                <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
-            </xsl:if>
-            <xsl:if test="/c:task/c:extension/mext:objectQuery">
-                <query><xsl:copy-of select="/c:task/c:extension/mext:objectQuery/node()"/></query>
-            </xsl:if>
-            <xsl:if test="/c:task/c:extension/mext:searchOptions">
-                <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
-            </xsl:if>
-        </objects>
-    </xsl:template>
-
     <xsl:template name="recomputation">
         <work>
             <recomputation>
-                <xsl:call-template name="objectDefinition"/>
+                <xsl:call-template name="objectSet"/>
                 <xsl:if test="/c:task/c:extension/mext:modelExecuteOptions">
                     <executionOptions><xsl:copy-of select="/c:task/c:extension/mext:modelExecuteOptions/node()"/></executionOptions>
                 </xsl:if>
@@ -274,7 +308,7 @@
     <xsl:template name="iterativeScripting">
         <work>
             <iterativeScripting>
-                <xsl:call-template name="objectDefinition"/>
+                <xsl:call-template name="objectSet"/>
                 <scriptExecutionRequest>
                     <xsl:copy-of select="/c:task/c:extension/scext:executeScript/*"/>
                 </scriptExecutionRequest>
@@ -296,4 +330,55 @@
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
+    <xsl:template name="deletion">
+        <work>
+            <deletion>
+                <xsl:call-template name="objectSet"/>
+                <xsl:if test="/c:task/c:extension/mext:modelExecuteOptions">
+                    <executionOptions><xsl:copy-of select="/c:task/c:extension/mext:modelExecuteOptions/node()"/></executionOptions>
+                </xsl:if>
+            </deletion>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
+
+    <xsl:template name="shadowIntegrityCheck">
+        <work>
+            <shadowIntegrityCheck>
+                <xsl:call-template name="objectSet">
+                    <xsl:with-param name="customElementName" select="'shadows'"/>
+                </xsl:call-template>
+                <xsl:if test="/c:task/c:extension/mext:modelExecuteOptions">
+                    <executionOptions><xsl:copy-of select="/c:task/c:extension/mext:modelExecuteOptions/node()"/></executionOptions>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:diagnose">
+                    <diagnose><xsl:value-of select="/c:task/c:extension/mext:diagnose/text()"/></diagnose>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:fix">
+                    <fix><xsl:value-of select="/c:task/c:extension/mext:fix/text()"/></fix>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:checkDuplicatesOnPrimaryIdentifiersOnly">
+                    <checkDuplicatesOnPrimaryIdentifiersOnly><xsl:value-of select="/c:task/c:extension/mext:checkDuplicatesOnPrimaryIdentifiersOnly/text()"/></checkDuplicatesOnPrimaryIdentifiersOnly>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:duplicateShadowsResolver">
+                    <duplicateShadowsResolver><xsl:value-of select="/c:task/c:extension/mext:duplicateShadowsResolver/text()"/></duplicateShadowsResolver>
+                </xsl:if>
+            </shadowIntegrityCheck>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
+
+    <xsl:template name="shadowRefresh">
+        <work>
+            <shadowRefresh>
+                <xsl:call-template name="objectSet">
+                    <xsl:with-param name="customElementName" select="'shadows'"/>
+                </xsl:call-template>
+            </shadowRefresh>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
 </xsl:stylesheet>

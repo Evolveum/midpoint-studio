@@ -1,0 +1,52 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" oid="1bf3bd73-4d2b-4561-98ab-417b222b2add">
+    <name>Delete Shadows exists=false</name>
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3">
+        <mext:optionRaw>true</mext:optionRaw>
+    </extension>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000528" type="ArchetypeType"/>
+        <!-- Utility task -->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <executionState>closed</executionState>
+    <schedule>
+        <recurrence>recurring</recurrence>
+        <interval>300</interval>
+    </schedule>
+    <binding>loose</binding>
+    <activity>
+        <work>
+            <deletion>
+                <objects>
+                    <type>c:ShadowType</type>
+                    <query>
+                        <q:filter>
+                            <q:and>
+                                <q:equal>
+                                    <q:path>exists</q:path>
+                                    <q:value>false</q:value>
+                                </q:equal>
+                                <q:or>
+                                    <q:ref>
+                                        <q:path>resourceRef</q:path>
+                                        <q:value>
+                                            <oid>d0811790-1d80-11e4-86b2-3c970e46a876</oid>
+                                            <type>c:ResourceType</type>
+                                        </q:value>
+                                    </q:ref>
+                                    <q:ref>
+                                        <q:path>resourceRef</q:path>
+                                        <q:value>
+                                            <oid>d0811790-1d80-11e4-86b2-3c970e46a875</oid>
+                                            <type>c:ResourceType</type>
+                                        </q:value>
+                                    </q:ref>
+                                </q:or>
+                            </q:and>
+                        </q:filter>
+                    </query>
+                </objects>
+            </deletion>
+        </work>
+    </activity>
+</task>
