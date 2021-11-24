@@ -13,7 +13,6 @@
 
     <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xsi:type="c:ExtensionType">
         <mext:kind>account</mext:kind>
-        <mext:intent>applications</mext:intent>
         <mext:objectclass>ri:inetOrgPerson</mext:objectclass>
         <mext:workerThreads>4</mext:workerThreads>
         <mext:dryRun>true</mext:dryRun>

@@ -122,14 +122,22 @@
 
     <xsl:template name="resourceObjects">
         <resourceObjects>
-            <xsl:element name="resourceRef">
-                <xsl:attribute name="oid">
-                    <xsl:value-of  select="/c:task/c:objectRef/@oid"/>
-                </xsl:attribute>
-            </xsl:element>
-            <kind><xsl:value-of select="/c:task/c:extension/mext:kind"/></kind>
-            <intent><xsl:value-of select="/c:task/c:extension/mext:intent"/></intent>
-            <objectclass><xsl:value-of select="/c:task/c:extension/mext:objectclass"/></objectclass>
+            <xsl:if test="/c:task/c:objectRef/@oid">
+                <xsl:element name="resourceRef">
+                    <xsl:attribute name="oid">
+                        <xsl:value-of select="/c:task/c:objectRef/@oid"/>
+                    </xsl:attribute>
+                </xsl:element>
+            </xsl:if>
+            <xsl:if test="/c:task/c:extension/mext:kind">
+                <kind><xsl:value-of select="/c:task/c:extension/mext:kind"/></kind>
+            </xsl:if>
+            <xsl:if test="/c:task/c:extension/mext:intent">
+                <intent><xsl:value-of select="/c:task/c:extension/mext:intent"/></intent>
+            </xsl:if>
+            <xsl:if test="/c:task/c:extension/mext:objectclass">
+                <objectclass><xsl:value-of select="/c:task/c:extension/mext:objectclass"/></objectclass>
+            </xsl:if>
             <xsl:if test="/c:task/c:extension/mext:searchOptions">
                 <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
             </xsl:if>
@@ -230,7 +238,9 @@
 
     <xsl:template name="objectDefinition">
         <objects>
-            <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
+            <xsl:if test="/c:task/c:extension/mext:objectType">
+                <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
+            </xsl:if>
             <xsl:if test="/c:task/c:extension/mext:objectQuery">
                 <query><xsl:copy-of select="/c:task/c:extension/mext:objectQuery/node()"/></query>
             </xsl:if>
