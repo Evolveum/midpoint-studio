@@ -37,6 +37,9 @@
                 <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000509'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'])">
                     <xsl:call-template name="iterativeScripting"/>
                 </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:dryRun[text() = 'true']">
+                    <executionMode>dryRun</executionMode>
+                </xsl:if>
             </activity>
         </xsl:copy>
     </xsl:template>
@@ -97,7 +100,12 @@
     <xsl:template match="/c:task/c:extension/mext:updateLiveSyncTokenInDryRun"/>
     <xsl:template match="/c:task/c:extension/mext:objectType"/>
     <xsl:template match="/c:task/c:extension/mext:objectQuery"/>
+    <xsl:template match="/c:task/c:extension/mext:searchOptions"/>
+    <xsl:template match="/c:task/c:extension/mext:modelExecuteOptions"/>
+    <xsl:template match="/c:task/c:extension/mext:dryRun"/>
     <xsl:template match="/c:task/c:extension/scext:executeScript"/>
+
+<!--    todo optionRaw dryRun lastReconciliationStartTimestamp tracing* -->
 
     <xsl:template match="/c:task/c:executionStatus">
         <executionState><xsl:value-of select="node()"/></executionState>
@@ -122,6 +130,9 @@
             <kind><xsl:value-of select="/c:task/c:extension/mext:kind"/></kind>
             <intent><xsl:value-of select="/c:task/c:extension/mext:intent"/></intent>
             <objectclass><xsl:value-of select="/c:task/c:extension/mext:objectclass"/></objectclass>
+            <xsl:if test="/c:task/c:extension/mext:searchOptions">
+                <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
+            </xsl:if>
         </resourceObjects>
     </xsl:template>
 
@@ -220,8 +231,12 @@
     <xsl:template name="objectDefinition">
         <objects>
             <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
-            <query><xsl:copy-of select="/c:task/c:extension/mext:objectQuery/*"/></query>
-            <!-- todo searchOptions -->
+            <xsl:if test="/c:task/c:extension/mext:objectQuery">
+                <query><xsl:copy-of select="/c:task/c:extension/mext:objectQuery/node()"/></query>
+            </xsl:if>
+            <xsl:if test="/c:task/c:extension/mext:searchOptions">
+                <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
+            </xsl:if>
         </objects>
     </xsl:template>
 
@@ -229,7 +244,9 @@
         <work>
             <recomputation>
                 <xsl:call-template name="objectDefinition"/>
-                <!-- todo executionOptions -->
+                <xsl:if test="/c:task/c:extension/mext:modelExecuteOptions">
+                    <executionOptions><xsl:copy-of select="/c:task/c:extension/mext:modelExecuteOptions/node()"/></executionOptions>
+                </xsl:if>
             </recomputation>
         </work>
         <xsl:call-template name="controlFlow"/>

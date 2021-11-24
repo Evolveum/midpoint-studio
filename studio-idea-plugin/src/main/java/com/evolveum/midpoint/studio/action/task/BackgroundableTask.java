@@ -260,7 +260,7 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
             try (Writer writer = new OutputStreamWriter(file.getOutputStream(this), file.getCharset())) {
                 if (objects.size() > 1) {
                     writer.write(ClientUtils.OBJECTS_XML_PREFIX);
-                    writer.write('\n');
+                    writer.write(System.lineSeparator());
                 }
 
                 for (String obj : objects) {
@@ -269,7 +269,7 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
 
                 if (objects.size() > 1) {
                     writer.write(ClientUtils.OBJECTS_XML_SUFFIX);
-                    writer.write('\n');
+                    writer.write(System.lineSeparator());
                 }
             } catch (IOException ex) {
                 state.incrementFailed();

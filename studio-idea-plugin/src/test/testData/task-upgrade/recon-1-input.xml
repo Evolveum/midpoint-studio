@@ -16,6 +16,7 @@
         <mext:intent>applications</mext:intent>
         <mext:objectclass>ri:inetOrgPerson</mext:objectclass>
         <mext:workerThreads>4</mext:workerThreads>
+        <mext:dryRun>true</mext:dryRun>
     </extension>
     <assignment>
         <targetRef oid="00000000-0000-0000-0000-000000000501" type="ArchetypeType" /> <!--Reconciliation task-->
