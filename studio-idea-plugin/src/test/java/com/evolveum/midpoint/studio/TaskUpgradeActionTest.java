@@ -112,6 +112,12 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
         testUpgrade("multiple-input.xml", "multiple-output.xml");
     }
 
+    @Test
+    public void testAsync1() {
+        testUpgrade("async-update-1-input.xml", "async-update-1-output.xml");
+    }
+
+
     private void testUpgrade(String input, String validation) {
         LOG.info("Testing upgrade for " + input + ", validating using " + validation);
 

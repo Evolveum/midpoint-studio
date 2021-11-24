@@ -27,7 +27,7 @@ public class TaskUpgradeTest {
         System.out.println(sw.toString());
 
         File parent = new File(".");
-        File datafile = new File(parent, "src/test/testData/task-upgrade/import-1-input.xml");
+        File datafile = new File(parent, "src/test/testData/task-upgrade/async-update-1-input.xml");
 
         String input = Files.readString(datafile.toPath());
 

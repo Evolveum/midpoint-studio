@@ -37,6 +37,10 @@
                 <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000509'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'])">
                     <xsl:call-template name="iterativeScripting"/>
                 </xsl:if>
+                <xsl:if test="/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/async-update/handler-3'] or /c:task/c:assignment/c:targetRef[@oid = '00000000-0000-0000-0000-000000000505'] or (/c:task/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'] and /c:task/c:workManagement/c:workers/c:handlerUri[text() = 'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/async-update/handler-3'])">
+                    <xsl:call-template name="asyncUpdate"/>
+                </xsl:if>
+
                 <xsl:if test="/c:task/c:extension/mext:dryRun[text() = 'true']">
                     <executionMode>dryRun</executionMode>
                 </xsl:if>
@@ -120,28 +124,32 @@
         </schedule>
     </xsl:template>
 
-    <xsl:template name="resourceObjects">
-        <resourceObjects>
-            <xsl:if test="/c:task/c:objectRef/@oid">
-                <xsl:element name="resourceRef">
-                    <xsl:attribute name="oid">
-                        <xsl:value-of select="/c:task/c:objectRef/@oid"/>
-                    </xsl:attribute>
-                </xsl:element>
-            </xsl:if>
-            <xsl:if test="/c:task/c:extension/mext:kind">
-                <kind><xsl:value-of select="/c:task/c:extension/mext:kind"/></kind>
-            </xsl:if>
-            <xsl:if test="/c:task/c:extension/mext:intent">
-                <intent><xsl:value-of select="/c:task/c:extension/mext:intent"/></intent>
-            </xsl:if>
-            <xsl:if test="/c:task/c:extension/mext:objectclass">
-                <objectclass><xsl:value-of select="/c:task/c:extension/mext:objectclass"/></objectclass>
-            </xsl:if>
-            <xsl:if test="/c:task/c:extension/mext:searchOptions">
-                <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
-            </xsl:if>
-        </resourceObjects>
+    <xsl:template name="resourceObjectSet">
+        <xsl:param name="customElementName" select="'resourceObjects'" required="no"/>
+
+        <xsl:if test="/c:task/c:objectRef/@oid or /c:task/c:extension/mext:kind or /c:task/c:extension/mext:intent or /c:task/c:extension/mext:objectclass or /c:task/c:extension/mext:searchOptions">
+            <xsl:element name="{$customElementName}">
+                <xsl:if test="/c:task/c:objectRef/@oid">
+                    <xsl:element name="resourceRef">
+                        <xsl:attribute name="oid">
+                            <xsl:value-of select="/c:task/c:objectRef/@oid"/>
+                        </xsl:attribute>
+                    </xsl:element>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:kind">
+                    <kind><xsl:value-of select="/c:task/c:extension/mext:kind"/></kind>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:intent">
+                    <intent><xsl:value-of select="/c:task/c:extension/mext:intent"/></intent>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:objectclass">
+                    <objectclass><xsl:value-of select="/c:task/c:extension/mext:objectclass"/></objectclass>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:searchOptions">
+                    <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
+                </xsl:if>
+            </xsl:element>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template name="distributionComplexActivity">
@@ -183,7 +191,7 @@
     <xsl:template name="reconciliation">
         <work>
             <reconciliation>
-                <xsl:call-template name="resourceObjects"/>
+                <xsl:call-template name="resourceObjectSet"/>
             </reconciliation>
         </work>
         <xsl:call-template name="controlFlow"/>
@@ -215,7 +223,7 @@
     <xsl:template name="livesync">
         <work>
             <liveSynchronization>
-                <xsl:call-template name="resourceObjects"/>
+                <xsl:call-template name="resourceObjectSet"/>
                 <xsl:if test="/c:task/c:extension/mext:liveSyncBatchSize">
                     <batchSize><xsl:value-of select="/c:task/c:extension/mext:liveSyncBatchSize"/></batchSize>
                     <updateLiveSyncTokenInDryRun><xsl:value-of select="/c:task/c:extension/mext:updateLiveSyncTokenInDryRun"/></updateLiveSyncTokenInDryRun>
@@ -229,7 +237,7 @@
     <xsl:template name="import">
         <work>
             <import>
-                <xsl:call-template name="resourceObjects"/>
+                <xsl:call-template name="resourceObjectSet"/>
             </import>
         </work>
         <xsl:call-template name="controlFlow"/>
@@ -271,6 +279,18 @@
                     <xsl:copy-of select="/c:task/c:extension/scext:executeScript/*"/>
                 </scriptExecutionRequest>
             </iterativeScripting>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
+
+    <xsl:template name="asyncUpdate">
+        <work>
+            <asynchronousUpdate>
+                    <xsl:call-template name="resourceObjectSet">
+                        <xsl:with-param name="customElementName" select="'updatedResourceObjects'"/>
+                    </xsl:call-template>
+            </asynchronousUpdate>
         </work>
         <xsl:call-template name="controlFlow"/>
         <xsl:call-template name="distributionSimpleActivity"/>
