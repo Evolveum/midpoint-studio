@@ -16,6 +16,13 @@
         <mext:intent>default</mext:intent>
         <mext:objectclass>ri:somePerson</mext:objectclass>
         <mext:workerThreads>8</mext:workerThreads>
+        <mext:searchOptions>
+            <option>
+                <options>
+                    <noFetch>true</noFetch>
+                </options>
+            </option>
+        </mext:searchOptions>
     </extension>
     <assignment>
         <targetRef oid="00000000-0000-0000-0000-000000000503" type="ArchetypeType" /> <!--Import task-->

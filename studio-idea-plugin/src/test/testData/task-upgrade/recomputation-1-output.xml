@@ -30,7 +30,18 @@
                             </q:substring>
                         </q:filter>
                     </query>
+                    <searchOptions>
+                        <!-- some comment -->
+                        <option>
+                            <options>
+                                <noFetch>true</noFetch>
+                            </options>
+                        </option>
+                    </searchOptions>
                 </objects>
+                <executionOptions>
+                    <overwrite>true</overwrite>
+                </executionOptions>
             </recomputation>
         </work>
         <distribution>

@@ -18,6 +18,18 @@
             </q:filter>
         </mext:objectQuery>
         <mext:workerThreads>8</mext:workerThreads>
+        <mext:searchOptions>
+            <!-- some comment -->
+            <option>
+                <options>
+                    <noFetch>true</noFetch>
+                </options>
+            </option>
+        </mext:searchOptions>
+        <mext:modelExecuteOptions>
+            <overwrite>true</overwrite>
+        </mext:modelExecuteOptions>
+        <mext:dryRun>false</mext:dryRun>
     </extension>
     <assignment>
         <targetRef oid="00000000-0000-0000-0000-000000000502" type="ArchetypeType"/> <!--Recomputation task -->

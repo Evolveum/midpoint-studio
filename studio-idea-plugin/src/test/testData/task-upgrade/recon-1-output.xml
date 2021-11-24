@@ -27,5 +27,6 @@
         <distribution>
             <workerThreads>4</workerThreads>
         </distribution>
+        <executionMode>dryRun</executionMode>
     </activity>
 </task>

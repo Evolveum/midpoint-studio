@@ -27,6 +27,13 @@
                     <kind>account</kind>
                     <intent>default</intent>
                     <objectclass>ri:somePerson</objectclass>
+                    <searchOptions>
+                        <option>
+                            <options>
+                                <noFetch>true</noFetch>
+                            </options>
+                        </option>
+                    </searchOptions>
                 </resourceObjects>
             </import>
         </work>
