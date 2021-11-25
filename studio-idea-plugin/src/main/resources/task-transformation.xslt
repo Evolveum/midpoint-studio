@@ -261,7 +261,7 @@
         <xsl:if test="/c:task/c:extension/mext:workerThreads">
             <workerThreads><xsl:value-of select="/c:task/c:extension/mext:workerThreads"/></workerThreads>
         </xsl:if>
-        <xsl:if test="/c:task/c:workManagement/c:workers or /c:task/c:workManagement/c:partitions">
+        <xsl:if test="/c:task/c:workManagement/c:partitions">
             <subtasks/>
         </xsl:if>
     </xsl:template>
