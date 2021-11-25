@@ -45,6 +45,7 @@
                             </q:and>
                         </q:filter>
                     </query>
+                    <useRepositoryDirectly>true</useRepositoryDirectly>
                 </objects>
             </deletion>
         </work>

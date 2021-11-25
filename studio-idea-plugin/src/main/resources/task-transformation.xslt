@@ -149,6 +149,7 @@
     <xsl:template match="/c:task/c:extension/mext:fix"/>
     <xsl:template match="/c:task/c:extension/mext:checkDuplicatesOnPrimaryIdentifiersOnly"/>
     <xsl:template match="/c:task/c:extension/mext:duplicateShadowsResolver"/>
+    <xsl:template match="/c:task/c:extension/mext:useRepositoryDirectly"/>
     <xsl:template match="/c:task/c:extension/scext:executeScript"/>
 
     <!-- todo optionRaw tracing* -->
@@ -188,6 +189,9 @@
                 <xsl:if test="/c:task/c:extension/mext:searchOptions">
                     <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
                 </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:useRepositoryDirectly">
+                    <useRepositoryDirectly><xsl:value-of select="/c:task/c:extension/mext:useRepositoryDirectly"/></useRepositoryDirectly>
+                </xsl:if>
             </xsl:element>
         </xsl:if>
     </xsl:template>
@@ -215,6 +219,12 @@
                 </xsl:if>
                 <xsl:if test="/c:task/c:extension/mext:searchOptions">
                     <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:objectQuery">
+                    <query>
+                        <xsl:copy-of select="/c:task/c:extension/mext:objectQuery/node()"/>
+                    </query>
+                    <queryApplication>replace</queryApplication>
                 </xsl:if>
             </xsl:element>
         </xsl:if>

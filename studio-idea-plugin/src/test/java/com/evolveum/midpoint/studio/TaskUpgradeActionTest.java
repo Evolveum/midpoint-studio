@@ -103,6 +103,11 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testImport3WithQuery() {
+        testUpgrade("import-3-input.xml", "import-3-output.xml");
+    }
+
+    @Test
     public void testBulkIterative1Multinode() {
         testUpgrade("bulk-iterative-1-input.xml", "bulk-iterative-1-output.xml");
     }

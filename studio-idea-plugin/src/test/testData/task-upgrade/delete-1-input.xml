@@ -36,6 +36,7 @@
         </mext:objectQuery>
         <mext:objectType>c:ShadowType</mext:objectType>
         <mext:optionRaw>true</mext:optionRaw>
+        <mext:useRepositoryDirectly>true</mext:useRepositoryDirectly>
     </extension>
     <assignment>
         <targetRef oid="00000000-0000-0000-0000-000000000528" type="ArchetypeType" /> <!-- Utility task -->

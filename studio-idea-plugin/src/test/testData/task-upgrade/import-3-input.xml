@@ -1,0 +1,52 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:apti="http://midpoint.evolveum.com/xml/ns/public/common/api-types-3"
+      xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3"
+      xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"
+      xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+      xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
+      xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3"
+      xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3"
+      oid="9ae0cb6b-cb01-4221-8537-dd50c854b7c3">
+    <name>Import one</name>
+    <extension>
+        <mext:kind>account</mext:kind>
+        <mext:intent>default</mext:intent>
+        <mext:objectclass>ri:AccountObjectClass</mext:objectclass>
+        <mext:objectQuery>
+            <q:filter>
+                <q:and>
+                    <q:equal>
+                        <q:path>attributes/icfs:name</q:path>
+                        <q:value>asdf</q:value>
+                    </q:equal>
+                    <q:ref>
+                        <q:path>resourceRef</q:path>
+                        <q:value>
+                            <oid>ef2bc95b-76e0-48e2-86d6-3d4f02d42add</oid>
+                            <type>c:ResourceType</type>
+                        </q:value>
+                    </q:ref>
+                    <q:equal>
+                        <q:path>objectClass</q:path>
+                        <q:value>ri:AccountObjectClass</q:value>
+                    </q:equal>
+                </q:and>
+            </q:filter>
+        </mext:objectQuery>
+    </extension>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000503" type="ArchetypeType" /> <!--Import task-->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <executionStatus>closed</executionStatus>
+    <category>ImportingAccounts</category>
+    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3</handlerUri>
+    <objectRef oid="ef2bc95b-76e0-48e2-86d6-3d4f02d42add" relation="org:default" type="c:ResourceType"/>
+    <recurrence>single</recurrence>
+    <executionEnvironment>
+        <cachingProfile>roles-and-shadows</cachingProfile>
+    </executionEnvironment>
+</task>
