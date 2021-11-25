@@ -42,8 +42,18 @@
                             </q:and>
                         </q:filter>
                     </query>
+                    <searchOptions>
+                        <option>
+                            <options>
+                                <raw>false</raw>
+                            </options>
+                        </option>
+                    </searchOptions>
                     <useRepositoryDirectly>true</useRepositoryDirectly>
                 </objects>
+                <executionOptions>
+                    <raw>false</raw>
+                </executionOptions>
             </deletion>
         </work>
     </activity>
