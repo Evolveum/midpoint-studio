@@ -55,17 +55,36 @@ public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
 
             updateEditor(editor, sb.toString());
         } catch (Exception ex) {
-            // todo fix
-            ex.printStackTrace();
+            midPointService.printToConsole(null, TaskUpgradeTask.class, "Error occurred when processing text in editor", ex);
         }
     }
 
     protected void processFile(VirtualFile file) {
-        List<MidPointObject> objects = loadObjectsFromFile(file);
+        try {
+            List<MidPointObject> objects = loadObjectsFromFile(file);
 
-        List<String> newObjects = processObjects(objects, file);
+            List<String> newObjects = processObjects(objects, file);
 
-        writeObjectsToFile(file, newObjects);
+            boolean checkChanges = false;
+            if (objects.size() == newObjects.size()) {
+                for (int i = 0; i < objects.size(); i++) {
+                    MidPointObject object = objects.get(i);
+                    if (!Objects.equals(object.getContent(), newObjects.get(i))) {
+                        checkChanges = true;
+                        break;
+                    }
+                }
+            }
+
+            if (checkChanges) {
+                writeObjectsToFile(file, newObjects);
+            }
+        } catch (Exception ex) {
+            state.incrementSkippedFile();
+
+            midPointService.printToConsole(null, getClass(),
+                    "Couldn't process file " + (file != null ? file.getPath() : "<unknown>") + ", reason: " + ex.getMessage(), ex);
+        }
     }
 
     private List<String> processObjects(List<MidPointObject> objects, VirtualFile file) {
@@ -88,11 +107,15 @@ public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
             }
 
             try {
-                String oldContent = object.getContent();String newContent = MidPointUtils.upgradeTaskToUseActivities(oldContent);
+                String oldContent = object.getContent();
+                String newContent = MidPointUtils.upgradeTaskToUseActivities(oldContent);
                 newObjects.add(newContent);
 
                 if (Objects.equals(oldContent, newContent)) {
                     state.incrementSkipped();
+
+                    midPointService.printToConsole(null, TaskUpgradeTask.class,
+                            "Skipped object " + object.getName() + "(" + object.getOid() + ", " + (file != null ? file.getName() : "unknown") + ")");
                 } else {
                     state.incrementProcessed();
                 }
@@ -100,7 +123,7 @@ public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
                 state.incrementFailed();
                 newObjects.add(object.getContent());
 
-                midPointService.printToConsole(null, RefreshAction.class, "Error upgrading task"
+                midPointService.printToConsole(null, TaskUpgradeTask.class, "Error upgrading task"
                         + object.getName() + "(" + object.getOid() + ")", ex);
             }
         }

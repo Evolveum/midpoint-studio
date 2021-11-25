@@ -6,7 +6,6 @@ import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.studio.action.task.TaskUpgradeTask;
 import com.evolveum.midpoint.studio.client.ClientException;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
@@ -922,7 +921,7 @@ public class MidPointUtils {
     }
 
     private static String transformTask(org.w3c.dom.Document doc, String stylesheet) throws TransformerException, IOException {
-        try (InputStream is = TaskUpgradeTask.class.getClassLoader().getResourceAsStream(stylesheet)) {
+        try (InputStream is = MidPointUtils.class.getClassLoader().getResourceAsStream(stylesheet)) {
             StreamSource xsl = new StreamSource(is);
 
             TransformerErrorListener tel = new TransformerErrorListener();
@@ -939,7 +938,7 @@ public class MidPointUtils {
 
             String output = sw.toString();
             if (tel.isErrorOrFatal()) {
-                throw new TransformerException(tel.dumpAllMessages());
+                throw new TransformerException("Found these problems:\n"+ tel.dumpAllMessages());
             }
 
             return output;
@@ -970,7 +969,7 @@ public class MidPointUtils {
         }
 
         private String createMessage(String level, TransformerException ex) {
-            return level + ": [" + ex.getLocationAsString() + "]" + ex.getMessage();
+            return level + ": Position[" + ex.getLocationAsString() + "]: " + ex.getMessage();
         }
 
         private boolean isErrorOrFatal() {
@@ -983,7 +982,7 @@ public class MidPointUtils {
             all.addAll(errors);
             all.addAll(fatalErrors);
 
-            return StringUtils.join(all, ", ");
+            return StringUtils.join(all, "\n");
         }
     }
 }

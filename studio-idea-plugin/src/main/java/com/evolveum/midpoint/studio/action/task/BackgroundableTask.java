@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.util.Holder;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -202,20 +203,29 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
     }
 
     private boolean hasFailures() {
-        return state.getFailed() > 0 || state.getSkipped() > 0;
+        return state.getFailed() > 0 || state.getSkipped() > 0 || state.getSkippedFile() > 0;
     }
 
-    protected List<MidPointObject> loadObjectsFromFile(VirtualFile file) {
+    protected List<MidPointObject> loadObjectsFromFile(VirtualFile file) throws Exception {
         List<MidPointObject> objects = new ArrayList<>();
+        Holder<Exception> exception = new Holder<>();
 
         RunnableUtils.runWriteActionAndWait(() -> {
             MidPointUtils.forceSaveAndRefresh(getProject(), file);
 
-            List<MidPointObject> obj = MidPointUtils.parseProjectFile(getProject(), file, notificationKey);
-            obj = ClientUtils.filterObjectTypeOnly(obj);
+            try {
+                List<MidPointObject> obj = MidPointUtils.parseProjectFile(getProject(), file, notificationKey);
+                obj = ClientUtils.filterObjectTypeOnly(obj);
 
-            objects.addAll(obj);
+                objects.addAll(obj);
+            } catch (Exception ex) {
+                exception.setValue(ex);
+            }
         });
+
+        if (!exception.isEmpty()) {
+            throw exception.getValue();
+        }
 
         return objects;
     }

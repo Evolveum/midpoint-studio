@@ -28,11 +28,11 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
 
-        <connid.version>1.5.0.17</connid.version>
+        <connid.version>1.5.0.18</connid.version>
         <scripted.sql.version>2.2.1</scripted.sql.version>
-        <midpoint.version>4.3</midpoint.version>
-        <groovy.version>2.5.14</groovy.version>
-        <testng.version>6.14.3</testng.version>
+        <midpoint.version>4.4-SNAPSHOT</midpoint.version>
+        <groovy.version>3.0.8</groovy.version>
+        <testng.version>7.4.0</testng.version>
     </properties>
 
     <build>
