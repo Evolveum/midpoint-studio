@@ -241,12 +241,17 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
 
         com.intellij.openapi.editor.Document document = editor.getDocument();
         if (updateSelection) {
-            SelectionModel model = editor.getSelectionModel();
-            int start = model.getSelectionStart();
-            int end = model.getSelectionEnd();
+            AtomicInteger start = new AtomicInteger(0);
+            AtomicInteger end = new AtomicInteger(0);
+
+            ApplicationManager.getApplication().runReadAction(() -> {
+                SelectionModel model = editor.getSelectionModel();
+                start.set(model.getSelectionStart());
+                end.set(model.getSelectionEnd());
+            });
 
             WriteCommandAction.runWriteCommandAction(getProject(), () ->
-                    document.replaceString(start, end, text)
+                    document.replaceString(start.get(), end.get(), text)
             );
         } else {
             WriteCommandAction.runWriteCommandAction(getProject(), () ->
