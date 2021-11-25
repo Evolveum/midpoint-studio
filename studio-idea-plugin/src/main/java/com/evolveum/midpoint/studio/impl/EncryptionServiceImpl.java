@@ -35,12 +35,12 @@ public class EncryptionServiceImpl implements EncryptionService {
         this.project = project;
 
         LOG.info("Initializing " + getClass().getSimpleName());
-
-        refresh();
     }
 
     @Override
     public void init(String masterPassword) {
+        LOG.info("Initializing master password");
+
         if (StringUtils.isEmpty(masterPassword)) {
             return;
         }
@@ -52,11 +52,13 @@ public class EncryptionServiceImpl implements EncryptionService {
 
         MidPointUtils.setPassword(settings.getProjectId(), masterPassword);
 
-        refresh(true);
+        refresh(true, true);
     }
 
     @Override
     public void changeMasterPassword(String oldPassword, String newPassword) {
+        LOG.info("Changing master password");
+
         MidPointSettings settings = MidPointService.getInstance(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             throw new IllegalStateException("Midpoint setting unavailable");
@@ -79,7 +81,7 @@ public class EncryptionServiceImpl implements EncryptionService {
 
         MidPointUtils.setPassword(settings.getProjectId(), newPassword);
 
-        refresh(true);
+        refresh(true, true);
     }
 
     @Override
@@ -90,18 +92,20 @@ public class EncryptionServiceImpl implements EncryptionService {
 
     @Override
     public synchronized void refresh() {
-        refresh(true);
+        refresh(true, true);
     }
 
-    private void refresh(boolean create) {
-        LOG.debug("Refreshing credentials create=", create);
+    private void refresh(boolean create, boolean notificationIfFailure) {
+        LOG.debug("Refreshing credentials create: " + create + ", notificationIfFailure: " + notificationIfFailure);
 
         String masterPassword = getMasterPassword();
         if (StringUtils.isEmpty(masterPassword)) {
-            MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
-                "Credentials file", "Master password not set. All encrypted values will be forgotten after " +
-                        "restart, e.g. environment usernames/passwords, encrypted properties. ", NotificationType.WARNING,
-                new UpdateMasterPasswordNotificationAction(false));
+            if (notificationIfFailure) {
+                MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
+                        "Credentials file", "Master password not set. All encrypted values will be forgotten after " +
+                                "restart, e.g. environment usernames/passwords, encrypted properties. ", NotificationType.WARNING,
+                        new UpdateMasterPasswordNotificationAction(false));
+            }
             return;
         }
 
@@ -128,6 +132,8 @@ public class EncryptionServiceImpl implements EncryptionService {
 
     @Override
     public synchronized <T extends EncryptedObject> List<T> list(@NotNull Class<T> type) {
+        LOG.debug("Listing entries, type: " + type);
+
         Group group = getTopGroup();
         if (group == null) {
             return new ArrayList<>();
@@ -189,6 +195,7 @@ public class EncryptionServiceImpl implements EncryptionService {
 
     @Override
     public <T extends EncryptedObject> T get(@NotNull String key, @NotNull Class<T> type) {
+        LOG.debug("Getting encrypted key: " + key + ", type: " + type);
         Group group = getTopGroup();
         if (group == null) {
             return null;
@@ -214,7 +221,11 @@ public class EncryptionServiceImpl implements EncryptionService {
 
     private Group getTopGroup() {
         if (database == null) {
-            return null;
+            refresh(false, false);
+
+            if (database == null) {
+                return null;
+            }
         }
 
         return database.getGroupByName(DATABASE_NAME);
@@ -242,10 +253,15 @@ public class EncryptionServiceImpl implements EncryptionService {
 
         writeDatabase(masterPassword);
 
-        refresh(false);
+        refresh(false, true);
     }
 
     private synchronized void writeDatabase(String masterPassword) {
+        if (database == null) {
+            LOG.debug("Database is null, nothing to write");
+            return;
+        }
+
         File file = getDatabaseFile();
 
         try (OutputStream os = new FileOutputStream(file)) {
