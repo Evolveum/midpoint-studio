@@ -1,0 +1,40 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" oid="07f85e6b-75e1-47b2-9dfd-173f0ee9d423">
+    <name>Reindex task segmented</name>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
+    <executionState>closed</executionState>
+    <schedule>
+        <recurrence>single</recurrence>
+    </schedule>
+    <binding>loose</binding>
+    <activity>
+        <work>
+            <reindexing>
+                <objects>
+                    <type>UserType</type>
+                    <query>
+                        <q:filter>
+                            <q:equal>
+                                <q:path>extension/origin</q:path>
+                                <q:value>COM</q:value>
+                            </q:equal>
+                        </q:filter>
+                    </query>
+                </objects>
+            </reindexing>
+        </work>
+        <distribution>
+            <buckets>
+                <oidSegmentation>
+                    <depth>2</depth>
+                </oidSegmentation>
+            </buckets>
+            <workers>
+                <workersPerNode>
+                    <count>4</count>
+                </workersPerNode>
+            </workers>
+            <workerThreads>8</workerThreads>
+            <subtasks/>
+        </distribution>
+    </activity>
+</task>

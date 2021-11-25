@@ -10,6 +10,9 @@
     <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
     <executionState>closed</executionState>
     <unpauseAction>reschedule</unpauseAction>
+    <schedule>
+        <recurrence>single</recurrence>
+    </schedule>
     <executionEnvironment>
         <cachingProfile>roles-and-shadows</cachingProfile>
     </executionEnvironment>

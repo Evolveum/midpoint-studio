@@ -24,14 +24,16 @@
             <activity>
                 <xsl:variable name="URI_WORKERS_CREATION" select="'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'"/>
                 
-                <xsl:variable name="URI_LIVE_SYNC" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/live-sync/handler-3'"/>
+                <xsl:variable name="URI_ASYNC_UPDATE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/async-update/handler-3'"/>
                 <xsl:variable name="URI_DELETE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/delete/handler-3'"/>
                 <xsl:variable name="URI_IMPORT" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'"/>
-                <xsl:variable name="URI_RECOMPUTE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'"/>
                 <xsl:variable name="URI_ITERATIVE_SCRIPTING" select="'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'"/>
-                <xsl:variable name="URI_ASYNC_UPDATE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/async-update/handler-3'"/>
-                <xsl:variable name="URI_RECONCILIATION" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/reconciliation/handler-3'"/>
+                <xsl:variable name="URI_LIVE_SYNC" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/live-sync/handler-3'"/>
                 <xsl:variable name="URI_PARTITIONED_RECONCILIATION" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'"/>
+                <xsl:variable name="URI_RECOMPUTE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'"/>
+                <xsl:variable name="URI_RECONCILIATION" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/reconciliation/handler-3'"/>
+                <xsl:variable name="URI_REINDEX" select="'http://midpoint.evolveum.com/xml/ns/public/model/reindex/handler-3'"/>
+                <xsl:variable name="URI_SCRIPTING" select="'http://midpoint.evolveum.com/xml/ns/public/model/scripting/handler-3'"/>
                 <xsl:variable name="URI_SHADOW_INTEGRITY" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadow-integrity-check/handler-3'"/>
                 <xsl:variable name="URI_SHADOW_REFRESH" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadowRefresh/handler-3'"/>
 
@@ -65,6 +67,12 @@
                 </xsl:if>
                 <xsl:if test="$taskHandlerUri = $URI_SHADOW_REFRESH or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SHADOW_REFRESH)">
                     <xsl:call-template name="shadowRefresh"/>
+                </xsl:if>
+                <xsl:if test="$taskHandlerUri = $URI_REINDEX or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_REINDEX)">
+                    <xsl:call-template name="reindexing"/>
+                </xsl:if>
+                <xsl:if test="$taskHandlerUri = $URI_SCRIPTING or $assignmentTargetOid = '00000000-0000-0000-0000-000000000508' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SCRIPTING)">
+                    <xsl:call-template name="nonIterativeScripting"/>
                 </xsl:if>
 
                 <xsl:if test="/c:task/c:extension/mext:dryRun[text() = 'true']">
@@ -120,7 +128,6 @@
     <xsl:template match="//c:provisioningStatistics/c:entry/c:totalTime"/>
     <xsl:template match="//c:workers/c:handlerUri"/>
 
-    <xsl:template match="/c:task/c:recurrence"/>
     <xsl:template match="/c:task/c:errorHandlingStrategy"/>
     <xsl:template match="/c:task/c:extension/mext:kind"/>
     <xsl:template match="/c:task/c:extension/mext:intent"/>
@@ -139,10 +146,18 @@
     <xsl:template match="/c:task/c:extension/mext:duplicateShadowsResolver"/>
     <xsl:template match="/c:task/c:extension/scext:executeScript"/>
 
-<!--    todo optionRaw dryRun lastReconciliationStartTimestamp tracing* -->
+    <!-- todo optionRaw tracing* -->
 
     <xsl:template match="/c:task/c:executionStatus">
         <executionState><xsl:value-of select="node()"/></executionState>
+    </xsl:template>
+
+    <xsl:template match="/c:task/c:recurrence">
+        <xsl:if test="not(/c:task/c:schedule)">
+            <schedule>
+                <recurrence><xsl:value-of select="/c:task/c:recurrence"/></recurrence>
+            </schedule>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="/c:task/c:schedule">
@@ -381,4 +396,27 @@
         <xsl:call-template name="controlFlow"/>
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
+
+    <xsl:template name="reindexing">
+        <work>
+            <reindexing>
+                <xsl:call-template name="objectSet"/>
+            </reindexing>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
+
+    <xsl:template name="nonIterativeScripting">
+        <work>
+            <nonIterativeScripting>
+                <scriptExecutionRequest>
+                    <xsl:copy-of select="/c:task/c:extension/scext:executeScript/*"/>
+                </scriptExecutionRequest>
+            </nonIterativeScripting>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
+
 </xsl:stylesheet>

@@ -11,6 +11,9 @@
     <ownerRef oid="00000000-0000-0000-0000-000000000002" type="c:UserType"/>
     <executionState>closed</executionState>
     <objectRef oid="d0811790-1d80-11e4-86b2-3c970e467a76" type="c:ResourceType"/>
+    <schedule>
+        <recurrence>single</recurrence>
+    </schedule>
     <executionEnvironment>
         <cachingProfile>roles-and-shadows</cachingProfile>
     </executionEnvironment>
