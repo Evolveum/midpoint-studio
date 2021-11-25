@@ -216,6 +216,12 @@
                 <xsl:if test="/c:task/c:extension/mext:searchOptions">
                     <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
                 </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:objectQuery">
+                    <query>
+                        <xsl:copy-of select="/c:task/c:extension/mext:objectQuery/node()"/>
+                    </query>
+                    <queryApplication>replace</queryApplication>
+                </xsl:if>
             </xsl:element>
         </xsl:if>
     </xsl:template>
