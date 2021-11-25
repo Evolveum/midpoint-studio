@@ -74,10 +74,7 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -903,6 +900,9 @@ public class MidPointUtils {
         }
 
         String xml = transformTask(doc, "task-transformation.xslt");
+        if (Objects.equals(taskXml, xml)) {
+            return xml;
+        }
 
         doc = setupDocument(xml);
         xml = transformTask(doc, "task-cleanup.xslt");
@@ -925,8 +925,11 @@ public class MidPointUtils {
         try (InputStream is = TaskUpgradeTask.class.getClassLoader().getResourceAsStream(stylesheet)) {
             StreamSource xsl = new StreamSource(is);
 
+            TransformerErrorListener tel = new TransformerErrorListener();
+
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer trans = tf.newTransformer(xsl);
+            trans.setErrorListener(tel);
             trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             trans.setParameter(OutputKeys.INDENT, "yes");
             trans.setParameter(OutputKeys.ENCODING, "utf-8");
@@ -934,7 +937,53 @@ public class MidPointUtils {
             StringWriter sw = new StringWriter();
             trans.transform(new DOMSource(doc), new StreamResult(sw));
 
-            return sw.toString();
+            String output = sw.toString();
+            if (tel.isErrorOrFatal()) {
+                throw new TransformerException(tel.dumpAllMessages());
+            }
+
+            return output;
+        }
+    }
+
+    private static class TransformerErrorListener implements ErrorListener {
+
+        private List<String> warnings = new ArrayList<>();
+
+        private List<String> errors = new ArrayList<>();
+
+        private List<String> fatalErrors = new ArrayList<>();
+
+        @Override
+        public void warning(TransformerException exception) throws TransformerException {
+            warnings.add(createMessage("Warning", exception));
+        }
+
+        @Override
+        public void error(TransformerException exception) throws TransformerException {
+            errors.add(createMessage("Error", exception));
+        }
+
+        @Override
+        public void fatalError(TransformerException exception) throws TransformerException {
+            fatalErrors.add(createMessage("Fatal error", exception));
+        }
+
+        private String createMessage(String level, TransformerException ex) {
+            return level + ": [" + ex.getLocationAsString() + "]" + ex.getMessage();
+        }
+
+        private boolean isErrorOrFatal() {
+            return !errors.isEmpty() || !fatalErrors.isEmpty();
+        }
+
+        private String dumpAllMessages() {
+            List<String> all = new ArrayList<>();
+            all.addAll(warnings);
+            all.addAll(errors);
+            all.addAll(fatalErrors);
+
+            return StringUtils.join(all, ", ");
         }
     }
 }
