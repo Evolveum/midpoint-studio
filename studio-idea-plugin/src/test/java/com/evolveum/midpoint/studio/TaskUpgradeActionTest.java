@@ -147,6 +147,11 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
         testUpgrade("delete-1-input.xml", "delete-1-output.xml");
     }
 
+    @Test
+    public void testUnknownAction() {
+        testUpgrade("unknown-1-input.xml", "unknown-1-input.xml");
+    }
+
     private void testUpgrade(String input, String validation) {
         LOG.info("Testing upgrade for " + input + ", validating using " + validation);
 

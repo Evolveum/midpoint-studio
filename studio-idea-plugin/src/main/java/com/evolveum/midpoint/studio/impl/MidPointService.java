@@ -59,6 +59,9 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         cm.setSelectedContent(content);
 
         MidPointConsoleView console = getConsole();
+        if (console == null) {
+            return;
+        }
 
         console.requestFocus();
         console.requestScrollingToEnd();
@@ -71,6 +74,10 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
 
         ApplicationManager.getApplication().invokeAndWait(() -> {
             ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow(MidPointToolWindowFactory.WINDOW_ID);
+
+            if (tw == null) {
+                return;
+            }
 
             ContentManager cm = tw.getContentManager();
             Content content = cm.getContent(1);
@@ -114,6 +121,8 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         sb.append('\n');
 
         MidPointConsoleView console = getConsole();
-        RunnableUtils.invokeLaterIfNeeded(() -> console.print(sb.toString(), type), ModalityState.defaultModalityState());
+        if (console != null) {
+            RunnableUtils.invokeLaterIfNeeded(() -> console.print(sb.toString(), type), ModalityState.defaultModalityState());
+        }
     }
 }

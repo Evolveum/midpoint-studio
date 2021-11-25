@@ -1,0 +1,12 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      oid="f51236ee-53a4-464d-b5c0-e59de8dfdfdf">
+    <name>Reindex repository objects, accessRight roles</name>
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3">
+        <mext:objectType>RoleType</mext:objectType>
+    </extension>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
+    <executionStatus>closed</executionStatus>
+    <handlerUri>unknown handler</handlerUri>
+    <recurrence>single</recurrence>
+    <binding>tight</binding>
+</task>

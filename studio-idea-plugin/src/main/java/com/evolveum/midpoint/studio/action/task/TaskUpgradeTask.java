@@ -88,8 +88,7 @@ public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
             }
 
             try {
-                String oldContent = object.getContent();
-                String newContent = MidPointUtils.upgradeTaskToUseActivities(oldContent);
+                String oldContent = object.getContent();String newContent = MidPointUtils.upgradeTaskToUseActivities(oldContent);
                 newObjects.add(newContent);
 
                 if (Objects.equals(oldContent, newContent)) {

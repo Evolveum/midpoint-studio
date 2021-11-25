@@ -41,39 +41,44 @@
                 <xsl:variable name="assignmentTargetOid" select="/c:task/c:assignment/c:targetRef/@oid"/>
                 <xsl:variable name="workersHandlerUri" select="/c:task/c:workManagement/c:workers/c:handlerUri/text()"/>
 
-                <xsl:if test="$taskHandlerUri = $URI_RECONCILIATION or $taskHandlerUri = $URI_PARTITIONED_RECONCILIATION or $assignmentTargetOid = '00000000-0000-0000-0000-000000000501'">
-                    <xsl:call-template name="reconciliation"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_LIVE_SYNC or $assignmentTargetOid = '00000000-0000-0000-0000-000000000504'">
-                    <xsl:call-template name="livesync"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_IMPORT or $assignmentTargetOid = '00000000-0000-0000-0000-000000000503' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_IMPORT)">
-                    <xsl:call-template name="import"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_RECOMPUTE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000502' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_RECOMPUTE)">
-                    <xsl:call-template name="recomputation"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_ITERATIVE_SCRIPTING or $assignmentTargetOid = '00000000-0000-0000-0000-000000000509' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_ITERATIVE_SCRIPTING)">
-                    <xsl:call-template name="iterativeScripting"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_ASYNC_UPDATE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000505' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_ASYNC_UPDATE)">
-                    <xsl:call-template name="asyncUpdate"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_DELETE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000528' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_DELETE)">
-                    <xsl:call-template name="deletion"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_SHADOW_INTEGRITY or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SHADOW_INTEGRITY)">
-                    <xsl:call-template name="shadowIntegrityCheck"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_SHADOW_REFRESH or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SHADOW_REFRESH)">
-                    <xsl:call-template name="shadowRefresh"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_REINDEX or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_REINDEX)">
-                    <xsl:call-template name="reindexing"/>
-                </xsl:if>
-                <xsl:if test="$taskHandlerUri = $URI_SCRIPTING or $assignmentTargetOid = '00000000-0000-0000-0000-000000000508' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SCRIPTING)">
-                    <xsl:call-template name="nonIterativeScripting"/>
-                </xsl:if>
+                <xsl:choose>
+                    <xsl:when test="$taskHandlerUri = $URI_RECONCILIATION or $taskHandlerUri = $URI_PARTITIONED_RECONCILIATION or $assignmentTargetOid = '00000000-0000-0000-0000-000000000501'">
+                        <xsl:call-template name="reconciliation"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_LIVE_SYNC or $assignmentTargetOid = '00000000-0000-0000-0000-000000000504'">
+                        <xsl:call-template name="livesync"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_IMPORT or $assignmentTargetOid = '00000000-0000-0000-0000-000000000503' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_IMPORT)">
+                        <xsl:call-template name="import"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_RECOMPUTE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000502' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_RECOMPUTE)">
+                        <xsl:call-template name="recomputation"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_ITERATIVE_SCRIPTING or $assignmentTargetOid = '00000000-0000-0000-0000-000000000509' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_ITERATIVE_SCRIPTING)">
+                        <xsl:call-template name="iterativeScripting"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_ASYNC_UPDATE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000505' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_ASYNC_UPDATE)">
+                        <xsl:call-template name="asyncUpdate"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_DELETE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000528' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_DELETE)">
+                        <xsl:call-template name="deletion"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_SHADOW_INTEGRITY or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SHADOW_INTEGRITY)">
+                        <xsl:call-template name="shadowIntegrityCheck"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_SHADOW_REFRESH or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SHADOW_REFRESH)">
+                        <xsl:call-template name="shadowRefresh"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_REINDEX or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_REINDEX)">
+                        <xsl:call-template name="reindexing"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_SCRIPTING or $assignmentTargetOid = '00000000-0000-0000-0000-000000000508' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SCRIPTING)">
+                        <xsl:call-template name="nonIterativeScripting"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:message terminate="yes">Unknown action</xsl:message>
+                    </xsl:otherwise>
+                </xsl:choose>
 
                 <xsl:if test="/c:task/c:extension/mext:dryRun[text() = 'true']">
                     <executionMode>dryRun</executionMode>
