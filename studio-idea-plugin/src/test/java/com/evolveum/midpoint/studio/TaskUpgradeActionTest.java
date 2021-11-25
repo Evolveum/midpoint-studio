@@ -113,6 +113,11 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testBulkIterative2() {
+        testUpgrade("bulk-iterative-2-input.xml", "bulk-iterative-2-output.xml");
+    }
+
+    @Test
     public void testMultiple() {
         testUpgrade("multiple-input.xml", "multiple-output.xml");
     }

@@ -181,7 +181,7 @@
 
         <xsl:variable name="forceSearchOptionsRaw" select="$isDeletionActivity and /c:task/c:extension/mext:optionRaw[text() = 'false'] and not(/c:task/c:extension/mext:searchOptions/c:option/c:options/c:raw)"/>
 
-        <xsl:if test="/c:task/c:extension/mext:objectType or /c:task/c:extension/mext:objectQuery or /c:task/c:extension/mext:searchOptions">
+        <xsl:if test="/c:task/c:extension/mext:objectType or /c:task/c:extension/mext:objectQuery or /c:task/c:extension/mext:searchOptions or /c:task/c:extension/mext:useRepositoryDirectly">
             <xsl:element name="{$customElementName}">
                 <xsl:if test="/c:task/c:extension/mext:objectType">
                     <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
