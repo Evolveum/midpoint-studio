@@ -294,6 +294,8 @@
                 <xsl:call-template name="resourceObjectSet"/>
                 <xsl:if test="/c:task/c:extension/mext:liveSyncBatchSize">
                     <batchSize><xsl:value-of select="/c:task/c:extension/mext:liveSyncBatchSize"/></batchSize>
+                </xsl:if>
+                <xsl:if test="/c:task/c:extension/mext:updateLiveSyncTokenInDryRun">
                     <updateLiveSyncTokenInDryRun><xsl:value-of select="/c:task/c:extension/mext:updateLiveSyncTokenInDryRun"/></updateLiveSyncTokenInDryRun>
                 </xsl:if>
             </liveSynchronization>

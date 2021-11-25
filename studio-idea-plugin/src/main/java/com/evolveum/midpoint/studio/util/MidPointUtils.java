@@ -916,7 +916,7 @@ public class MidPointUtils {
 
             String output = sw.toString();
             if (tel.isErrorOrFatal()) {
-                throw new TransformerException(tel.dumpAllMessages());
+                throw new TransformerException("Found these problems:\n"+ tel.dumpAllMessages());
             }
 
             return output;
@@ -947,7 +947,7 @@ public class MidPointUtils {
         }
 
         private String createMessage(String level, TransformerException ex) {
-            return level + ": [" + ex.getLocationAsString() + "]" + ex.getMessage();
+            return level + ": Position[" + ex.getLocationAsString() + "]: " + ex.getMessage();
         }
 
         private boolean isErrorOrFatal() {
@@ -960,7 +960,7 @@ public class MidPointUtils {
             all.addAll(errors);
             all.addAll(fatalErrors);
 
-            return StringUtils.join(all, ", ");
+            return StringUtils.join(all, "\n");
         }
     }
 }
