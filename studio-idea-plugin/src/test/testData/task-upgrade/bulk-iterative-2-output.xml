@@ -1,0 +1,44 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3" oid="172b3d9f-66f8-4731-b023-0e2d8ca5cd6f">
+    <name>Reencrypt selected objects</name>
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:scext="http://midpoint.evolveum.com/xml/ns/public/model/scripting/extension-3">
+        <!--    <mext:objectType>UserType</mext:objectType>
+                <mext:objectQuery>
+                    <q:filter>
+                        <q:equal>
+                            <q:path>name</q:path>
+                            <q:value>administrator</q:value>
+                        </q:equal>
+                    </q:filter>
+                </mext:objectQuery>  -->
+    </extension>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
+    <executionState>runnable</executionState>
+    <schedule>
+        <recurrence>single</recurrence>
+    </schedule>
+    <activity>
+        <work>
+            <iterativeScripting>
+                <objects>
+                    <useRepositoryDirectly>true</useRepositoryDirectly>
+                </objects>
+                <scriptExecutionRequest>
+                    <s:pipeline xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:scext="http://midpoint.evolveum.com/xml/ns/public/model/scripting/extension-3">
+                        <s:action>
+                            <s:type>apply-definition</s:type>
+                            <!-- needed for ResourceType and ShadowType objects -->
+                        </s:action>
+                        <s:action>
+                            <s:type>reencrypt</s:type>
+                            <!-- remove the following or set to false to execute the reencryption -->
+                            <s:parameter>
+                                <s:name>dryRun</s:name>
+                                <value>true</value>
+                            </s:parameter>
+                        </s:action>
+                    </s:pipeline>
+                </scriptExecutionRequest>
+            </iterativeScripting>
+        </work>
+    </activity>
+</task>

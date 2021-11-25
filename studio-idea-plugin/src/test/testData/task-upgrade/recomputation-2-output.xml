@@ -59,7 +59,6 @@
                 </workersPerNode>
             </workers>
             <workerThreads>4</workerThreads>
-            <subtasks/>
         </distribution>
     </activity>
 </task>

@@ -17,30 +17,32 @@
         </xsl:copy>
     </xsl:template>
 
+    <xsl:variable name="URI_WORKERS_CREATION" select="'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'"/>
+
+    <xsl:variable name="URI_ASYNC_UPDATE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/async-update/handler-3'"/>
+    <xsl:variable name="URI_DELETE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/delete/handler-3'"/>
+    <xsl:variable name="URI_IMPORT" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'"/>
+    <xsl:variable name="URI_ITERATIVE_SCRIPTING" select="'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'"/>
+    <xsl:variable name="URI_LIVE_SYNC" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/live-sync/handler-3'"/>
+    <xsl:variable name="URI_PARTITIONED_RECONCILIATION" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'"/>
+    <xsl:variable name="URI_RECOMPUTE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'"/>
+    <xsl:variable name="URI_RECONCILIATION" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/reconciliation/handler-3'"/>
+    <xsl:variable name="URI_REINDEX" select="'http://midpoint.evolveum.com/xml/ns/public/model/reindex/handler-3'"/>
+    <xsl:variable name="URI_SCRIPTING" select="'http://midpoint.evolveum.com/xml/ns/public/model/scripting/handler-3'"/>
+    <xsl:variable name="URI_SHADOW_INTEGRITY" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadow-integrity-check/handler-3'"/>
+    <xsl:variable name="URI_SHADOW_REFRESH" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadowRefresh/handler-3'"/>
+
+    <xsl:variable name="taskHandlerUri" select="/c:task/c:handlerUri/text()"/>
+    <xsl:variable name="assignmentTargetOid" select="/c:task/c:assignment/c:targetRef/@oid"/>
+    <xsl:variable name="workersHandlerUri" select="/c:task/c:workManagement/c:workers/c:handlerUri/text()"/>
+
+    <xsl:variable name="isDeletionActivity" select="$taskHandlerUri = $URI_DELETE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000528' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_DELETE)"/>
+
     <xsl:template match="/c:task">
         <xsl:copy>
             <xsl:copy-of select="@*"/>
             <xsl:apply-templates/>
             <activity>
-                <xsl:variable name="URI_WORKERS_CREATION" select="'http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3'"/>
-                
-                <xsl:variable name="URI_ASYNC_UPDATE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/async-update/handler-3'"/>
-                <xsl:variable name="URI_DELETE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/delete/handler-3'"/>
-                <xsl:variable name="URI_IMPORT" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/import/handler-3'"/>
-                <xsl:variable name="URI_ITERATIVE_SCRIPTING" select="'http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3'"/>
-                <xsl:variable name="URI_LIVE_SYNC" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/live-sync/handler-3'"/>
-                <xsl:variable name="URI_PARTITIONED_RECONCILIATION" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/partitioned-reconciliation/handler-3'"/>
-                <xsl:variable name="URI_RECOMPUTE" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/recompute/handler-3'"/>
-                <xsl:variable name="URI_RECONCILIATION" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/reconciliation/handler-3'"/>
-                <xsl:variable name="URI_REINDEX" select="'http://midpoint.evolveum.com/xml/ns/public/model/reindex/handler-3'"/>
-                <xsl:variable name="URI_SCRIPTING" select="'http://midpoint.evolveum.com/xml/ns/public/model/scripting/handler-3'"/>
-                <xsl:variable name="URI_SHADOW_INTEGRITY" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadow-integrity-check/handler-3'"/>
-                <xsl:variable name="URI_SHADOW_REFRESH" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadowRefresh/handler-3'"/>
-
-                <xsl:variable name="taskHandlerUri" select="/c:task/c:handlerUri/text()"/>
-                <xsl:variable name="assignmentTargetOid" select="/c:task/c:assignment/c:targetRef/@oid"/>
-                <xsl:variable name="workersHandlerUri" select="/c:task/c:workManagement/c:workers/c:handlerUri/text()"/>
-
                 <xsl:choose>
                     <xsl:when test="$taskHandlerUri = $URI_RECONCILIATION or $taskHandlerUri = $URI_PARTITIONED_RECONCILIATION or $assignmentTargetOid = '00000000-0000-0000-0000-000000000501'">
                         <xsl:call-template name="reconciliation"/>
@@ -60,7 +62,7 @@
                     <xsl:when test="$taskHandlerUri = $URI_ASYNC_UPDATE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000505' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_ASYNC_UPDATE)">
                         <xsl:call-template name="asyncUpdate"/>
                     </xsl:when>
-                    <xsl:when test="$taskHandlerUri = $URI_DELETE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000528' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_DELETE)">
+                    <xsl:when test="$isDeletionActivity">
                         <xsl:call-template name="deletion"/>
                     </xsl:when>
                     <xsl:when test="$taskHandlerUri = $URI_SHADOW_INTEGRITY or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SHADOW_INTEGRITY)">
@@ -150,9 +152,8 @@
     <xsl:template match="/c:task/c:extension/mext:checkDuplicatesOnPrimaryIdentifiersOnly"/>
     <xsl:template match="/c:task/c:extension/mext:duplicateShadowsResolver"/>
     <xsl:template match="/c:task/c:extension/mext:useRepositoryDirectly"/>
+    <xsl:template match="/c:task/c:extension/mext:optionRaw"/>
     <xsl:template match="/c:task/c:extension/scext:executeScript"/>
-
-    <!-- todo optionRaw tracing* -->
 
     <xsl:template match="/c:task/c:executionStatus">
         <executionState><xsl:value-of select="node()"/></executionState>
@@ -178,7 +179,9 @@
     <xsl:template name="objectSet">
         <xsl:param name="customElementName" select="'objects'" required="no"/>
 
-        <xsl:if test="/c:task/c:extension/mext:objectType or /c:task/c:extension/mext:objectQuery or /c:task/c:extension/mext:searchOptions">
+        <xsl:variable name="forceSearchOptionsRaw" select="$isDeletionActivity and /c:task/c:extension/mext:optionRaw[text() = 'false'] and not(/c:task/c:extension/mext:searchOptions/c:option/c:options/c:raw)"/>
+
+        <xsl:if test="/c:task/c:extension/mext:objectType or /c:task/c:extension/mext:objectQuery or /c:task/c:extension/mext:searchOptions or /c:task/c:extension/mext:useRepositoryDirectly">
             <xsl:element name="{$customElementName}">
                 <xsl:if test="/c:task/c:extension/mext:objectType">
                     <type><xsl:value-of select="/c:task/c:extension/mext:objectType"/></type>
@@ -186,8 +189,17 @@
                 <xsl:if test="/c:task/c:extension/mext:objectQuery">
                     <query><xsl:copy-of select="/c:task/c:extension/mext:objectQuery/node()"/></query>
                 </xsl:if>
-                <xsl:if test="/c:task/c:extension/mext:searchOptions">
-                    <searchOptions><xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/></searchOptions>
+                <xsl:if test="/c:task/c:extension/mext:searchOptions or $forceSearchOptionsRaw">
+                    <searchOptions>
+                        <xsl:copy-of select="/c:task/c:extension/mext:searchOptions/node()"/>
+                        <xsl:if test="$forceSearchOptionsRaw">
+                            <option>
+                                <options>
+                                    <raw>false</raw>
+                                </options>
+                            </option>
+                        </xsl:if>
+                    </searchOptions>
                 </xsl:if>
                 <xsl:if test="/c:task/c:extension/mext:useRepositoryDirectly">
                     <useRepositoryDirectly><xsl:value-of select="/c:task/c:extension/mext:useRepositoryDirectly"/></useRepositoryDirectly>
@@ -363,11 +375,19 @@
     </xsl:template>
 
     <xsl:template name="deletion">
+        <xsl:variable name="forceExecutionOptionsRaw" select="$isDeletionActivity and /c:task/c:extension/mext:optionRaw[text() = 'false'] and not(/c:task/c:extension/mext:modelExecuteOptions/c:raw)"/>
+
         <work>
             <deletion>
                 <xsl:call-template name="objectSet"/>
-                <xsl:if test="/c:task/c:extension/mext:modelExecuteOptions">
-                    <executionOptions><xsl:copy-of select="/c:task/c:extension/mext:modelExecuteOptions/node()"/></executionOptions>
+                <xsl:if test="/c:task/c:extension/mext:modelExecuteOptions or $forceExecutionOptionsRaw">
+                    <executionOptions>
+                        <xsl:copy-of select="/c:task/c:extension/mext:modelExecuteOptions/node()"/>
+
+                        <xsl:if test="$forceExecutionOptionsRaw">
+                            <raw>false</raw>
+                        </xsl:if>
+                    </executionOptions>
                 </xsl:if>
             </deletion>
         </work>

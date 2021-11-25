@@ -113,6 +113,11 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testBulkIterative2() {
+        testUpgrade("bulk-iterative-2-input.xml", "bulk-iterative-2-output.xml");
+    }
+
+    @Test
     public void testMultiple() {
         testUpgrade("multiple-input.xml", "multiple-output.xml");
     }
@@ -150,6 +155,11 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
     @Test
     public void testDelete1() {
         testUpgrade("delete-1-input.xml", "delete-1-output.xml");
+    }
+
+    @Test
+    public void testDelete2() {
+        testUpgrade("delete-2-input.xml", "delete-2-output.xml");
     }
 
     @Test

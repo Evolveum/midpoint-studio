@@ -24,10 +24,10 @@ public class TaskUpgradeTest {
         check.checkEnvironment(new PrintWriter(sw));
 
         LOG.info(sw.toString());
-        System.out.println(sw.toString());
+        System.out.println(sw);
 
         File parent = new File(".");
-        File datafile = new File(parent, "src/test/testData/task-upgrade/async-update-1-input.xml");
+        File datafile = new File(parent, "src/test/testData/task-upgrade/bulk-iterative-2-input.xml");
 
         String input = Files.readString(datafile.toPath());
 

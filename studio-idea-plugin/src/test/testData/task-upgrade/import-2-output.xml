@@ -35,7 +35,6 @@
                 </workersPerNode>
             </workers>
             <workerThreads>8</workerThreads>
-            <subtasks/>
         </distribution>
     </activity>
 </task>
