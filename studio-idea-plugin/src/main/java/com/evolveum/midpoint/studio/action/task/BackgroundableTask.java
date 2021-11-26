@@ -12,16 +12,20 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
+import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.util.LineSeparator;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -260,14 +264,36 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
                 end.set(model.getSelectionEnd());
             });
 
-            WriteCommandAction.runWriteCommandAction(getProject(), () ->
-                    document.replaceString(start.get(), end.get(), text)
-            );
+            WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+                String normalized = normalizeText(text, document);
+
+                document.replaceString(start.get(), end.get(), normalized);
+            });
         } else {
-            WriteCommandAction.runWriteCommandAction(getProject(), () ->
-                    document.replaceString(0, document.getTextLength(), text)
-            );
+            WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+                String normalized = normalizeText(text, document);
+
+                document.replaceString(0, document.getTextLength(), normalized);
+            });
         }
+    }
+
+    private String normalizeText(String text, Document document) {
+        if (text == null) {
+            return StringUtil.notNullize(text);
+        }
+
+        boolean doNotNormalizeDetect = document instanceof DocumentImpl && ((DocumentImpl) document).acceptsSlashR();
+        if (doNotNormalizeDetect) {
+            return StringUtil.notNullize(text);
+        }
+
+        LineSeparator separator = StringUtil.detectSeparators(text);
+        if (separator == null) {
+            return StringUtil.notNullize(text);
+        }
+
+        return StringUtil.convertLineSeparators(text);
     }
 
     protected void writeObjectsToFile(VirtualFile file, List<String> objects) {
