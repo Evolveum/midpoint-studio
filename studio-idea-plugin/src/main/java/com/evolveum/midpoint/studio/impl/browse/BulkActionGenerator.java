@@ -47,7 +47,9 @@ public class BulkActionGenerator extends Generator {
 
         NOTIFY("send notifications", "notify", ObjectTypes.OBJECT, false, false, false);
 
-        private final String displayName, actionName;
+        private final String displayName;
+
+        private final String actionName;
 
         private final ObjectTypes applicableTo;
 

@@ -47,6 +47,10 @@ public class UploadExecute extends BaseObjectsAction {
         } else {
             UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, VcsUtil.getVirtualFile(obj.getFile()));
             result = resp.getResult();
+
+            if (obj.getOid() == null && resp.getOid() != null) {
+                obj.setOid(resp.getOid());
+            }
         }
 
         return result;

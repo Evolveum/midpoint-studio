@@ -180,7 +180,7 @@ public class ServiceImpl implements Service {
             toBeModified = get(ObjectTypes.OBJECT.getClassDefinition(), object.getOid(), GetOperationOptions.createRawCollection());
 
             if (toBeModified == null) {
-                throw new ObjectNotFoundException("Couldn't fetch object before modificaction to find out proper type");
+                throw new ObjectNotFoundException("Couldn't fetch object before modification to find out proper type");
             }
         } catch (IOException | ObjectNotFoundException ex) {
             throw new ClientException("Couldn't fetch object before modification to find out proper type", ex);

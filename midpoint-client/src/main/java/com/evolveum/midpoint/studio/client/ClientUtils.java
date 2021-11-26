@@ -229,6 +229,9 @@ public class ClientUtils {
             Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
             OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
             result = serializer.serializeAnyData(operationResultType, fakeQName);
+        } else if (object instanceof JAXBElement) {
+            JAXBElement element = (JAXBElement) object;
+            result = serializer.serializeAnyData(element.getValue(), element.getName());
         } else {
             result = serializer.serializeAnyData(object, fakeQName);
         }
