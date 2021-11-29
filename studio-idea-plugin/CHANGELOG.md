@@ -12,6 +12,7 @@
 - Upload of object delta now works (executes modify)
 - MidPoint xml file cleanup action added to remove operational (useless) elements
 - Objects verification using schemas bundled with MidPoint studio (can't be changed for now)
+- Upgrade task action which upgrades task objects to new "activity" format (midPoint 4.4)
 
 ### Changed
 - Improved inlay properties caching
