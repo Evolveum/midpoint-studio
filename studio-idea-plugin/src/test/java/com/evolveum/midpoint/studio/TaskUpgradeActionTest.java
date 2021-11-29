@@ -1,20 +1,10 @@
 package com.evolveum.midpoint.studio;
 
 import com.evolveum.midpoint.studio.action.TaskUpgradeAction;
-import com.evolveum.midpoint.studio.impl.MidPointFacetType;
-import com.intellij.facet.FacetManager;
-import com.intellij.facet.FacetType;
-import com.intellij.facet.FacetTypeRegistry;
-import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.impl.ModuleManagerEx;
-import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.apache.xalan.xslt.EnvironmentCheck;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
@@ -22,39 +12,21 @@ import org.xmlunit.diff.Diff;
 import java.io.File;
 import java.io.PrintWriter;
 
-/**
- * Created by Viliam Repan (lazyman).
- */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
-
-    public static final String TEST_DATA_PATH = "./src/test/testData";
+public class TaskUpgradeActionTest extends StudioActionTest {
 
     private static final Logger LOG = Logger.getInstance(TaskUpgradeActionTest.class);
 
     @BeforeAll
     protected void beforeAll() throws Exception {
-        super.setUp();
-
-        WriteAction.runAndWait(() -> {
-            ModuleManagerEx moduleManager = ModuleManagerEx.getInstanceEx(getProject());
-            Module module = moduleManager.getModules()[0];
-            FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-            FacetManager.getInstance(module).addFacet(facetType, facetType.getDefaultFacetName(), null);
-        });
+        super.beforeAll();
 
         EnvironmentCheck check = new EnvironmentCheck();
         check.checkEnvironment(new PrintWriter(System.out));
     }
 
-    @AfterAll
-    protected void afterAll() throws Exception {
-        super.tearDown();
-    }
-
     @Override
-    protected String getTestDataPath() {
-        return TEST_DATA_PATH + "/task-upgrade";
+    protected String getTestFolder() {
+        return "task-upgrade";
     }
 
     @Test

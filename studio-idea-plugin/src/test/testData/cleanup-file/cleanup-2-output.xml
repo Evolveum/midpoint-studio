@@ -1,0 +1,155 @@
+<objects xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3">
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="00000000-0000-0000-0000-000000000006" version="10562">
+    <name>Validity Scanner</name>
+    <description>A system task that maintains effective status of objects, based on their validity time constraints.</description>
+    <assignment id="1">
+        <targetRef oid="00000000-0000-0000-0000-000000000529" relation="org:default" type="c:ArchetypeType"/>
+        <activation>
+            <effectiveStatus>enabled</effectiveStatus>
+        </activation>
+    </assignment>
+    <archetypeRef oid="00000000-0000-0000-0000-000000000529" relation="org:default" type="c:ArchetypeType"/>
+    <roleMembershipRef oid="00000000-0000-0000-0000-000000000529" relation="org:default" type="c:ArchetypeType"/>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <executionState>runnable</executionState>
+    <schedulingState>ready</schedulingState>
+    <category>System</category>
+    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/focus-validity-scanner/handler-3</handlerUri>
+    <binding>loose</binding>
+    <schedule>
+        <interval>900</interval>
+    </schedule>
+    <activityState>
+        <activity>
+            <realizationState>complete</realizationState>
+            <resultStatus>success</resultStatus>
+            <realizationStartTimestamp>2021-11-29T14:55:13.809+01:00</realizationStartTimestamp>
+            <realizationEndTimestamp>2021-11-29T14:55:13.925+01:00</realizationEndTimestamp>
+            <runStartTimestamp>2021-11-29T14:55:13.809+01:00</runStartTimestamp>
+            <runEndTimestamp>2021-11-29T14:55:13.925+01:00</runEndTimestamp>
+            <workState/>
+            <persistence>singleRealization</persistence>
+            <activity id="3">
+                <identifier>full</identifier>
+                <realizationState>complete</realizationState>
+                <resultStatus>success</resultStatus>
+                <realizationStartTimestamp>2021-11-29T14:55:13.832+01:00</realizationStartTimestamp>
+                <realizationEndTimestamp>2021-11-29T14:55:13.909+01:00</realizationEndTimestamp>
+                <runStartTimestamp>2021-11-29T14:55:13.832+01:00</runStartTimestamp>
+                <runEndTimestamp>2021-11-29T14:55:13.909+01:00</runEndTimestamp>
+                <progress/>
+                <statistics>
+                    <itemProcessing/>
+                    <actionsExecuted/>
+                </statistics>
+                <bucketing>
+                    <bucket id="301">
+                        <sequentialNumber>1</sequentialNumber>
+                        <state>complete</state>
+                        <content xsi:type="c:NullWorkBucketContentType"/>
+                    </bucket>
+                    <numberOfBuckets>1</numberOfBuckets>
+                    <workComplete>true</workComplete>
+                </bucketing>
+                <workState xsi:type="c:ScanWorkStateType">
+                    <lastScanTimestamp>2021-11-29T14:55:13.846+01:00</lastScanTimestamp>
+                </workState>
+                <persistence>perpetual</persistence>
+            </activity>
+        </activity>
+        <tree>
+            <realizationState>complete</realizationState>
+            <activity>
+                <realizationState>complete</realizationState>
+                <resultStatus>success</resultStatus>
+                <task>
+                    <taskRef oid="00000000-0000-0000-0000-000000000006" relation="org:default" type="c:TaskType">
+                        <targetName>Validity Scanner</targetName>
+                    </taskRef>
+                    <node>mac</node>
+                    <executionState>notRunning</executionState>
+                    <resultStatus>success</resultStatus>
+                </task>
+                <progressInformationVisibility>hidden</progressInformationVisibility>
+                <persistence>singleRealization</persistence>
+                <activity>
+                    <identifier>full</identifier>
+                    <realizationState>complete</realizationState>
+                    <resultStatus>success</resultStatus>
+                    <task>
+                        <taskRef oid="00000000-0000-0000-0000-000000000006" relation="org:default" type="c:TaskType">
+                            <targetName>Validity Scanner</targetName>
+                        </taskRef>
+                        <node>mac</node>
+                        <executionState>notRunning</executionState>
+                        <resultStatus>success</resultStatus>
+                    </task>
+                    <progressInformationVisibility>hidden</progressInformationVisibility>
+                    <persistence>perpetual</persistence>
+                </activity>
+            </activity>
+        </tree>
+    </activityState>
+</task>
+<user xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="00000000-0000-0000-0000-000000000002" version="1131">
+    <name>administrator</name>
+    <indestructible>true</indestructible>
+    <assignment id="1">
+        <targetRef oid="00000000-0000-0000-0000-000000000004" relation="org:default" type="c:RoleType"/>
+        <activation>
+            <effectiveStatus>enabled</effectiveStatus>
+        </activation>
+    </assignment>
+    <assignment id="2">
+        <targetRef oid="00000000-0000-0000-0000-000000000300" relation="org:default" type="c:ArchetypeType"/>
+        <activation>
+            <effectiveStatus>enabled</effectiveStatus>
+        </activation>
+    </assignment>
+    <archetypeRef oid="00000000-0000-0000-0000-000000000300" relation="org:default" type="c:ArchetypeType"/>
+    <activation>
+        <administrativeStatus>enabled</administrativeStatus>
+        <lockoutStatus>normal</lockoutStatus>
+    </activation>
+    <credentials>
+        <password>
+            <lastSuccessfulLogin>
+                <timestamp>2021-11-29T15:25:22.998+01:00</timestamp>
+                <from>127.0.0.1</from>
+            </lastSuccessfulLogin>
+            <previousSuccessfulLogin>
+                <timestamp>2021-11-29T15:25:20.759+01:00</timestamp>
+                <from>127.0.0.1</from>
+            </previousSuccessfulLogin>
+            <value>
+                <t:encryptedData>
+                    <t:encryptionMethod>
+                        <t:algorithm>http://www.w3.org/2001/04/xmlenc#aes256-cbc</t:algorithm>
+                    </t:encryptionMethod>
+                    <t:keyInfo>
+                        <t:keyName>Tov06ap5F9Vpr1GLroFjsUs4QWw=</t:keyName>
+                    </t:keyInfo>
+                    <t:cipherData>
+                        <t:cipherValue>JvoM2Af+/xxA+xFM/xMKVFlK9LetMdCkYoqJRhk+yyI=</t:cipherValue>
+                    </t:cipherData>
+                </t:encryptedData>
+            </value>
+        </password>
+    </credentials>
+    <behavior>
+        <authentication>
+            <lastSuccessfulLogin>
+                <timestamp>2021-11-29T15:25:22.992+01:00</timestamp>
+                <from>127.0.0.1</from>
+            </lastSuccessfulLogin>
+            <previousSuccessfulLogin>
+                <timestamp>2021-11-29T15:25:20.753+01:00</timestamp>
+                <from>127.0.0.1</from>
+            </previousSuccessfulLogin>
+        </authentication>
+    </behavior>
+    <fullName>midPoint Administrator</fullName>
+    <givenName>midPoint</givenName>
+    <familyName>Administrator</familyName>
+</user>
+</objects>

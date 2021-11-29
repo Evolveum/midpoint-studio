@@ -37,7 +37,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -235,11 +237,64 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
     }
 
     protected void processEditorText(ProgressIndicator indicator, Editor editor, String text, VirtualFile sourceFile) {
+        try {
+            List<MidPointObject> objects = MidPointUtils.parseText(getProject(), text, getNotificationKey());
 
+            List<String> newObjects = processObjects(objects, sourceFile);
+
+            boolean isUpdateSelection = isUpdateSelectionInEditor(editor);
+
+            StringBuilder sb = new StringBuilder();
+            if (!isUpdateSelection && newObjects.size() > 1) {
+                sb.append(ClientUtils.OBJECTS_XML_PREFIX);
+            }
+
+            newObjects.forEach(o -> sb.append(o));
+
+            if (!isUpdateSelection && newObjects.size() > 1) {
+                sb.append(ClientUtils.OBJECTS_XML_SUFFIX);
+            }
+
+            updateEditor(editor, sb.toString());
+        } catch (Exception ex) {
+            midPointService.printToConsole(null, BackgroundableTask.class, "Error occurred when processing text in editor", ex);
+        }
     }
 
     protected void processFile(VirtualFile file) {
+        try {
+            List<MidPointObject> objects = loadObjectsFromFile(file);
 
+            List<String> newObjects = processObjects(objects, file);
+
+            boolean checkChanges = false;
+            if (objects.size() == newObjects.size()) {
+                for (int i = 0; i < objects.size(); i++) {
+                    MidPointObject object = objects.get(i);
+                    if (!Objects.equals(object.getContent(), newObjects.get(i))) {
+                        checkChanges = true;
+                        break;
+                    }
+                }
+            }
+
+            if (checkChanges) {
+                writeObjectsToFile(file, newObjects);
+            }
+        } catch (Exception ex) {
+            state.incrementSkippedFile();
+
+            midPointService.printToConsole(null, getClass(),
+                    "Couldn't process file " + (file != null ? file.getPath() : "<unknown>") + ", reason: " + ex.getMessage(), ex);
+        }
+    }
+
+    protected List<String> processObjects(List<MidPointObject> objects, VirtualFile file) {
+        if (objects == null) {
+            return new ArrayList<>();
+        }
+
+        return objects.stream().map(o -> o.getContent()).collect(Collectors.toList());
     }
 
     protected boolean isUpdateSelectionInEditor(Editor editor) {

@@ -2,13 +2,10 @@ package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.transfer.RefreshAction;
-import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.vfs.VirtualFile;
 
@@ -34,60 +31,7 @@ public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
         setEvent(event);
     }
 
-    protected void processEditorText(ProgressIndicator indicator, Editor editor, String text, VirtualFile sourceFile) {
-        try {
-            List<MidPointObject> objects = MidPointUtils.parseText(getProject(), text, getNotificationKey());
-
-            List<String> newObjects = processObjects(objects, sourceFile);
-
-            boolean isUpdateSelection = isUpdateSelectionInEditor(editor);
-
-            StringBuilder sb = new StringBuilder();
-            if (!isUpdateSelection && newObjects.size() > 1) {
-                sb.append(ClientUtils.OBJECTS_XML_PREFIX);
-            }
-
-            newObjects.forEach(o -> sb.append(o));
-
-            if (!isUpdateSelection && newObjects.size() > 1) {
-                sb.append(ClientUtils.OBJECTS_XML_SUFFIX);
-            }
-
-            updateEditor(editor, sb.toString());
-        } catch (Exception ex) {
-            midPointService.printToConsole(null, TaskUpgradeTask.class, "Error occurred when processing text in editor", ex);
-        }
-    }
-
-    protected void processFile(VirtualFile file) {
-        try {
-            List<MidPointObject> objects = loadObjectsFromFile(file);
-
-            List<String> newObjects = processObjects(objects, file);
-
-            boolean checkChanges = false;
-            if (objects.size() == newObjects.size()) {
-                for (int i = 0; i < objects.size(); i++) {
-                    MidPointObject object = objects.get(i);
-                    if (!Objects.equals(object.getContent(), newObjects.get(i))) {
-                        checkChanges = true;
-                        break;
-                    }
-                }
-            }
-
-            if (checkChanges) {
-                writeObjectsToFile(file, newObjects);
-            }
-        } catch (Exception ex) {
-            state.incrementSkippedFile();
-
-            midPointService.printToConsole(null, getClass(),
-                    "Couldn't process file " + (file != null ? file.getPath() : "<unknown>") + ", reason: " + ex.getMessage(), ex);
-        }
-    }
-
-    private List<String> processObjects(List<MidPointObject> objects, VirtualFile file) {
+    protected List<String> processObjects(List<MidPointObject> objects, VirtualFile file) {
         if (objects.isEmpty()) {
             state.incrementSkippedFile();
             midPointService.printToConsole(null, RefreshAction.class,
