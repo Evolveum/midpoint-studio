@@ -1,6 +1,6 @@
 # MidPoint Studio
 
-## [Unreleased]
+## 4.4.0
 ### Added
 - Xml autocompletion
     - OIDs for existing objects in workspace
@@ -23,6 +23,9 @@
 
 ### Fixed
 - Small UI fixes when using Darcula theme
+- Progress during REST operations
+- REST actions cancelling
+- UI Freezes
 
 ## 4.3
 ### Added
