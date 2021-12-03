@@ -14,6 +14,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
@@ -105,7 +106,9 @@ public class TaskHandlerAnnotatorCompletionProvider extends CompletionProvider<C
 
         String uri = tag.getValue().getText();
         if (StringUtils.isEmpty(uri)) {
-            holder.createErrorAnnotation(element, "Handler URI not defined");
+            holder.newAnnotation(HighlightSeverity.ERROR, "Handler URI not defined")
+                    .range(element)
+                    .create();
             return;
         }
 
@@ -118,7 +121,9 @@ public class TaskHandlerAnnotatorCompletionProvider extends CompletionProvider<C
         }
 
         if (!found) {
-            holder.createWarningAnnotation(element, "Unknown handler uri");
+            holder.newAnnotation(HighlightSeverity.WARNING, "Unknown handler uri")
+                    .range(element)
+                    .create();
         }
     }
 }

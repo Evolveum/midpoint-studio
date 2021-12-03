@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.studio.impl.client.AddOptions;
+import com.evolveum.midpoint.studio.client.AddOptions;
 
 /**
  * Created by Viliam Repan (lazyman).

@@ -1,0 +1,32 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      oid="7e8fa00e-b2ca-4893-988b-59ba89a15a4f"
+      version="29">
+    <name>LiveSync entitlement-token</name>
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3">
+        <mext:kind>entitlement</mext:kind>
+        <mext:intent>token</mext:intent>
+        <mext:objectclass>ri:CustomTokenObjectClass</mext:objectclass>
+        <!--<ls:token xmlns:ls="http://midpoint.evolveum.com/xml/ns/public/provisioning/liveSync-3"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:string">1565803800000</ls:token>-->
+    </extension>
+    <!-- some comment sample -->
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000504" type="ArchetypeType" /> <!--Live synchronization task-->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <channel>http://midpoint.evolveum.com/xml/ns/public/common/channels-3#liveSync</channel>
+    <executionStatus>runnable</executionStatus>
+    <objectRef oid="ef2bc95b-76e0-48e2-86d6-3d4f02d420ab" relation="org:default" type="c:ResourceType"/>
+    <recurrence>recurring</recurrence>
+    <binding>loose</binding>
+    <schedule><!-- defined via property -->
+        <interval>$(system.property.livesync)</interval>
+        <misfireAction>reschedule</misfireAction>
+    </schedule>
+    <threadStopAction>reschedule</threadStopAction>
+</task>

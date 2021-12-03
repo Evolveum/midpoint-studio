@@ -2,15 +2,16 @@ package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.client.AuthenticationException;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.studio.impl.UploadResponse;
-import com.evolveum.midpoint.studio.impl.client.AuthenticationException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.vcsUtil.VcsUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,8 +45,12 @@ public class UploadExecute extends BaseObjectsAction {
                 result = OperationResult.createOperationResult(res);
             }
         } else {
-            UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, obj.getFile());
+            UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, VcsUtil.getVirtualFile(obj.getFile()));
             result = resp.getResult();
+
+            if (obj.getOid() == null && resp.getOid() != null) {
+                obj.setOid(resp.getOid());
+            }
         }
 
         return result;

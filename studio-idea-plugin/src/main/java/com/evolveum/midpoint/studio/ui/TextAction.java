@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -45,12 +44,6 @@ public class TextAction extends AnAction implements CustomComponentAction {
     @Override
     public boolean isDumbAware() {
         return true;
-    }
-
-    @NotNull
-    @Override
-    public JComponent createCustomComponent(@NotNull Presentation presentation) {
-        return createCustomComponent(presentation, ActionPlaces.UNKNOWN);
     }
 
     @NotNull

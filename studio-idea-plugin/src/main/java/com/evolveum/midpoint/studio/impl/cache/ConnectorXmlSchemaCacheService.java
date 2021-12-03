@@ -1,32 +1,50 @@
 package com.evolveum.midpoint.studio.impl.cache;
 
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
-import com.evolveum.midpoint.prism.query.*;
+import com.evolveum.midpoint.prism.impl.match.MatchingRuleRegistryFactory;
+import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
+import com.evolveum.midpoint.prism.query.ObjectFilter;
+import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.client.SearchResult;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.XmlSchemaType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.ControlFlowException;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.messages.MessageBus;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -35,154 +53,166 @@ public class ConnectorXmlSchemaCacheService {
 
     private static final Logger LOG = Logger.getInstance(ConnectorXmlSchemaCacheService.class);
 
-    private static final Long CACHE_MAX_TTL = 5 * 60 * 1000L; // 5 minute
+    private static final String ICF_NS_PREFIX = "http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/";
 
-    private Project project;
+    private final Project project;
 
-    private final ConcurrentHashMap<Key, Value> SCHEMAS = new ConcurrentHashMap();
+    private final ConcurrentHashMap<ConnectorType, CacheValue> cache = new ConcurrentHashMap<>();
+
+    private static final MatchingRuleRegistry MATCHING_REGISTRY = MatchingRuleRegistryFactory.createRegistry();
 
     public ConnectorXmlSchemaCacheService(Project project) {
         this.project = project;
 
-//        MessageBus bus = project.getMessageBus();
-//        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
-//
-//            @Override
-//            public void environmentChanged(Environment oldEnv, Environment newEnv) {
-//                updateCache(newEnv);
-//            }
-//        });
-    }
-
-//    private void updateCache(Environment env) {
-//
-//    }
-
-    public XmlFile getSchema(String namespace, PsiFile baseFile) {
-        if (!(baseFile instanceof XmlFile)) {
-            return null;
-        }
-
-        if (namespace == null || !namespace.startsWith("http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/")) {
-            return null;
-        }
-
-        EnvironmentService environmentService = EnvironmentService.getInstance(project);
-        Environment env = environmentService.getSelected();
-        if (env == null) {
-            return null;
-        }
-
-        MidPointClient client = new MidPointClient(project, env, true, true);
-
-        Key key = buildConnectorKey((XmlFile) baseFile, client);
-        if (key == null) {
-            return null;
-        }
-
-        Value value = SCHEMAS.get(key);
-        if (value != null && value.getCreated() > System.currentTimeMillis() - CACHE_MAX_TTL) {
-            return value.getFile();
-        } else {
-            SCHEMAS.remove(key);
-        }
-
-        RunnableUtils.PluginClassCallable<XmlFile> callable = new RunnableUtils.PluginClassCallable<>() {
+        MessageBus bus = project.getMessageBus();
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
 
             @Override
-            public XmlFile callWithPluginClassLoader() throws Exception {
-                XmlFile file = getConnectorSchema(namespace, key, client);
-
-//                SCHEMAS.put(key, new Value(file, System.currentTimeMillis()));
-
-                return file;
+            public void environmentChanged(Environment oldEnv, Environment newEnv) {
+                refresh(newEnv);
             }
-        };
+        });
 
-        callable = new RunnableUtils.PluginClassCallable<XmlFile>() {
-            @Override
-            public XmlFile callWithPluginClassLoader() throws Exception {
-                return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-123.xsd", XMLLanguage.INSTANCE, "<xml/>");
-            }
-        };
-
-        try {
-            XmlFile file = callable.call();
-            return file;
-        } catch (Exception ex) {
-            LOG.warn("Couldn't prepare connector schema");
-        }
-
-        return null;
+        ApplicationManager.getApplication().invokeLater(() -> {
+            EnvironmentService env = project.getService(EnvironmentService.class);
+            refresh(env.getSelected());
+        });
     }
 
-    public void clear() {
-        SCHEMAS.clear();
-    }
+    private void refresh(Environment env) {
+        LOG.info("Invoking refresh");
 
-    private Key buildConnectorKey(XmlFile file, MidPointClient client) {
-        QName root = MidPointUtils.createQName(file.getRootTag());
-        if (!SchemaConstantsGenerated.C_RESOURCE.equals(root)) {
-            // todo improve for c:objects/c:resource
-            return null;
-        }
+        RunnableUtils.submitNonBlockingReadAction(() -> {
 
-        XmlTag connectorRef = MidPointUtils.findSubTag(file.getRootTag(), ResourceType.F_CONNECTOR_REF);
-        if (connectorRef == null) {
-            return null;
-        }
+            LOG.info("Refreshing");
 
-        String oid = connectorRef.getAttributeValue("oid", SchemaConstantsGenerated.NS_COMMON);
-        if (oid != null) {
-            return new Key(client.getEnvironment(), oid);
-        }
+            cache.clear();
 
-        XmlTag filter = MidPointUtils.findSubTag(connectorRef, ObjectReferenceType.F_FILTER);
-        String xml = filter.getText();
-
-        ObjectFilter of = null;
-        try {
-            PrismParser parser = client.createParser(xml);
-            SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
-            of = client.getPrismContext().getQueryConverter().parseFilter(filterType, ConnectorType.class);
-        } catch (Exception ex) {
-        }
-
-        if (of == null) {
-            return null;
-        }
-
-        return new Key(client.getEnvironment(), of);
-    }
-
-    private XmlFile getConnectorSchema(@NotNull String url, @NotNull Key key, @NotNull MidPointClient client) throws Exception {
-        // take resource -> connectorRef or connectorRef/filter, download connector object get schema from there
-
-        MidPointObject object;
-        if (key.getOid() != null) {
-            object = client.get(ConnectorType.class, key.getOid(), new SearchOptions().raw(true));
-        } else {
-            PrismContext ctx = client.getPrismContext();
-            QueryFactory qf = ctx.queryFactory();
-
-            ObjectPaging paging = qf.createPaging(0, 10, ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);
-
-            ObjectQuery query = qf.createQuery(key.getFilter(), paging);
-
-            List<MidPointObject> list = client.search(ConnectorType.class, query, true).getObjects();
-            if (list.size() != 1) {
-                return null;
+            if (env == null) {
+                LOG.info("Refresh skipped, no environment selected");
+                return;
             }
 
-            object = list.get(0);
-        }
+            MidPointClient client = new MidPointClient(project, env, true, true);
+            SearchResult result = client.search(ConnectorType.class, null, true);
+            for (MidPointObject object : result.getObjects()) {
+                try {
+                    PrismObject<?> prismObject = client.parseObject(object.getContent());
+                    ConnectorType connectorType = (ConnectorType) prismObject.asObjectable();
 
-        if (object == null || object.getContent() == null) {
-            return null;
-        }
+                    cache.put(connectorType, new CacheValue(connectorType, buildIcfSchema(object), buildConnectorSchema(object)));
+                } catch (Exception ex) {
+                    if (ex instanceof ProcessCanceledException) {
+                        throw (ProcessCanceledException) ex;
+                    }
+                    LOG.error("Couldn't parse connector object", ex);
+                }
+            }
 
+            LOG.info("Refresh finished, " + cache.size() + " objects in cache");
+        }, AppExecutorUtil.getAppExecutorService());
+
+        LOG.info("Invoke done");
+    }
+
+    private XmlFile buildIcfSchema(MidPointObject object) {
         String connector = object.getContent();
+        Element xsdSchema = getXsdSchema(connector);
 
+        List<Element> complexTypes = DOMUtil.getChildElements(xsdSchema, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "complexType"));
+        Optional<Element> complexConfigurationPropertiesType = complexTypes.stream().filter(e -> "ConfigurationPropertiesType".equals(DOMUtil.getAttribute(e, "name"))).findFirst();
+
+        String importNamespace = xsdSchema.getAttribute("targetNamespace");
+
+        Document doc = DOMUtil.getDocument(DOMUtil.XSD_SCHEMA_ELEMENT);
+        Element schema = doc.getDocumentElement();
+        schema.setAttribute("xmlns:a", SchemaConstantsGenerated.NS_ANNOTATION);
+        schema.setAttribute("xmlns:icfc", SchemaConstantsGenerated.NS_ICF_CONFIGURATION);
+        schema.setAttribute("xmlns:con", importNamespace);
+        schema.setAttribute("targetNamespace", SchemaConstantsGenerated.NS_ICF_CONFIGURATION);
+        schema.setAttribute("elementFormDefault", "qualified");
+
+        Element _import = DOMUtil.createElement(doc, xsdElement("import"));
+        _import.setAttribute("namespace", importNamespace);
+        schema.appendChild(_import);
+
+        Element element = DOMUtil.createElement(doc, xsdElement("element"));
+        element.setAttribute("name", "configurationProperties");
+        element.setAttribute("type", "icfc:ConfigurationPropertiesType");
+        schema.appendChild(element);
+
+        Element complex = DOMUtil.createElement(doc, xsdElement("complexType"));
+        complex.setAttribute("name", "ConfigurationPropertiesType");
+        schema.appendChild(complex);
+
+        Element sequence = DOMUtil.createElement(doc, xsdElement("sequence"));
+        complex.appendChild(sequence);
+
+        complexConfigurationPropertiesType.ifPresent(e -> {
+            Element seq = DOMUtil.getChildElement(e, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "sequence"));
+            if (seq == null) {
+                return;
+            }
+
+            List<Element> list = DOMUtil.getChildElements(seq, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "element"));
+
+            for (Element el : list) {
+                Element cloned = (Element) el.cloneNode(true);
+                cloned.setAttribute("ref", "con:" + cloned.getAttribute("name"));
+
+                cloned.removeAttribute("name");
+                cloned.removeAttribute("type");
+
+                sequence.appendChild(doc.adoptNode(cloned));
+            }
+        });
+
+        String xsd = DOMUtil.serializeDOMToString(doc);
+
+        return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-" + object.getOid() + "-schema.xsd", XMLLanguage.INSTANCE, xsd);
+    }
+
+    private QName xsdElement(String name) {
+        return new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, name, "xsd");
+    }
+
+    private XmlFile buildConnectorSchema(MidPointObject object) {
+        String connector = object.getContent();
+        Element xsdSchema = getXsdSchema(connector);
+
+        List<Element> elements = DOMUtil.getChildElements(xsdSchema, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "element"));
+        Optional<Element> connectorConfiguration = elements.stream().filter(e -> "connectorConfiguration".equals(DOMUtil.getAttribute(e, "name"))).findFirst();
+        connectorConfiguration.ifPresent(e -> xsdSchema.removeChild(e));
+
+        List<Element> complexTypes = DOMUtil.getChildElements(xsdSchema, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "complexType"));
+        Optional<Element> complexConfigurationType = complexTypes.stream().filter(e -> "ConfigurationType".equals(DOMUtil.getAttribute(e, "name"))).findFirst();
+        complexConfigurationType.ifPresent(e -> xsdSchema.removeChild(e));
+
+        Optional<Element> complexConfigurationPropertiesType = complexTypes.stream().filter(e -> "ConfigurationPropertiesType".equals(DOMUtil.getAttribute(e, "name"))).findFirst();
+        complexConfigurationPropertiesType.ifPresent(e -> {
+            Element sequence = DOMUtil.getChildElement(e, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "sequence"));
+            if (sequence == null) {
+                return;
+            }
+
+            List<Element> list = DOMUtil.getChildElements(sequence, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "element"));
+
+            for (Element element : list) {
+                Element cloned = (Element) element.cloneNode(true);
+                cloned.removeAttribute("minOccurs");
+                cloned.removeAttribute("maxOccurs");
+
+                xsdSchema.appendChild(cloned);
+            }
+        });
+        complexConfigurationPropertiesType.ifPresent(e -> xsdSchema.removeChild(e));
+
+        String xsd = DOMUtil.serializeDOMToString(xsdSchema);
+
+        return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-" + object.getOid() + "-schema-modified.xsd", XMLLanguage.INSTANCE, xsd);
+    }
+
+    private Element getXsdSchema(String connector) {
         Document doc = DOMUtil.parseDocument(connector);
         Element schema = DOMUtil.getChildElement(doc.getDocumentElement(), ConnectorType.F_SCHEMA.asSingleName());
         if (schema == null) {
@@ -194,125 +224,189 @@ public class ConnectorXmlSchemaCacheService {
             return null;
         }
 
-        Element xsdSchema = DOMUtil.getChildElement(definition, DOMUtil.XSD_SCHEMA_ELEMENT);
-        if (xsdSchema == null) {
+        return DOMUtil.getChildElement(definition, DOMUtil.XSD_SCHEMA_ELEMENT);
+    }
+
+    private XmlFile getSchema(String url, String connectorOid) {
+        List<CacheValue> values = cache.values().stream().filter(c -> connectorOid.equals(c.connector.getOid())).collect(Collectors.toList());
+        if (values.size() != 1) {
             return null;
         }
 
-        modifyConnectorXsdSchema(xsdSchema);
-
-        String xsd = DOMUtil.serializeDOMToString(xsdSchema);
-//        VirtualFile virtualFile = new LightVirtualFile("connector-" + object.getOid() + ".xsd", xsd);
-
-//        PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-
-        return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-" + object.getOid() + ".xsd", XMLLanguage.INSTANCE, xsd);
-//        return (XmlFile) psiFile;
+        return getSchema(url, values.get(0));
     }
 
-    private void modifyConnectorXsdSchema(Element xsdSchema) {
-        if (xsdSchema == null) {
-            return;
+    public XmlFile getSchema(String url, XmlFile file) {
+        if (url == null || (!SchemaConstantsGenerated.NS_ICF_CONFIGURATION.equals(url)
+                && !url.startsWith(ICF_NS_PREFIX))) {
+            return null;
         }
 
-        List<Element> elements = DOMUtil.getChildElements(xsdSchema, new QName(W3C_XML_SCHEMA_NS_URI, "element"));
-        Optional<Element> connectorConfiguration = elements.stream().filter(e -> "connectorConfiguration".equals(DOMUtil.getAttribute(e, "name"))).findFirst();
-        connectorConfiguration.ifPresent(e -> xsdSchema.removeChild(e));
+        XmlTag rootTag = file.getRootTag();
+        QName root = MidPointUtils.createQName(rootTag);
 
-        List<Element> complexTypes = DOMUtil.getChildElements(xsdSchema, new QName(W3C_XML_SCHEMA_NS_URI, "complexType"));
-        Optional<Element> complexConfigurationType = complexTypes.stream().filter(e -> "ConfigurationType".equals(DOMUtil.getAttribute(e, "name"))).findFirst();
-        complexConfigurationType.ifPresent(e -> xsdSchema.removeChild(e));
+        if (DOMUtil.XSD_SCHEMA_ELEMENT.equals(root)) {
+            String fileName = file.getVirtualFile().getName();
+            String uuid = fileName.replaceFirst("^connector-", "").replaceFirst("-schema.xsd$", "");
 
-        Optional<Element> complexConfigurationPropertiesType = complexTypes.stream().filter(e -> "ConfigurationPropertiesType".equals(DOMUtil.getAttribute(e, "name"))).findFirst();
-        complexConfigurationPropertiesType.ifPresent(e -> {
-            Element sequence = DOMUtil.getChildElement(e, new QName(W3C_XML_SCHEMA_NS_URI, "sequence"));
-            if (sequence == null) {
-                return;
+            if (MidPointUtils.UUID_PATTERN.matcher(uuid).matches()) {
+                return getSchema(url, uuid);
+            }
+        }
+
+        if (SchemaConstants.C_OBJECTS.equals(root)) {
+            XmlTag[] tags = rootTag.getSubTags();
+            if (tags.length > 0) {
+                rootTag = tags[0];
+                root = MidPointUtils.createQName(rootTag);
+            }
+        }
+
+        if (!SchemaConstantsGenerated.C_RESOURCE.equals(root)
+                && !isResourceUsingXsi(rootTag)) {
+            return null;
+        }
+
+        XmlTag connectorRef = MidPointUtils.findSubTag(rootTag, ResourceType.F_CONNECTOR_REF);
+        if (connectorRef == null) {
+            return null;
+        }
+
+        String oid = connectorRef.getAttributeValue("oid", SchemaConstantsGenerated.NS_COMMON);
+        if (oid != null) {
+            List<ConnectorType> keys = cache.keySet().stream().filter(c -> oid.equals(c.getOid())).collect(Collectors.toList());
+            if (keys.size() != 1) {
+                return null;
             }
 
-            List<Element> list = DOMUtil.getChildElements(sequence, new QName(W3C_XML_SCHEMA_NS_URI, "element"));
-            if (list == null) {
-                return;
-            }
+            CacheValue value = cache.get(keys.get(0));
+            return getSchema(url, value);
+        }
 
-            for (Element element : list) {
-                Element cloned = (Element) element.cloneNode(true);
-                cloned.removeAttribute("minOccurs");
-                cloned.removeAttribute("maxOccurs");
+        XmlTag filter = MidPointUtils.findSubTag(connectorRef, ObjectReferenceType.F_FILTER);
 
-                xsdSchema.appendChild(cloned);
+        RunnableUtils.PluginClassCallable<XmlFile> callable = new RunnableUtils.PluginClassCallable<>() {
+
+            @Override
+            public XmlFile callWithPluginClassLoader() throws Exception {
+                ObjectFilter of = null;
+                try {
+                    String xml = updateNamespaces(filter);
+
+                    PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+                    PrismParser parser = ClientUtils.createParser(ctx, xml);
+
+                    SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
+                    of = ctx.getQueryConverter().parseFilter(filterType, ConnectorType.class);
+                } catch (Exception ex) {
+                    LOG.debug("Couldn't parse connectorRef filter defined in resource, reason: " + ex.getMessage() + "(" + ex.getClass().getName() + ")");
+                }
+
+                if (of == null) {
+                    return null;
+                }
+
+                // todo check if this for-cycle returns more than one result -> more connector matches filter, throw some error
+                for (Map.Entry<ConnectorType, CacheValue> e : cache.entrySet()) {
+                    try {
+                        boolean match = ObjectQuery.match(e.getKey(), of, MATCHING_REGISTRY);
+                        if (!match) {
+                            continue;
+                        }
+                    } catch (SchemaException ex) {
+                        LOG.error("Couldn't match connector with connectorRef filter defined in resource", ex);
+                    }
+
+                    return getSchema(url, e.getValue());
+                }
+
+                return null;
             }
-        });
+        };
+
+        try {
+            return callable.call();
+        } catch (Exception ex) {
+            if (!(ex instanceof ControlFlowException)) {
+                LOG.error("Couldn't find connector schema", ex);
+            }
+        }
+
+        return null;
     }
 
-    private static class Value {
-
-        private XmlFile file;
-
-        private long created;
-
-        public Value(XmlFile file, long created) {
-            this.file = file;
-            this.created = created;
+    private boolean isResourceUsingXsi(XmlTag tag) {
+        XmlAttribute attr = tag.getAttribute("type", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+        if (attr == null || StringUtils.isEmpty(attr.getValue())) {
+            return false;
         }
 
-        public XmlFile getFile() {
-            return file;
+        String value = attr.getValue();
+        String[] array = value.split(":", -1);
+
+        String local;
+        if (array.length == 2) {
+            String ns = tag.getNamespaceByPrefix(array[0]);
+            local = array[1];
+            if (!ResourceType.COMPLEX_TYPE.getNamespaceURI().equals(ns)) {
+                return false;
+            }
+        } else {
+            local = array[0];
         }
 
-        public long getCreated() {
-            return created;
-        }
+        return ResourceType.COMPLEX_TYPE.getLocalPart().equals(local);
     }
 
-    private static class Key {
+    private String updateNamespaces(XmlTag filter) {
+        XmlTag copy = (XmlTag) filter.copy();
 
-        private Environment environment;
+        XmlTag tag = filter;
+        while (tag != null) {
+            for (Map.Entry<String, String> entry : tag.getLocalNamespaceDeclarations().entrySet()) {
+                if (copy.getLocalNamespaceDeclarations().containsKey(entry.getKey())) {
+                    continue;
+                }
 
-        private String oid;
+                String name = "xmlns";
+                if (StringUtils.isNotEmpty(entry.getKey())) {
+                    name += ":";
+                }
+                name += entry.getKey();
 
-        private ObjectFilter filter;
+                copy.setAttribute(name, entry.getValue());
+            }
 
-        public Key(Environment environment, String oid) {
-            this.environment = environment;
-            this.oid = oid;
+            tag = tag.getParentTag();
         }
 
-        public Key(Environment environment, ObjectFilter filter) {
-            this.environment = environment;
-            this.filter = filter;
+        return copy.getText();
+    }
+
+    private XmlFile getSchema(String url, CacheValue value) {
+        if (url == null || value == null) {
+            return null;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Key key = (Key) o;
-
-            if (environment != null ? !environment.equals(key.environment) : key.environment != null) return false;
-            if (oid != null ? !oid.equals(key.oid) : key.oid != null) return false;
-            return filter != null ? filter.equals(key.filter) : key.filter == null;
+        if (SchemaConstantsGenerated.NS_ICF_CONFIGURATION.equals(url)) {
+            return value.icfConnectorSchema;
         }
 
-        @Override
-        public int hashCode() {
-            int result = environment != null ? environment.hashCode() : 0;
-            result = 31 * result + (oid != null ? oid.hashCode() : 0);
-            result = 31 * result + (filter != null ? filter.hashCode() : 0);
-            return result;
-        }
+        return value.connectorSchema;
+    }
 
-        public Environment getEnvironment() {
-            return environment;
-        }
+    private static class CacheValue {
 
-        public String getOid() {
-            return oid;
-        }
+        ConnectorType connector;
 
-        public ObjectFilter getFilter() {
-            return filter;
+        XmlFile icfConnectorSchema;
+
+        XmlFile connectorSchema;
+
+        public CacheValue(ConnectorType connector, XmlFile icfConnectorSchema, XmlFile connectorSchema) {
+            this.connector = connector;
+            this.icfConnectorSchema = icfConnectorSchema;
+            this.connectorSchema = connectorSchema;
         }
     }
 }

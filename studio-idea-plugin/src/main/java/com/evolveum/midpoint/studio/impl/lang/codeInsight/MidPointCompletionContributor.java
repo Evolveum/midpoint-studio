@@ -64,6 +64,15 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                         )
                 ),
                 new MatchingRuleCompletionProvider());
+
+        extend(CompletionType.BASIC,
+                psiElement().inside(
+                        XmlPatterns.or(
+                                XmlPatterns.xmlText().withParent(commonTag("path").withParent(commonTag("source"))),
+                                XmlPatterns.xmlText().withParent(commonTag("path").withParent(commonTag("target")))
+                        )
+                ),
+                new ItemPathCompletionProvider());
     }
 
     private XmlTagPattern.Capture commonTag(String localName) {

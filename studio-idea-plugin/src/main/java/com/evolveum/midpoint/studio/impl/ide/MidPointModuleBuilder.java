@@ -33,6 +33,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -93,15 +94,16 @@ public class MidPointModuleBuilder extends ModuleBuilder {
         VirtualFile root = createAndGetContentEntry();
         modifiableRootModel.addContentEntry(root);
 
+        Project project = modifiableRootModel.getProject();
+
         try {
             VfsUtil.createDirectories(root.getPath() + "/objects");
             VfsUtil.createDirectories(root.getPath() + "/scratches");
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create directory structure", ex);
+            MidPointUtils.publishExceptionNotification(project, null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create directory structure", ex);
         }
 
         // build pom file
-        Project project = modifiableRootModel.getProject();
         MidPointUtils.runWhenInitialized(project, (DumbAwareRunnable) () -> {
 
             Application am = ApplicationManager.getApplication();
@@ -114,22 +116,31 @@ public class MidPointModuleBuilder extends ModuleBuilder {
             WriteAction.run(() -> createProjectFiles(project, root));
         });
 
+        addMidpointFacet(modifiableRootModel);
+    }
+
+    public void addMidpointFacet(ModifiableRootModel model) {
         FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-        FacetManager.getInstance(modifiableRootModel.getModule()).addFacet(facetType, facetType.getDefaultFacetName(), null);
+        FacetManager.getInstance(model.getModule()).addFacet(facetType, facetType.getDefaultFacetName(), null);
     }
 
     public void createProjectFiles(Project project, VirtualFile root) {
         try {
             Properties properties = new Properties();
-            properties.setProperty("GROUP_ID", root.getName());
-            properties.setProperty("ARTIFACT_ID", root.getName());
-            properties.setProperty("VERSION", "0.1-SNAPSHOT");
+
+            String escaped =  root.getName().replaceAll("[^a-zA-Z0-9]", "");
+
+            properties.setProperty("GROUP_ID", escaped);
+            properties.setProperty("ARTIFACT_ID", escaped);
+            properties.setProperty("VERSION", "1.0-SNAPSHOT");
+
+            properties.setProperty("PROJECT_NAME", root.getName());
 
             createPomFile(project, root, properties);
 
             createGitIgnoreFile(project, root);
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create pom.xml file", ex);
+            MidPointUtils.publishExceptionNotification(project, null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create pom.xml file", ex);
         }
     }
 

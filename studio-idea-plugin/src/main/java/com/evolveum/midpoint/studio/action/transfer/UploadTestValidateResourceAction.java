@@ -2,8 +2,8 @@ package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointObject;
 import com.evolveum.midpoint.studio.impl.browse.BulkActionGenerator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -35,7 +35,7 @@ public class UploadTestValidateResourceAction extends UploadTestResource {
 
         GeneratorOptions genOptions = new GeneratorOptions();
         BulkActionGenerator gen = new BulkActionGenerator(BulkActionGenerator.Action.VALIDATE);
-        String requestString = gen.generateFromSourceObject(obj, genOptions);
+        String requestString = gen.generateFromSourceObject(obj, genOptions, evt.getProject());
 
         ExecuteScriptResponseType response = client.execute(requestString);
         OperationResultType res = response.getResult();

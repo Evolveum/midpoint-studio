@@ -1,13 +1,14 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.SimpleListCellRenderer;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class LocalizedRenderer<T extends Localized> extends ListCellRendererWrapper<T> {
+public class LocalizedRenderer<T extends Localized> extends SimpleListCellRenderer<T> {
 
     private String nullText;
 
@@ -24,7 +25,7 @@ public class LocalizedRenderer<T extends Localized> extends ListCellRendererWrap
     }
 
     @Override
-    public void customize(JList list, T value, int index, boolean selected, boolean hasFocus) {
+    public void customize(@NotNull JList<? extends T> list, T value, int index, boolean selected, boolean hasFocus) {
         String text = value != null ? value.getKey() : nullText;
         setText(text);
     }

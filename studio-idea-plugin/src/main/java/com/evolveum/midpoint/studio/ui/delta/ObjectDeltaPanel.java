@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
+import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.ui.CustomComboBoxAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
@@ -119,7 +120,7 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
         ParameterizedEquivalenceStrategy pes = strategy != null ? strategy.getStrategy() : ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION;
 
         try (InputStream is = file.getInputStream()) {
-            PrismParser parser = MidPointUtils.createParser(prismContext, is);
+            PrismParser parser = ClientUtils.createParser(prismContext, is);
 
             ObjectDeltaObjectType odo = parser.parseRealValue(ObjectDeltaObjectType.class);
             PrismObject local = odo.getOldObject().asPrismObject();
@@ -131,8 +132,8 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
             ObjectDelta delta = local.diff(remote, pes);
             delta.applyTo(o2);
 
-            LightVirtualFile file1 = new LightVirtualFile("Local.xml", MidPointUtils.serialize(prismContext, o1));
-            LightVirtualFile file2 = new LightVirtualFile("Remote.xml", MidPointUtils.serialize(prismContext, o2));
+            LightVirtualFile file1 = new LightVirtualFile("Local.xml", ClientUtils.serialize(prismContext, o1));
+            LightVirtualFile file2 = new LightVirtualFile("Remote.xml", ClientUtils.serialize(prismContext, o2));
 
             DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, file1, file2);
 
@@ -156,7 +157,7 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
             root.add(processor.getComponent(), BorderLayout.CENTER);
             processor.updateRequest();
         } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(null, ObjectDeltaPanel.class, ObjectDeltaEditor.NOTIFICATION_KEY,
+            MidPointUtils.publishExceptionNotification(project, null, ObjectDeltaPanel.class, ObjectDeltaEditor.NOTIFICATION_KEY,
                     "Couldn't create diff, reason: " + ex.getMessage(), ex);
         }
     }

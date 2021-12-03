@@ -1,0 +1,28 @@
+<task oid="8167a4bc-35b4-49a7-a3e3-c8f959a5bb11"
+      xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+      xmlns:modelext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <name>Shadow refresh</name>
+
+    <extension>
+        <modelext:workerThreads>4</modelext:workerThreads>
+    </extension>
+
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000529" type="ArchetypeType" />
+    </assignment>
+
+    <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
+    <executionStatus>closed</executionStatus>
+    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/shadowRefresh/handler-3</handlerUri>
+    <recurrence>recurring</recurrence>
+    <binding>loose</binding>
+    <schedule>
+        <interval>14400</interval>
+        <misfireAction>reschedule</misfireAction>
+    </schedule>
+    <threadStopAction>reschedule</threadStopAction>
+</task>

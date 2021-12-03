@@ -1,0 +1,21 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" oid="f51236ee-53a4-464d-b5c0-e59de8dfdfdf">
+    <name>Reindex repository objects, accessRight roles</name>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000529" type="ArchetypeType"/>
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
+    <executionState>closed</executionState>
+    <schedule>
+        <recurrence>single</recurrence>
+    </schedule>
+    <binding>tight</binding>
+    <activity>
+        <work>
+            <reindexing>
+                <objects>
+                    <type>RoleType</type>
+                </objects>
+            </reindexing>
+        </work>
+    </activity>
+</task>

@@ -56,6 +56,7 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("ConsoleActions",
                 new DefaultActionGroup(consoleView.createConsoleActions()), false);
+        toolbar.setTargetComponent(root);
 
         root.setToolbar(toolbar);
 
@@ -73,6 +74,7 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("EncryptedPropertiesActions",
                 new DefaultActionGroup(propertiesPanel.createConsoleActions()), false);
+        toolbar.setTargetComponent(root);
         root.add(toolbar.getComponent(), BorderLayout.WEST);
 
         return ContentFactory.SERVICE.getInstance().createContent(root, "Encrypted Properties", false);

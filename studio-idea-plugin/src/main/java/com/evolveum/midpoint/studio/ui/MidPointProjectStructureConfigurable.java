@@ -8,7 +8,6 @@ import com.intellij.facet.FacetType;
 import com.intellij.facet.FacetTypeRegistry;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
@@ -26,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.Objects;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -94,19 +92,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
     @Override
     public boolean isModified() {
-        if (settings == null || settings.getSettings() == null) {
-            return false;
-        }
-
-        ProjectSettings pSettings = new ProjectSettings();
-
-        MidPointService mm = MidPointService.getInstance(project);
-        pSettings.setMidPointSettings(mm.getSettings());
-
-        EnvironmentService em = EnvironmentService.getInstance(project);
-        pSettings.setEnvironmentSettings(em.getFullSettings());
-
-        return !Objects.equals(pSettings, settings.getSettings());
+        return settings != null && settings.isModified();
     }
 
     @Override
@@ -144,22 +130,6 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
     private void validateModule() {
         new MidPointModuleBuilder().createProjectFiles(project, project.getBaseDir());
-
-        ModuleManager mm = ModuleManager.getInstance(project);
-        Module[] modules = mm.getModules();
-
-        if (modules == null || modules.length == 0) {
-            return;
-        }
-
-        Module module = modules[0];
-        if (MidPointModuleBuilder.MODULE_NAME.equals(module.getModuleTypeName())) {
-            return;
-        }
-
-//        modules[0].setModuleType(MidPointModuleBuilder.MODULE_NAME);
-
-//        MavenProjectsManager.getInstance(project).addManagedFiles(Arrays.asList(project.getBaseDir().findChild("pom.xml")));
     }
 
     private void validateFacet() {

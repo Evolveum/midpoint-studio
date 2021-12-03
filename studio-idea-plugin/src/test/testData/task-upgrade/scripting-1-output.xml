@@ -1,0 +1,38 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3" xmlns:scext="http://midpoint.evolveum.com/xml/ns/public/model/scripting/extension-3" oid="cc7688ec-c538-4cd1-8032-dff45067a231">
+    <name>Delete asdf</name>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000508" type="ArchetypeType"/>
+        <!--Iterative bulk action task -->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
+    <executionState>runnable</executionState>
+    <schedule>
+        <recurrence>single</recurrence>
+    </schedule>
+    <activity>
+        <work>
+            <nonIterativeScripting>
+                <scriptExecutionRequest>
+                    <s:pipeline>
+                        <s:search>
+                            <s:type>OrgType</s:type>
+                            <s:searchFilter>
+                                <q:equal>
+                                    <q:path>subtype</q:path>
+                                    <q:value>asdf</q:value>
+                                </q:equal>
+                            </s:searchFilter>
+                        </s:search>
+                        <s:action>
+                            <s:type>delete</s:type>
+                            <s:parameter>
+                                <s:name>raw</s:name>
+                                <c:value>true</c:value>
+                            </s:parameter>
+                        </s:action>
+                    </s:pipeline>
+                </scriptExecutionRequest>
+            </nonIterativeScripting>
+        </work>
+    </activity>
+</task>

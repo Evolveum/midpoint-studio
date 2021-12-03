@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl.lang;
 
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.diff.contents.DiffContent;
 import com.intellij.diff.lang.DiffIgnoredRangeProvider;
 import com.intellij.lang.xml.XMLLanguage;
@@ -25,19 +26,19 @@ public class MidPointDiffIgnoreRangeProvider implements DiffIgnoredRangeProvider
     private static final Set<QName> IGNORED_ELEMENTS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             ObjectType.F_METADATA,
             ObjectType.F_OPERATION_EXECUTION,
-            ObjectType.F_FETCH_RESULT
-//            SchemaConstants.C_OBJECTS
+            ObjectType.F_FETCH_RESULT,
+            ResourceType.F_OPERATIONAL_STATE,
+            ResourceType.F_OPERATIONAL_STATE_HISTORY
     )));
 
     private static final Set<String> IGNORED_ATTRIBUTES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "id"
-//            "xmlns"
     )));
 
     @NotNull
     @Override
     public String getDescription() {
-        return "Ignores container metadata, operation execution, fetch results and ids";
+        return "Ignores midPoint metadata, operational data";
     }
 
     @Override

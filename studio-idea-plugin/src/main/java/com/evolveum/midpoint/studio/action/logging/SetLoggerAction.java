@@ -3,18 +3,17 @@ package com.evolveum.midpoint.studio.action.logging;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
-import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -30,8 +29,8 @@ public class SetLoggerAction extends BackgroundAction {
 
     private static final String NOTIFICATION_KEY = "Update logging configuration";
 
-    public SetLoggerAction() {
-        super("Updating logging configuration");
+    public SetLoggerAction(String text) {
+        super(text, null, "Updating logging configuration");
     }
 
     @Override
@@ -52,7 +51,7 @@ public class SetLoggerAction extends BackgroundAction {
     protected void executeOnBackground(AnActionEvent e, ProgressIndicator indicator) {
         List<ClassLoggerConfigurationType> newLoggers = buildClassLoggers();
         if (newLoggers == null || newLoggers.isEmpty()) {
-            noChangeNeeded();
+            noChangeNeeded(e.getProject());
             return;
         }
 
@@ -74,9 +73,12 @@ public class SetLoggerAction extends BackgroundAction {
         try {
             MidPointObject object = client.get(SystemConfigurationType.class,
                     SystemObjectsType.SYSTEM_CONFIGURATION.value(), new SearchOptions());
+            if (object == null) {
+                return;
+            }
 
             configPrism = (PrismObject) client.parseObject(object.getContent());
-        } catch (ObjectNotFoundException | SchemaException | IOException ex) {
+        } catch (Exception ex) {
             MidPointUtils.publishException(e.getProject(), env, getClass(), NOTIFICATION_KEY,
                     "Couldn't download and parse system configuration", ex);
 
@@ -114,7 +116,7 @@ public class SetLoggerAction extends BackgroundAction {
         }
 
         if (!changed) {
-            noChangeNeeded();
+            noChangeNeeded(e.getProject());
             return;
         }
 
@@ -129,7 +131,7 @@ public class SetLoggerAction extends BackgroundAction {
                 String msg = "Upload status of system configuration was " + result.getStatus();
                 mm.printToConsole(env, getClass(), msg);
 
-                MidPointUtils.publishNotification(NOTIFICATION_KEY, "Warning", msg,
+                MidPointUtils.publishNotification(e.getProject(), NOTIFICATION_KEY, "Warning", msg,
                         NotificationType.WARNING, new ShowResultNotificationAction(result));
             } else {
                 mm.printToConsole(env, getClass(), "System configuration uploaded");
@@ -140,9 +142,9 @@ public class SetLoggerAction extends BackgroundAction {
         }
     }
 
-    private void noChangeNeeded() {
+    private void noChangeNeeded(Project project) {
         LOG.debug("No changes to logging configuration");
-        MidPointUtils.publishNotification(NOTIFICATION_KEY, "Warning",
+        MidPointUtils.publishNotification(project, NOTIFICATION_KEY, "Warning",
                 "No changes of logging configuration created, skipping system configuration upload", NotificationType.WARNING);
     }
 

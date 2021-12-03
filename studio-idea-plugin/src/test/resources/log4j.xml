@@ -18,18 +18,18 @@
         </layout>
     </appender>
 
+    <logger name="com.evolveum.midpoint.studio">
+        <level value="TRACE"/>
+    </logger>
+
+    <logger name="com.evolveum.midpoint">
+        <level value="DEBUG"/>
+    </logger>
+
     <root>
         <level value="INFO" />
         <appender-ref ref="console" />
         <appender-ref ref="file" />
     </root>
-
-    <logger name="#com.evolveum.midpoint">
-        <level value="DEBUG"/>
-    </logger>
-
-    <logger name="#com.evolveum.midpoint.studio">
-        <level value="TRACE"/>
-    </logger>
 
 </log4j:configuration>

@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
-import com.evolveum.midpoint.studio.impl.client.DeleteOptions;
+import com.evolveum.midpoint.studio.client.DeleteOptions;
 
 /**
  * Created by Viliam Repan (lazyman).

@@ -1,0 +1,82 @@
+<objects xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3">
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="7e8fa00e-b2ca-4893-988b-59ba89a15a4f" version="29">
+    <name>LiveSync entitlement-token</name>
+    <extension xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3">
+        <!--<ls:token xmlns:ls="http://midpoint.evolveum.com/xml/ns/public/provisioning/liveSync-3"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:string">1565803800000</ls:token>-->
+    </extension>
+    <!-- some comment sample -->
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000504" type="ArchetypeType"/>
+        <!--Live synchronization task-->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <channel>http://midpoint.evolveum.com/xml/ns/public/common/channels-3#liveSync</channel>
+    <executionState>runnable</executionState>
+    <objectRef oid="ef2bc95b-76e0-48e2-86d6-3d4f02d420ab" relation="org:default" type="c:ResourceType"/>
+    <binding>loose</binding>
+    <schedule>
+        <recurrence>recurring</recurrence>
+        <!-- defined via property -->
+        <interval>$(system.property.livesync)</interval>
+        <misfireAction>reschedule</misfireAction>
+    </schedule>
+    <threadStopAction>reschedule</threadStopAction>
+    <activity>
+        <work>
+            <liveSynchronization>
+                <resourceObjects>
+                    <resourceRef oid="ef2bc95b-76e0-48e2-86d6-3d4f02d420ab"/>
+                    <kind>entitlement</kind>
+                    <intent>token</intent>
+                    <objectclass>ri:CustomTokenObjectClass</objectclass>
+                </resourceObjects>
+            </liveSynchronization>
+        </work>
+    </activity>
+</task>
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:apti="http://midpoint.evolveum.com/xml/ns/public/common/api-types-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="2c7ae82a-01f5-401f-b12e-e122029b327c">
+    <name>Import 1</name>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000503" type="ArchetypeType"/>
+        <!--Import task-->
+    </assignment>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" type="c:UserType"/>
+    <executionState>closed</executionState>
+    <objectRef oid="5a55bc1a-95c0-11ea-bc3c-abbaf8e94a00" type="c:ResourceType"/>
+    <schedule>
+        <recurrence>single</recurrence>
+    </schedule>
+    <executionEnvironment>
+        <cachingProfile>roles-and-shadows</cachingProfile>
+    </executionEnvironment>
+    <activity>
+        <work>
+            <import>
+                <resourceObjects>
+                    <resourceRef oid="5a55bc1a-95c0-11ea-bc3c-abbaf8e94a00"/>
+                    <kind>account</kind>
+                    <intent>default</intent>
+                    <objectclass>ri:somePerson</objectclass>
+                </resourceObjects>
+            </import>
+        </work>
+        <distribution>
+            <buckets>
+                <stringSegmentation>
+                    <discriminator>attributes/ri:uid</discriminator>
+                    <boundaryCharacters>0-9a-z</boundaryCharacters>
+                    <depth>1</depth>
+                    <comparisonMethod>prefix</comparisonMethod>
+                </stringSegmentation>
+            </buckets>
+            <workers>
+                <workersPerNode>
+                    <count>2</count>
+                </workersPerNode>
+            </workers>
+            <workerThreads>8</workerThreads>
+        </distribution>
+    </activity>
+</task>
+</objects>

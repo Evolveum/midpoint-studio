@@ -85,6 +85,7 @@ public class TraceGraphPanel extends BorderLayoutPanel {
         group.add(create);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceGraphToolbar", group, true);
+        toolbar.setTargetComponent(this);
         add(toolbar.getComponent(), BorderLayout.NORTH);
     }
 

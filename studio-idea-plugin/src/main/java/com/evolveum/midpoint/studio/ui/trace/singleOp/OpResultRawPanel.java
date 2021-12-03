@@ -78,6 +78,7 @@ public class OpResultRawPanel extends BorderLayoutPanel {
         group.add(load);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceViewVariablesToolbar", group, true);
+        toolbar.setTargetComponent(this);
         add(toolbar.getComponent(), BorderLayout.NORTH);
     }
 

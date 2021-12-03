@@ -1,21 +1,19 @@
 package com.evolveum.midpoint.studio.util;
 
-import com.evolveum.midpoint.common.LocalizationService;
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.client.ClientException;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.client.ClientException;
-import com.evolveum.midpoint.studio.impl.client.LocalizationServiceImpl;
-import com.evolveum.midpoint.studio.impl.client.ServiceFactory;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
-import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.annotation.Experimental;
-import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
@@ -25,14 +23,15 @@ import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.credentialStore.CredentialAttributesKt;
 import com.intellij.credentialStore.Credentials;
 import com.intellij.facet.FacetManager;
-import com.intellij.ide.DataManager;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
@@ -47,6 +46,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManagerEx;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.XmlPatterns;
@@ -56,7 +56,6 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.ui.components.BorderLayoutPanel;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
@@ -64,18 +63,34 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
+import org.xml.sax.SAXException;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.awt.Color;
 import java.awt.*;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,8 +106,6 @@ public class MidPointUtils {
     public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart());
 
     public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
-
-    public static final String NS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 
     private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
 
@@ -115,12 +128,6 @@ public class MidPointUtils {
         }
 
         NAMES = names.toArray(new String[names.size()]);
-    }
-
-    @Deprecated
-    public static Project getCurrentProject() {
-        DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
-        return DataKeys.PROJECT.getData(dataContext);
     }
 
     public static Color generateAwtColor() {
@@ -239,14 +246,14 @@ public class MidPointUtils {
         MidPointService mm = MidPointService.getInstance(project);
         mm.printToConsole(env, clazz, msg + ". Reason: " + ex.getMessage());
 
-        publishExceptionNotification(env, clazz, notificationKey, msg, ex);
+        publishExceptionNotification(project, env, clazz, notificationKey, msg, ex);
     }
 
-    public static void publishExceptionNotification(Environment env, Class clazz, String key, String message, Exception ex) {
-        publishExceptionNotification(env, clazz, key, message, ex, new NotificationAction[]{});
+    public static void publishExceptionNotification(Project project, Environment env, Class clazz, String key, String message, Exception ex) {
+        publishExceptionNotification(project, env, clazz, key, message, ex, new NotificationAction[]{});
     }
 
-    public static void publishExceptionNotification(Environment env, Class clazz, String key, String message, Exception ex, NotificationAction... actions) {
+    public static void publishExceptionNotification(Project project, Environment env, Class clazz, String key, String message, Exception ex, NotificationAction... actions) {
         String msg = message + ", reason: " + ex.getMessage();
 
         List<NotificationAction> list = new ArrayList<>();
@@ -262,7 +269,7 @@ public class MidPointUtils {
 
         list.addAll(Arrays.asList(actions));
 
-        MidPointUtils.publishNotification(key, "Error", msg, NotificationType.ERROR, list.toArray(new NotificationAction[list.size()]));
+        MidPointUtils.publishNotification(project, key, "Error", msg, NotificationType.ERROR, list.toArray(new NotificationAction[list.size()]));
 
         if (LOG.isTraceEnabled()) {
             LOG.trace(msg);
@@ -272,18 +279,18 @@ public class MidPointUtils {
         }
     }
 
-    public static void publishNotification(String key, String title, String content, NotificationType type) {
-        publishNotification(key, title, content, type, (NotificationAction[]) null);
+    public static void publishNotification(Project project, String key, String title, String content, NotificationType type) {
+        publishNotification(project, key, title, content, type, (NotificationAction[]) null);
     }
 
-    public static void publishNotification(String key, String title, String content, NotificationType type,
+    public static void publishNotification(Project project, String key, String title, String content, NotificationType type,
                                            NotificationAction... actions) {
         Notification notification = new Notification(key, title, content, type);
         if (actions != null) {
             Arrays.stream(actions).filter(a -> a != null).forEach(a -> notification.addAction(a));
         }
 
-        Notifications.Bus.notify(notification);
+        Notifications.Bus.notify(notification, project);
     }
 
     public static void handleGenericException(Project project, Environment env, Class clazz, String key, String message, Exception ex) {
@@ -296,7 +303,7 @@ public class MidPointUtils {
         }
 
         if (key != null) {
-            MidPointUtils.publishNotification(key, "Error",
+            MidPointUtils.publishNotification(project, key, "Error",
                     message + ", reason: " + ex.getMessage(), NotificationType.ERROR, action);
         }
 
@@ -402,6 +409,9 @@ public class MidPointUtils {
 
             TableColumn column = table.getColumnModel().getColumn(i);
             column.setPreferredWidth(columnDef.getSize());
+            if (columnDef.getMinimalSize() != null) {
+                column.setMinWidth(columnDef.getMinimalSize());
+            }
             if (columnDef.getTableCellRenderer() != null) {
                 column.setCellRenderer(columnDef.getTableCellRenderer());
             }
@@ -596,7 +606,7 @@ public class MidPointUtils {
             return null;
         }
 
-        XmlAttribute xsiType = tag.getAttribute("type", NS_XSI);
+        XmlAttribute xsiType = tag.getAttribute("type", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
         if (xsiType == null || xsiType.getValue() == null) {
             return null;
         }
@@ -626,6 +636,9 @@ public class MidPointUtils {
             column.setIdentifier(columnDefinition.getHeader());
             column.setEditable(false);
             column.setTitle(columnDefinition.getHeader());
+            if (columnDefinition.getMinimalSize() != null) {
+                column.setMinWidth(columnDefinition.getMinimalSize());
+            }
             model.addColumn(column);
         }
         return model;
@@ -646,7 +659,15 @@ public class MidPointUtils {
         return false;
     }
 
+    public static List<VirtualFile> filterXsdFiles(VirtualFile[] files) {
+        return filterXmlFiles(files, "xsd");
+    }
+
     public static List<VirtualFile> filterXmlFiles(VirtualFile[] files) {
+        return filterXmlFiles(files, XmlFileType.DEFAULT_EXTENSION);
+    }
+
+    private static List<VirtualFile> filterXmlFiles(VirtualFile[] files, String extension) {
         List<VirtualFile> result = new ArrayList<>();
         if (files == null) {
             return result;
@@ -656,14 +677,14 @@ public class MidPointUtils {
             if (selected.isDirectory()) {
                 VfsUtilCore.iterateChildrenRecursively(
                         selected,
-                        file -> file.isDirectory() || XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(file.getExtension()),
+                        file -> file.isDirectory() || extension.equalsIgnoreCase(file.getExtension()),
                         file -> {
                             if (!file.isDirectory() && !result.contains(file)) {
                                 result.add(file);
                             }
                             return true;
                         });
-            } else if (XmlFileType.DEFAULT_EXTENSION.equalsIgnoreCase(selected.getExtension())) {
+            } else if (extension.equalsIgnoreCase(selected.getExtension())) {
                 if (!result.contains(selected)) {
                     result.add(selected);
                 }
@@ -697,7 +718,7 @@ public class MidPointUtils {
                         .withParent(
                                 XmlPatterns.xmlAttribute("oid").withParent(
                                         XmlPatterns.xmlTag().withNamespace(SchemaConstantsGenerated.NS_COMMON)
-                                                .withName(NAMES)))).accepts(element);
+                                                .withLocalName(NAMES)))).accepts(element);
     }
 
     public static JBScrollPane borderlessScrollPane(@NotNull JComponent component) {
@@ -716,7 +737,7 @@ public class MidPointUtils {
         return fem.openFile(file, true, true);
     }
 
-    public static boolean visibleWithMidPointFacet(AnActionEvent evt) {
+    public static boolean isVisibleWithMidPointFacet(AnActionEvent evt) {
         if (evt.getProject() == null) {
             return false;
         }
@@ -727,22 +748,27 @@ public class MidPointUtils {
         return hasFacet;
     }
 
-    public static boolean enabledIfXmlSelected(AnActionEvent evt) {
-        if (!visibleWithMidPointFacet(evt)) {
+    public static boolean shouldEnableAction(AnActionEvent evt) {
+        if (!isVisibleWithMidPointFacet(evt)) {
             return false;
         }
 
+        return isEnvironmentAndFileSelected(evt);
+    }
+
+    public static boolean isMidpointObjectFileSelected(AnActionEvent evt) {
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
                 (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
 
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
+        return toProcess.size() > 0;
+    }
+
+    public static boolean isEnvironmentAndFileSelected(AnActionEvent evt) {
         EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
 
-        boolean enabled = toProcess.size() > 0 && em.getSelected() != null;
-        evt.getPresentation().setEnabled(enabled);
-
-        return enabled;
+        return em.getSelected() != null && isMidpointObjectFileSelected(evt);
     }
 
     public static Module guessMidpointModule(Project project) {
@@ -770,44 +796,6 @@ public class MidPointUtils {
         return modules[0];
     }
 
-    public static PrismSerializer<String> getSerializer(PrismContext prismContext) {
-        return prismContext.xmlSerializer()
-                .options(SerializationOptions.createSerializeReferenceNames());
-    }
-
-    public static PrismParser createParser(PrismContext ctx, InputStream data) {
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(data).language(PrismContext.LANG_XML).context(parsingContext);
-    }
-
-    public static PrismParser createParser(PrismContext ctx, String xml) {
-        ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
-        return ctx.parserFor(xml).language(PrismContext.LANG_XML).context(parsingContext);
-    }
-
-    public static String serialize(PrismContext prismContext, Object object) throws SchemaException {
-        final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
-
-        PrismSerializer<String> serializer = getSerializer(prismContext);
-
-        String result;
-        if (object instanceof ObjectType) {
-            ObjectType ot = (ObjectType) object;
-            result = serializer.serialize(ot.asPrismObject());
-        } else if (object instanceof PrismObject) {
-            result = serializer.serialize((PrismObject<?>) object);
-        } else if (object instanceof OperationResult) {
-            LocalizationService localizationService = new LocalizationServiceImpl();
-            Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
-            OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
-            result = serializer.serializeAnyData(operationResultType, fakeQName);
-        } else {
-            result = serializer.serializeAnyData(object, fakeQName);
-        }
-
-        return result;
-    }
-
     public static List<ObjectTypes> getConcreteObjectTypes() {
         List<ObjectTypes> rv = new ArrayList<>();
         for (ObjectTypes t : ObjectTypes.values()) {
@@ -830,6 +818,149 @@ public class MidPointUtils {
             TextEditor textEditor = (TextEditor) editor;
             Document doc = textEditor.getEditor().getDocument();
             FileDocumentManager.getInstance().saveDocument(doc);
+        }
+    }
+
+    public static List<MidPointObject> parseText(Project project, String text, String notificationKey) {
+        try {
+            return ClientUtils.parseText(text);
+        } catch (RuntimeException ex) {
+            String msg = "Couldn't parse text '" + org.apache.commons.lang.StringUtils.abbreviate(text, 10) + "'";
+
+            if (notificationKey != null) {
+                MidPointUtils.publishExceptionNotification(project, null, MidPointUtils.class, notificationKey, msg, ex);
+            }
+
+            return new ArrayList<>();
+        }
+    }
+
+    public static List<MidPointObject> parseProjectFile(Project project, VirtualFile file, String notificationKey) {
+        try {
+            return ClientUtils.parseProjectFile(VfsUtil.virtualToIoFile(file), file.getCharset());
+        } catch (IOException ex) {
+            if (notificationKey != null) {
+                MidPointUtils.publishExceptionNotification(project, null, MidPointUtils.class, notificationKey,
+                        "Couldn't parse file " + (file != null ? file.getName() : null) + " to DOM", ex);
+            }
+            return new ArrayList<>();
+        }
+    }
+
+    public static String upgradeTaskToUseActivities(String taskXml) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException, TransformerException {
+        org.w3c.dom.Document doc = setupDocument(taskXml);
+
+        XPathFactory xpf = XPathFactory.newInstance();
+        XPath xpath = xpf.newXPath();
+        xpath.setNamespaceContext(new NamespaceContext() {
+
+            @Override
+            public String getNamespaceURI(String prefix) {
+                return "c".equals(prefix) ? SchemaConstantsGenerated.NS_COMMON : null;
+            }
+
+            @Override
+            public String getPrefix(String namespaceURI) {
+                return SchemaConstantsGenerated.NS_COMMON.equals(namespaceURI) ? "c" : null;
+            }
+
+            @Override
+            public Iterator<String> getPrefixes(String namespaceURI) {
+                return SchemaConstantsGenerated.NS_COMMON.equals(namespaceURI) ? new org.bouncycastle.util.Arrays.Iterator(new String[]{"c"}) : null;
+            }
+        });
+
+        //Get first match
+        Boolean exists = (Boolean) xpath.evaluate("/c:task/c:activity", doc, XPathConstants.BOOLEAN);
+        if (exists) {
+            return taskXml;
+        }
+
+        String xml = transformTask(doc, "task-transformation.xslt");
+        if (Objects.equals(taskXml, xml)) {
+            return xml;
+        }
+
+        doc = setupDocument(xml);
+        xml = transformTask(doc, "task-cleanup.xslt");
+
+        return xml;
+    }
+
+    private static org.w3c.dom.Document setupDocument(String xml) throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        org.w3c.dom.Document doc = db.parse(new ByteArrayInputStream(xml.getBytes()));
+        doc.normalize();
+
+        return doc;
+    }
+
+    private static String transformTask(org.w3c.dom.Document doc, String stylesheet) throws TransformerException, IOException {
+        try (InputStream is = MidPointUtils.class.getClassLoader().getResourceAsStream(stylesheet)) {
+            StreamSource xsl = new StreamSource(is);
+
+            TransformerErrorListener tel = new TransformerErrorListener();
+
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer trans = tf.newTransformer(xsl);
+            trans.setErrorListener(tel);
+            trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            trans.setParameter(OutputKeys.INDENT, "yes");
+            trans.setParameter(OutputKeys.ENCODING, "utf-8");
+
+            StringWriter sw = new StringWriter();
+            trans.transform(new DOMSource(doc), new StreamResult(sw));
+
+            String output = sw.toString();
+            if (tel.isErrorOrFatal()) {
+                throw new TransformerException("Found these problems:\n"+ tel.dumpAllMessages());
+            }
+
+            return output;
+        }
+    }
+
+    private static class TransformerErrorListener implements ErrorListener {
+
+        private List<String> warnings = new ArrayList<>();
+
+        private List<String> errors = new ArrayList<>();
+
+        private List<String> fatalErrors = new ArrayList<>();
+
+        @Override
+        public void warning(TransformerException exception) throws TransformerException {
+            warnings.add(createMessage("Warning", exception));
+        }
+
+        @Override
+        public void error(TransformerException exception) throws TransformerException {
+            errors.add(createMessage("Error", exception));
+        }
+
+        @Override
+        public void fatalError(TransformerException exception) throws TransformerException {
+            fatalErrors.add(createMessage("Fatal error", exception));
+        }
+
+        private String createMessage(String level, TransformerException ex) {
+            return level + ": Position[" + ex.getLocationAsString() + "]: " + ex.getMessage();
+        }
+
+        private boolean isErrorOrFatal() {
+            return !errors.isEmpty() || !fatalErrors.isEmpty();
+        }
+
+        private String dumpAllMessages() {
+            List<String> all = new ArrayList<>();
+            all.addAll(warnings);
+            all.addAll(errors);
+            all.addAll(fatalErrors);
+
+            return StringUtils.join(all, "\n");
         }
     }
 }

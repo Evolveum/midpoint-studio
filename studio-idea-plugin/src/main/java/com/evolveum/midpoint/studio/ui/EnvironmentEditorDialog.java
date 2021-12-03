@@ -1,15 +1,17 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.client.ProxyType;
-import com.evolveum.midpoint.studio.impl.client.TestConnectionResult;
+import com.evolveum.midpoint.studio.client.ProxyType;
+import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointSettings;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.studio.util.Selectable;
-import com.intellij.ide.actions.ActionsCollector;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -22,7 +24,6 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.IdeFocusManager;
-import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBUI;
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
@@ -32,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,12 +64,15 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
     private Project project;
 
+    private MidPointSettings settings;
+
     private Selectable<Environment> selectable;
 
-    public EnvironmentEditorDialog(Project project, @Nullable Selectable<Environment> environment) {
+    public EnvironmentEditorDialog(Project project, MidPointSettings settings, @Nullable Selectable<Environment> environment) {
         super(false);
 
         this.project = project;
+        this.settings = settings;
 
         setTitle(environment == null ? "Add environment" : "Edit environment");
 
@@ -77,6 +80,12 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
         colorPanel.setBorder(JBUI.Borders.empty(3, 3));
         testConnection.setBorder(JBUI.Borders.empty(3, 3));
+
+        Color background = EditorColorsManager.getInstance().getGlobalScheme().getDefaultBackground();
+        if (background != null) {
+            testConnection.setOpaque(true);
+            testConnection.setBackground(background);
+        }
 
         properties.addBrowseFolderListener("Select source folder", "Properties file where MidPoint object xml file parameters are stored", project,
                 FileChooserDescriptorFactory.createSingleFileDescriptor("properties"));
@@ -249,25 +258,25 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         populateEnvironment(env);
 
         try {
-            MidPointClient client = new MidPointClient(project, env);
+            MidPointClient client = new MidPointClient(project, env, settings);
             TestConnectionResult result = client.testConnection();
 
             if (result.success()) {
-                updateInAwtThread(JBColor.GREEN, "Version: " + result.version() + ", revision: " + result.revision());
+                updateInAwtThread(ConsoleViewContentType.NORMAL_OUTPUT_KEY.getDefaultAttributes().getForegroundColor(), "Version: " + result.version() + ", revision: " + result.revision());
             } else {
                 String msg = result.exception() != null ? result.exception().getMessage() : null;
-                updateInAwtThread(JBColor.RED, msg);
+                updateInAwtThread(ConsoleViewContentType.LOG_ERROR_OUTPUT_KEY.getDefaultAttributes().getForegroundColor(), msg);
             }
         } catch (Exception ex) {
             LOG.error("Couldn't test connection", ex);
 
-            updateInAwtThread(JBColor.RED, ex.getMessage());
+            updateInAwtThread(ConsoleViewContentType.LOG_ERROR_OUTPUT_KEY.getDefaultAttributes().getForegroundColor(), ex.getMessage());
         }
     }
 
-    private void updateInAwtThread(JBColor color, String text) {
+    private void updateInAwtThread(Color color, String text) {
         ApplicationManager.getApplication().invokeAndWait(() -> {
-            testConnection.setForeground(color.darker());
+            testConnection.setForeground(color);
             testConnection.setText(text);
         });
     }
@@ -280,7 +289,6 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
         @Override
         protected void doAction(ActionEvent e) {
-            recordAction("DialogTestConnectionAction");
             List<ValidationInfo> infoList = doValidateAll();
             if (!infoList.isEmpty()) {
                 ValidationInfo info = infoList.get(0);
@@ -296,16 +304,6 @@ public class EnvironmentEditorDialog extends DialogWrapper {
                 if (infoList.stream().anyMatch(info1 -> !info1.okEnabled)) return;
             }
             doTestConnectionAction(e);
-        }
-
-        private void recordAction(String name) {
-            recordAction(name, EventQueue.getCurrentEvent());
-        }
-
-        private void recordAction(String name, AWTEvent event) {
-            if (event instanceof KeyEvent && ApplicationManager.getApplication() != null) {
-                ActionsCollector.getInstance().record(name, (KeyEvent) event, getClass());
-            }
         }
     }
 }

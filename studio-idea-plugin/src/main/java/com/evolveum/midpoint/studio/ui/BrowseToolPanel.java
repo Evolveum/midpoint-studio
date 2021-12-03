@@ -9,10 +9,16 @@ import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.browse.*;
+import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
+import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
+import com.evolveum.midpoint.studio.action.browse.DownloadAction;
+import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
+import com.evolveum.midpoint.studio.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -22,7 +28,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
-import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
@@ -42,6 +47,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.UIAction;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,6 +55,8 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.xml.namespace.QName;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
@@ -56,6 +64,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.evolveum.midpoint.studio.util.MidPointUtils.createAnAction;
 
@@ -135,6 +144,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("BrowseQueryActions",
                 group, true);
+        toolbar.setTargetComponent(this);
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
         query = new JBTextArea();
@@ -151,6 +161,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("BrowseResultsActions",
                 resultsActions, true);
+        resultsActionsToolbar.setTargetComponent(this);
         results.add(resultsActionsToolbar.getComponent(), BorderLayout.NORTH);
 
         List<TreeTableColumnDefinition<ObjectType, ?>> columns = new ArrayList<>();
@@ -190,11 +201,64 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             }
         });
         this.results.setOpaque(false);
+        this.results.getActionMap().put("copy", new UIAction("copy") {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                copySelectedObjectOids();
+            }
+        });
+
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem item = new JMenuItem("Copy oids");
+        item.addActionListener(e -> copySelectedObjectOids());
+        popup.add(item);
+
+        item = new JMenuItem("Copy names");
+        item.addActionListener(e -> copySelectedObjectNames());
+        popup.add(item);
+
+        this.results.setComponentPopupMenu(popup);
 
         this.results.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         results.add(new JBScrollPane(this.results), BorderLayout.CENTER);
 
         return results;
+    }
+
+    private void copySelectedObjectNames() {
+        List<ObjectType> objects = getResultsModel().getSelectedObjects(results);
+        if (objects.isEmpty()) {
+            return;
+        }
+
+        List<String> names = objects.stream().map(o -> MidPointUtils.getName(o.asPrismObject())).collect(Collectors.toList());
+        String text = StringUtils.join(names, '\n');
+
+        putStringToClipboard(text);
+    }
+
+    private void copySelectedObjectOids() {
+        List<Pair<String, ObjectTypes>> oidTypes = getResultsModel().getSelectedOids(results);
+
+        if (oidTypes.isEmpty()) {
+            return;
+        }
+
+        List<String> oids = oidTypes.stream().map(p -> p.getFirst()).collect(Collectors.toList());
+        String text = StringUtils.join(oids, '\n');
+
+        putStringToClipboard(text);
+    }
+
+    private void putStringToClipboard(String str) {
+        if (str == null) {
+            str = "";
+        }
+
+        StringSelection selection = new StringSelection(str);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection, selection);
     }
 
     private DefaultActionGroup createQueryActionGroup() {
@@ -391,17 +455,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 LOG.debug("Translating object query");
                 ObjectQuery objectQuery = buildQuery(client);
 
+                ObjectPaging paging = objectQuery.getPaging();
+                if (paging != null) {
+                    // cleanup ordering, not necessary for bulk processing
+                    paging.setOrdering(new ObjectOrdering[0]);
+                }
+
                 PrismContext ctx = client.getPrismContext();
                 QueryConverter converter = ctx.getQueryConverter();
                 QueryType q = converter.createQueryType(objectQuery);
-
-                SearchFilterType filter = q.getFilter();
 
                 RunnableUtils.PluginClassCallable<String> callable = new RunnableUtils.PluginClassCallable<>() {
 
                     @Override
                     public String callWithPluginClassLoader() throws Exception {
-                        return ctx.serializerFor(PrismContext.LANG_XML).serialize(filter.getFilterClauseAsRootXNode());
+                        return ctx.serializerFor(PrismContext.LANG_XML).serializeRealValue(q);
                     }
                 };
 
@@ -490,10 +558,17 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void deletePerformed(AnActionEvent evt, boolean rawDownload) {
-        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
-        Environment env = em.getSelected();
+        DeleteAction da = new DeleteAction(getResultsModel().getSelectedOids(results)) {
 
-        DeleteAction da = new DeleteAction(env, getResultsModel().getSelectedOids(results), rawDownload);
+            @Override
+            public DeleteOptions createOptions() {
+                DeleteOptions opts = super.createOptions();
+                opts.raw(rawDownload);
+
+                return opts;
+            }
+        };
+
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
 
@@ -621,8 +696,27 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         OrFilter or = qf.createOr();
 
         if (oid) {
-            InOidFilter inOid = qf.createInOid(filtered);
-            or.addCondition(inOid);
+            List<String> filteredOids = filtered;
+
+            if (name) {
+                // if search by name or oid is used, filter out items that can't be used in oid filter
+                filteredOids = filteredOids.stream()
+                        .filter(s -> MidPointUtils.UUID_PATTERN.matcher(s).matches()).collect(Collectors.toList());
+
+                if (filteredOids.size() != filtered.size()) {
+                    MidPointService ms = MidPointService.getInstance(project);
+
+                    EnvironmentService em = EnvironmentService.getInstance(project);
+                    Environment env = em.getSelected();
+                    ms.printToConsole(env, BrowseToolPanel.class,
+                            "Items in search filed that are not valid OIDs were filtered out (" + (filtered.size() - filteredOids.size()) + ").");
+                }
+            }
+
+            if (!filteredOids.isEmpty()) {
+                InOidFilter inOid = qf.createInOid(filteredOids);
+                or.addCondition(inOid);
+            }
         }
 
         if (name) {
@@ -645,14 +739,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private void performGenerate(List<ObjectType> selected, ProcessResultsOptions options, boolean execute) {
         GeneratorOptions opts = options.getOptions();
-
-        if (opts.isBatchByOids() && selected.isEmpty()) {
-            return;
-        }
-
-        if (opts.isBatchUsingOriginalQuery() && StringUtils.isEmpty(opts.getOriginalQuery())) {
-            return;
-        }
 
         Generator generator = options.getGenerator();
         GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);

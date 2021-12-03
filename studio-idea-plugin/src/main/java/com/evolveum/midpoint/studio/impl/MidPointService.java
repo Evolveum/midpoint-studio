@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl;
 import com.evolveum.midpoint.studio.ui.MidPointConsolePanel;
 import com.evolveum.midpoint.studio.ui.MidPointConsoleView;
 import com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -14,6 +15,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.util.ModalityUiUtil;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
@@ -57,6 +59,9 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         cm.setSelectedContent(content);
 
         MidPointConsoleView console = getConsole();
+        if (console == null) {
+            return;
+        }
 
         console.requestFocus();
         console.requestScrollingToEnd();
@@ -69,6 +74,10 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
 
         ApplicationManager.getApplication().invokeAndWait(() -> {
             ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow(MidPointToolWindowFactory.WINDOW_ID);
+
+            if (tw == null) {
+                return;
+            }
 
             ContentManager cm = tw.getContentManager();
             Content content = cm.getContent(1);
@@ -87,7 +96,7 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         printToConsole(env, clazz, message, ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
     }
 
-    public void printToConsole(Environment env, Class clazz, String message, Exception ex, ConsoleViewContentType type) {
+    public void printToConsole(Environment env, @NotNull Class clazz, String message, Exception ex, @NotNull ConsoleViewContentType type) {
         Validate.notNull(clazz, "Class must not be null");
         Validate.notNull(type, "Console view content type must not be null");
 
@@ -112,6 +121,8 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
         sb.append('\n');
 
         MidPointConsoleView console = getConsole();
-        GuiUtils.invokeLaterIfNeeded(() -> console.print(sb.toString(), type), ModalityState.defaultModalityState());
+        if (console != null) {
+            RunnableUtils.invokeLaterIfNeeded(() -> console.print(sb.toString(), type), ModalityState.defaultModalityState());
+        }
     }
 }
