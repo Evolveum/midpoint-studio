@@ -1,5 +1,12 @@
 # MidPoint Studio
 
+## [Unreleased]
+### Added
+
+### Changed
+
+### Fixed
+
 ## 4.4.0
 ### Added
 - Xml autocompletion
