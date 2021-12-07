@@ -19,6 +19,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ui.UIUtil;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,8 +61,7 @@ public class DiffRemoteAction extends BackgroundAction {
         EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
         Environment env = em.getSelected();
 
-        VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
-                (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
 
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 

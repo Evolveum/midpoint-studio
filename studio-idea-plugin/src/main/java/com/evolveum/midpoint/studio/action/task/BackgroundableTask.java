@@ -26,6 +26,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.LineSeparator;
+import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -141,7 +142,7 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
             return;
         }
 
-        Editor editor = event != null ? event.getData(PlatformDataKeys.EDITOR) : null;
+        Editor editor = UIUtil.invokeAndWaitIfNeeded(() -> event != null ? event.getData(PlatformDataKeys.EDITOR) : null);
         if (editor != null) {
             processEditor(indicator, editor);
 
@@ -149,9 +150,7 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
             return;
         }
 
-        VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
-                (Computable<VirtualFile[]>) () -> event.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
-
+        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (showConfirmationDialog()) {
@@ -184,8 +183,7 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
             return editor.getDocument().getText();
         });
 
-        VirtualFile file = ApplicationManager.getApplication().runReadAction(
-                (Computable<? extends VirtualFile>) () -> event.getDataContext().getData(PlatformDataKeys.VIRTUAL_FILE));
+        VirtualFile file = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE));
 
         if (!StringUtils.isEmpty(text)) {
             processEditorText(indicator, editor, text, file);

@@ -22,6 +22,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ui.UIUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -104,7 +105,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     }
 
     protected void processObjects(AnActionEvent e, ProgressIndicator indicator, MidPointClient client) {
-        indicator.setIndeterminate(true);
+        indicator.setIndeterminate(false);
 
         if (oids != null && !oids.isEmpty()) {
             processObjectsByOids(e, indicator, client);
@@ -152,7 +153,8 @@ public abstract class BaseObjectsAction extends BackgroundAction {
     private void processObjectsBySelection(AnActionEvent e, ProgressIndicator indicator, MidPointClient client) {
         MidPointService mm = MidPointService.getInstance(e.getProject());
 
-        Editor editor = e.getData(PlatformDataKeys.EDITOR);
+        Editor editor = UIUtil.invokeAndWaitIfNeeded(() -> e.getData(PlatformDataKeys.EDITOR));
+
         if (editor != null) {
             String text = ApplicationManager.getApplication().runReadAction((Computable<String>) () -> {
 
@@ -165,7 +167,8 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             });
 
             if (!StringUtils.isEmpty(text)) {
-                BaseObjectsAction.ProcessState state = processText(e, mm, indicator, client, text, e.getDataContext().getData(PlatformDataKeys.VIRTUAL_FILE));
+                VirtualFile file = UIUtil.invokeAndWaitIfNeeded(() -> e.getData(PlatformDataKeys.VIRTUAL_FILE));
+                BaseObjectsAction.ProcessState state = processText(e, mm, indicator, client, text, file);
 
                 showNotificationAfterFinish(state, e.getProject());
             } else {
@@ -175,8 +178,7 @@ public abstract class BaseObjectsAction extends BackgroundAction {
             return;
         }
 
-        VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
-                (Computable<VirtualFile[]>) () -> e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> e.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
         if (selectedFiles == null || selectedFiles.length == 0) {
             MidPointUtils.publishNotification(e.getProject(), notificationKey, getTaskTitle(),
                     "No files selected for " + operation, NotificationType.WARNING);
