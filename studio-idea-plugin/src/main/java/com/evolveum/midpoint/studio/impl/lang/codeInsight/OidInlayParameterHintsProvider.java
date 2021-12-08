@@ -37,15 +37,9 @@ public class OidInlayParameterHintsProvider implements InlayParameterHintsProvid
 
         XmlAttribute attr = (XmlAttribute) parent;
         XmlTag tag = attr.getParent();
-        if (MidPointUtils.isObjectTypeElement(tag)) {
+        if (MidPointUtils.isObjectTypeElement(tag, false)) {    // check even without namespaces MID-7468
             return Collections.emptyList();
         }
-
-        // todo implement his inlay parameter hints correctly for oid references
-//        return Arrays.asList(
-//                new InlayInfo("vilo", offset, false, true, false),
-//                new InlayInfo("jano", inlayOffset(element, true), false, true, true)
-//        );
 
         List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), element.getProject());
         if (result == null || result.isEmpty()) {

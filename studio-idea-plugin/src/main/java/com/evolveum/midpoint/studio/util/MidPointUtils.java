@@ -645,6 +645,10 @@ public class MidPointUtils {
     }
 
     public static boolean isObjectTypeElement(XmlTag tag) {
+        return isObjectTypeElement(tag, true);
+    }
+
+    public static boolean isObjectTypeElement(XmlTag tag, boolean namespaceAware) {
         if (tag == null) {
             return false;
         }
@@ -652,6 +656,10 @@ public class MidPointUtils {
         QName name = new QName(tag.getNamespace(), tag.getLocalName());
         for (ObjectTypes type : ObjectTypes.values()) {
             if (name.equals(type.getElementName())) {
+                return true;
+            }
+
+            if (!namespaceAware && type.getElementName().getLocalPart().equalsIgnoreCase(name.getLocalPart())) {
                 return true;
             }
         }
