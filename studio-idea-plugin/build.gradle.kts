@@ -141,8 +141,9 @@ intellij {
     plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
 
     intellijRepository.set("https://nexus.evolveum.com/nexus/repository/intellij-repository/")
+    jreRepository.set("https://nexus.evolveum.com/nexus/repository/intellij-jbr/")
     pluginsRepositories {
-        custom("https://nexus.evolveum.com/nexus/repository/jetbrains-plugins/")
+        maven("https://nexus.evolveum.com/nexus/repository/jetbrains-plugins/")
     }
 }
 
