@@ -1,10 +1,6 @@
 allprojects {
     repositories {
         mavenLocal()
-        mavenCentral()
-        maven {
-            url = uri("https://nexus.evolveum.com/nexus/content/repositories/releases/")
-        }
         maven {
             url = uri("https://nexus.evolveum.com/nexus/content/groups/public/")
         }
@@ -12,10 +8,10 @@ allprojects {
             url = uri("https://nexus.evolveum.com/nexus/content/repositories/snapshots/")
         }
         maven {
-            url = uri("https://www.jetbrains.com/intellij-repository/snapshots/")
+            url = uri("https://nexus.evolveum.com/nexus/repository/intellij-repository/")
         }
         maven {
-            url = uri("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
+            url = uri("https://nexus.evolveum.com/nexus/repository/intellij-dependencies/")
         }
     }
 }

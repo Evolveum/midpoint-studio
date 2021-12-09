@@ -5,8 +5,7 @@ enableFeaturePreview("VERSION_CATALOGS")
 
 pluginManagement {
     repositories {
-        maven("https://oss.sonatype.org/content/repositories/snapshots/")
-        gradlePluginPortal()
+        maven("https://nexus.evolveum.com/nexus/repository/gradle-plugins/")
     }
 }
 
