@@ -6,6 +6,8 @@
 ### Changed
 
 ### Fixed
+- Fixed UI actions that accessed filesystem in wrong thread
+- Fixed environment proxy settings
 
 ## 4.4.0
 ### Added
