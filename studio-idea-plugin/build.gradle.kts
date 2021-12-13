@@ -144,6 +144,7 @@ intellij {
     jreRepository.set("https://nexus.evolveum.com/nexus/repository/intellij-jbr/")
     pluginsRepositories {
         maven("https://nexus.evolveum.com/nexus/repository/jetbrains-plugins/")
+        getRepositories()
     }
 }
 
