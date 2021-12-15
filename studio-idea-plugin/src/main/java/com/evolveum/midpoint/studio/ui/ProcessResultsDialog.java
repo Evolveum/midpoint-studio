@@ -63,6 +63,7 @@ public class ProcessResultsDialog extends DialogWrapper {
     private JCheckBox runtimeResolutionCheckBox;
     private JCheckBox useSymbolicReferencesCheckBox;
     private JPanel root;
+    private JCheckBox useActivityInTask;
 
     private String query;
     private ObjectTypes type;
@@ -115,6 +116,7 @@ public class ProcessResultsDialog extends DialogWrapper {
         executeInDryRunCheckBox.setSelected(opts.isDryRun());
         useSymbolicReferencesCheckBox.setSelected(opts.isSymbolicReferences());
         runtimeResolutionCheckBox.setSelected(opts.isSymbolicReferencesRuntime());
+        useActivityInTask.setSelected(opts.isUseActivities());
     }
 
     @Nullable
@@ -169,6 +171,7 @@ public class ProcessResultsDialog extends DialogWrapper {
         opts.setRaw(executeInRawModeCheckBox.isSelected());
         opts.setSymbolicReferences(useSymbolicReferencesCheckBox.isSelected());
         opts.setSymbolicReferencesRuntime(runtimeResolutionCheckBox.isSelected());
+        opts.setUseActivities(useActivityInTask.isSelected());
 
         Execution exec = (Execution) execution.getSelectedItem();
         if (exec == null) {

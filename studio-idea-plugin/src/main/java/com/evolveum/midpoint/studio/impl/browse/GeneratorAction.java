@@ -58,9 +58,11 @@ public class GeneratorAction extends BackgroundAction {
 
     @Override
     protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
-        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
+        Project project = evt.getProject();
+
+        EnvironmentService em = EnvironmentService.getInstance(project);
         if (!em.isEnvironmentSelected()) {
-            MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, "Error", "Environment not selected", NotificationType.ERROR);
+            MidPointUtils.publishNotification(project, NOTIFICATION_KEY, "Error", "Environment not selected", NotificationType.ERROR);
             return;
         }
 
@@ -68,7 +70,20 @@ public class GeneratorAction extends BackgroundAction {
 
         updateIndicator(indicator, "Starting generator");
 
-        String content = generator.generate(evt.getProject(), objects, options);
+        String content = generator.generate(project, objects, options);
+
+        if (options.isUseActivities()) {
+            try {
+                content = MidPointUtils.upgradeTaskToUseActivities(content);
+            } catch (Exception ex) {
+                MidPointService mm = MidPointService.getInstance(project);
+
+                mm.printToConsole(env, getClass(), "Couldn't update generate task to use activities. Reason: " + ex.getMessage());
+
+                MidPointUtils.publishExceptionNotification(project, env, GeneratorAction.class, NOTIFICATION_KEY,
+                        "Couldn't update generate task to use activities", ex);
+            }
+        }
 
         if (!execute) {
             writeContent(evt, indicator, env, content);

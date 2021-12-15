@@ -11,6 +11,7 @@ public class GeneratorOptions {
     private boolean createSuspended;
     private boolean raw;
     private boolean dryRun;
+    private boolean useActivities;
 
     private boolean batchByOids;
     private boolean batchUsingOriginalQuery;
@@ -98,5 +99,12 @@ public class GeneratorOptions {
         this.originalQueryTypes = originalQueryTypes;
     }
 
+    public boolean isUseActivities() {
+        return useActivities;
+    }
+
+    public void setUseActivities(boolean useActivities) {
+        this.useActivities = useActivities;
+    }
 }
 

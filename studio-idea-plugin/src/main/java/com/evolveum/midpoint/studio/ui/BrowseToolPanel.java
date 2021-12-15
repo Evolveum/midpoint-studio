@@ -32,6 +32,7 @@ import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
@@ -491,7 +492,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         if (dialog.isOK() || dialog.isGenerate()) {
             processResultsOptions = dialog.buildOptions();
 
-            performGenerate(selected, processResultsOptions, !dialog.isGenerate());
+            performGenerate(evt, selected, processResultsOptions, !dialog.isGenerate());
         }
     }
 
@@ -755,20 +756,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         return or;
     }
 
-    private void performGenerate(List<ObjectType> selected, ProcessResultsOptions options, boolean execute) {
+    private void performGenerate(AnActionEvent e, List<ObjectType> selected, ProcessResultsOptions options, boolean execute) {
         GeneratorOptions opts = options.getOptions();
 
         Generator generator = options.getGenerator();
         GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);
 
-        AWTEvent evt = EventQueue.getCurrentEvent();
-        InputEvent ie;
-        if (evt instanceof InputEvent) {
-            ie = (InputEvent) evt;
-        } else {
-            ie = new MouseEvent(this, ActionEvent.ACTION_PERFORMED, System.currentTimeMillis(), 0, 0, 0, 0, false, 0);
-        }
-
-        ActionManager.getInstance().tryToExecute(ga, ie, this, ActionPlaces.UNKNOWN, false);
+        ActionUtil.invokeAction(ga, this, "BrowseToolPanel",  e.getInputEvent(), null);
     }
 }
