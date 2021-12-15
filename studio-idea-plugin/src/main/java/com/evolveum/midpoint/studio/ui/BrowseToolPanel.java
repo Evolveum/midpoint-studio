@@ -28,6 +28,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
+import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
@@ -77,7 +78,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private static final String NOTIFICATION_KEY = "MidPoint Browser";
 
-    private static final String EMPTY_QUERY =
+    private static final String EMPTY_XML_QUERY =
             "<query xmlns=\"http://prism.evolveum.com/xml/ns/public/query-3\">\n" +
                     "    <filter>\n" +
                     "        <!-- insert filter -->\n" +
@@ -279,13 +280,18 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 switch (queryType.getSelected()) {
                     case QUERY_XML:
                         if (StringUtils.isEmpty(query.getText())) {
-                            query.setText(EMPTY_QUERY);
+                            query.setText(EMPTY_XML_QUERY);
                         }
                         break;
                     case NAME:
                     case NAME_OR_OID:
                     case OID:
                         // todo file type
+                        break;
+                    case AXIOM:
+                        if (StringUtils.isEmpty(query.getText())) {
+                            query.setText("");
+                        }
                         break;
                 }
 
@@ -648,12 +654,24 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             case NAME_OR_OID:
                 filter = createFilter(ctx, true, true);
                 break;
+            case AXIOM:
+                filter = createAxiomFilter(ctx);
         }
 
         ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
                 ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);
 
         return qf.createQuery(filter, paging);
+    }
+
+    private ObjectFilter createAxiomFilter(PrismContext ctx) throws SchemaException {
+        String text = query.getText();
+        if (StringUtils.isEmpty(text)) {
+            return null;
+        }
+
+        ObjectTypes type = objectType.getSelected();
+        return ctx.createQueryParser().parseQuery(type.getClassDefinition(), text);
     }
 
     private ObjectQuery parseQuery(MidPointClient client) throws SchemaException, IOException {

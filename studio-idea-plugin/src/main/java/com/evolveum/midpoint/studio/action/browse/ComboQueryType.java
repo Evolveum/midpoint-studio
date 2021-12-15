@@ -22,6 +22,8 @@ public class ComboQueryType extends ComboBoxAction implements DumbAware {
 
         OID("Oid"),
 
+        AXIOM("Axiom"),
+
         QUERY_XML("Query XML");
 
         private String label;
