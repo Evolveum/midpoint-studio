@@ -3,20 +3,21 @@ package com.evolveum.midpoint.studio.action.task;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
-import com.evolveum.midpoint.studio.action.transfer.RefreshAction;
+import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
-import java.util.Objects;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -68,53 +69,34 @@ public class CleanupFileTask extends BackgroundableTask<TaskState> {
         ));
     }
 
-    public CleanupFileTask(AnActionEvent event) {
+    public CleanupFileTask(@NotNull AnActionEvent event) {
         super(event.getProject(), TITLE, NOTIFICATION_KEY);
 
         setEvent(event);
     }
 
     @Override
-    protected List<String> processObjects(List<MidPointObject> objects, VirtualFile file) {
-        if (objects.isEmpty()) {
-            state.incrementSkippedFile();
-            midPointService.printToConsole(null, RefreshAction.class,
-                    "Skipped file " + (file != null ? file.getPath() : "<unknown>") + " no objects found (parsed).");
+    public <O extends ObjectType> ProcessObjectResult processObject(MidPointObject object) throws Exception {
+        String newContent = cleanupObject(object);
 
-            return Collections.emptyList();
-        }
+        MidPointObject newObject = MidPointObject.copy(object);
+        newObject.setContent(newContent);
 
-        List<String> newObjects = new ArrayList<>();
-
-        for (MidPointObject object : objects) {
-            ProgressManager.checkCanceled();
-
-            try {
-                String newContent = cleanupObject(object);
-                newObjects.add(newContent);
-
-                String oldContent = object.getContent();
-                if (Objects.equals(oldContent, newContent)) {
-                    state.incrementSkipped();
-
-                    midPointService.printToConsole(null, CleanupFileTask.class,
-                            "Skipped object " + object.getName() + "(" + object.getOid() + ", " + (file != null ? file.getName() : "unknown") + ")");
-                } else {
-                    state.incrementProcessed();
-                }
-            } catch (Exception ex) {
-                state.incrementFailed();
-                newObjects.add(object.getContent());
-
-                midPointService.printToConsole(null, CleanupFileTask.class, "Error cleaning up object"
-                        + object.getName() + "(" + object.getOid() + ")", ex);
-            }
-        }
-
-        return newObjects;
+        return new ProcessObjectResult(null)
+                .object(newObject);
     }
 
-    public static String cleanupObject(MidPointObject object) {
+    @Override
+    protected boolean isUpdateObjectAfterProcessing() {
+        return true;
+    }
+
+    @Override
+    public <O extends ObjectType> ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    private String cleanupObject(MidPointObject object) {
         String content = object.getContent();
         if (content == null) {
             return null;

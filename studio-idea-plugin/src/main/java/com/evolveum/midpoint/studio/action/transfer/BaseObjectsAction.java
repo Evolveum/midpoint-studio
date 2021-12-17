@@ -37,6 +37,7 @@ import java.util.concurrent.Callable;
 /**
  * Created by Viliam Repan (lazyman).
  */
+@Deprecated
 public abstract class BaseObjectsAction extends BackgroundAction {
 
     private static final Logger LOG = Logger.getInstance(BaseObjectsAction.class);

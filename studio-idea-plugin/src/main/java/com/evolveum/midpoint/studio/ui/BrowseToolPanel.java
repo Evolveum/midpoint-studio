@@ -14,7 +14,6 @@ import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
 import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
-import com.evolveum.midpoint.studio.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
@@ -28,7 +27,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
-import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
@@ -60,8 +58,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -565,16 +561,9 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void deletePerformed(AnActionEvent evt, boolean rawDownload) {
-        DeleteAction da = new DeleteAction(getResultsModel().getSelectedOids(results)) {
-
-            @Override
-            public DeleteOptions createOptions() {
-                DeleteOptions opts = super.createOptions();
-                opts.raw(rawDownload);
-
-                return opts;
-            }
-        };
+        DeleteAction da = new DeleteAction();
+        da.setRaw(rawDownload);
+        da.setOids(getResultsModel().getSelectedOids(results));
 
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
@@ -762,6 +751,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         Generator generator = options.getGenerator();
         GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);
 
-        ActionUtil.invokeAction(ga, this, "BrowseToolPanel",  e.getInputEvent(), null);
+        ActionUtil.invokeAction(ga, this, "BrowseToolPanel", e.getInputEvent(), null);
     }
 }

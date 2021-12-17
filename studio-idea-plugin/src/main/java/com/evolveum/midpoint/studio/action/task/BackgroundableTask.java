@@ -1,11 +1,17 @@
 package com.evolveum.midpoint.studio.action.task;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
+import com.evolveum.midpoint.studio.action.transfer.RefreshAction;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.Holder;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -39,23 +45,60 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable {
 
+    enum ConfirmationUnit {
+
+        OBJECT("object", "objects"),
+
+        FILES("file", "files");
+
+        private String singular;
+
+        private String plural;
+
+        ConfirmationUnit(String singular, String plural) {
+            this.singular = singular;
+            this.plural = plural;
+        }
+
+        public String getSingular() {
+            return singular;
+        }
+
+        public String getPlural() {
+            return plural;
+        }
+
+        public String getString(int count) {
+            return count > 1 ? plural : singular;
+        }
+    }
+
+    private interface ExtendedCallable<T> extends Callable<T> {
+
+        String describe();
+    }
+
     private static final Logger LOG = Logger.getInstance(BackgroundableTask.class);
 
-    private String notificationKey;
+    protected MidPointService midPointService;
 
     protected AnActionEvent event;
 
-    protected S state = createNewState();
+    protected String notificationKey;
 
-    protected MidPointService midPointService;
+    protected List<Pair<String, ObjectTypes>> oids;
+
+    private Environment environment;
+
+    protected S state = createNewState();
 
     public BackgroundableTask(@NotNull Project project, @NotNull String title, @NotNull String notificationKey) {
         super(project, title, true);
@@ -88,20 +131,39 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
         this.event = event;
     }
 
-    public boolean showConfirmationDialog() {
-        return true;
+    public List<Pair<String, ObjectTypes>> getOids() {
+        return oids;
     }
 
-    protected String getConfirmationMessage(int filesCount) {
-        String files = filesCount > 1 ? "files" : "file";
-        return "Do you want to process " + filesCount + " " + files + "?";
+    public void setOids(List<Pair<String, ObjectTypes>> oids) {
+        this.oids = oids;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+    protected S createNewState() {
+        return (S) new TaskState();
+    }
+
+    public boolean isShowConfirmationDialog() {
+        return false;
+    }
+
+    protected String getConfirmationMessage(int count, ConfirmationUnit unit) {
+        return "Do you want to process " + count + " " + unit.getString(count) + "?";
     }
 
     protected String getConfirmationYesActionText() {
         return "Confirm";
     }
 
-    private int showConfirmationDialog(int filesCount) {
+    private int showConfirmationDialog(int filesCount, ConfirmationUnit unit) {
         AtomicInteger result = new AtomicInteger(0);
 
         ApplicationManager.getApplication().invokeAndWait(() -> {
@@ -124,7 +186,7 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
                 }
             }
 
-            int r = Messages.showConfirmationDialog(source, getConfirmationMessage(filesCount), "Confirm action",
+            int r = Messages.showConfirmationDialog(source, getConfirmationMessage(filesCount, unit), "Confirm action",
                     getConfirmationYesActionText(), "Cancel");
 
             result.set(r);
@@ -133,46 +195,97 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
         return result.get();
     }
 
-    protected S createNewState() {
-        return (S) new TaskState();
+    private boolean confirmedOperation(int count, ConfirmationUnit unit) {
+        if (isShowConfirmationDialog()) {
+            int result = showConfirmationDialog(count, unit);
+
+            return result != Messages.NO;
+        }
+
+        return true;
     }
 
-    private void doRun(ProgressIndicator indicator) {
+    protected boolean isProcessingOnlyObjectTypes() {
+        return false;
+    }
+
+    protected boolean isUpdateObjectAfterProcessing() {
+        return false;
+    }
+
+    protected boolean isShouldStopOnError() {
+        return false;
+    }
+
+    protected void doRun(ProgressIndicator indicator) {
+        LOG.info("Starting action " + getTitle());
+
         if (getProject() == null) {
             return;
         }
 
-        Editor editor = UIUtil.invokeAndWaitIfNeeded(() -> event != null ? event.getData(PlatformDataKeys.EDITOR) : null);
-        if (editor != null) {
-            processEditor(indicator, editor);
+        indicator.setIndeterminate(false);
 
-            showNotificationAfterFinish(false);
-            return;
-        }
-
-        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
-        List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
-
-        if (showConfirmationDialog()) {
-            int result = showConfirmationDialog(toProcess.size());
-
-            if (result == Messages.NO) {
-                return;
+        boolean executed;
+        if (oids != null && !oids.isEmpty()) {
+            executed = processOidsList(indicator);
+        } else {
+            Editor editor = UIUtil.invokeAndWaitIfNeeded(() -> event != null ? event.getData(PlatformDataKeys.EDITOR) : null);
+            if (editor != null) {
+                executed = processEditor(indicator, editor);
+            } else {
+                executed = processFiles(indicator);
             }
         }
 
-        if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(getProject(), notificationKey, getTitle(),
-                    "No files matched for " + getTitle() + " (xml)", NotificationType.WARNING);
-            return;
+        if (executed) {
+            showNotificationAfterFinish(false);
         }
 
-        processFiles(indicator, toProcess);
-
-        showNotificationAfterFinish(false);
+        LOG.info("Finishing action " + getTitle());
     }
 
-    private void processEditor(ProgressIndicator indicator, Editor editor) {
+    private void publishException(MidPointService mm, String msg, Exception ex) {
+        mm.printToConsole(environment, getClass(), msg + ". Reason: " + ex.getMessage());
+
+        MidPointUtils.publishExceptionNotification(mm.getProject(), environment, getClass(), notificationKey, msg, ex);
+    }
+
+    private boolean processOidsList(ProgressIndicator indicator) {
+        if (!confirmedOperation(oids.size(), ConfirmationUnit.OBJECT)) {
+            return false;
+        }
+
+        int i = 0;
+        for (Pair<String, ObjectTypes> pair : oids) {
+            ProgressManager.checkCanceled();
+
+            i++;
+            indicator.setFraction((double) i / oids.size());
+
+            ProcessObjectResult result = processObject(null, new ExtendedCallable<>() {
+
+                @Override
+                public String describe() {
+                    return pair.getFirst() + "(" + pair.getSecond() + ")";
+                }
+
+                @Override
+                public ProcessObjectResult call() throws Exception {
+                    return processObjectOid(pair.getSecond(), pair.getFirst());
+                }
+            });
+
+            if (!result.shouldContinue()) {
+                state.setStopOnError();
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean processEditor(ProgressIndicator indicator, Editor editor) {
         String text = ApplicationManager.getApplication().runReadAction((Computable<String>) () -> {
 
             String txt = editor.getSelectionModel().getSelectedText();
@@ -186,24 +299,65 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
         VirtualFile file = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE));
 
         if (!StringUtils.isEmpty(text)) {
-            processEditorText(indicator, editor, text, file);
-        } else {
-            MidPointUtils.publishNotification(getProject(), notificationKey, "Error", "Text is empty", NotificationType.ERROR);
+            return processEditorText(indicator, editor, text, file);
         }
+
+        MidPointUtils.publishNotification(getProject(), notificationKey, "Error", "Text is empty", NotificationType.ERROR);
+
+        return false;
     }
 
-    private void processFiles(ProgressIndicator indicator, List<VirtualFile> files) {
-        indicator.setIndeterminate(false);
+    protected boolean processEditorText(ProgressIndicator indicator, Editor editor, String text, VirtualFile sourceFile) {
+        try {
+            List<MidPointObject> objects = MidPointUtils.parseText(getProject(), text, getNotificationKey());
+            objects = ClientUtils.filterObjectTypeOnly(objects, isProcessingOnlyObjectTypes());
+
+            if (!confirmedOperation(objects.size(), ConfirmationUnit.OBJECT)) {
+                return false;
+            }
+
+            ProcessFileObjectsResult result = processObjects(indicator, objects, sourceFile);
+
+            if (isUpdateObjectAfterProcessing()) {
+                updateEditor(editor, result.getNewObjects());
+            }
+
+            state.incrementProcessedFile();
+        } catch (Exception ex) {
+            midPointService.printToConsole(null, BackgroundableTask.class, "Error occurred when processing text in editor", ex);
+        }
+
+        return true;
+    }
+
+    private boolean processFiles(ProgressIndicator indicator) {
+        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+        List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
+
+        if (toProcess.isEmpty()) {
+            MidPointUtils.publishNotification(getProject(), notificationKey, getTitle(),
+                    "No files matched for '" + getTitle() + "' (xml)", NotificationType.WARNING);
+            return false;
+        }
+
+        if (!confirmedOperation(toProcess.size(), ConfirmationUnit.FILES)) {
+            return false;
+        }
 
         int current = 0;
-        for (VirtualFile file : files) {
+        for (VirtualFile file : toProcess) {
             ProgressManager.checkCanceled();
 
             current++;
-            indicator.setFraction((double) current / files.size());
+            indicator.setFraction((double) current / toProcess.size());
 
-            processFile(file);
+            boolean stop = processFile(file);
+            if (stop) {
+                break;
+            }
         }
+
+        return true;
     }
 
     private boolean hasFailures() {
@@ -219,7 +373,7 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
 
             try {
                 List<MidPointObject> obj = MidPointUtils.parseProjectFile(getProject(), file, notificationKey);
-                obj = ClientUtils.filterObjectTypeOnly(obj);
+                obj = ClientUtils.filterObjectTypeOnly(obj, isProcessingOnlyObjectTypes());
 
                 objects.addAll(obj);
             } catch (Exception ex) {
@@ -234,36 +388,12 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
         return objects;
     }
 
-    protected void processEditorText(ProgressIndicator indicator, Editor editor, String text, VirtualFile sourceFile) {
-        try {
-            List<MidPointObject> objects = MidPointUtils.parseText(getProject(), text, getNotificationKey());
-
-            List<String> newObjects = processObjects(objects, sourceFile);
-
-            boolean isUpdateSelection = isUpdateSelectionInEditor(editor);
-
-            StringBuilder sb = new StringBuilder();
-            if (!isUpdateSelection && newObjects.size() > 1) {
-                sb.append(ClientUtils.OBJECTS_XML_PREFIX);
-            }
-
-            newObjects.forEach(o -> sb.append(o));
-
-            if (!isUpdateSelection && newObjects.size() > 1) {
-                sb.append(ClientUtils.OBJECTS_XML_SUFFIX);
-            }
-
-            updateEditor(editor, sb.toString());
-        } catch (Exception ex) {
-            midPointService.printToConsole(null, BackgroundableTask.class, "Error occurred when processing text in editor", ex);
-        }
-    }
-
-    protected void processFile(VirtualFile file) {
+    protected boolean processFile(VirtualFile file) {
         try {
             List<MidPointObject> objects = loadObjectsFromFile(file);
 
-            List<String> newObjects = processObjects(objects, file);
+            ProcessFileObjectsResult result = processObjects(null, objects, file);
+            List<String> newObjects = result.getNewObjects();
 
             boolean checkChanges = false;
             if (objects.size() == newObjects.size()) {
@@ -276,8 +406,12 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
                 }
             }
 
-            if (checkChanges) {
+            if (checkChanges && isUpdateObjectAfterProcessing()) {
                 writeObjectsToFile(file, newObjects);
+            }
+
+            if (result.isStop()) {
+                return false;
             }
         } catch (Exception ex) {
             state.incrementSkippedFile();
@@ -285,17 +419,11 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
             midPointService.printToConsole(null, getClass(),
                     "Couldn't process file " + (file != null ? file.getPath() : "<unknown>") + ", reason: " + ex.getMessage(), ex);
         }
+
+        return true;
     }
 
-    protected List<String> processObjects(List<MidPointObject> objects, VirtualFile file) {
-        if (objects == null) {
-            return new ArrayList<>();
-        }
-
-        return objects.stream().map(o -> o.getContent()).collect(Collectors.toList());
-    }
-
-    protected boolean isUpdateSelectionInEditor(Editor editor) {
+    private boolean isUpdateSelectionInEditor(Editor editor) {
         return ApplicationManager.getApplication().runReadAction((Computable<Boolean>) () -> {
 
             String txt = editor.getSelectionModel().getSelectedText();
@@ -303,11 +431,23 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
         });
     }
 
-    protected void updateEditor(Editor editor, String text) {
-        boolean updateSelection = isUpdateSelectionInEditor(editor);
+    protected void updateEditor(Editor editor, List<String> newObjects) {
+        boolean isUpdateSelection = isUpdateSelectionInEditor(editor);
+
+        StringBuilder text = new StringBuilder();
+        if (!isUpdateSelection && newObjects.size() > 1) {
+            text.append(ClientUtils.OBJECTS_XML_PREFIX);
+        }
+
+        newObjects.forEach(o -> text.append(o));
+
+        if (!isUpdateSelection && newObjects.size() > 1) {
+            text.append(ClientUtils.OBJECTS_XML_SUFFIX);
+        }
 
         com.intellij.openapi.editor.Document document = editor.getDocument();
-        if (updateSelection) {
+
+        if (isUpdateSelection) {
             AtomicInteger start = new AtomicInteger(0);
             AtomicInteger end = new AtomicInteger(0);
 
@@ -318,13 +458,13 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
             });
 
             WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-                String normalized = normalizeText(text, document);
+                String normalized = normalizeText(text.toString(), document);
 
                 document.replaceString(start.get(), end.get(), normalized);
             });
         } else {
             WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-                String normalized = normalizeText(text, document);
+                String normalized = normalizeText(text.toString(), document);
 
                 document.replaceString(0, document.getTextLength(), normalized);
             });
@@ -412,5 +552,93 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
         LOG.info("Task " + getTitle() + " status: " + type.name() + "\n" + msg);
 
         MidPointUtils.publishNotification(getProject(), notificationKey, title, msg.toString(), type);
+    }
+
+    protected boolean shouldSkipObjectProcessing(MidPointObject object) {
+        return false;
+    }
+
+    protected ProcessFileObjectsResult processObjects(ProgressIndicator indicator, List<MidPointObject> objects, VirtualFile file) {
+        if (objects.isEmpty()) {
+            state.incrementSkippedFile();
+            midPointService.printToConsole(null, RefreshAction.class,
+                    "Skipped file " + (file != null ? file.getPath() : "<unknown>") + " no objects found (parsed).");
+
+            return new ProcessFileObjectsResult();
+        }
+
+        List<String> newObjects = new ArrayList<>();
+        boolean stop = false;
+
+        int current = 0;
+        for (MidPointObject object : objects) {
+            ProgressManager.checkCanceled();
+
+            current++;
+            if (indicator != null) {
+                indicator.setFraction((double) current / objects.size());
+            }
+
+            if (shouldSkipObjectProcessing(object)) {
+                newObjects.add(object.getContent());
+                state.incrementSkipped();
+                continue;
+            }
+
+            ProcessObjectResult result = processObject(object, new ExtendedCallable<>() {
+
+                @Override
+                public String describe() {
+                    return object.getName() + "(" + object.getOid() + ")";
+                }
+
+                @Override
+                public ProcessObjectResult call() throws Exception {
+                    return processObject(object);
+                }
+            });
+
+            if (!result.shouldContinue()) {
+                state.setStopOnError();
+                stop = true;
+                break;
+            }
+
+            MidPointObject newObject = result.object();
+            newObjects.add(newObject.getContent());
+        }
+
+        return new ProcessFileObjectsResult(newObjects, stop);
+    }
+
+    private ProcessObjectResult processObject(MidPointObject object, ExtendedCallable<ProcessObjectResult> callable) {
+        try {
+            ProcessObjectResult processResult = callable.call();
+            if (processResult.problem()) {
+                state.incrementFailed();
+            } else {
+                state.incrementProcessed();
+            }
+
+            return processResult;
+        } catch (Exception ex) {
+            state.incrementFailed();
+
+            publishException(midPointService, "Exception occurred during '" + getTitle() + "' of '" + callable.describe() + "'", ex);
+        }
+
+        ProcessObjectResult result = new ProcessObjectResult(null);
+        result.object(object);
+        result.shouldContinue(!isShouldStopOnError());
+
+        return result;
+    }
+
+    public <O extends ObjectType> ProcessObjectResult processObject(MidPointObject object) throws Exception {
+        return processObjectOid(object.getType(), object.getOid());
+    }
+
+    public <O extends ObjectType> ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
+        throw new UnsupportedOperationException("Not implemented");
     }
 }
