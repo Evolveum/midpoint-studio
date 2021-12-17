@@ -4,9 +4,7 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -16,8 +14,6 @@ public class DeleteTask extends ClientBackgroundableTask<TaskState> {
     public static String TITLE = "Delete task";
 
     public static final String NOTIFICATION_KEY = "Delete task";
-
-    private static final Logger LOG = Logger.getInstance(DeleteTask.class);
 
     private boolean raw;
 
@@ -62,12 +58,10 @@ public class DeleteTask extends ClientBackgroundableTask<TaskState> {
     }
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
+    public ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
         DeleteOptions opts = new DeleteOptions().raw(raw);
 
         client.delete(type.getClassDefinition(), oid, opts);
-
-        Thread.sleep(5000);
 
         return new ProcessObjectResult(null);
     }

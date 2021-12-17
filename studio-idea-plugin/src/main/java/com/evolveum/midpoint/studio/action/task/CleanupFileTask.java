@@ -76,7 +76,7 @@ public class CleanupFileTask extends BackgroundableTask<TaskState> {
     }
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObject(MidPointObject object) throws Exception {
+    public ProcessObjectResult processObject(MidPointObject object) throws Exception {
         String newContent = cleanupObject(object);
 
         MidPointObject newObject = MidPointObject.copy(object);
@@ -92,7 +92,7 @@ public class CleanupFileTask extends BackgroundableTask<TaskState> {
     }
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
+    public ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
         throw new UnsupportedOperationException("Not implemented");
     }
 

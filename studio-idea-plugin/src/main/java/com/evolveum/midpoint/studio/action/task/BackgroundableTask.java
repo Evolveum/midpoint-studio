@@ -11,7 +11,6 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.Holder;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -634,11 +633,11 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
         return result;
     }
 
-    public <O extends ObjectType> ProcessObjectResult processObject(MidPointObject object) throws Exception {
+    protected ProcessObjectResult processObject(MidPointObject object) throws Exception {
         return processObjectOid(object.getType(), object.getOid());
     }
 
-    public <O extends ObjectType> ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
+    protected ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
         throw new UnsupportedOperationException("Not implemented");
     }
 }
