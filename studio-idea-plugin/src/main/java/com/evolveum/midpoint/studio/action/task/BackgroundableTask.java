@@ -1,12 +1,14 @@
 package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.action.transfer.RefreshAction;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -639,5 +641,37 @@ public class BackgroundableTask<S extends TaskState> extends Task.Backgroundable
 
     protected ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
         throw new UnsupportedOperationException("Not implemented");
+    }
+
+    protected ProcessObjectResult validateOperationResult(String operation, OperationResult result, String objectName) {
+        boolean problem = result != null && !result.isSuccess();
+        if (problem) {
+            printAndNotifyProblem(operation, objectName, result, null);
+        } else {
+            printSuccess(operation, objectName);
+        }
+
+        return new ProcessObjectResult(result).problem(problem);
+    }
+
+    protected void printAndNotifyProblem(String operation, String objectName, OperationResult result, Exception ex) {
+        String msg = StringUtils.capitalize(operation) + " status of " + objectName + " was " + result.getStatus();
+
+        midPointService.printToConsole(environment, getClass(), msg);
+
+        MidPointUtils.publishNotification(getProject(), notificationKey, "Warning", msg,
+                NotificationType.WARNING, new ShowResultNotificationAction(result));
+
+        if (ex != null) {
+            publishException(midPointService, "Exception occurred during '" + operation + "' of " + objectName, ex);
+        }
+    }
+
+    protected void printSuccess(String operation, String objectName) {
+        midPointService.printToConsole(environment, getClass(), StringUtils.capitalize(operation) + " '" + objectName + "' finished");
+    }
+
+    protected void printProblem(String message) {
+        midPointService.printToConsole(environment, getClass(), message);
     }
 }

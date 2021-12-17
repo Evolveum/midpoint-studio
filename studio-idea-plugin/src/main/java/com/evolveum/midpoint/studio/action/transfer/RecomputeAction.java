@@ -11,7 +11,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class RecomputeAction extends AsyncAction {
 
-    public static final String ACTION_NAME = "Recompute action";
+    public static final String ACTION_NAME = "Recompute";
 
     public RecomputeAction() {
         super(ACTION_NAME);

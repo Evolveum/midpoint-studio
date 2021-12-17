@@ -1,15 +1,15 @@
-package com.evolveum.midpoint.studio.action.transfer;
+package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ActionExpressionType;
 import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ExpressionPipelineType;
@@ -21,11 +21,15 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class UploadRecompute extends UploadExecute {
+public class UploadRecomputeTask extends UploadExecuteTask {
+
+    public UploadRecomputeTask(AnActionEvent event, Environment environment) {
+        super(event, environment);
+    }
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception {
-        ProcessObjectResult por = super.processObject(evt, client, obj);
+    public ProcessObjectResult processObject(MidPointObject obj) throws Exception {
+        ProcessObjectResult por = super.processObject(obj);
 
         if (obj.isExecutable()) {
             return por;
@@ -34,7 +38,7 @@ public class UploadRecompute extends UploadExecute {
         OperationResult uploadResult = por.result();
 
         if (uploadResult != null && !uploadResult.isSuccess()) {
-            printProblem(evt.getProject(), "Skipping recomputation for " + obj.getName() + ", there was a problem with upload");
+            printProblem("Skipping recomputation for " + obj.getName() + ", there was a problem with upload");
 
             return por;
         }
@@ -43,16 +47,16 @@ public class UploadRecompute extends UploadExecute {
             return por;
         }
 
-        String requestString = buildExecuteScriptRequestBody(client, obj);
+        String requestString = buildExecuteScriptRequestBody(obj);
 
         ExecuteScriptResponseType response = client.execute(requestString);
         OperationResultType res = response.getResult();
         OperationResult executionResult = OperationResult.createOperationResult(res);
 
-        return validateOperationResult(evt, executionResult, "recompute", obj.getName());
+        return validateOperationResult("recompute", executionResult, obj.getName());
     }
 
-    private String buildExecuteScriptRequestBody(MidPointClient client, MidPointObject obj) throws SchemaException {
+    private String buildExecuteScriptRequestBody(MidPointObject obj) throws SchemaException {
         PrismContext ctx = client.getPrismContext();
 
         ObjectFactory of = new ObjectFactory();

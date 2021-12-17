@@ -10,12 +10,16 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class DeleteAction extends AsyncAction {
 
-    public static final String ACTION_NAME = "Delete action";
+    public static final String ACTION_NAME = "Delete";
 
     private boolean raw;
 
     public DeleteAction() {
-        super(ACTION_NAME);
+        this(ACTION_NAME);
+    }
+
+    public DeleteAction(String name) {
+        super(name);
     }
 
     public boolean isRaw() {

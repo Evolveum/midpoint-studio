@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.impl.browse;
 
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
-import com.evolveum.midpoint.studio.action.transfer.UploadExecute;
+import com.evolveum.midpoint.studio.action.task.UploadExecuteTask;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.util.FileUtils;
@@ -107,7 +107,7 @@ public class GeneratorAction extends BackgroundAction {
         int success = 0;
         for (MidPointObject object : objects) {
             try {
-                OperationResult result = UploadExecute.uploadExecute(client, object);
+                OperationResult result = UploadExecuteTask.uploadExecute(client, object);
                 boolean problem = result != null && !result.isSuccess();
 
                 if (problem) {

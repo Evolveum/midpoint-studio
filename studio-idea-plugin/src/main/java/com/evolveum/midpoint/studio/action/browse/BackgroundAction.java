@@ -15,6 +15,7 @@ import javax.swing.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
+@Deprecated
 public class BackgroundAction extends AnAction implements UpdateInBackground {
 
     private String taskTitle;

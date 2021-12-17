@@ -170,12 +170,12 @@
                 text="Download Selected Types"
                 icon="AllIcons.Actions.Download"/>
 
-        <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecute"
+        <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
                 text="Upload/Execute"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
 
         <action id="MidPoint.Action.UploadExecuteStopOnError"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnErrorAction"
                 text="Upload/Execute (stop on error)"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecuteStop"/>
 
@@ -192,12 +192,12 @@
         <!-- SERVER SIDE -->
 
         <action id="MidPoint.Action.UploadRecompute"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadRecompute"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadRecomputeAction"
                 text="Upload/Recompute"
                 icon="AllIcons.Actions.Upload"/>
 
         <action id="MidPoint.Action.UploadTestResource"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResourceAction"
                 text="Upload/Test Resource"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadTest"/>
 
