@@ -10,13 +10,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ClientBackgroundableTask<S extends TaskState> extends ObjectsBackgroundableTask<S> {
+public abstract class SimpleBackgroundableTask extends BackgroundableTask {
 
-    private static final Logger LOG = Logger.getInstance(ClientBackgroundableTask.class);
+    private static final Logger LOG = Logger.getInstance(SimpleBackgroundableTask.class);
 
     protected MidPointClient client;
 
-    public ClientBackgroundableTask(@NotNull Project project, @NotNull String title, @NotNull String notificationKey) {
+    public SimpleBackgroundableTask(@NotNull Project project, @NotNull String title, @NotNull String notificationKey) {
         super(project, title, notificationKey);
     }
 
@@ -31,8 +31,6 @@ public class ClientBackgroundableTask<S extends TaskState> extends ObjectsBackgr
         }
 
         client = setupMidpointClient();
-
-        super.doRun(indicator);
     }
 
     private MidPointClient setupMidpointClient() {

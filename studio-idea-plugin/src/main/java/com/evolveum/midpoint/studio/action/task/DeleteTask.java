@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -17,7 +18,7 @@ public class DeleteTask extends ClientBackgroundableTask<TaskState> {
 
     private boolean raw;
 
-    public DeleteTask(AnActionEvent event, Environment environment) {
+    public DeleteTask(@NotNull AnActionEvent event, Environment environment) {
         super(event.getProject(), TITLE, NOTIFICATION_KEY);
 
         setEvent(event);

@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class CleanupFileTask extends BackgroundableTask<TaskState> {
+public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
 
     public static final String TITLE = "Cleanup File";
 

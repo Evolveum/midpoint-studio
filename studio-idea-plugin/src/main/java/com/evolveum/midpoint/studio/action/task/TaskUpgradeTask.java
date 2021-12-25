@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
+public class TaskUpgradeTask extends ObjectsBackgroundableTask<TaskState> {
 
     public static String TITLE = "Upgrade task";
 

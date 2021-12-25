@@ -1,13 +1,14 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.task.BackgroundableTask;
+import com.evolveum.midpoint.studio.action.task.ObjectsBackgroundableTask;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.UpdateInBackground;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.NlsActions;
 import org.jetbrains.annotations.NotNull;
@@ -18,11 +19,11 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public abstract class AsyncAction extends AnAction {
+public abstract class AsyncObjectsAction extends AnAction implements UpdateInBackground {
 
     private List<Pair<String, ObjectTypes>> oids;
 
-    public AsyncAction(@Nullable @NlsActions.ActionText String text) {
+    public AsyncObjectsAction(@Nullable @NlsActions.ActionText String text) {
         super(text);
     }
 
@@ -51,7 +52,7 @@ public abstract class AsyncAction extends AnAction {
         EnvironmentService em = EnvironmentService.getInstance(e.getProject());
         Environment env = em.getSelected();
 
-        BackgroundableTask task = createTask(e, env);
+        ObjectsBackgroundableTask task = createTask(e, env);
         task.setOids(getOids());
 
         ProgressManager.getInstance().run(task);
@@ -70,5 +71,5 @@ public abstract class AsyncAction extends AnAction {
         return MidPointUtils.isMidpointObjectFileSelected(evt) || (oids != null && !oids.isEmpty());
     }
 
-    protected abstract BackgroundableTask createTask(AnActionEvent e, Environment env);
+    protected abstract ObjectsBackgroundableTask createTask(AnActionEvent e, Environment env);
 }
