@@ -1,10 +1,10 @@
 package com.evolveum.midpoint.studio.action.logging;
 
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ClassLoggerConfigurationType;
+import com.evolveum.midpoint.studio.action.task.SetBasicLoggerTask;
+import com.evolveum.midpoint.studio.action.task.SetLoggerTask;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LoggingLevelType;
-
-import java.util.Arrays;
-import java.util.List;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -22,20 +22,11 @@ public class SetBasicLoggerAction extends SetLoggerAction {
         this.level = level;
     }
 
-    public String getLogger() {
-        return logger.getLogger();
-    }
-
-    public LoggingLevelType getLevel() {
-        return level;
-    }
-
     @Override
-    public List<ClassLoggerConfigurationType> buildClassLoggers() {
-        ClassLoggerConfigurationType config = new ClassLoggerConfigurationType();
-        config.setPackage(logger.getLogger());
-        config.setLevel(level);
+    protected SetLoggerTask createTask(AnActionEvent e, Environment env) {
+        SetLoggerTask task = new SetBasicLoggerTask(e, logger, level);
+        task.setEnvironment(env);
 
-        return Arrays.asList(config);
+        return task;
     }
 }

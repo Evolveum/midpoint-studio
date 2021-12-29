@@ -13,7 +13,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -47,13 +46,15 @@ public class SetLoggerTask extends SimpleBackgroundableTask {
     protected void doRun(ProgressIndicator indicator) {
         super.doRun(indicator);
 
+        indicator.setIndeterminate(false);
+
         List<ClassLoggerConfigurationType> newLoggers = buildClassLoggers();
         if (newLoggers == null || newLoggers.isEmpty()) {
             noChangeNeeded();
             return;
         }
 
-        Environment env = client.getEnvironment();
+        Environment env = getEnvironment();
 
         LOG.debug("Downloading system configuration");
         PrismObject<SystemConfigurationType> configPrism;
@@ -65,6 +66,8 @@ public class SetLoggerTask extends SimpleBackgroundableTask {
             }
 
             configPrism = (PrismObject) client.parseObject(object.getContent());
+
+            indicator.setFraction(0.5);
         } catch (Exception ex) {
             MidPointUtils.publishException(getProject(), env, getClass(), NOTIFICATION_KEY,
                     "Couldn't download and parse system configuration", ex);
@@ -104,6 +107,8 @@ public class SetLoggerTask extends SimpleBackgroundableTask {
 
         if (!changed) {
             noChangeNeeded();
+
+            indicator.setFraction(1);
             return;
         }
 
@@ -123,6 +128,8 @@ public class SetLoggerTask extends SimpleBackgroundableTask {
             } else {
                 midPointService.printToConsole(env, getClass(), "System configuration uploaded");
             }
+
+            indicator.setFraction(1);
         } catch (Exception ex) {
             MidPointUtils.publishException(getProject(), env, getClass(), NOTIFICATION_KEY,
                     "Exception occurred during system configuration upload", ex);

@@ -18,7 +18,7 @@ public class UploadTestValidateResourceAction extends AsyncObjectsAction {
     }
 
     @Override
-    protected UploadExecuteTask createTask(AnActionEvent e, Environment env) {
+    protected UploadExecuteTask createObjectsTask(AnActionEvent e, Environment env) {
         return new UploadTestValidateResourceTask(e, env);
     }
 }

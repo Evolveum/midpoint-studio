@@ -17,7 +17,7 @@ public class UploadRecomputeAction extends AsyncObjectsAction {
     }
 
     @Override
-    protected UploadRecomputeTask createTask(AnActionEvent e, Environment env) {
+    protected UploadRecomputeTask createObjectsTask(AnActionEvent e, Environment env) {
         return new UploadRecomputeTask(e, env);
     }
 }

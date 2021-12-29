@@ -31,10 +31,9 @@ public class DeleteAction extends AsyncObjectsAction {
     }
 
     @Override
-    protected DeleteTask createTask(AnActionEvent e, Environment env) {
+    protected DeleteTask createObjectsTask(AnActionEvent e, Environment env) {
         DeleteTask task = new DeleteTask(e, env);
         task.setRaw(raw);
-        task.setOids(getOids());
 
         return task;
     }
