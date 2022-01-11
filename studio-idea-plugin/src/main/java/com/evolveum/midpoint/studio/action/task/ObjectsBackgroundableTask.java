@@ -316,8 +316,8 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
             current++;
             indicator.setFraction((double) current / toProcess.size());
 
-            boolean stop = processFile(file);
-            if (stop) {
+            boolean shouldContinue = processFile(file);
+            if (!shouldContinue) {
                 break;
             }
         }
@@ -376,6 +376,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
             }
 
             if (result.isStop()) {
+                state.incrementProcessedFile();
                 return false;
             }
         } catch (Exception ex) {
@@ -385,6 +386,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
                     "Couldn't process file " + (file != null ? file.getPath() : "<unknown>") + ", reason: " + ex.getMessage(), ex);
         }
 
+        state.incrementProcessedFile();
         return true;
     }
 
