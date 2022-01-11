@@ -285,6 +285,10 @@ public class MidPointUtils {
 
     public static void publishNotification(Project project, String key, String title, String content, NotificationType type,
                                            NotificationAction... actions) {
+        if (project == null) {
+            return;
+        }
+
         Notification notification = new Notification(key, title, content, type);
         if (actions != null) {
             Arrays.stream(actions).filter(a -> a != null).forEach(a -> notification.addAction(a));

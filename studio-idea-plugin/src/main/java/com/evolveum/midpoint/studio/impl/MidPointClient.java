@@ -223,6 +223,9 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) {
+        if (opts == null) {
+            opts = new SearchOptions();
+        }
         printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
 
         MidPointObject result = null;

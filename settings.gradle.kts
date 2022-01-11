@@ -60,6 +60,7 @@ dependencyResolutionManagement {
             alias("remote-robot").to("com.intellij.remoterobot", "remote-robot").versionRef("remote-robot")
             alias("remote-fixtures").to("com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
             alias("xmlunit-core").to("org.xmlunit", "xmlunit-core").versionRef("xmlunit")
+            alias("midpoint-model-test").to("com.evolveum.midpoint.model", "model-test").versionRef("midpoint")
         }
     }
 }

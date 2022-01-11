@@ -1,7 +1,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -41,7 +41,10 @@ sourceSets {
 dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.17.1")
 
-    implementation(projects.midpointClient)
+    implementation(projects.midpointClient) {
+        exclude("org.slf4j")
+        exclude("ch.qos.logback")
+    }
 
     implementation(libs.model.common) {
         isTransitive = false
@@ -80,7 +83,7 @@ dependencies {
     implementation(libs.openkeepass)
     implementation(libs.commons.lang)
     // compile(libs.xchart)
-    implementation(libs.slf4j.log4j12)
+//    implementation(libs.slf4j.log4j12)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
 
@@ -99,6 +102,27 @@ dependencies {
     testImplementation(libs.xmlunit.core)
 
     testRuntimeOnly(libs.jupiter.engine)
+
+    testImplementation(libs.midpoint.model.test) {
+        exclude("org.slf4j")
+        exclude("ch.qos.logback")
+    }
+    testImplementation("ch.qos.logback:logback-classic:1.2.3e1")
+    testImplementation("com.evolveum.midpoint.gui:admin-gui:4.4:tests") {
+        exclude("net.shibboleth.utilities", "java-support")
+        exclude("org.slf4j")
+        exclude("ch.qos.logback")
+        exclude("org.springframework.boot", "spring-boot-starter-logging")
+    }
+    testImplementation("com.evolveum.midpoint.gui:admin-gui:4.4:classes") {
+        exclude("net.shibboleth.utilities", "java-support")
+        exclude("org.slf4j")
+        exclude("ch.qos.logback")
+        exclude("org.springframework.boot", "spring-boot-starter-logging")
+    }
+    testImplementation("net.shibboleth.utilities:java-support:8.0.0")
+    testImplementation("org.springframework.boot:spring-boot-test:2.5.2")
+    testImplementation("org.springframework.boot:spring-boot-starter-log4j2:2.5.2")
 }
 
 var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
@@ -206,10 +230,13 @@ tasks {
 
     runPluginVerifier {
         ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
-        failureLevel.set(listOf(
-            RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-            RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
-            RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN))
+        failureLevel.set(
+            listOf(
+                RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+                RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
+                RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN
+            )
+        )
     }
 
     publishPlugin {
@@ -223,6 +250,10 @@ tasks {
 
     test {
         useJUnitPlatform()
+        systemProperty(
+            "org.springframework.boot.logging.LoggingSystem",
+            "org.springframework.boot.logging.log4j2.Log4J2LoggingSystem"
+        )
     }
 
     runIdeForUiTests {
