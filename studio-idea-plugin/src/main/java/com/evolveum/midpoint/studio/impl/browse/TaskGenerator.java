@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl.browse;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.action.task.GeneratorTask;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -114,7 +115,7 @@ public class TaskGenerator extends Generator {
                     }
                 } catch (RuntimeException e) {
                     MidPointUtils.publishExceptionNotification(project, null, TaskGenerator.class,
-                            GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
+                            GeneratorTask.NOTIFICATION_KEY, "Couldn't parse XML query", e);
                     throw e;
                 }
             }

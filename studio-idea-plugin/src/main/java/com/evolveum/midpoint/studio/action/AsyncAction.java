@@ -17,6 +17,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public abstract class AsyncAction<T extends BackgroundableTask> extends AnAction implements UpdateInBackground {
 
+    public AsyncAction() {
+        this(null);
+    }
+
     public AsyncAction(@Nullable @NlsActions.ActionText String text) {
         super(text);
     }

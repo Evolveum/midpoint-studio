@@ -33,6 +33,10 @@ public abstract class BackgroundableTask extends Task.Backgroundable {
         this.notificationKey = notificationKey;
     }
 
+    public void setEvent(AnActionEvent event) {
+        this.event = event;
+    }
+
     public Environment getEnvironment() {
         return environment;
     }

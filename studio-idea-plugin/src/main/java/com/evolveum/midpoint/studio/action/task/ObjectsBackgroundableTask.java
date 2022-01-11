@@ -99,10 +99,6 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
         return notificationKey;
     }
 
-    public void setEvent(AnActionEvent event) {
-        this.event = event;
-    }
-
     public List<Pair<String, ObjectTypes>> getOids() {
         return oids;
     }

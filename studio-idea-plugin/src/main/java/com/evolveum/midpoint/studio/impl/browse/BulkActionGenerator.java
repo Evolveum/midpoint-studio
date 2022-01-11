@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.browse;
 import com.evolveum.midpoint.model.api.ModelPublicConstants;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.action.task.GeneratorTask;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -88,7 +89,7 @@ public class BulkActionGenerator extends Generator {
         } else {
             // very special case: we assign to (yet) unspecified single object
             if (!options.isBatchByOids()) {
-                MidPointUtils.publishNotification(project, GeneratorAction.NOTIFICATION_KEY, "Not supported",
+                MidPointUtils.publishNotification(project, GeneratorTask.NOTIFICATION_KEY, "Not supported",
                         "Using original query is not supported for this action.", NotificationType.ERROR);
                 return null;
             }
@@ -223,7 +224,7 @@ public class BulkActionGenerator extends Generator {
                 }
             } catch (RuntimeException e) {
                 MidPointUtils.publishExceptionNotification(project, null, BulkActionGenerator.class,
-                        GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
+                        GeneratorTask.NOTIFICATION_KEY, "Couldn't parse XML query", e);
             }
         }
     }
@@ -242,7 +243,7 @@ public class BulkActionGenerator extends Generator {
             DOMUtil.createSubElement(equal, Constants.Q_PATH_Q).setTextContent("name");
             DOMUtil.createSubElement(equal, Constants.Q_VALUE_Q).setTextContent(object.getName());
         } else {
-            MidPointUtils.publishNotification(project, GeneratorAction.NOTIFICATION_KEY, "Warning",
+            MidPointUtils.publishNotification(project, GeneratorTask.NOTIFICATION_KEY, "Warning",
                     "No OID nor name provided; action on this object cannot be executed.", NotificationType.WARNING);
 
             Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_Q);
