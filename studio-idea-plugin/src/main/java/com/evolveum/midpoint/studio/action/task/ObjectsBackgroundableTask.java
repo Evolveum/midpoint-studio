@@ -274,7 +274,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
 
     protected boolean processEditorText(ProgressIndicator indicator, Editor editor, String text, VirtualFile sourceFile) {
         try {
-            List<MidPointObject> objects = MidPointUtils.parseText(getProject(), text, getNotificationKey());
+            List<MidPointObject> objects = MidPointUtils.parseText(getProject(), text, sourceFile, getNotificationKey());
             objects = ClientUtils.filterObjectTypeOnly(objects, isProcessingOnlyObjectTypes());
 
             if (!confirmedOperation(objects.size(), ConfirmationUnit.OBJECT)) {
@@ -570,7 +570,9 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
             }
 
             MidPointObject newObject = result.object();
-            newObjects.add(newObject.getContent());
+            if (newObject != null) {
+                newObjects.add(newObject.getContent());
+            }
         }
 
         return new ProcessFileObjectsResult(newObjects, stop);

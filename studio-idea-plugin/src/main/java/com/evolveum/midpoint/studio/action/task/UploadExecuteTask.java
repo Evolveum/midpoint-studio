@@ -12,8 +12,10 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.vcsUtil.VcsUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +55,10 @@ public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
                 result = OperationResult.createOperationResult(res);
             }
         } else {
-            UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, VcsUtil.getVirtualFile(obj.getFile()));
+            File file = obj.getFile();
+            VirtualFile vFile = file != null ?  VcsUtil.getVirtualFile(file) : null;
+
+            UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, vFile);
             result = resp.getResult();
 
             if (obj.getOid() == null && resp.getOid() != null) {

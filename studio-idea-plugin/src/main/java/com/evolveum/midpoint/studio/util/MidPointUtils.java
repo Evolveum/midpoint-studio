@@ -83,10 +83,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Color;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
@@ -829,9 +826,10 @@ public class MidPointUtils {
         }
     }
 
-    public static List<MidPointObject> parseText(Project project, String text, String notificationKey) {
+    public static List<MidPointObject> parseText(Project project, String text, VirtualFile file, String notificationKey) {
         try {
-            return ClientUtils.parseText(text);
+            File ioFile = file != null ? VfsUtil.virtualToIoFile(file) : null;
+            return ClientUtils.parseText(text, ioFile);
         } catch (RuntimeException ex) {
             String msg = "Couldn't parse text '" + org.apache.commons.lang.StringUtils.abbreviate(text, 10) + "'";
 
