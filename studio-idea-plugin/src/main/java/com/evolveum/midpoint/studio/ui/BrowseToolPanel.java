@@ -9,10 +9,11 @@ import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.action.AsyncAction;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
+import com.evolveum.midpoint.studio.action.task.BackgroundableTask;
 import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
@@ -35,11 +36,9 @@ import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
@@ -94,7 +93,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private ComboObjectTypes objectType;
     private ComboQueryType queryType;
 
-    private BackgroundAction searchAction;
+    private AnAction searchAction;
     private AnAction cancelAction;
     private AnAction pagingAction;
 
@@ -323,15 +322,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 e -> e.getPresentation().setEnabled(isSearchEnabled()));
         group.add(pagingAction);
 
-        searchAction = new BackgroundAction("Search", AllIcons.Actions.Find, "Searching objects") {
+        searchAction = new AsyncAction<>("Search", AllIcons.Actions.Find) {
 
             @Override
-            protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
-                searchPerformed(evt, indicator);
+            protected BackgroundableTask createTask(AnActionEvent e, Environment env) {
+                return new BackgroundableTask(e.getProject(), "Searching objects", "Searching objects") {
+
+                    @Override
+                    protected void doRun(ProgressIndicator indicator) {
+                        searchPerformed(e, indicator);
+                    }
+                };
             }
 
             @Override
-            protected boolean isEnabled() {
+            protected boolean isActionEnabled(AnActionEvent evt) {
                 return isSearchEnabled();
             }
         };
@@ -542,21 +547,9 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
-        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
-        Environment env = em.getSelected();
+        DownloadAction da = new DownloadAction(getResultsModel().getSelectedOids(results), showOnly, rawDownload);
+        da.setOpenAfterDownload(true);
 
-        DownloadAction da = new DownloadAction(env, getResultsModel().getSelectedOids(results), showOnly, rawDownload) {
-
-            @Override
-            protected void onFinished() {
-                VirtualFile file = null;// todo getDownloadedFile();
-                if (file == null) {
-                    return;
-                }
-                FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
-                fem.openFile(file, true, true);
-            }
-        };
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
 

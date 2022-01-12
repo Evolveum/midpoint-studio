@@ -12,6 +12,8 @@ import com.intellij.openapi.util.NlsActions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -22,7 +24,11 @@ public abstract class AsyncAction<T extends BackgroundableTask> extends AnAction
     }
 
     public AsyncAction(@Nullable @NlsActions.ActionText String text) {
-        super(text);
+        this(text, null);
+    }
+
+    public AsyncAction(@Nullable @NlsActions.ActionText String text, @Nullable Icon icon) {
+        super(text, text, icon);
     }
 
     @Override
