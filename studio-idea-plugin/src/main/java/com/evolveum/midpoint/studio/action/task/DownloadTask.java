@@ -127,7 +127,9 @@ public class DownloadTask extends SimpleBackgroundableTask {
                     continue;
                 }
 
-                IOUtils.write(object.getContent(), out);
+                String content = oids.size() > 1 ? MidPointUtils.updateObjectRootElementToObject(object.getContent()) : object.getContent();
+
+                IOUtils.write(content, out);
             } catch (Exception ex) {
                 MidPointUtils.publishExceptionNotification(getProject(), getEnvironment(), DownloadTask.class, NOTIFICATION_KEY,
                         "Exception occurred when getting object " + oid.getFirst() + " ("

@@ -12,6 +12,7 @@ import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -63,6 +64,8 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -922,11 +925,44 @@ public class MidPointUtils {
 
             String output = sw.toString();
             if (tel.isErrorOrFatal()) {
-                throw new TransformerException("Found these problems:\n"+ tel.dumpAllMessages());
+                throw new TransformerException("Found these problems:\n" + tel.dumpAllMessages());
             }
 
             return output;
         }
+    }
+
+    public static String updateObjectRootElementToObject(String objectXml) {
+        if (objectXml == null) {
+            return null;
+        }
+
+        org.w3c.dom.Document doc = DOMUtil.parseDocument(objectXml);
+        Node previousRoot = doc.removeChild(doc.getDocumentElement());
+
+        QName elementName = new QName(previousRoot.getNamespaceURI(), previousRoot.getLocalName());
+        ObjectTypes type = null;
+        for (ObjectTypes ot : ObjectTypes.values()) {
+            if (elementName.equals(ot.getElementName())) {
+                type = ot;
+                break;
+            }
+        }
+
+        if (type == null) {
+            return objectXml;
+        }
+
+        Element root = DOMUtil.createElement(doc, SchemaConstantsGenerated.C_OBJECT);
+        doc.appendChild(root);
+        root.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "xsi:type", type.getTypeQName().getLocalPart());
+
+        while (previousRoot.hasChildNodes()) {
+            Node child = previousRoot.getFirstChild();
+            root.appendChild(child);
+        }
+
+        return DOMUtil.serializeDOMToString(doc);
     }
 
     private static class TransformerErrorListener implements ErrorListener {
