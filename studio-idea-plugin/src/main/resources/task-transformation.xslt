@@ -4,6 +4,7 @@
                 xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
                 xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3"
                 xmlns:scext="http://midpoint.evolveum.com/xml/ns/public/model/scripting/extension-3"
+                xmlns:rext="http://midpoint.evolveum.com/xml/ns/public/report/extension-3"
                 xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
                 exclude-result-prefixes="mext scext c">
 
@@ -35,6 +36,7 @@
     <xsl:variable name="URI_CLEANUP" select="'http://midpoint.evolveum.com/xml/ns/public/model/cleanup/handler-3'"/>
     <xsl:variable name="URI_VALIDITY" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/focus-validation-scanner/handler-3'"/>
     <xsl:variable name="URI_PARTITIONED_VALIDITY" select="'http://midpoint.evolveum.com/xml/ns/public/model/partitioned-focus-validity-scanner/handler-3'"/>
+    <xsl:variable name="URI_REPORT" select="'http://midpoint.evolveum.com/xml/ns/public/report/handler-3'"/>
 
     <xsl:variable name="taskHandlerUri" select="/c:task/c:handlerUri/text()"/>
     <xsl:variable name="assignmentTargetOid" select="/c:task/c:assignment/c:targetRef/@oid"/>
@@ -95,8 +97,11 @@
                             <xsl:with-param name="partitioned" select="'true'"/>
                         </xsl:call-template>
                     </xsl:when>-->
+                    <xsl:when test="$taskHandlerUri = $URI_REPORT">
+                        <xsl:call-template name="report"/>
+                    </xsl:when>
                     <xsl:otherwise>
-                        <xsl:message terminate="yes">Unknown action</xsl:message>
+                        <xsl:message terminate="yes">Unknown handlerUri (action) and/or archetype</xsl:message>
                     </xsl:otherwise>
                 </xsl:choose>
 
@@ -172,6 +177,7 @@
     <xsl:template match="/c:task/c:extension/mext:useRepositoryDirectly"/>
     <xsl:template match="/c:task/c:extension/mext:optionRaw"/>
     <xsl:template match="/c:task/c:extension/scext:executeScript"/>
+    <xsl:template match="/c:task/c:extension/rext:reportParam"/>
 
     <xsl:template match="/c:task/c:executionStatus">
         <executionState><xsl:value-of select="node()"/></executionState>
@@ -503,4 +509,24 @@
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
+    <xsl:template name="report">
+        <work>
+            <reportExport>
+                <xsl:if test="/c:task/c:objectRef/@oid">
+                    <xsl:element name="reportRef">
+                        <xsl:attribute name="oid">
+                            <xsl:value-of select="/c:task/c:objectRef/@oid"/>
+                        </xsl:attribute>
+                    </xsl:element>
+                    <xsl:if test="/c:task/c:extension/rext:reportParam">
+                        <reportParam>
+                            <xsl:copy-of select="/c:task/c:extension/rext:reportParam/*"/>
+                        </reportParam>
+                    </xsl:if>
+                </xsl:if>
+            </reportExport>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
 </xsl:stylesheet>

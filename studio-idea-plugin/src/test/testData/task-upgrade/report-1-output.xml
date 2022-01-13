@@ -1,0 +1,31 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"   oid="a94db374-7315-4688-acc2-ad8a9939fd56">
+    <name>K4 Activation Changes</name>
+    <assignment id="1">
+        <targetRef oid="00000000-0000-0000-0000-000000000507" relation="org:default" type="c:ArchetypeType"/>
+        <activation>
+            <effectiveStatus>enabled</effectiveStatus>
+        </activation>
+    </assignment>
+    <archetypeRef oid="00000000-0000-0000-0000-000000000507" relation="org:default" type="c:ArchetypeType"/>
+    <roleMembershipRef oid="00000000-0000-0000-0000-000000000507" relation="org:default" type="c:ArchetypeType"/>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <objectRef oid="d1704b59-3687-486c-bc8d-df4b323ec2f5" relation="org:default" type="c:ReportType"/>
+    <binding>loose</binding>
+    <schedule>
+        <recurrence>recurring</recurrence>
+        <cronLikePattern>0 0 6 ? * *</cronLikePattern>
+        <misfireAction>executeImmediately</misfireAction>
+    </schedule>
+    <threadStopAction>restart</threadStopAction>
+    <activity>
+        <work>
+            <reportExport>
+                <reportRef oid="d1704b59-3687-486c-bc8d-df4b323ec2f5"/>
+                <reportParam>
+                    <sample>value</sample>
+                    <number xsi:type="xsd:int">123</number>
+                </reportParam>
+            </reportExport>
+        </work>
+    </activity>
+</task>

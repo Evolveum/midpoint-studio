@@ -30,6 +30,11 @@ public class TaskUpgradeActionTest extends StudioActionTest {
         return "task-upgrade";
     }
 
+    @Test
+    public void testReport() {
+        testUpgrade("report-1-input.xml", "report-1-output.xml");
+    }
+
     @Disabled
     @Test
     public void testTrigger() {
