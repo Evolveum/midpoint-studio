@@ -4,6 +4,7 @@
 ### Added
 - Model authorizations were added to list of possibilities when completion dialog is shown
 - Added partial AXIOM query support
+- Create diff of two local files that contain midPoint objects
 
 ### Changed
 - isImport option is now being send correctly during upload together with raw option

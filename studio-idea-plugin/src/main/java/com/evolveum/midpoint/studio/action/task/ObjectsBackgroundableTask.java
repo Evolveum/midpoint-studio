@@ -11,9 +11,7 @@ import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.util.Holder;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -325,28 +323,9 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
         return state.getFailed() > 0 || state.getSkipped() > 0 || state.getSkippedFile() > 0;
     }
 
+    @Override
     protected List<MidPointObject> loadObjectsFromFile(VirtualFile file) throws Exception {
-        List<MidPointObject> objects = new ArrayList<>();
-        Holder<Exception> exception = new Holder<>();
-
-        RunnableUtils.runWriteActionAndWait(() -> {
-            MidPointUtils.forceSaveAndRefresh(getProject(), file);
-
-            try {
-                List<MidPointObject> obj = MidPointUtils.parseProjectFile(getProject(), file, notificationKey);
-                obj = ClientUtils.filterObjectTypeOnly(obj, isProcessingOnlyObjectTypes());
-
-                objects.addAll(obj);
-            } catch (Exception ex) {
-                exception.setValue(ex);
-            }
-        });
-
-        if (!exception.isEmpty()) {
-            throw exception.getValue();
-        }
-
-        return objects;
+        return super.loadObjectsFromFile(file, isProcessingOnlyObjectTypes());
     }
 
     protected boolean processFile(VirtualFile file) {

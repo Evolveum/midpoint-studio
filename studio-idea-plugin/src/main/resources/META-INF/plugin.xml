@@ -257,6 +257,11 @@
                 text="Upgrade task to activity (4.4)"
                 icon="AllIcons.Actions.Annotate"/>
 
+        <action id="MidPoint.Action.DiffLocal"
+                class="com.evolveum.midpoint.studio.action.DiffLocalAction"
+                text="Diff Local"
+                icon="AllIcons.Actions.Diff"/>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
@@ -287,6 +292,8 @@
                 <separator/>
 
                 <reference ref="MidPoint.Action.Refresh"/>
+
+                <reference ref="MidPoint.Action.DiffLocal"/>
 
                 <reference ref="MidPoint.Action.DiffRemote"/>
 
@@ -386,6 +393,8 @@
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
 
                 <separator/>
+
+                <reference ref="MidPoint.Action.DiffLocal"/>
 
                 <reference ref="MidPoint.Action.CleanupFile"/>
 

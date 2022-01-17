@@ -22,6 +22,10 @@ public class FileUtils {
     private static final String SCRATCH = "scratch";
 
     public static VirtualFile createScratchFile(Project project, Environment env) throws IOException {
+        return createScratchFile(project, env, null);
+    }
+
+    public static VirtualFile createScratchFile(Project project, Environment env, String fileNamePrefix) throws IOException {
         Map<String, String> params = new HashMap<>();
         params.put("s", env.getShortName());    // environment short name
         params.put("e", env.getName());    // environment name
@@ -29,7 +33,7 @@ public class FileUtils {
         MidPointService mm = MidPointService.getInstance(project);
         MidPointSettings settings = mm.getSettings();
 
-        return createFile(project, params, null, null, null, settings.getGeneratedFilePattern(), false);
+        return createFile(project, params, null, null, null, settings.getGeneratedFilePattern(), fileNamePrefix, false);
     }
 
     public static <O extends ObjectType> VirtualFile createFile(Project project, Environment env,
@@ -41,11 +45,11 @@ public class FileUtils {
         MidPointService mm = MidPointService.getInstance(project);
         MidPointSettings settings = mm.getSettings();
 
-        return createFile(project, params, objectType, oid, objectName, settings.getDowloadFilePattern(), overwrite);
+        return createFile(project, params, objectType, oid, objectName, settings.getDowloadFilePattern(), null, overwrite);
     }
 
     private static <O extends ObjectType> VirtualFile createFile(Project project, Map<String, String> params,
-                                                                 Class<O> objectType, String oid, String objectName, String filePattern, boolean overwrite)
+                                                                 Class<O> objectType, String oid, String objectName, String filePattern, String fileNamePrefix, boolean overwrite)
             throws IOException {
 
         if (objectType != null) {
@@ -64,7 +68,7 @@ public class FileUtils {
             VirtualFile dir = VfsUtil.createDirectories(project.getBasePath()
                     + VfsUtilCore.VFS_SEPARATOR_CHAR + directoryPath);
 
-            String name = createScratchFile(dir);
+            String name = createScratchFile(dir, fileNamePrefix);
             params.put("n", name);
             params.put("o", name);
         }
@@ -85,9 +89,13 @@ public class FileUtils {
         return dir.createChildData(project, fileName);
     }
 
-    private static String createScratchFile(VirtualFile parent) {
+    private static String createScratchFile(VirtualFile parent, String fileNamePrefix) {
+        if (fileNamePrefix == null) {
+            fileNamePrefix = SCRATCH;
+        }
+
         for (int i = 1; i < 10000; i++) {
-            String scratchName = SCRATCH + "_" + i;
+            String scratchName = fileNamePrefix + "_" + i;
             if (parent.findChild(scratchName + ".xml") == null) {
                 return scratchName;
             }

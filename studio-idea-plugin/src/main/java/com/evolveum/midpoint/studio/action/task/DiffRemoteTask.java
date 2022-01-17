@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.studio.action.transfer.DiffRemoteAction;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
@@ -85,20 +84,18 @@ public class DiffRemoteTask extends SimpleBackgroundableTask {
             current++;
             indicator.setFraction((double) current / files.size());
 
-            List<MidPointObject> objects = new ArrayList<>();
-
-            RunnableUtils.runWriteActionAndWait(() -> {
-                MidPointUtils.forceSaveAndRefresh(getProject(), file);
-
-                List<MidPointObject> obj = MidPointUtils.parseProjectFile(getProject(), file, NOTIFICATION_KEY);
-                obj = ClientUtils.filterObjectTypeOnly(obj);
-
-                objects.addAll(obj);
-            });
+            List<MidPointObject> objects;
+            try {
+                objects = loadObjectsFromFile(file);
+            } catch (Exception ex) {
+                failed.incrementAndGet();
+                midPointService.printToConsole(env, DiffRemoteTask.class, "Couldn't load objects from file " + file.getPath(), ex);
+                continue;
+            }
 
             if (objects.isEmpty()) {
                 skipped++;
-                midPointService.printToConsole(env, DiffRemoteAction.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
+                midPointService.printToConsole(env, DiffRemoteTask.class, "Skipped file " + file.getPath() + " no objects found (parsed).");
                 continue;
             }
 
@@ -112,7 +109,7 @@ public class DiffRemoteTask extends SimpleBackgroundableTask {
                     if (newObject == null) {
                         missing++;
 
-                        midPointService.printToConsole(env, DiffRemoteAction.class, "Couldn't find object "
+                        midPointService.printToConsole(env, DiffRemoteTask.class, "Couldn't find object "
                                 + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
 
                         continue;
@@ -126,7 +123,7 @@ public class DiffRemoteTask extends SimpleBackgroundableTask {
                 } catch (Exception ex) {
                     failed.incrementAndGet();
 
-                    midPointService.printToConsole(env, DiffRemoteAction.class, "Error getting object"
+                    midPointService.printToConsole(env, DiffRemoteTask.class, "Error getting object"
                             + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
                 }
             }
@@ -156,7 +153,7 @@ public class DiffRemoteTask extends SimpleBackgroundableTask {
                         deltas.add(xml);
                     }
 
-                    vf = FileUtils.createScratchFile(getProject(), env);
+                    vf = FileUtils.createScratchFile(getProject(), env, "diff");
 
                     writer = new OutputStreamWriter(vf.getOutputStream(this), vf.getCharset());
 
@@ -176,7 +173,7 @@ public class DiffRemoteTask extends SimpleBackgroundableTask {
                 } catch (Exception ex) {
                     failed.incrementAndGet();
 
-                    midPointService.printToConsole(env, DiffRemoteAction.class, "Failed to compare file " + file.getPath(), ex);
+                    midPointService.printToConsole(env, DiffRemoteTask.class, "Failed to compare file " + file.getPath(), ex);
                 } finally {
                     IOUtils.closeQuietly(writer);
                 }
