@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class DiffLocalTask extends SimpleBackgroundableTask {
 
-    private static final Logger LOG = Logger.getInstance(GeneratorTask.class);
+    private static final Logger LOG = Logger.getInstance(DiffLocalTask.class);
 
     public static String TITLE = "Diff local task";
 
