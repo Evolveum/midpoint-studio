@@ -86,7 +86,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
     @Override
     public Icon getNodeIcon() {
-        return MidPointIcons.ACTION_MIDPOINT;
+        return MidPointIcons.Midpoint;
     }
 
     @Override

@@ -59,7 +59,7 @@
         <facet.toolWindow id="MidPoint"
                           facetIdList="MidPointFacet"
                           anchor="bottom"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
 
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
@@ -68,35 +68,35 @@
                           facetIdList="MidPointFacet"
                           anchor="bottom"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
 
         <facet.toolWindow id="TraceLog"
                           facetIdList="MidPointFacet"
                           anchor="bottom"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.log.LogWindowFactory"/>
 
         <facet.toolWindow id="TraceLensContext"
                           facetIdList="MidPointFacet"
                           anchor="left"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.lensContext.TraceLensContextToolWindowFactory"/>
 
         <facet.toolWindow id="TraceOptions"
                           facetIdList="MidPointFacet"
                           anchor="right"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsWindowFactory"/>
 
         <facet.toolWindow id="TraceGraph"
                           facetIdList="MidPointFacet"
                           anchor="right"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
 
         <fileType
