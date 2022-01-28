@@ -132,6 +132,10 @@ public class ProcessorUtils {
         return loadObjects(ObjectTemplateType.class);
     }
 
+    public List<TaskType> loadTasks() throws Exception {
+        return loadObjects(TaskType.class);
+    }
+
     public List<ResourceType> loadResources() throws Exception {
         List<ResourceType> resources = loadObjects(ResourceType.class);
 

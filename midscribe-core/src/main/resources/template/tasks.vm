@@ -4,10 +4,10 @@
 
 #if(!$tasks.isEmpty())
 
+== Tasks
+
 #set($objects=$tasks)
 #parse("/template/objects-sumary-table.vm")
-
-== Tasks
 
 #foreach($object in $tasks)
 #parse("/template/task.vm")
