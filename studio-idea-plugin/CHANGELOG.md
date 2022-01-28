@@ -7,13 +7,14 @@
 - Create diff of two local files that contain midPoint objects
 
 ### Changed
-- isImport option is now being send correctly during upload together with raw option
+- isImport option is now being sent correctly during upload together with raw option
 
 ### Fixed
 - Fixed UI actions that accessed filesystem in wrong thread
 - Fixed environment proxy settings
 - Fixed threading and UI freezes on some long running actions (network related)
 - Fixed defaults file includes when generating documentation
+- Fixed file including for documentation generator on Windows
 
 ## 4.4.0
 ### Added
