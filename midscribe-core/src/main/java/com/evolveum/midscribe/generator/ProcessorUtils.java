@@ -7,6 +7,7 @@ import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,6 +162,10 @@ public class ProcessorUtils {
     }
 
     public <T extends ObjectType> T getObject(ObjectReferenceType ref) {
+        if (ref == null) {
+            return null;
+        }
+
         QName type = ref.getType();
         if (type == null) {
             type = ObjectType.COMPLEX_TYPE;
@@ -178,6 +183,10 @@ public class ProcessorUtils {
     }
 
     public <T extends ObjectType> T getObject(Class<T> type, String oid) {
+        if (type == null || StringUtils.isEmpty(oid)) {
+            return null;
+        }
+
         MidPointClient client = context.getClient();
         return client.get(type, oid);
     }
