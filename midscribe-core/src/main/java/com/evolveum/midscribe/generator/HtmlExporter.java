@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class HtmlExporter implements Exporter {
+public class HtmlExporter extends ExporterBase {
 
     // todo figure out templates
 
@@ -32,11 +32,8 @@ public class HtmlExporter implements Exporter {
                 .build();
 //                .templateDir(new File("./src/test/resources/css"));
 
-        // this should improve performance of JRuby
-        System.setProperty("jruby.compat.version", "RUBY1_9");
-        System.setProperty("jruby.compile.mode", "OFF");
+        Asciidoctor doctor = createAsciidoctor();
 
-        Asciidoctor doctor = Asciidoctor.Factory.create();
         doctor.convertFile(adocFile, options);
     }
 }

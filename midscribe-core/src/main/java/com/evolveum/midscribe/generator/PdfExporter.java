@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class PdfExporter implements Exporter {
+public class PdfExporter extends ExporterBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(PdfExporter.class);
 
@@ -34,11 +34,8 @@ public class PdfExporter implements Exporter {
                 .backend("pdf")
                 .build();
 
-        // this should improve performance of JRuby
-        System.setProperty("jruby.compat.version", "RUBY1_9");
-        System.setProperty("jruby.compile.mode", "OFF");
+        Asciidoctor doctor = createAsciidoctor();
 
-        Asciidoctor doctor = Asciidoctor.Factory.create();
         doctor.convertFile(adocFile, options);
     }
 }
