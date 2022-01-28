@@ -18,7 +18,7 @@ public class InMemoryFileFilter implements IOFileFilter {
 
     public InMemoryFileFilter(File base, List<String> includes, List<String> excludes) {
         if (includes == null || includes.isEmpty()) {
-            includes = Arrays.asList("**.xml");
+            includes = Arrays.asList("**.[xX][mM][lL]");
         }
         include = buildFilter(base, includes);
         exclude = buildFilter(base, excludes);
@@ -29,7 +29,7 @@ public class InMemoryFileFilter implements IOFileFilter {
             return null;
         }
 
-        List<String> fullPathWildcards = wildcards.stream().map(s -> base.getPath() + "/" + s).collect(Collectors.toList());
+        List<String> fullPathWildcards = wildcards.stream().map(wildcard -> base.getPath() + File.separator + wildcard).collect(Collectors.toList());
 
         return new WildcardFileFilter(fullPathWildcards);
     }

@@ -59,7 +59,7 @@ public class InMemoryClient implements MidPointClient {
         DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
 
         PrismContextFactory factory = new MidPointPrismContextFactory();
-         prismContext = factory.createPrismContext();
+        prismContext = factory.createPrismContext();
         prismContext.initialize();
 
         ParsingContext parsingContext = prismContext.createParsingContextForCompatibilityMode();

@@ -4,6 +4,7 @@ import com.evolveum.midscribe.util.InMemoryFileFilter;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.Arrays;
 
 import static org.testng.AssertJUnit.assertFalse;
@@ -24,8 +25,8 @@ public class InMemoryFileFilterTest {
         assertTrue(filter.accept(new File(OBJECTS_FOLDER, "resources")));
 
         assertFalse(filter.accept(new File(OBJECTS_FOLDER, "a.txt")));
-        assertFalse(filter.accept(new File(OBJECTS_FOLDER, "a.XML")));
-        assertFalse(filter.accept(new File(OBJECTS_FOLDER, "a.XmL")));
+        assertTrue(filter.accept(new File(OBJECTS_FOLDER, "a.XML")));
+        assertTrue(filter.accept(new File(OBJECTS_FOLDER, "a.XmL")));
 
         assertTrue(filter.accept(new File(OBJECTS_FOLDER, "resources/hr.xml")));
     }
