@@ -6,7 +6,7 @@
 
     <groupId>com.evolveum.midpoint</groupId>
     <artifactId>midscribe</artifactId>
-    <version>4.3-SNAPSHOT</version>
+    <version>4.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -31,7 +31,7 @@
         <asciidoctorj.tabbed.code.version>0.3</asciidoctorj.tabbed.code.version>
         <commons.io.version>2.11.0</commons.io.version>
         <velocity.version>2.3</velocity.version>
-        <midpoint.version>4.3</midpoint.version>
+        <midpoint.version>4.4</midpoint.version>
         <testng.version>7.4.0</testng.version>
         <xml.apis.version>2.0.2</xml.apis.version>
         <jruby.version>9.2.19.0</jruby.version>
