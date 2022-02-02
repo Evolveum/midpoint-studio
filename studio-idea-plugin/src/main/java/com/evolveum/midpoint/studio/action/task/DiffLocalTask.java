@@ -49,7 +49,7 @@ public class DiffLocalTask extends SimpleBackgroundableTask {
 
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
         if (toProcess.size() != 2) {
-            // todo show notification
+            midPointService.printToConsole(getEnvironment(), DiffLocalTask.class, "Too many files selected, should be only two.");
             return;
         }
 
@@ -67,7 +67,8 @@ public class DiffLocalTask extends SimpleBackgroundableTask {
         }
 
         if (firstSet.size() != secondSet.size()) {
-            // todo show notification
+            midPointService.printToConsole(getEnvironment(), DiffLocalTask.class,
+                    "Number of objects doesn't match in selected files: " + firstSet.size() + " vs. " + secondSet.size());
             return;
         }
 
