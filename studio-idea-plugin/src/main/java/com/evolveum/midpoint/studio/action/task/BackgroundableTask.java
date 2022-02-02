@@ -55,7 +55,7 @@ public abstract class BackgroundableTask extends Task.Backgroundable {
 
     @Override
     public void run(@NotNull ProgressIndicator indicator) {
-        LOG.info("Starting task: " + getClass().getName());
+        logToConsole("Starting: " + getTitle());
 
         if (getProject() == null) {
             LOG.debug("Project object is null, stopping task");
@@ -70,7 +70,12 @@ public abstract class BackgroundableTask extends Task.Backgroundable {
             }
         }.run();
 
-        LOG.info("Task finished: " + getClass().getName());
+        logToConsole("Finished: " + getTitle());
+    }
+
+    protected void logToConsole(String msg) {
+        LOG.info(msg);
+        midPointService.printToConsole(getEnvironment(), getClass(), msg);
     }
 
     protected abstract void doRun(ProgressIndicator indicator);

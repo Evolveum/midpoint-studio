@@ -34,7 +34,7 @@ public abstract class SimpleBackgroundableTask extends BackgroundableTask {
     }
 
     private MidPointClient setupMidpointClient() {
-        LOG.debug("Setting up MidPoint client");
+        logToConsole("Setting up MidPoint client");
 
         Environment env = getEnvironment();
 
@@ -42,7 +42,7 @@ public abstract class SimpleBackgroundableTask extends BackgroundableTask {
 
         MidPointClient client = new MidPointClient(getProject(), env);
 
-        LOG.debug("MidPoint client setup done");
+        logToConsole("MidPoint client setup done");
 
         return client;
     }
