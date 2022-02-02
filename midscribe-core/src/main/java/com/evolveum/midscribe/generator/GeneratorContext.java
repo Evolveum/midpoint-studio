@@ -5,19 +5,19 @@ package com.evolveum.midscribe.generator;
  */
 public class GeneratorContext {
 
-    private MidPointClient client;
+    private MidPointObjectStore store;
     private GenerateOptions configuration;
 
-    public GeneratorContext(GenerateOptions configuration, MidPointClient client) {
+    public GeneratorContext(GenerateOptions configuration, MidPointObjectStore store) {
         this.configuration = configuration;
-        this.client = client;
+        this.store = store;
     }
 
     public GenerateOptions getConfiguration() {
         return configuration;
     }
 
-    public MidPointClient getClient() {
-        return client;
+    public MidPointObjectStore getStore() {
+        return store;
     }
 }

@@ -29,7 +29,9 @@ public class GenerateOptions {
 
     private File expanderProperties;
 
-    private Class<? extends MidPointClient> midpointClient;
+    private Class<? extends MidPointObjectStore> objectStoreType;
+
+    private MidPointObjectStore objectStoreInstance;
 
     private Class<? extends TemplateEngineContextBuilder> templateEngineContextBuilder;
 
@@ -81,12 +83,12 @@ public class GenerateOptions {
         this.exclude = exclude;
     }
 
-    public Class<? extends MidPointClient> getMidpointClient() {
-        return midpointClient;
+    public Class<? extends MidPointObjectStore> getObjectStoreType() {
+        return objectStoreType;
     }
 
-    public void setMidpointClient(Class<? extends MidPointClient> midpointClient) {
-        this.midpointClient = midpointClient;
+    public void setObjectStoreType(Class<? extends MidPointObjectStore> objectStoreType) {
+        this.objectStoreType = objectStoreType;
     }
 
     public Class<? extends TemplateEngineContextBuilder> getTemplateEngineContextBuilder() {
@@ -134,5 +136,13 @@ public class GenerateOptions {
 
     public void setExpanderProperties(File expanderProperties) {
         this.expanderProperties = expanderProperties;
+    }
+
+    public MidPointObjectStore getObjectStoreInstance() {
+        return objectStoreInstance;
+    }
+
+    public void setObjectStoreInstance(MidPointObjectStore objectStoreInstance) {
+        this.objectStoreInstance = objectStoreInstance;
     }
 }

@@ -85,7 +85,7 @@ public class ProcessorUtils {
             return null;
         }
 
-        PrismContext prismContext = context.getClient().getPrismContext();
+        PrismContext prismContext = context.getStore().getPrismContext();
 
         final QName fakeQName = new QName(PrismConstants.NS_TYPES, "object");
 
@@ -191,15 +191,15 @@ public class ProcessorUtils {
             return null;
         }
 
-        MidPointClient client = context.getClient();
-        return client.get(type, oid);
+        MidPointObjectStore store = context.getStore();
+        return store.get(type, oid);
     }
 
     private <T extends ObjectType> List<T> loadObjects(Class<T> type) throws Exception {
         List<T> objects = new ArrayList<>();
 
-        MidPointClient client = context.getClient();
-        List<T> result = client.list(type);
+        MidPointObjectStore store = context.getStore();
+        List<T> result = store.list(type);
         if (result != null) {
             objects.addAll(result);
             Collections.sort(objects, new ObjectTypeComparator());

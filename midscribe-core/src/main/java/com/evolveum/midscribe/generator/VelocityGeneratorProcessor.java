@@ -52,7 +52,7 @@ public class VelocityGeneratorProcessor {
 
         VelocityContext context = new VelocityContext();
         context.put("configuration", ctx.getConfiguration());
-        context.put("client", ctx.getClient());
+        context.put("store", ctx.getStore());
         context.put("utils", TemplateUtils.class);
         context.put("processor", new ProcessorUtils(ctx));
 

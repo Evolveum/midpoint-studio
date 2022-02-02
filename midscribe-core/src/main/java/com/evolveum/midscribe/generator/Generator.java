@@ -52,11 +52,7 @@ public class Generator {
     }
 
     public void generate(Properties properties) throws Exception {
-        Class<? extends MidPointClient> clientType = configuration.getMidpointClient();
-        if (clientType == null) {
-            clientType = InMemoryClient.class;
-        }
-        MidPointClient client = createMidPointClient(clientType);
+        MidPointObjectStore store = createObjectStore();
 
         File adocFile = createAdocFile();
 
@@ -65,7 +61,7 @@ public class Generator {
 
             VelocityGeneratorProcessor processor = new VelocityGeneratorProcessor(configuration, properties);
 
-            GeneratorContext ctx = new GeneratorContext(configuration, client);
+            GeneratorContext ctx = new GeneratorContext(configuration, store);
             processor.process(output, ctx);
         }
 
@@ -138,11 +134,24 @@ public class Generator {
         return file;
     }
 
-    private MidPointClient createMidPointClient(Class<? extends MidPointClient> type) throws Exception {
-        Constructor<? extends MidPointClient> con = type.getConstructor(GenerateOptions.class);
-        MidPointClient client = con.newInstance(configuration);
-        client.init();
+    private MidPointObjectStore createObjectStore() throws Exception {
+        MidPointObjectStore store = configuration.getObjectStoreInstance();
+        if (store != null) {
+            LOG.debug("Using midPoint store instance: {}" + store.getClass().getName());
+            return store;
+        }
 
-        return client;
+        Class<? extends MidPointObjectStore> storeType = configuration.getObjectStoreType();
+        if (storeType == null) {
+            storeType = InMemoryObjectStore.class;
+        }
+
+        LOG.debug("Setting up midPoint store from class: {}", storeType);
+
+        Constructor<? extends MidPointObjectStore> con = storeType.getConstructor(GenerateOptions.class);
+        store = con.newInstance(configuration);
+        store.init();
+
+        return store;
     }
 }

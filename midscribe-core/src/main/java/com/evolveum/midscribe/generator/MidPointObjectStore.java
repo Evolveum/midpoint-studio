@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public interface MidPointClient {
+public interface MidPointObjectStore {
 
     void init() throws Exception;
 

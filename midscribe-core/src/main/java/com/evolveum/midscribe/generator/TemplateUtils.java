@@ -175,14 +175,14 @@ public class TemplateUtils {
         }
 
         Map<String, String> result = new HashMap<>();
-//        ConnectorType connector = loadObject(client, connectorRef);
+//        ConnectorType connector = loadObject(store, connectorRef);
         // todo implement
 
         return result;
     }
 
     public static ObjectType loadObject(ObjectReferenceType ref) throws Exception {
-//        if (client == null || ref == null) {
+//        if (store == null || ref == null) {
 //            return null;
 //        }
 
@@ -192,7 +192,7 @@ public class TemplateUtils {
 //            type = ObjectTypes.OBJECT;
 //        }
 //
-//        return client.oid(type.getClassDefinition(), ref.getOid()).get();
+//        return store.oid(type.getClassDefinition(), ref.getOid()).get();
         return null;
     }
 

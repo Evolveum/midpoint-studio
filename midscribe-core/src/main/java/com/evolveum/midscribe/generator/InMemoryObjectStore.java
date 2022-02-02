@@ -20,9 +20,9 @@ import java.util.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class InMemoryClient implements MidPointClient {
+public class InMemoryObjectStore implements MidPointObjectStore {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InMemoryClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InMemoryObjectStore.class);
 
     private Map<Class<? extends ObjectType>, List<ObjectType>> objects = new HashMap<>();
 
@@ -30,7 +30,7 @@ public class InMemoryClient implements MidPointClient {
 
     private PrismContext prismContext;
 
-    public InMemoryClient(GenerateOptions options) {
+    public InMemoryObjectStore(GenerateOptions options) {
         Validate.notNull(options);
 
         this.options = options;
