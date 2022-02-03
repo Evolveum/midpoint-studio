@@ -2,7 +2,6 @@ package com.evolveum.midscribe;
 
 import com.evolveum.midscribe.generator.ExportFormat;
 import com.evolveum.midscribe.generator.GenerateOptions;
-import com.evolveum.midscribe.generator.InMemoryObjectStore;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Validate;
 import org.testng.AssertJUnit;
@@ -26,7 +25,6 @@ public abstract class MidscribeTest {
         opts.setAdocOutput(new File("./target/" + name + ".adoc"));
         opts.setExportOutput(new File("./target/" + name + ".html"));
         opts.setExportFormat(ExportFormat.HTML);
-        opts.setObjectStoreInstance(new InMemoryObjectStore(opts));
 
         return opts;
     }

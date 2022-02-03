@@ -4,7 +4,6 @@ import com.evolveum.midscribe.util.InMemoryFileFilter;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.Arrays;
 
 import static org.testng.AssertJUnit.assertFalse;

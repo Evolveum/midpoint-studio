@@ -15,18 +15,15 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class GeneratorTest {
+public class GeneratorTest extends MidscribeTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(GeneratorTest.class);
 
     @Test
     public void generateExample() throws Exception {
-        GenerateOptions opts = new GenerateOptions();
+        GenerateOptions opts = prepareOptions("generateExample");
         opts.setSourceDirectory(new File("./src/test/resources/objects"));
         opts.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
-        opts.setAdocOutput(new File("./target/example.adoc"));
-        opts.setExportOutput(new File("./target/example.html"));
-        opts.setExportFormat(ExportFormat.HTML);
 
         Generator generator = new Generator(opts);
         generator.generate();
@@ -34,11 +31,9 @@ public class GeneratorTest {
 
     @Test
     public void generatePdfExample() throws Exception {
-        GenerateOptions opts = new GenerateOptions();
+        GenerateOptions opts = prepareOptions("generatePdfExample");
         opts.setSourceDirectory(new File("./src/test/resources/objects"));
         opts.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
-        opts.setAdocOutput(new File("./target/example.adoc"));
-        opts.setExportOutput(new File("./target/example.pdf"));
         opts.setExportFormat(ExportFormat.PDF);
 
         Generator generator = new Generator(opts);
@@ -47,13 +42,10 @@ public class GeneratorTest {
 
     @Test
     public void generateWithCustomZipTemplate() throws Exception {
-        GenerateOptions opts = new GenerateOptions();
+        GenerateOptions opts = prepareOptions("generateWithCustomZipTemplate");
         opts.setSourceDirectory(new File("./src/test/resources/objects"));
         opts.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
-        opts.setAdocOutput(new File("./target/example.adoc"));
-        opts.setExportOutput(new File("./target/example.html"));
         opts.setTemplate(new File("./src/test/resources/template.zip"));
-        opts.setExportFormat(ExportFormat.HTML);
 
         Generator generator = new Generator(opts);
         generator.generate();
@@ -61,13 +53,9 @@ public class GeneratorTest {
 
     @Test
     public void generateWithCustomDirectoryTemplate() throws Exception {
-        GenerateOptions opts = new GenerateOptions();
-        opts.setSourceDirectory(new File("./src/test/resources/objects"));
+        GenerateOptions opts = prepareOptions("generateWithCustomDirectoryTemplate");
         opts.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
-        opts.setAdocOutput(new File("./target/example.adoc"));
-        opts.setExportOutput(new File("./target/example.html"));
         opts.setTemplate(new File("./src/test/resources/template-directory"));
-        opts.setExportFormat(ExportFormat.HTML);
 
         Generator generator = new Generator(opts);
         generator.generate();
@@ -77,8 +65,8 @@ public class GeneratorTest {
     public void generateAdocHtml() throws IOException {
         HtmlExporter exporter = new HtmlExporter();
 
-        File adoc = new File("./src/test/resources/test.adoc");
-        File html = new File("./target/test.html");
+        File adoc = new File("./src/test/resources/generateAdoc.adoc");
+        File html = new File("./target/generateAdocHtml.html");
         exporter.export(adoc, html);
     }
 
@@ -86,19 +74,16 @@ public class GeneratorTest {
     public void generateAdocPdf() throws IOException {
         HtmlExporter exporter = new HtmlExporter();
 
-        File adoc = new File("./src/test/resources/test.adoc");
-        File html = new File("./target/test.pdf");
+        File adoc = new File("./src/test/resources/generateAdoc.adoc");
+        File html = new File("./target/generateAdocPdf.pdf");
         exporter.export(adoc, html);
     }
 
     @Test
     public void generateHtmlWithCustomLogListener() throws Exception {
-        GenerateOptions opts = new GenerateOptions();
+        GenerateOptions opts = prepareOptions("generateHtmlWithCustomLogListener");
         opts.setSourceDirectory(new File("./src/test/resources/objects"));
-        opts.getInclude().addAll(Arrays.asList(new String[]{"generateHtmlWithCustomLogListener.xml"}));
-        opts.setAdocOutput(new File("./target/generateHtmlWithCustomLogListener.adoc"));
-        opts.setExportOutput(new File("./target/generateHtmlWithCustomLogListener.html"));
-        opts.setExportFormat(ExportFormat.HTML);
+        opts.setInclude(Arrays.asList("generateHtmlWithCustomLogListener.xml"));
 
         List<String> messages = new ArrayList<>();
 

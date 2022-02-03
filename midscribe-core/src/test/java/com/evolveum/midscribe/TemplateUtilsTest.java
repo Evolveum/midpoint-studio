@@ -2,17 +2,15 @@ package com.evolveum.midscribe;
 
 import com.evolveum.midpoint.xml.ns._public.common.common_3.CapabilityCollectionType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
-import com.evolveum.midscribe.generator.GenerateOptions;
-import com.evolveum.midscribe.generator.Generator;
-import com.evolveum.midscribe.generator.GeneratorProperties;
-import com.evolveum.midscribe.generator.MidPointObjectStore;
-import com.sun.source.tree.AssertTree;
-import org.apache.commons.io.FileUtils;
+import com.evolveum.midscribe.generator.*;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -24,7 +22,9 @@ public class TemplateUtilsTest extends MidscribeTest {
         GenerateOptions opts = prepareOptions("mid-7529");
         opts.setInclude(Arrays.asList("mid-7529/mid-7529.xml"));
 
-        MidPointObjectStore store = opts.getObjectStoreInstance();
+        MidPointObjectStore store = new InMemoryObjectStore(opts);
+        opts.setObjectStoreInstance(store);
+
         store.init();
 
         ResourceType resource = store.get(ResourceType.class, "817b95be-ee5e-4322-bc38-6225e77d69b3");
