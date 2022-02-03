@@ -202,7 +202,7 @@ public class TemplateUtils {
     public static String describeCapability(CapabilityType cap) {
         String description = new ReflectionToStringBuilder(cap, new CustomToStringStyle(), null,
                 CapabilityType.class, false, false, true).toString();
-        description = description.replaceFirst(" \\+\n   ","");
+        description = description.replaceFirst(" \\+\n   ", "");
 
         return description;
     }
@@ -268,37 +268,84 @@ public class TemplateUtils {
 
     private static class CustomToStringStyle extends ToStringStyle {
 
+        private int level;
+
         public CustomToStringStyle() {
+            this(1);
+        }
+
+        public CustomToStringStyle(int level) {
             setUseClassName(false);
             setUseIdentityHashCode(false);
-            setFieldSeparator(" +\n   ");
+            setFieldSeparator("\n");
             setFieldSeparatorAtStart(true);
             setArrayStart("");
             setArrayEnd("");
             setContentStart("");
             setContentEnd("");
+            setArraySeparator(",");
+
+            setNullText("_NULL_");
+
+            this.level = level;
+        }
+
+        @Override
+        public void append(StringBuffer buffer, String fieldName, Object value, Boolean fullDetail) {
+            super.append(buffer, fieldName, value, fullDetail);
+        }
+
+        @Override
+        protected void appendFieldStart(StringBuffer buffer, String fieldName) {
+            if (fieldName == null) {
+                return;
+            }
+
+            buffer.append(StringUtils.repeat("*", level));
+            buffer.append(" ");
+            buffer.append(fieldName);
+            buffer.append(":");
+        }
+
+        @Override
+        protected void appendFieldEnd(StringBuffer buffer, String fieldName) {
+            if (buffer.toString().endsWith(":\n")) {
+                buffer.delete(buffer.length() - 2, buffer.length());
+            }
+
+            buffer.append("\n");
         }
 
         @Override
         protected void appendDetail(StringBuffer buffer, String fieldName, Object value) {
             if (value instanceof QName) {
+                buffer.append(" *");
                 QName qname = (QName) value;
                 buffer.append(qname.getPrefix());
                 buffer.append(":");
                 buffer.append(qname.getLocalPart());
+                buffer.append("*");
+
                 return;
             }
 
             if (value == null || isWrapperType(value.getClass()) || String.class.equals(value.getClass())) {
+                if (value == null) {
+                    value = "_NULL_";
+                } else if ("".equals(value)) {
+                    value = "_EMPTY STRING_";
+                }
+
+                buffer.append(" *");
                 super.appendDetail(buffer, fieldName, value);
+                buffer.append("*");
+
                 return;
             }
 
-            buffer.append(" + \n[");
-            buffer.append(value.getClass().getSimpleName()).append(":");
-            new ReflectionToStringBuilder(value, new CustomToStringStyle(), buffer,
+            new ReflectionToStringBuilder(value, new CustomToStringStyle(level + 1), buffer,
                     (Class) value.getClass(), false, false, true).toString();
-            buffer.append("] +\n");
+            buffer.append("\n");
         }
     }
 }

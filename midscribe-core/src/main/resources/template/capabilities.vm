@@ -1,5 +1,4 @@
 ## main object: $capabilities (CapabilityCollectionType)
-
 [cols=2,options=header]
 |===
 |Capability
@@ -8,7 +7,7 @@
 #foreach($jaxb in $capabilities.getAny())
 #set($capability = $jaxb.getValue())
 |$jaxb.getName().getLocalPart()
-|$utils.describeCapability($capability)
+a|$utils.describeCapability($capability)
 
 #end
 |===

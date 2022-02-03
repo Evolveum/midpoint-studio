@@ -26,12 +26,12 @@
         <slf4j.version>1.7.32</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <jcommander.version>1.81</jcommander.version>
-        <asciidoctorj.version>2.5.2</asciidoctorj.version>
-        <asciidoctorj.pdf.version>1.6.0</asciidoctorj.pdf.version>
+        <asciidoctorj.version>2.5.3</asciidoctorj.version>
+        <asciidoctorj.pdf.version>1.6.2</asciidoctorj.pdf.version>
         <asciidoctorj.tabbed.code.version>0.3</asciidoctorj.tabbed.code.version>
         <commons.io.version>2.11.0</commons.io.version>
         <velocity.version>2.3</velocity.version>
-        <midpoint.version>4.4</midpoint.version>
+        <midpoint.version>4.4.1</midpoint.version>
         <testng.version>7.4.0</testng.version>
         <xml.apis.version>2.0.2</xml.apis.version>
         <jruby.version>9.2.19.0</jruby.version>
