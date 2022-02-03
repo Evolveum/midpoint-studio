@@ -22,7 +22,7 @@ public class TemplateUtilsTest extends MidscribeTest {
     @Test
     public void testDescribeCapability() throws Exception {
         GenerateOptions opts = prepareOptions("mid-7529");
-        opts.setInclude(Arrays.asList(new String[]{"mid-7529.xml"}));
+        opts.setInclude(Arrays.asList("mid-7529/mid-7529.xml"));
 
         MidPointObjectStore store = opts.getObjectStoreInstance();
         store.init();
