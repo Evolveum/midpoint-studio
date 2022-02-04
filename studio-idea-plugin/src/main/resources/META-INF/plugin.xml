@@ -15,6 +15,8 @@
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ConnectorXmlSchemaCacheService"/>
+s
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ExtensionSchemaCacheService1"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService"/>
 

@@ -40,7 +40,7 @@ public class ServiceFactory {
             DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
             // todo create web client just to obtain extension schemas!
 
-            PrismContextFactory factory = new MidPointPrismContextFactory();
+            MidPointPrismContextFactory factory = new MidPointPrismContextFactory();
             PrismContext prismContext = factory.createPrismContext();
             prismContext.initialize();
 

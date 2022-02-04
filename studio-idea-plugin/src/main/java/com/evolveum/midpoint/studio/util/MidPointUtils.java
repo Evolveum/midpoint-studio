@@ -56,6 +56,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
+import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
@@ -377,7 +378,7 @@ public class MidPointUtils {
     }
 
     @Experimental
-    public static <R> JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
+    public static JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
 
         JXTreeTable table = new JXTreeTable(model) {
             @Override
@@ -963,6 +964,22 @@ public class MidPointUtils {
         }
 
         return DOMUtil.serializeDOMToString(doc);
+    }
+
+    public static void subscribeToEnvironmentChange(Project project, Consumer<Environment> refreshFunction) {
+        MessageBus bus = project.getMessageBus();
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+
+            @Override
+            public void environmentChanged(Environment oldEnv, Environment newEnv) {
+                refreshFunction.accept(newEnv);
+            }
+        });
+
+        ApplicationManager.getApplication().invokeLater(() -> {
+            EnvironmentService service = project.getService(EnvironmentService.class);
+            refreshFunction.accept(service.getSelected());
+        });
     }
 
     private static class TransformerErrorListener implements ErrorListener {
