@@ -9,11 +9,11 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.5.31"
+    id("org.jetbrains.kotlin.jvm") version "1.6.10"
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.2.0"
+    id("org.jetbrains.intellij") version "1.3.1"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-    id("org.jetbrains.changelog") version "1.3.0"
+    id("org.jetbrains.changelog") version "1.3.1"
     // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
     id("io.gitlab.arturbosch.detekt") version "1.17.1"
     // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
@@ -31,9 +31,13 @@ val pluginImplementation by configurations.creating {
     extendsFrom(configurations.implementation.get())
 }
 
+val resolvableCompileOnly by configurations.creating {
+    extendsFrom(configurations.compileOnly.get())
+}
+
 sourceSets {
     main {
-        compileClasspath = pluginImplementation + configurations.compileOnly
+        compileClasspath = pluginImplementation + resolvableCompileOnly
     }
 }
 
@@ -223,6 +227,10 @@ tasks {
 
     test {
         useJUnitPlatform()
+    }
+
+    runIde {
+        jvmArgs("--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED")
     }
 
     runIdeForUiTests {
