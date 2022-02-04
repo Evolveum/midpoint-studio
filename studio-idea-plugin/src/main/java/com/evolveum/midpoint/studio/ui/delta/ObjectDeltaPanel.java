@@ -8,6 +8,7 @@ import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.ui.CustomComboBoxAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
 import com.intellij.diff.DiffRequestFactory;
 import com.intellij.diff.chains.DiffRequestChain;
@@ -114,52 +115,58 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
     }
 
     private void refreshDiffView() {
-        PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+        new RunnableUtils.PluginClasspathRunnable() {
 
-        DiffStrategy strategy = this.strategyCombo.getSelected();
-        ParameterizedEquivalenceStrategy pes = strategy != null ? strategy.getStrategy() : ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION;
+            @Override
+            public void runWithPluginClassLoader() {
+                PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
 
-        try (InputStream is = file.getInputStream()) {
-            PrismParser parser = ClientUtils.createParser(prismContext, is);
+                DiffStrategy strategy = ObjectDeltaPanel.this.strategyCombo.getSelected();
+                ParameterizedEquivalenceStrategy pes = strategy != null ? strategy.getStrategy() : ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION;
 
-            ObjectDeltaObjectType odo = parser.parseRealValue(ObjectDeltaObjectType.class);
-            PrismObject local = odo.getOldObject().asPrismObject();
-            PrismObject remote = odo.getNewObject().asPrismObject();
+                try (InputStream is = file.getInputStream()) {
+                    PrismParser parser = ClientUtils.createParser(prismContext, is);
 
-            PrismObject o1 = local;
-            PrismObject o2 = local.clone();
+                    ObjectDeltaObjectType odo = parser.parseRealValue(ObjectDeltaObjectType.class);
+                    PrismObject local = odo.getOldObject().asPrismObject();
+                    PrismObject remote = odo.getNewObject().asPrismObject();
 
-            ObjectDelta delta = local.diff(remote, pes);
-            delta.applyTo(o2);
+                    PrismObject o1 = local;
+                    PrismObject o2 = local.clone();
 
-            LightVirtualFile file1 = new LightVirtualFile("Local.xml", ClientUtils.serialize(prismContext, o1));
-            LightVirtualFile file2 = new LightVirtualFile("Remote.xml", ClientUtils.serialize(prismContext, o2));
+                    ObjectDelta delta = local.diff(remote, pes);
+                    delta.applyTo(o2);
 
-            DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, file1, file2);
+                    LightVirtualFile file1 = new LightVirtualFile("Local.xml", ClientUtils.serialize(prismContext, o1));
+                    LightVirtualFile file2 = new LightVirtualFile("Remote.xml", ClientUtils.serialize(prismContext, o2));
 
-            DiffRequestChain chain = new SimpleDiffRequestChain(request);
+                    DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, file1, file2);
 
-            cleanupDiffView();
+                    DiffRequestChain chain = new SimpleDiffRequestChain(request);
 
-            processor = new CacheDiffRequestChainProcessor(project, chain) {
+                    cleanupDiffView();
 
-                @Override
-                protected @org.jetbrains.annotations.NotNull List<AnAction> getNavigationActions() {
-                    List<AnAction> list = new ArrayList<>();
-                    list.add(strategyCombo);
-                    list.add(new Separator());
+                    processor = new CacheDiffRequestChainProcessor(project, chain) {
 
-                    list.addAll(super.getNavigationActions());
+                        @Override
+                        protected @org.jetbrains.annotations.NotNull List<AnAction> getNavigationActions() {
+                            List<AnAction> list = new ArrayList<>();
+                            list.add(strategyCombo);
+                            list.add(new Separator());
 
-                    return list;
+                            list.addAll(super.getNavigationActions());
+
+                            return list;
+                        }
+                    };
+                    root.add(processor.getComponent(), BorderLayout.CENTER);
+                    processor.updateRequest();
+                } catch (Exception ex) {
+                    MidPointUtils.publishExceptionNotification(project, null, ObjectDeltaPanel.class, ObjectDeltaEditor.NOTIFICATION_KEY,
+                            "Couldn't create diff, reason: " + ex.getMessage(), ex);
                 }
-            };
-            root.add(processor.getComponent(), BorderLayout.CENTER);
-            processor.updateRequest();
-        } catch (Exception ex) {
-            MidPointUtils.publishExceptionNotification(project, null, ObjectDeltaPanel.class, ObjectDeltaEditor.NOTIFICATION_KEY,
-                    "Couldn't create diff, reason: " + ex.getMessage(), ex);
-        }
+            }
+        }.run();
     }
 
     private void cleanupDiffView() {
