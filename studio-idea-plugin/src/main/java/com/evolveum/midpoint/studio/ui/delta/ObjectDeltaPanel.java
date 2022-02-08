@@ -6,9 +6,14 @@ import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.impl.xml.DiffObjectType;
+import com.evolveum.midpoint.studio.impl.xml.DiffType;
+import com.evolveum.midpoint.studio.impl.xml.ObjectsDiffFactory;
 import com.evolveum.midpoint.studio.ui.CustomComboBoxAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
 import com.intellij.diff.DiffRequestFactory;
 import com.intellij.diff.chains.DiffRequestChain;
@@ -19,6 +24,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -26,7 +32,7 @@ import com.sun.istack.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -124,12 +130,14 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
                 DiffStrategy strategy = ObjectDeltaPanel.this.strategyCombo.getSelected();
                 ParameterizedEquivalenceStrategy pes = strategy != null ? strategy.getStrategy() : ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION;
 
-                try (InputStream is = file.getInputStream()) {
-                    PrismParser parser = ClientUtils.createParser(prismContext, is);
+                try {
+                    DiffType diff = parseDiff(prismContext);
 
-                    ObjectDeltaObjectType odo = parser.parseRealValue(ObjectDeltaObjectType.class);
-                    PrismObject local = odo.getOldObject().asPrismObject();
-                    PrismObject remote = odo.getNewObject().asPrismObject();
+                    DiffObjectType first = diff.getFirstObject();
+                    DiffObjectType second = diff.getSecondObject();
+
+                    PrismObject local = first.getObject().asPrismObject();
+                    PrismObject remote = second.getObject().asPrismObject();
 
                     PrismObject o1 = local;
                     PrismObject o2 = local.clone();
@@ -137,8 +145,11 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
                     ObjectDelta delta = local.diff(remote, pes);
                     delta.applyTo(o2);
 
-                    LightVirtualFile file1 = new LightVirtualFile("Local.xml", ClientUtils.serialize(prismContext, o1));
-                    LightVirtualFile file2 = new LightVirtualFile("Remote.xml", ClientUtils.serialize(prismContext, o2));
+                    String firstFile = buildFileName(first, "First.xml");
+                    String secondFile = buildFileName(second, "Second.xml");
+
+                    LightVirtualFile file1 = new LightVirtualFile(firstFile, ClientUtils.serialize(prismContext, o1));
+                    LightVirtualFile file2 = new LightVirtualFile(secondFile, ClientUtils.serialize(prismContext, o2));
 
                     DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, file1, file2);
 
@@ -167,6 +178,52 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
                 }
             }
         }.run();
+    }
+
+    private String buildFileName(DiffObjectType dot, String defaultName) {
+        if (dot == null) {
+            return defaultName;
+        }
+
+        if (dot.getFileName() != null) {
+            return dot.getFileName();
+        }
+
+        if (dot.getLocation() != null) {
+            return dot.getLocation().getValue() + ".xml";
+        }
+
+        return defaultName;
+    }
+
+
+    private DiffType parseDiff(PrismContext prismContext) throws IOException, SchemaException {
+        String data = VfsUtil.loadText(file);
+
+        DiffType diff = new ObjectsDiffFactory(prismContext).parseObjectsDiff(data);
+        if (diff != null) {
+            return diff;
+        }
+
+        PrismParser parser = ClientUtils.createParser(prismContext, data);
+        try {
+            ObjectDeltaObjectType odo = parser.parseRealValue(ObjectDeltaObjectType.class);
+
+            diff = new DiffType();
+            diff.setFirstObject(createDiffObject(odo.getOldObject()));
+            diff.setSecondObject(createDiffObject(odo.getNewObject()));
+        } catch (Exception ignored) {
+            // intentionally ignored, this is here only for backward compatibility - when diff data was stored as ObjectDeltaObjectType
+        }
+
+        return diff;
+    }
+
+    private DiffObjectType createDiffObject(com.evolveum.prism.xml.ns._public.types_3.ObjectType obj) {
+        DiffObjectType dot = new DiffObjectType();
+        dot.setObject((ObjectType) obj.asPrismObject().asObjectable());
+
+        return dot;
     }
 
     private void cleanupDiffView() {

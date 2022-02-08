@@ -1,16 +1,12 @@
 package com.evolveum.midpoint.studio.action.task;
 
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
-import com.evolveum.midpoint.studio.util.FileUtils;
+import com.evolveum.midpoint.studio.impl.xml.LocationType;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
-import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -22,7 +18,6 @@ import com.intellij.util.ui.UIUtil;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class DiffRemoteTask extends SimpleBackgroundableTask {
+public class DiffRemoteTask extends DiffTask {
 
     private static final Logger LOG = Logger.getInstance(DiffRemoteTask.class);
 
@@ -42,9 +37,7 @@ public class DiffRemoteTask extends SimpleBackgroundableTask {
     public static String NOTIFICATION_KEY = TITLE;
 
     public DiffRemoteTask(@NotNull AnActionEvent event) {
-        super(event.getProject(), TITLE, NOTIFICATION_KEY);
-
-        setEvent(event);
+        super(event, TITLE, NOTIFICATION_KEY);
     }
 
     @Override
@@ -54,7 +47,6 @@ public class DiffRemoteTask extends SimpleBackgroundableTask {
         indicator.setIndeterminate(false);
 
         EnvironmentService em = EnvironmentService.getInstance(getProject());
-        Environment env = em.getSelected();
 
         VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
 
@@ -141,35 +133,10 @@ public class DiffRemoteTask extends SimpleBackgroundableTask {
                             continue;
                         }
 
-                        // todo expand local content before its used for comparing
-                        PrismObject localObject = client.parseObject(local.getContent());
-                        PrismObject remoteObject = client.parseObject(remote.getContent());
-
-                        ObjectDeltaObjectType odo = new ObjectDeltaObjectType();
-                        odo.setOldObject((ObjectType) localObject.asObjectable());
-                        odo.setNewObject((ObjectType) remoteObject.asObjectable());
-
-                        String xml = client.serialize(odo);
-                        deltas.add(xml);
+                        deltas.add(createDiffXml(local, file, LocationType.LOCAL, remote, null, LocationType.REMOTE));
                     }
 
-                    vf = FileUtils.createScratchFile(getProject(), env, "diff");
-
-                    writer = new OutputStreamWriter(vf.getOutputStream(this), vf.getCharset());
-
-                    if (deltas.size() > 1) {
-                        writer.write(ClientUtils.DELTAS_XML_PREFIX);
-                        writer.write('\n');
-                    }
-
-                    for (String obj : deltas) {
-                        writer.write(obj);
-                    }
-
-                    if (deltas.size() > 1) {
-                        writer.write(ClientUtils.DELTAS_XML_SUFFIX);
-                        writer.write('\n');
-                    }
+                    vf = createScratchAndWriteDiff(deltas);
                 } catch (Exception ex) {
                     failed.incrementAndGet();
 
