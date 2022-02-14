@@ -9,12 +9,12 @@ import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.action.AsyncAction;
 import com.evolveum.midpoint.studio.action.browse.ComboObjectTypes;
 import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
+import com.evolveum.midpoint.studio.action.task.BackgroundableTask;
 import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
-import com.evolveum.midpoint.studio.client.DeleteOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
@@ -31,15 +31,14 @@ import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
@@ -58,8 +57,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +74,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private static final String NOTIFICATION_KEY = "MidPoint Browser";
 
-    private static final String EMPTY_QUERY =
+    private static final String EMPTY_XML_QUERY =
             "<query xmlns=\"http://prism.evolveum.com/xml/ns/public/query-3\">\n" +
                     "    <filter>\n" +
                     "        <!-- insert filter -->\n" +
@@ -96,7 +93,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private ComboObjectTypes objectType;
     private ComboQueryType queryType;
 
-    private BackgroundAction searchAction;
+    private AnAction searchAction;
     private AnAction cancelAction;
     private AnAction pagingAction;
 
@@ -279,13 +276,18 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 switch (queryType.getSelected()) {
                     case QUERY_XML:
                         if (StringUtils.isEmpty(query.getText())) {
-                            query.setText(EMPTY_QUERY);
+                            query.setText(EMPTY_XML_QUERY);
                         }
                         break;
                     case NAME:
                     case NAME_OR_OID:
                     case OID:
                         // todo file type
+                        break;
+                    case AXIOM:
+                        if (StringUtils.isEmpty(query.getText())) {
+                            query.setText("");
+                        }
                         break;
                 }
 
@@ -320,15 +322,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 e -> e.getPresentation().setEnabled(isSearchEnabled()));
         group.add(pagingAction);
 
-        searchAction = new BackgroundAction("Search", AllIcons.Actions.Find, "Searching objects") {
+        searchAction = new AsyncAction<>("Search", AllIcons.Actions.Find) {
 
             @Override
-            protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
-                searchPerformed(evt, indicator);
+            protected BackgroundableTask createTask(AnActionEvent e, Environment env) {
+                return new BackgroundableTask(e.getProject(), "Searching objects", "Searching objects") {
+
+                    @Override
+                    protected void doRun(ProgressIndicator indicator) {
+                        searchPerformed(e, indicator);
+                    }
+                };
             }
 
             @Override
-            protected boolean isEnabled() {
+            protected boolean isActionEnabled(AnActionEvent evt) {
                 return isSearchEnabled();
             }
         };
@@ -485,7 +493,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         if (dialog.isOK() || dialog.isGenerate()) {
             processResultsOptions = dialog.buildOptions();
 
-            performGenerate(selected, processResultsOptions, !dialog.isGenerate());
+            performGenerate(evt, selected, processResultsOptions, !dialog.isGenerate());
         }
     }
 
@@ -539,35 +547,16 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
-        EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
-        Environment env = em.getSelected();
+        DownloadAction da = new DownloadAction(getResultsModel().getSelectedOids(results), showOnly, rawDownload);
+        da.setOpenAfterDownload(true);
 
-        DownloadAction da = new DownloadAction(env, getResultsModel().getSelectedOids(results), showOnly, rawDownload) {
-
-            @Override
-            protected void onFinished() {
-                VirtualFile file = null;// todo getDownloadedFile();
-                if (file == null) {
-                    return;
-                }
-                FileEditorManager fem = FileEditorManager.getInstance(evt.getProject());
-                fem.openFile(file, true, true);
-            }
-        };
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
 
     private void deletePerformed(AnActionEvent evt, boolean rawDownload) {
-        DeleteAction da = new DeleteAction(getResultsModel().getSelectedOids(results)) {
-
-            @Override
-            public DeleteOptions createOptions() {
-                DeleteOptions opts = super.createOptions();
-                opts.raw(rawDownload);
-
-                return opts;
-            }
-        };
+        DeleteAction da = new DeleteAction();
+        da.setRaw(rawDownload);
+        da.setOids(getResultsModel().getSelectedOids(results));
 
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
@@ -648,12 +637,24 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             case NAME_OR_OID:
                 filter = createFilter(ctx, true, true);
                 break;
+            case AXIOM:
+                filter = createAxiomFilter(ctx);
         }
 
         ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
                 ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);
 
         return qf.createQuery(filter, paging);
+    }
+
+    private ObjectFilter createAxiomFilter(PrismContext ctx) throws SchemaException {
+        String text = query.getText();
+        if (StringUtils.isEmpty(text)) {
+            return null;
+        }
+
+        ObjectTypes type = objectType.getSelected();
+        return ctx.createQueryParser().parseQuery(type.getClassDefinition(), text);
     }
 
     private ObjectQuery parseQuery(MidPointClient client) throws SchemaException, IOException {
@@ -737,20 +738,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         return or;
     }
 
-    private void performGenerate(List<ObjectType> selected, ProcessResultsOptions options, boolean execute) {
+    private void performGenerate(AnActionEvent e, List<ObjectType> selected, ProcessResultsOptions options, boolean execute) {
         GeneratorOptions opts = options.getOptions();
 
         Generator generator = options.getGenerator();
         GeneratorAction ga = new GeneratorAction(generator, opts, selected, execute);
 
-        AWTEvent evt = EventQueue.getCurrentEvent();
-        InputEvent ie;
-        if (evt instanceof InputEvent) {
-            ie = (InputEvent) evt;
-        } else {
-            ie = new MouseEvent(this, ActionEvent.ACTION_PERFORMED, System.currentTimeMillis(), 0, 0, 0, 0, false, 0);
-        }
-
-        ActionManager.getInstance().tryToExecute(ga, ie, this, ActionPlaces.UNKNOWN, false);
+        ActionUtil.invokeAction(ga, this, "BrowseToolPanel", e.getInputEvent(), null);
     }
 }

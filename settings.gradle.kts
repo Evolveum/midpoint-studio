@@ -5,8 +5,7 @@ enableFeaturePreview("VERSION_CATALOGS")
 
 pluginManagement {
     repositories {
-        maven("https://oss.sonatype.org/content/repositories/snapshots/")
-        gradlePluginPortal()
+        maven("https://nexus.evolveum.com/nexus/repository/gradle-plugins/")
     }
 }
 
@@ -20,8 +19,8 @@ dependencyResolutionManagement {
             version("jcommander", "1.81")
             version("jupiter", "5.6.0")
             version("logback", "1.2.3")
-            version("midpoint", "4.4")
-            version("midscribe", "4.3-SNAPSHOT")
+            version("midpoint", "4.4.1")
+            version("midscribe", "4.4-SNAPSHOT")
             version("okhttp", "4.9.0")
             version("openkeepass", "0.8.1")
             version("slf4j", "1.7.26")

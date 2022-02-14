@@ -1,23 +1,17 @@
 package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.transfer.RefreshAction;
+import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.vfs.VirtualFile;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
+public class TaskUpgradeTask extends ObjectsBackgroundableTask<TaskState> {
 
     public static String TITLE = "Upgrade task";
 
@@ -25,53 +19,36 @@ public class TaskUpgradeTask extends BackgroundableTask<TaskState> {
 
     private static final Logger LOG = Logger.getInstance(TaskUpgradeTask.class);
 
-    public TaskUpgradeTask(AnActionEvent event) {
+    public TaskUpgradeTask(@NotNull AnActionEvent event) {
         super(event.getProject(), TITLE, NOTIFICATION_KEY);
 
         setEvent(event);
     }
 
-    protected List<String> processObjects(List<MidPointObject> objects, VirtualFile file) {
-        if (objects.isEmpty()) {
-            state.incrementSkippedFile();
-            midPointService.printToConsole(null, RefreshAction.class,
-                    "Skipped file " + (file != null ? file.getPath() : "<unknown>") + " no objects found (parsed).");
+    @Override
+    protected boolean isUpdateObjectAfterProcessing() {
+        return true;
+    }
 
-            return Collections.emptyList();
-        }
+    @Override
+    protected boolean shouldSkipObjectProcessing(MidPointObject object) {
+        return !ObjectTypes.TASK.equals(object.getType());
+    }
 
-        List<String> newObjects = new ArrayList<>();
+    @Override
+    public ProcessObjectResult processObject(MidPointObject object) throws Exception {
+        String oldContent = object.getContent();
+        String newContent = MidPointUtils.upgradeTaskToUseActivities(oldContent);
 
-        for (MidPointObject object : objects) {
-            ProgressManager.checkCanceled();
+        MidPointObject newObject = MidPointObject.copy(object);
+        newObject.setContent(newContent);
 
-            if (!ObjectTypes.TASK.equals(object.getType())) {
-                newObjects.add(object.getContent());
-                state.incrementSkipped();
-            }
+        return new ProcessObjectResult(null)
+                .object(newObject);
+    }
 
-            try {
-                String oldContent = object.getContent();
-                String newContent = MidPointUtils.upgradeTaskToUseActivities(oldContent);
-                newObjects.add(newContent);
-
-                if (Objects.equals(oldContent, newContent)) {
-                    state.incrementSkipped();
-
-                    midPointService.printToConsole(null, TaskUpgradeTask.class,
-                            "Skipped object " + object.getName() + "(" + object.getOid() + ", " + (file != null ? file.getName() : "unknown") + ")");
-                } else {
-                    state.incrementProcessed();
-                }
-            } catch (Exception ex) {
-                state.incrementFailed();
-                newObjects.add(object.getContent());
-
-                midPointService.printToConsole(null, TaskUpgradeTask.class, "Error upgrading task"
-                        + object.getName() + "(" + object.getOid() + ")", ex);
-            }
-        }
-
-        return newObjects;
+    @Override
+    public ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

@@ -139,6 +139,13 @@ intellij {
 
     // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
     plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+
+    intellijRepository.set("https://nexus.evolveum.com/nexus/repository/intellij-repository/")
+    jreRepository.set("https://nexus.evolveum.com/nexus/repository/intellij-jbr/")
+    pluginsRepositories {
+        maven("https://nexus.evolveum.com/nexus/repository/jetbrains-plugins/")
+        getRepositories()
+    }
 }
 
 // Configure gradle-changelog-plugin plugin.

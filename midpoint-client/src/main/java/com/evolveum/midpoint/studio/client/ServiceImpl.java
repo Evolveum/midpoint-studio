@@ -212,7 +212,7 @@ public class ServiceImpl implements Service {
         }
 
         Map<String, Object> options = new HashMap<>();
-        opts.forEach(o -> options.put("options", o));
+        options.put("options", opts);
 
         String path = "/" + ObjectTypes.getRestTypeFromClass(object.getType().getClassDefinition());
 

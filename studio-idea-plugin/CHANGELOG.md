@@ -1,5 +1,22 @@
 # MidPoint Studio
 
+## 4.4.1
+### Added
+- Model authorizations were added to list of possibilities when completion dialog is shown
+- Added partial AXIOM query support
+- Create diff of two local files that contain midPoint objects
+- Internal midPoint libraries updated to 4.4.1
+
+### Changed
+- isImport option is now being sent correctly during upload together with raw option
+
+### Fixed
+- Fixed UI actions that accessed filesystem in wrong thread
+- Fixed environment proxy settings
+- Fixed threading and UI freezes on some long running actions (network related)
+- Fixed defaults file includes when generating documentation
+- Fixed file including for documentation generator on Windows
+
 ## 4.4.0
 ### Added
 - Xml autocompletion

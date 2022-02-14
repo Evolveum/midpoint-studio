@@ -1,35 +1,40 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
-import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.client.DeleteOptions;
-import com.evolveum.midpoint.studio.util.Pair;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.studio.action.AsyncObjectsAction;
+import com.evolveum.midpoint.studio.action.task.DeleteTask;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-
-import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class DeleteAction extends BaseObjectsAction {
+public class DeleteAction extends AsyncObjectsAction {
+
+    public static final String ACTION_NAME = "Delete";
+
+    private boolean raw;
 
     public DeleteAction() {
-        this(null);
+        this(ACTION_NAME);
     }
 
-    public DeleteAction(List<Pair<String, ObjectTypes>> oids) {
-        super("Deleting objects", "Delete Action", "delete", oids);
+    public DeleteAction(String name) {
+        super(name);
+    }
+
+    public boolean isRaw() {
+        return raw;
+    }
+
+    public void setRaw(boolean raw) {
+        this.raw = raw;
     }
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObjectOid(AnActionEvent evt, MidPointClient client, ObjectTypes type, String oid) throws Exception {
-        client.delete(type.getClassDefinition(), oid, createOptions());
+    protected DeleteTask createObjectsTask(AnActionEvent e, Environment env) {
+        DeleteTask task = new DeleteTask(e, env);
+        task.setRaw(raw);
 
-        return new ProcessObjectResult(null);
-    }
-
-    public DeleteOptions createOptions() {
-        return new DeleteOptions();
+        return task;
     }
 }

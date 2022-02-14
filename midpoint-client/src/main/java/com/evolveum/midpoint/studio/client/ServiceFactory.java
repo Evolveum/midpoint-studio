@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.client;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
-import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.util.MiscUtil;
 import okhttp3.Credentials;
@@ -19,6 +18,7 @@ import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -163,7 +163,33 @@ public class ServiceFactory {
         }
 
         if (StringUtils.isNotEmpty(proxyServer)) {
-            Proxy proxy = new Proxy(proxyServerType.getType(), new InetSocketAddress(proxyServer, proxyServerPort));
+            URI uri = URI.create(proxyServer);
+
+            if (proxyServerPort == null) {
+                if (uri.getPort() >= 0 && uri.getPort() <= 0xFFFF) {
+                    proxyServerPort = uri.getPort();
+                } else if (proxyServerType.getType() == Proxy.Type.HTTP) {
+                    if ("http".equalsIgnoreCase(uri.getScheme())) {
+                        proxyServerPort = 80;
+                    } else if ("https".equalsIgnoreCase(uri.getScheme())) {
+                        proxyServerPort = 443;
+                    }
+                }
+            }
+
+            if (proxyServerType == null) {
+                throw new IllegalArgumentException("Proxy server type not defined");
+            }
+
+            if (StringUtils.isEmpty(uri.getHost())) {
+                throw new IllegalArgumentException("Proxy host not defined");
+            }
+
+            if (proxyServerPort == null) {
+                throw new IllegalArgumentException("Proxy port undefined");
+            }
+
+            Proxy proxy = new Proxy(proxyServerType.getType(), new InetSocketAddress(uri.getHost(), proxyServerPort));
             builder.proxy(proxy);
 
             if (proxyUsername != null || proxyPassword != null) {

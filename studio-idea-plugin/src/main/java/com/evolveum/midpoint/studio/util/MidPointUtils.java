@@ -12,6 +12,7 @@ import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -63,6 +64,8 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -83,10 +86,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Color;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
@@ -645,6 +645,10 @@ public class MidPointUtils {
     }
 
     public static boolean isObjectTypeElement(XmlTag tag) {
+        return isObjectTypeElement(tag, true);
+    }
+
+    public static boolean isObjectTypeElement(XmlTag tag, boolean namespaceAware) {
         if (tag == null) {
             return false;
         }
@@ -652,6 +656,10 @@ public class MidPointUtils {
         QName name = new QName(tag.getNamespace(), tag.getLocalName());
         for (ObjectTypes type : ObjectTypes.values()) {
             if (name.equals(type.getElementName())) {
+                return true;
+            }
+
+            if (!namespaceAware && type.getElementName().getLocalPart().equalsIgnoreCase(name.getLocalPart())) {
                 return true;
             }
         }
@@ -821,9 +829,10 @@ public class MidPointUtils {
         }
     }
 
-    public static List<MidPointObject> parseText(Project project, String text, String notificationKey) {
+    public static List<MidPointObject> parseText(Project project, String text, VirtualFile file, String notificationKey) {
         try {
-            return ClientUtils.parseText(text);
+            File ioFile = file != null ? VfsUtil.virtualToIoFile(file) : null;
+            return ClientUtils.parseText(text, ioFile);
         } catch (RuntimeException ex) {
             String msg = "Couldn't parse text '" + org.apache.commons.lang.StringUtils.abbreviate(text, 10) + "'";
 
@@ -916,11 +925,44 @@ public class MidPointUtils {
 
             String output = sw.toString();
             if (tel.isErrorOrFatal()) {
-                throw new TransformerException("Found these problems:\n"+ tel.dumpAllMessages());
+                throw new TransformerException("Found these problems:\n" + tel.dumpAllMessages());
             }
 
             return output;
         }
+    }
+
+    public static String updateObjectRootElementToObject(String objectXml) {
+        if (objectXml == null) {
+            return null;
+        }
+
+        org.w3c.dom.Document doc = DOMUtil.parseDocument(objectXml);
+        Node previousRoot = doc.removeChild(doc.getDocumentElement());
+
+        QName elementName = new QName(previousRoot.getNamespaceURI(), previousRoot.getLocalName());
+        ObjectTypes type = null;
+        for (ObjectTypes ot : ObjectTypes.values()) {
+            if (elementName.equals(ot.getElementName())) {
+                type = ot;
+                break;
+            }
+        }
+
+        if (type == null) {
+            return objectXml;
+        }
+
+        Element root = DOMUtil.createElement(doc, SchemaConstantsGenerated.C_OBJECT);
+        doc.appendChild(root);
+        root.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "xsi:type", type.getTypeQName().getLocalPart());
+
+        while (previousRoot.hasChildNodes()) {
+            Node child = previousRoot.getFirstChild();
+            root.appendChild(child);
+        }
+
+        return DOMUtil.serializeDOMToString(doc);
     }
 
     private static class TransformerErrorListener implements ErrorListener {

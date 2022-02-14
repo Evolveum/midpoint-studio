@@ -128,7 +128,7 @@ public class DocGeneratorOptions {
     public static DocGeneratorOptions createDefaultOptions(Project project) {
         DocGeneratorOptions opts = new DocGeneratorOptions();
         opts.setSourceDirectory(new File(project.getBasePath(), "objects"));
-        opts.setInclude(Arrays.asList("*.xml"));
+        opts.setInclude(Arrays.asList("**/*.xml"));
         opts.setExportFormat(ExportFormat.HTML);
         opts.setExportOutput(new File(project.getBasePath(), "documentation.html"));
 

@@ -80,7 +80,7 @@ public class ClientUtils {
         }
     }
 
-    private static List<MidPointObject> parseText(String text, File file) {
+    public static List<MidPointObject> parseText(String text, File file) {
         Document doc = DOMUtil.parseDocument(text);
         String displayName = file != null ? file.getPath() : null;
 

@@ -45,6 +45,6 @@ public class MidPointFacetType extends FacetType<MidPointFacet, MidPointFacetCon
     @Nullable
     @Override
     public Icon getIcon() {
-        return MidPointIcons.ACTION_MIDPOINT;
+        return MidPointIcons.Midpoint;
     }
 }

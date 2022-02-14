@@ -1,18 +1,21 @@
-package com.evolveum.midpoint.studio.action.transfer;
+package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.UploadResponse;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.vcsUtil.VcsUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,17 +23,24 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class UploadExecute extends BaseObjectsAction {
+public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
 
-    public UploadExecute() {
-        super("Uploading objects", "Upload Action", "upload");
+    public static String TITLE = "Upload/Execute task";
+
+    public static final String NOTIFICATION_KEY = "Upload/Execute task";
+
+    public UploadExecuteTask(AnActionEvent event, Environment environment) {
+        super(event.getProject(), TITLE, NOTIFICATION_KEY);
+
+        setEvent(event);
+        setEnvironment(environment);
     }
 
     @Override
-    public <O extends ObjectType> ProcessObjectResult processObject(AnActionEvent evt, MidPointClient client, MidPointObject obj) throws Exception {
+    public ProcessObjectResult processObject(MidPointObject obj) throws Exception {
         OperationResult result = uploadExecute(client, obj);
 
-        return validateOperationResult(evt, result, getOperation(), obj.getName());
+        return validateOperationResult("upload", result, obj.getName());
     }
 
     public static OperationResult uploadExecute(MidPointClient client, MidPointObject obj)
@@ -45,7 +55,10 @@ public class UploadExecute extends BaseObjectsAction {
                 result = OperationResult.createOperationResult(res);
             }
         } else {
-            UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, VcsUtil.getVirtualFile(obj.getFile()));
+            File file = obj.getFile();
+            VirtualFile vFile = file != null ?  VcsUtil.getVirtualFile(file) : null;
+
+            UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, vFile);
             result = resp.getResult();
 
             if (obj.getOid() == null && resp.getOid() != null) {
@@ -56,7 +69,7 @@ public class UploadExecute extends BaseObjectsAction {
         return result;
     }
 
-    public static <O extends ObjectType> List<String> buildUploadOptions(MidPointObject object) {
+    public static List<String> buildUploadOptions(MidPointObject object) {
         List<String> options = new ArrayList<>();
         options.add("isImport");
 

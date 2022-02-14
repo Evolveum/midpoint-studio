@@ -64,6 +64,6 @@ public class MidPointIconProvider implements DumbAware, FileIconProvider {
             return null;
         }
 
-        return MidPointIcons.ACTION_MIDPOINT;
+        return MidPointIcons.Midpoint;
     }
 }

@@ -1,0 +1,27 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:rext="http://midpoint.evolveum.com/xml/ns/public/report/extension-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" oid="a94db374-7315-4688-acc2-ad8a9939fd56">
+    <name>K4 Activation Changes</name>
+    <extension>
+        <rext:reportParam>
+            <sample>value</sample>
+            <number xsi:type="xsd:int">123</number>
+        </rext:reportParam>
+    </extension>
+    <assignment id="1">
+        <targetRef oid="00000000-0000-0000-0000-000000000507" relation="org:default" type="c:ArchetypeType"/>
+        <activation>
+            <effectiveStatus>enabled</effectiveStatus>
+        </activation>
+    </assignment>
+    <archetypeRef oid="00000000-0000-0000-0000-000000000507" relation="org:default" type="c:ArchetypeType"/>
+    <roleMembershipRef oid="00000000-0000-0000-0000-000000000507" relation="org:default" type="c:ArchetypeType"/>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002" relation="org:default" type="c:UserType"/>
+    <handlerUri>http://midpoint.evolveum.com/xml/ns/public/report/handler-3</handlerUri>
+    <objectRef oid="d1704b59-3687-486c-bc8d-df4b323ec2f5" relation="org:default" type="c:ReportType"/>
+    <recurrence>recurring</recurrence>
+    <binding>loose</binding>
+    <schedule>
+        <cronLikePattern>0 0 6 ? * *</cronLikePattern>
+        <misfireAction>executeImmediately</misfireAction>
+    </schedule>
+    <threadStopAction>restart</threadStopAction>
+</task>

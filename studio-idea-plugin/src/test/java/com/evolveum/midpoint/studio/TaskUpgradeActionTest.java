@@ -4,6 +4,7 @@ import com.evolveum.midpoint.studio.action.TaskUpgradeAction;
 import com.intellij.openapi.diagnostic.Logger;
 import org.apache.xalan.xslt.EnvironmentCheck;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
@@ -27,6 +28,17 @@ public class TaskUpgradeActionTest extends StudioActionTest {
     @Override
     protected String getTestFolder() {
         return "task-upgrade";
+    }
+
+    @Test
+    public void testReport() {
+        testUpgrade("report-1-input.xml", "report-1-output.xml");
+    }
+
+    @Disabled
+    @Test
+    public void testTrigger() {
+        testUpgrade("trigger-1-input.xml", "trigger-2-output.xml");
     }
 
     @Test

@@ -59,7 +59,7 @@
         <facet.toolWindow id="MidPoint"
                           facetIdList="MidPointFacet"
                           anchor="bottom"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
 
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
@@ -68,35 +68,35 @@
                           facetIdList="MidPointFacet"
                           anchor="bottom"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
 
         <facet.toolWindow id="TraceLog"
                           facetIdList="MidPointFacet"
                           anchor="bottom"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.log.LogWindowFactory"/>
 
         <facet.toolWindow id="TraceLensContext"
                           facetIdList="MidPointFacet"
                           anchor="left"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.lensContext.TraceLensContextToolWindowFactory"/>
 
         <facet.toolWindow id="TraceOptions"
                           facetIdList="MidPointFacet"
                           anchor="right"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsWindowFactory"/>
 
         <facet.toolWindow id="TraceGraph"
                           facetIdList="MidPointFacet"
                           anchor="right"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
 
         <fileType
@@ -170,12 +170,12 @@
                 text="Download Selected Types"
                 icon="AllIcons.Actions.Download"/>
 
-        <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecute"
+        <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
                 text="Upload/Execute"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
 
         <action id="MidPoint.Action.UploadExecuteStopOnError"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnErrorAction"
                 text="Upload/Execute (stop on error)"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecuteStop"/>
 
@@ -192,12 +192,12 @@
         <!-- SERVER SIDE -->
 
         <action id="MidPoint.Action.UploadRecompute"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadRecompute"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadRecomputeAction"
                 text="Upload/Recompute"
                 icon="AllIcons.Actions.Upload"/>
 
         <action id="MidPoint.Action.UploadTestResource"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResourceAction"
                 text="Upload/Test Resource"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadTest"/>
 
@@ -257,6 +257,11 @@
                 text="Upgrade task to activity (4.4)"
                 icon="AllIcons.Actions.Annotate"/>
 
+        <action id="MidPoint.Action.DiffLocal"
+                class="com.evolveum.midpoint.studio.action.DiffLocalAction"
+                text="Diff Local"
+                icon="AllIcons.Actions.Diff"/>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
@@ -287,6 +292,8 @@
                 <separator/>
 
                 <reference ref="MidPoint.Action.Refresh"/>
+
+                <reference ref="MidPoint.Action.DiffLocal"/>
 
                 <reference ref="MidPoint.Action.DiffRemote"/>
 
@@ -386,6 +393,8 @@
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
 
                 <separator/>
+
+                <reference ref="MidPoint.Action.DiffLocal"/>
 
                 <reference ref="MidPoint.Action.CleanupFile"/>
 
