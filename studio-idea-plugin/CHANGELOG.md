@@ -1,6 +1,6 @@
 # MidPoint Studio
 
-## [Unreleased]
+## 4.4.1
 ### Added
 - Model authorizations were added to list of possibilities when completion dialog is shown
 - Added partial AXIOM query support
