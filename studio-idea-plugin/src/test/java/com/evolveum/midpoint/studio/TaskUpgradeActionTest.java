@@ -156,6 +156,11 @@ public class TaskUpgradeActionTest extends StudioActionTest {
         testUpgrade("mid-7658-1-input.xml", "mid-7658-1-output.xml");
     }
 
+    @Test
+    public void testMid7658Invalid() {
+        testUpgrade("mid-7658-1-invalid-input.xml", "mid-7658-1-invalid-input.xml");
+    }
+
     private void testUpgrade(String input, String validation) {
         LOG.info("Testing upgrade for " + input + ", validating using " + validation);
 
