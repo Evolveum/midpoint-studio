@@ -151,6 +151,11 @@ public class TaskUpgradeActionTest extends StudioActionTest {
         testUpgrade("unknown-1-input.xml", "unknown-1-input.xml");
     }
 
+    @Test
+    public void testMid7658() {
+        testUpgrade("mid-7658-1-input.xml", "mid-7658-1-output.xml");
+    }
+
     private void testUpgrade(String input, String validation) {
         LOG.info("Testing upgrade for " + input + ", validating using " + validation);
 
