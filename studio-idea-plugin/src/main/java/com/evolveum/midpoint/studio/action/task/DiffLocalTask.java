@@ -1,13 +1,9 @@
 package com.evolveum.midpoint.studio.action.task;
 
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.util.FileUtils;
+import com.evolveum.midpoint.studio.impl.xml.LocationType;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
-import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
@@ -18,7 +14,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +21,7 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class DiffLocalTask extends SimpleBackgroundableTask {
+public class DiffLocalTask extends DiffTask {
 
     private static final Logger LOG = Logger.getInstance(DiffLocalTask.class);
 
@@ -35,9 +30,7 @@ public class DiffLocalTask extends SimpleBackgroundableTask {
     public static String NOTIFICATION_KEY = TITLE;
 
     public DiffLocalTask(@NotNull AnActionEvent event) {
-        super(event.getProject(), TITLE, NOTIFICATION_KEY);
-
-        setEvent(event);
+        super(event, TITLE, NOTIFICATION_KEY);
     }
 
     @Override
@@ -83,35 +76,10 @@ public class DiffLocalTask extends SimpleBackgroundableTask {
                     MidPointObject first = firstSet.get(i);
                     MidPointObject second = secondSet.get(i);
 
-                    // todo expand local content before its used for comparing
-                    PrismObject firstObject = client.parseObject(first.getContent());
-                    PrismObject secondObject = client.parseObject(second.getContent());
-
-                    ObjectDeltaObjectType odo = new ObjectDeltaObjectType();
-                    odo.setOldObject((ObjectType) firstObject.asObjectable());
-                    odo.setNewObject((ObjectType) secondObject.asObjectable());
-
-                    String xml = client.serialize(odo);
-                    deltas.add(xml);
+                    deltas.add(createDiffXml(first, firstFile, LocationType.LOCAL, second, secondFile, LocationType.LOCAL));
                 }
 
-                vf = FileUtils.createScratchFile(getProject(), getEnvironment(), "diff");
-
-                writer = new OutputStreamWriter(vf.getOutputStream(this), vf.getCharset());
-
-                if (deltas.size() > 1) {
-                    writer.write(ClientUtils.DELTAS_XML_PREFIX);
-                    writer.write('\n');
-                }
-
-                for (String obj : deltas) {
-                    writer.write(obj);
-                }
-
-                if (deltas.size() > 1) {
-                    writer.write(ClientUtils.DELTAS_XML_SUFFIX);
-                    writer.write('\n');
-                }
+                vf = createScratchAndWriteDiff(deltas);
             } catch (Exception ex) {
 //                failed.incrementAndGet();
 //

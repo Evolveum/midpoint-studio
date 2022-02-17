@@ -12,7 +12,8 @@ import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.SearchResult;
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -23,7 +24,6 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.XmlSchemaType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.lang.xml.XMLLanguage;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.ControlFlowException;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -33,7 +33,6 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import com.intellij.util.messages.MessageBus;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -64,19 +63,7 @@ public class ConnectorXmlSchemaCacheService {
     public ConnectorXmlSchemaCacheService(Project project) {
         this.project = project;
 
-        MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
-
-            @Override
-            public void environmentChanged(Environment oldEnv, Environment newEnv) {
-                refresh(newEnv);
-            }
-        });
-
-        ApplicationManager.getApplication().invokeLater(() -> {
-            EnvironmentService env = project.getService(EnvironmentService.class);
-            refresh(env.getSelected());
-        });
+        MidPointUtils.subscribeToEnvironmentChange(project, e -> refresh(e));
     }
 
     private void refresh(Environment env) {

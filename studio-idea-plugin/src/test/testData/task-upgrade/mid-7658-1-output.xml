@@ -1,0 +1,86 @@
+<task xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:s="http://midpoint.evolveum.com/xml/ns/public/model/scripting-3"
+        xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3"
+        xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3"
+        oid="5358acde-8991-46cc-986a-f6269462fe61">
+    <name>mid-7658</name>
+    <description>Exports mid-7658</description>
+    <extension>
+        <!--		<mext:objectQuery>-->
+        <!--			<filter>-->
+        <!--				<or>-->
+        <!--					<substring>-->
+        <!--						<matching>polyStringNorm</matching>-->
+        <!--						<path>name</path>-->
+        <!--						<value>qx</value>-->
+        <!--						<anchorStart>true</anchorStart>-->
+        <!--					</substring>-->
+        <!--				</or>-->
+        <!--			</filter>-->
+        <!--		</mext:objectQuery>-->
+    </extension>
+    <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
+    <executionState>suspended</executionState>
+    <assignment>
+        <targetRef oid="00000000-0000-0000-0000-000000000528" relation="org:default" type="c:ArchetypeType"/>
+    </assignment>
+    <!--	<handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/iterative-scripting/handler-3</handlerUri>-->
+    <binding>loose</binding>
+    <schedule>
+        <recurrence>recurring</recurrence>
+        <cronLikePattern>0 0 19 ? * *</cronLikePattern>
+        <misfireAction>executeImmediately</misfireAction>
+    </schedule>
+    <threadStopAction>restart</threadStopAction>
+    <activity>
+        <work>
+            <iterativeScripting>
+                <objects>
+                    <type>UserType</type>
+                    <searchOptions>
+                        <option>
+                            <selector>
+                                <path>roleMembershipRef</path>
+                            </selector>
+                            <options>
+                                <resolveNames>true</resolveNames>
+                            </options>
+                        </option>
+                    </searchOptions>
+                </objects>
+                <scriptExecutionRequest>
+                    <s:pipeline>
+                        <s:action>
+                            <s:type>execute-script</s:type>
+                            <s:parameter>
+                                <s:name>script</s:name>
+                                <value xsi:type="c:ScriptExpressionEvaluatorType" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3">
+                                    <code><![CDATA[
+                                some script
+                                ]]></code>
+                                </value>
+                            </s:parameter>
+                        </s:action>
+                    </s:pipeline>
+                </scriptExecutionRequest>
+            </iterativeScripting>
+        </work>
+        <distribution>
+            <buckets>
+                <oidSegmentation>
+                    <discriminator>#</discriminator>
+                    <depth>2</depth>
+                    <comparisonMethod>prefix</comparisonMethod>
+                </oidSegmentation>
+            </buckets>
+            <workers>
+                <workersPerNode>
+                    <count>1</count>
+                </workersPerNode>
+            </workers>
+            <workerThreads>4</workerThreads>
+        </distribution>
+    </activity>
+</task>

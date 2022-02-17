@@ -14,10 +14,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectListType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.BuildInformationType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
@@ -530,4 +527,33 @@ public class ServiceImpl implements Service {
             return sos.getScripts();
         }
     }
+
+    @Override
+    public Map<SchemaFileType, String> getExtensionSchemas() throws IOException, SchemaException, AuthenticationException, ClientException {
+        SchemaFilesType files = getSchemaFiles();
+        if (files == null || files.getSchema().isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<SchemaFileType, String> result = new HashMap<>();
+        for (SchemaFileType file : files.getSchema()) {
+            Request.Builder builder = context.build("/ws/schema", "/" + file.getFileName(), null).get();
+            Request req = builder.build();
+
+            String xsd = executeRequest(req, String.class);
+            result.put(file, xsd);
+        }
+
+        return result;
+    }
+
+    private SchemaFilesType getSchemaFiles() throws IOException, SchemaException, AuthenticationException, ClientException {
+        Request.Builder builder = context.build("/ws/schema", "", null)
+                .get();
+
+        Request req = builder.build();
+
+        return executeRequest(req, SchemaFilesType.class);
+    }
+
 }

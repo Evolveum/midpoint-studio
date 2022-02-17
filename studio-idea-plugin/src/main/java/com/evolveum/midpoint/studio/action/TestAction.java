@@ -1,7 +1,11 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.studio.MidPointConstants;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.resource.ResourceWizard;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaFileType;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -10,6 +14,8 @@ import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -52,9 +58,18 @@ public class TestAction extends AnAction {
             return;
         }
 
-        Project project = evt.getProject();
+//        Project project = evt.getProject();
+//
+//        ResourceWizard wizard = ResourceWizard.createWizard(project);
+//        wizard.showAndGet();
 
-        ResourceWizard wizard = ResourceWizard.createWizard(project);
-        wizard.showAndGet();
+        RunnableUtils.executeWithPluginClassloader(() -> {
+
+            EnvironmentService es = EnvironmentService.getInstance(evt.getProject());
+            MidPointClient client = new MidPointClient(evt.getProject(), es.getSelected(), true, true);
+            Map<SchemaFileType, String> result = client.getExtensionSchemas();
+            System.out.println(result);
+            return result;
+        });
     }
 }
