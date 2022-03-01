@@ -27,10 +27,14 @@ public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
 
     public static String TITLE = "Upload/Execute task";
 
-    public static final String NOTIFICATION_KEY = "Upload/Execute task";
+    public static final String NOTIFICATION_KEY = TITLE;
 
     public UploadExecuteTask(AnActionEvent event, Environment environment) {
-        super(event.getProject(), TITLE, NOTIFICATION_KEY);
+        this(event, environment, TITLE, NOTIFICATION_KEY);
+    }
+
+    protected UploadExecuteTask(AnActionEvent event, Environment environment, String title, String notificationKey) {
+        super(event.getProject(), title, notificationKey);
 
         setEvent(event);
         setEnvironment(environment);
