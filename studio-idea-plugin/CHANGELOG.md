@@ -1,6 +1,6 @@
 # MidPoint Studio
 
-## [unreleased]
+## [Unreleased]
 ### Changed
 - Changed format of local/remote diff (internal XML file representation)
 
