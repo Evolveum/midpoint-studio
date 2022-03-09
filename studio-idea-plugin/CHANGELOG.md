@@ -1,11 +1,11 @@
 # MidPoint Studio
 
-## [Unreleased]
+## 4.4.2
 ### Changed
 - Changed format of local/remote diff (internal XML file representation)
 
 ### Fixed
-- MID-7658 fix for task upgrade, when task had 528 archetype and no/wrong handler uri - delete task was created incorretly
+- MID-7658 fix for task upgrade, when task had 528 archetype and no/wrong handler uri - delete task was created incorrectly
 - MID-7658 invalid handler task test (generates no change)
 - MID-7695 namespace variants missing fix
 - MID-7691 console logs didn't correspond with task being executed (upload/test resource)
