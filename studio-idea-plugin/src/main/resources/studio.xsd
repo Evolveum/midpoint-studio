@@ -1,0 +1,76 @@
+<xsd:schema
+        targetNamespace="http://midpoint.evolveum.com/xml/ns/public/common/studio-3"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:tns="http://midpoint.evolveum.com/xml/ns/public/common/studio-3"
+        xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+        xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        elementFormDefault="qualified"
+        jaxb:extensionBindingPrefixes="xjc"
+        jaxb:version="2.0">
+
+    <xsd:simpleType name="LocationType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Experimental.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="local">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="LOCAL"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="remote">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="REMOTE"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="DiffObjectType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Experimental.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="fileName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="location" type="tns:LocationType" minOccurs="0"/>
+            <xsd:element name="object" type="c:ObjectType" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="DiffType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Experimental.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="firstObject" type="tns:DiffObjectType" minOccurs="0"/>
+            <xsd:element name="secondObject" type="tns:DiffObjectType" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="diff" type="tns:DiffType"/>
+
+    <xsd:complexType name="DiffListType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Experimental.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="diff" type="tns:DiffType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="diffList" type="tns:DiffListType"/>
+</xsd:schema>

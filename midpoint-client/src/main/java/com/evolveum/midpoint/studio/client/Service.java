@@ -10,10 +10,12 @@ import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaFileType;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -66,4 +68,6 @@ public interface Service {
     List<String> getSourceProfiles() throws IOException;
 
     List<ScriptObject> getSourceProfileScripts(String profile) throws IOException;
+
+    Map<SchemaFileType, String> getExtensionSchemas() throws IOException, SchemaException, AuthenticationException, ClientException;
 }

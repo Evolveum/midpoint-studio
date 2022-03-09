@@ -42,7 +42,7 @@
     <xsl:variable name="assignmentTargetOid" select="/c:task/c:assignment/c:targetRef/@oid"/>
     <xsl:variable name="workersHandlerUri" select="/c:task/c:workManagement/c:workers/c:handlerUri/text()"/>
 
-    <xsl:variable name="isDeletionActivity" select="$taskHandlerUri = $URI_DELETE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000528' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_DELETE)"/>
+    <xsl:variable name="isDeletionActivity" select="$taskHandlerUri = $URI_DELETE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000515' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_DELETE)"/>
 
     <xsl:template match="/c:task">
         <xsl:copy>

@@ -12,10 +12,18 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class UploadTestResourceTask extends UploadExecuteTask {
 
+    public static String TITLE = "Upload/Test resource task";
+
+    public static final String NOTIFICATION_KEY = TITLE;
+
     public static final String OPERATION_TEST_CONNECTION = "test connection";
 
     public UploadTestResourceTask(AnActionEvent event, Environment environment) {
-        super(event, environment);
+        this(event, environment, TITLE, NOTIFICATION_KEY);
+    }
+
+    protected UploadTestResourceTask(AnActionEvent event, Environment environment, String title, String notificationKey) {
+        super(event, environment, title, notificationKey);
     }
 
     @Override

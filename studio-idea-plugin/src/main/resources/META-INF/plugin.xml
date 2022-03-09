@@ -16,6 +16,8 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ConnectorXmlSchemaCacheService"/>
 
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ExtensionSchemaCacheService"/>
+
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ItemPathCacheService"/>
@@ -123,6 +125,10 @@
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
+
+        <completion.contributor language="XML"
+                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"
+                                order="before xmlLocation"/>
 
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>

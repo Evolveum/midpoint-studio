@@ -23,8 +23,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class UploadRecomputeTask extends UploadExecuteTask {
 
+    public static String TITLE = "Upload/Recompute task";
+
+    public static final String NOTIFICATION_KEY = TITLE;
+
     public UploadRecomputeTask(AnActionEvent event, Environment environment) {
-        super(event, environment);
+        super(event, environment, TITLE, NOTIFICATION_KEY);
     }
 
     @Override

@@ -16,8 +16,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class UploadTestValidateResourceTask extends UploadTestResourceTask {
 
+    public static String TITLE = "Upload/Test/Validate resource task";
+
+    public static final String NOTIFICATION_KEY = TITLE;
+
     public UploadTestValidateResourceTask(AnActionEvent event, Environment environment) {
-        super(event, environment);
+        super(event, environment, TITLE, NOTIFICATION_KEY);
     }
 
     @Override

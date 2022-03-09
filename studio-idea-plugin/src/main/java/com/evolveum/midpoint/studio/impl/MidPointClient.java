@@ -20,6 +20,7 @@ import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResp
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaFileType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -30,10 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -397,5 +395,20 @@ public class MidPointClient {
 
     public List<ScriptObject> getSourceProfileScripts(String profile) throws IOException {
         return client.getSourceProfileScripts(profile);
+    }
+
+    public Map<SchemaFileType, String> getExtensionSchemas() {
+        printToConsole("Getting extension schemas");
+
+        Map<SchemaFileType, String> result = Collections.emptyMap();
+        try {
+            result = client.getExtensionSchemas();
+
+            printToConsole("Extension schemas fetched");
+        } catch (Exception ex) {
+            handleGenericException("Error occurred while trying to fetch extension schemas", ex);
+        }
+
+        return result;
     }
 }

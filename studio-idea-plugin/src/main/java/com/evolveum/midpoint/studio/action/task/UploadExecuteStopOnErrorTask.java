@@ -10,8 +10,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class UploadExecuteStopOnErrorTask extends UploadExecuteTask {
 
+    public static String TITLE = "Upload/Execute (stop on error) task";
+
+    public static final String NOTIFICATION_KEY = TITLE;
+
     public UploadExecuteStopOnErrorTask(AnActionEvent event, Environment environment) {
-        super(event, environment);
+        super(event, environment, TITLE, NOTIFICATION_KEY);
     }
 
     @Override

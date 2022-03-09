@@ -40,7 +40,7 @@ public class ClientBackgroundableTask<S extends TaskState> extends ObjectsBackgr
 
         Environment env = getEnvironment();
 
-        midPointService.printToConsole(env, getClass(), "Initializing '" + getTitle() + "' action");
+        midPointService.printToConsole(env, getClass(), "Setting up midPoint client");
 
         MidPointClient client = new MidPointClient(getProject(), env);
 
