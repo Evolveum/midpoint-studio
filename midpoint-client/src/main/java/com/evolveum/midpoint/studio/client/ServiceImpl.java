@@ -426,7 +426,7 @@ public class ServiceImpl implements Service {
         ObjectModificationType modification = new ObjectModificationType();
         modification.oid(oid);
 
-        String xml = context.getSerializer().serialize(new JAXBElement(SchemaConstantsGenerated.O_OBJECT_MODIFICATION, ObjectModificationType.class, modification));
+        String xml = context.getSerializer().serialize(new JAXBElement(ClientUtils.O_OBJECT_MODIFICATION, ObjectModificationType.class, modification));
 
         Request.Builder builder = context.build("/" + path + "/" + oid, options)
                 .post(RequestBody.create(xml, ServiceContext.APPLICATION_XML));

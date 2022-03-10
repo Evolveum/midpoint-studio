@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
@@ -54,6 +55,8 @@ public class ClientUtils {
     public static final String DELTAS_XML_PREFIX = "<objectDeltaObjectList>";
 
     public static final String DELTAS_XML_SUFFIX = "</objectDeltaObjectList>\n";
+
+    public static final ItemName O_OBJECT_MODIFICATION = new ItemName("http://midpoint.evolveum.com/xml/ns/public/common/api-types-3", "objectModification");
 
     public static List<MidPointObject> filterObjectTypeOnly(List<MidPointObject> objects) {
         return filterObjectTypeOnly(objects, true);
@@ -149,8 +152,8 @@ public class ClientUtils {
         String localName = element.getLocalName();
 
         boolean executable = (namespace == null || SchemaConstantsGenerated.NS_SCRIPTING.equals(namespace)) && SCRIPTING_ACTIONS.contains(localName);
-        boolean delta = (namespace == null || SchemaConstantsGenerated.O_OBJECT_MODIFICATION.getNamespaceURI().equals(namespace))
-                && SchemaConstantsGenerated.O_OBJECT_MODIFICATION.getLocalPart().equals(localName);
+        boolean delta = (namespace == null || O_OBJECT_MODIFICATION.getNamespaceURI().equals(namespace))
+                && O_OBJECT_MODIFICATION.getLocalPart().equals(localName);
 
         ObjectTypes type = getObjectType(element);
 
