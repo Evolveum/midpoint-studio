@@ -10,6 +10,7 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.AssignmentHolderType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ActionExpressionType;
 import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ExpressionPipelineType;
@@ -47,7 +48,7 @@ public class UploadRecomputeTask extends UploadExecuteTask {
             return por;
         }
 
-        if (!MidPointUtils.isAssignableFrom(ObjectTypes.FOCUS_TYPE, obj.getType())) {
+        if (obj.getType() == null || !AssignmentHolderType.class.isAssignableFrom(obj.getType().getClassDefinition())) {
             return por;
         }
 
