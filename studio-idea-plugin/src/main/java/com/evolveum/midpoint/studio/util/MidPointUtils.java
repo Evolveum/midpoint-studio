@@ -51,6 +51,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.XmlPatterns;
+import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
@@ -1021,5 +1022,21 @@ public class MidPointUtils {
 
             return StringUtils.join(all, "\n");
         }
+    }
+
+    public static XmlTagPattern.Capture commonTag(String localName) {
+        return qualifiedTag(localName, SchemaConstantsGenerated.NS_COMMON);
+    }
+
+    public static XmlTagPattern.Capture annotationTag(String localName) {
+        return qualifiedTag(localName, SchemaConstantsGenerated.NS_ANNOTATION);
+    }
+
+    public static XmlTagPattern.Capture qualifiedTag(QName name) {
+        return XmlPatterns.xmlTag().withLocalName(name.getLocalPart()).withNamespace(name.getNamespaceURI());
+    }
+
+    public static XmlTagPattern.Capture qualifiedTag(String localName, String namespace) {
+        return XmlPatterns.xmlTag().withLocalName(localName).withNamespace(namespace);
     }
 }
