@@ -6,7 +6,7 @@
                 xmlns:scext="http://midpoint.evolveum.com/xml/ns/public/model/scripting/extension-3"
                 xmlns:rext="http://midpoint.evolveum.com/xml/ns/public/report/extension-3"
                 xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
-                exclude-result-prefixes="mext scext c">
+                exclude-result-prefixes="mext scext c rext">
 
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 
