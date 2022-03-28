@@ -108,6 +108,13 @@
                 language=""
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
 
+        <fileType
+                name="Axiom File"
+                implementationClass="com.evolveum.midpoint.studio.axiom.AxiomFileType"
+                fieldName="INSTANCE"
+                language="Axiom"
+                extensions="axiom"/>
+
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
