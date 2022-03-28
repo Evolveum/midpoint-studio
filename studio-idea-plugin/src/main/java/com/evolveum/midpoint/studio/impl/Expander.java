@@ -178,7 +178,8 @@ public class Expander {
             File contentFile = new File(filePath);
             if (contentFile.isAbsolute()) {
                 VirtualFile content = VfsUtil.findFileByIoFile(contentFile, true);
-                return loadContent(content);
+
+                return loadContent(content, key, contentFile, null);
             } else {
                 if (file != null) {
                     if (!file.isDirectory()) {
@@ -186,7 +187,7 @@ public class Expander {
                     }
                     VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
 
-                    return loadContent(content);
+                    return loadContent(content, key, contentFile, file);
                 } else {
                     throw new IllegalStateException("Couldn't load file '" + key + "', unknown path '" + key + "'");
                 }
@@ -233,16 +234,20 @@ public class Expander {
         return value;
     }
 
-    private String loadContent(VirtualFile file) {
+    private String loadContent(VirtualFile file, String key, File contentFile, VirtualFile contentParent) {
+        if (file == null) {
+            throw new IllegalStateException("Can't load content for key '" + key + "', file '" + contentFile.getPath() + "' is not present in '" + contentParent + "'");
+        }
+
         if (file.isDirectory()) {
-            throw new IllegalStateException("Can't load content, file '" + file.getPath() + "' is directory");
+            throw new IllegalStateException("Can't load content for key '" + key + "', file '" + file.getPath() + "' is directory");
         }
 
         try {
             byte[] content = file.contentsToByteArray();
             return new String(content, file.getCharset());
         } catch (IOException ex) {
-            throw new IllegalStateException("Couldn't load content of file '\" + file.getPath() + \"', reason: " + ex.getMessage());
+            throw new IllegalStateException("Couldn't load content for key '" + key + "', file '" + file.getPath() + "', reason: " + ex.getMessage());
         }
     }
 }
