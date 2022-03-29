@@ -20,6 +20,8 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
     // git plugin - read more: https://github.com/palantir/gradle-git-version
     id("com.palantir.git-version") version "0.12.2"
+    // antlr plugin, todo probably not needed
+    id("antlr")
 }
 
 group = properties("pluginGroup")
@@ -43,6 +45,11 @@ sourceSets {
 
 // Configure project's dependencies
 dependencies {
+    antlr(libs.antlr) {
+        exclude("comibm.icu")
+    }
+    implementation("org.antlr:antlr4-intellij-adaptor:0.1")
+
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.17.1")
 
     implementation(projects.midpointClient)

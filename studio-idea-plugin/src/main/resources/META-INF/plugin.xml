@@ -115,6 +115,8 @@
                 language="Axiom"
                 extensions="axiom"/>
 
+        <lang.parserDefinition language="Axiom" implementationClass="com.evolveum.midpoint.studio.axiom.AxiomParserDefinition"/>
+
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>

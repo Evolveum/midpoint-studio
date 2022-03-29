@@ -31,6 +31,7 @@ dependencyResolutionManagement {
             version("xml-apis", "1.4.01")
             version("remote-robot", "0.11.7")
             version("xmlunit", "2.8.3")
+            version("antlr", "4.9.3")
 
             alias("asciidoctorj-tabbed-code").to("com.bmuschko", "asciidoctorj-tabbed-code-extension")
                 .versionRef("asciidoctorj-tabbed-code")
@@ -60,6 +61,7 @@ dependencyResolutionManagement {
             alias("remote-robot").to("com.intellij.remoterobot", "remote-robot").versionRef("remote-robot")
             alias("remote-fixtures").to("com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
             alias("xmlunit-core").to("org.xmlunit", "xmlunit-core").versionRef("xmlunit")
+            alias("antlr").to("org.antlr", "antlr4").versionRef("antlr")
         }
     }
 }
