@@ -203,28 +203,28 @@ public class BulkActionGenerator extends Generator {
         Element objectType = DOMUtil.createSubElement(extension, MEXT_OBJECT_TYPE_PREFIXED);
         objectType.setTextContent(type.getTypeQName().getLocalPart());
 
-        Element objectQuery = DOMUtil.createSubElement(extension, MEXT_OBJECT_QUERY_PREFIXED);
-
         if (options.isBatchByOids()) {
-            Element filter = DOMUtil.createSubElement(objectQuery, Q_FILTER_PREFIXED);
-            Element inOid = DOMUtil.createSubElement(filter, Q_IN_OID_PREFIXED);
-            for (ObjectType o : batch.getObjects()) {
-                DOMUtil.createSubElement(inOid, Q_VALUE_PREFIXED).setTextContent(o.getOid());
-                DOMUtil.createComment(inOid, " " + o.getName() + " ");
+            if (!batch.getObjects().isEmpty()) {
+                Element objectQuery = DOMUtil.createSubElement(extension, MEXT_OBJECT_QUERY_PREFIXED);
+
+                Element filter = DOMUtil.createSubElement(objectQuery, Q_FILTER_PREFIXED);
+                Element inOid = DOMUtil.createSubElement(filter, Q_IN_OID_PREFIXED);
+                for (ObjectType o : batch.getObjects()) {
+                    DOMUtil.createSubElement(inOid, Q_VALUE_PREFIXED).setTextContent(o.getOid());
+                    DOMUtil.createComment(inOid, " " + o.getName() + " ");
+                }
             }
         } else {
-            try {
-                Element originalQuery = null;
-                if (StringUtils.isNotEmpty(options.getOriginalQuery())) {
-                    originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
-                }
+            if (StringUtils.isNotEmpty(options.getOriginalQuery())) {
+                Element objectQuery = DOMUtil.createSubElement(extension, MEXT_OBJECT_QUERY_PREFIXED);
 
-                if (originalQuery != null) {
+                try {
+                    Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
                     DOMUtil.listChildElements(originalQuery).forEach(e -> objectQuery.appendChild(objectQuery.getOwnerDocument().adoptNode(e)));
+                } catch (RuntimeException e) {
+                    MidPointUtils.publishExceptionNotification(project, null, BulkActionGenerator.class,
+                            GeneratorTask.NOTIFICATION_KEY, "Couldn't parse XML query", e);
                 }
-            } catch (RuntimeException e) {
-                MidPointUtils.publishExceptionNotification(project, null, BulkActionGenerator.class,
-                        GeneratorTask.NOTIFICATION_KEY, "Couldn't parse XML query", e);
             }
         }
     }
