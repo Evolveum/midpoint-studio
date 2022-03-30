@@ -401,7 +401,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         processAction = createAnAction("Process", AllIcons.Actions.RealIntentionBulb,
                 e -> processPerformed(e),
-                e -> e.getPresentation().setEnabled(isResultSelected() || StringUtils.isNotEmpty(query.getText())));
+                e -> e.getPresentation().setEnabled(StringUtils.isNotEmpty(query.getText())));
         group.add(processAction);
 
 
