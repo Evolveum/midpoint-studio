@@ -21,7 +21,7 @@ dependencyResolutionManagement {
             version("logback", "1.2.3")
             version("midpoint", "4.5-RC1")
             version("midscribe", "4.4-SNAPSHOT")
-            version("okhttp", "4.9.0")
+            version("okhttp", "4.9.3")
             version("openkeepass", "0.8.1")
             version("slf4j", "1.7.26")
             version("spring", "5.2.8.RELEASE")
