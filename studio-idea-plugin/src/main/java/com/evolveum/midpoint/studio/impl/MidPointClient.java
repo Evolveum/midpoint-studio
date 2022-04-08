@@ -316,10 +316,14 @@ public class MidPointClient {
     }
 
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
+        return parseObject(xml, null);
+    }
+
+    public PrismObject<?> parseObject(String xml, ExpanderOptions opts) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
         Expander expander = new Expander(environment, cm, project);
 
-        String expanded = expander.expand(xml);
+        String expanded = expander.expand(xml, opts);
 
         PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()));
         return parser.parse();

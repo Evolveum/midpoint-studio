@@ -61,7 +61,11 @@ public class Expander {
     }
 
     public String expand(String object) {
-        return expand(object, null);
+        return expand(object, (ExpanderOptions) null);
+    }
+
+    public String expand(String object, ExpanderOptions opts) {
+        return expand(object, null, opts);
     }
 
     /**
@@ -74,8 +78,16 @@ public class Expander {
      * @return
      */
     public String expand(String object, VirtualFile file) {
+        return expand(object, file, null);
+    }
+
+    public String expand(String object, VirtualFile file, ExpanderOptions opts) {
         if (object == null) {
             return null;
+        }
+
+        if (opts == null) {
+            opts = new ExpanderOptions();
         }
 
         Matcher matcher = PATTERN.matcher(object);
@@ -90,7 +102,7 @@ public class Expander {
                 continue;
             }
 
-            String value = expandKey(key, file);
+            String value = expandKey(key, file, opts.expandEncrypted());
             if (value == null) {
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group()));
                 missingKeys.add(key);
@@ -172,7 +184,7 @@ public class Expander {
         return set;
     }
 
-    private String expandKey(String key, VirtualFile file) {
+    private String expandKey(String key, VirtualFile file, boolean expandEncrypted) {
         if (key != null && key.startsWith("@")) {
             String filePath = key.replaceFirst("@", "");
             File contentFile = new File(filePath);
@@ -200,8 +212,8 @@ public class Expander {
             return value;
         }
 
-        if (encryptionService == null || !encryptionService.isAvailable()) {
-            return expandKeyFromProperties(key, true);
+        if (!expandEncrypted || encryptionService == null || !encryptionService.isAvailable()) {
+            return expandKeyFromProperties(key, expandEncrypted);
         }
 
         EncryptedProperty property = encryptionService.get(key, EncryptedProperty.class);

@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.ExpanderOptions;
 import com.evolveum.midpoint.studio.impl.xml.DiffObjectType;
 import com.evolveum.midpoint.studio.impl.xml.DiffType;
 import com.evolveum.midpoint.studio.impl.xml.LocationType;
@@ -37,10 +38,11 @@ public abstract class DiffTask extends SimpleBackgroundableTask {
 
     protected String createDiffXml(MidPointObject first, VirtualFile firstFile, LocationType firstLocation,
                                    MidPointObject second, VirtualFile secondFile, LocationType secondLocation) throws SchemaException, IOException {
-        // todo expand local content before its used for comparing
 
-        PrismObject firstObject = client.parseObject(first.getContent());
-        PrismObject secondObject = client.parseObject(second.getContent());
+        ExpanderOptions opts = new ExpanderOptions().expandEncrypted(false);
+
+        PrismObject firstObject = client.parseObject(first.getContent(), opts);
+        PrismObject secondObject = client.parseObject(second.getContent(), opts);
 
         DiffType objectsDiff = new DiffType();
 
