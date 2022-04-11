@@ -19,7 +19,7 @@ dependencyResolutionManagement {
             version("jcommander", "1.81")
             version("jupiter", "5.6.0")
             version("logback", "1.2.3")
-            version("midpoint", "4.5-RC2")
+            version("midpoint", "4.5")
             version("midscribe", "4.4-SNAPSHOT")
             version("okhttp", "4.9.3")
             version("openkeepass", "0.8.1")
