@@ -84,7 +84,6 @@ dependencies {
     implementation(libs.openkeepass)
     implementation(libs.commons.lang)
     // compile(libs.xchart)
-    implementation(libs.slf4j.log4j12)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
 
