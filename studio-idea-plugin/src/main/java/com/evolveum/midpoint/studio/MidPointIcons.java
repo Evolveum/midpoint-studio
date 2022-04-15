@@ -11,7 +11,7 @@ import javax.swing.*;
  */
 public class MidPointIcons {
 
-    public static final Icon ACTION_RANDOM_OID = IconLoader.findIcon("/icons/random_oid.png");
+    public static final @NotNull Icon RandomOid = load("icons/dice.svg");
 
     public static final @NotNull Icon Midpoint = load("icons/midpoint.svg");
 
