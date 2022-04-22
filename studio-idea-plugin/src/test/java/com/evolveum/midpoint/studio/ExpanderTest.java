@@ -53,9 +53,9 @@ public class ExpanderTest extends StudioActionTest {
     public void testMid7781Variant() throws IOException{
         if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
             testMid7781Variants("$(@..\\include\\email\\sample.html)");
-        } else {
-            testMid7781Variants("$(@../include/email/sample.html)");
         }
+
+        testMid7781Variants("$(@../include/email/sample.html)");
     }
 
     private void testMid7781Variants(String keyToExpand) throws IOException {

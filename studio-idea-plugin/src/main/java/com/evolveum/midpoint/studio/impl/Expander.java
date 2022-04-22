@@ -189,9 +189,13 @@ public class Expander {
     private String expandKey(String key, VirtualFile file, boolean expandEncrypted) {
         if (key != null && key.startsWith("@")) {
             String filePath = key.replaceFirst("@", "");
-            URI uri = URI.create(filePath);
+
+            // just windows stuff (mid-7781). Backslash is not correctly handled later in {@link VirtualFile.findFileByRelativePath(path) }
+            filePath = filePath.replace("\\", "/");
+
+            Path uri = Path.of(filePath);
             if (uri.isAbsolute()) {
-                VirtualFile content = VfsUtil.findFile(Path.of(filePath), true);
+                VirtualFile content = VfsUtil.findFile(uri, true);
 
                 return loadContent(content, key, filePath, null);
             } else {
