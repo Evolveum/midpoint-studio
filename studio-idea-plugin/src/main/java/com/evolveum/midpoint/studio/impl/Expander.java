@@ -9,7 +9,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -187,19 +189,19 @@ public class Expander {
     private String expandKey(String key, VirtualFile file, boolean expandEncrypted) {
         if (key != null && key.startsWith("@")) {
             String filePath = key.replaceFirst("@", "");
-            File contentFile = new File(filePath);
-            if (contentFile.isAbsolute()) {
-                VirtualFile content = VfsUtil.findFileByIoFile(contentFile, true);
+            URI uri = URI.create(filePath);
+            if (uri.isAbsolute()) {
+                VirtualFile content = VfsUtil.findFile(Path.of(filePath), true);
 
-                return loadContent(content, key, contentFile, null);
+                return loadContent(content, key, filePath, null);
             } else {
                 if (file != null) {
                     if (!file.isDirectory()) {
                         file = file.getParent();
                     }
-                    VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
+                    VirtualFile content = file.findFileByRelativePath(filePath);
 
-                    return loadContent(content, key, contentFile, file);
+                    return loadContent(content, key, filePath, file);
                 } else {
                     throw new IllegalStateException("Couldn't load file '" + key + "', unknown path '" + key + "'");
                 }
@@ -246,9 +248,9 @@ public class Expander {
         return value;
     }
 
-    private String loadContent(VirtualFile file, String key, File contentFile, VirtualFile contentParent) {
+    private String loadContent(VirtualFile file, String key, String contentFilePath, VirtualFile contentParent) {
         if (file == null) {
-            throw new IllegalStateException("Can't load content for key '" + key + "', file '" + contentFile.getPath() + "' is not present in '" + contentParent + "'");
+            throw new IllegalStateException("Can't load content for key '" + key + "', file '" + contentFilePath + "' is not present in '" + contentParent + "'");
         }
 
         if (file.isDirectory()) {

@@ -1,0 +1,12 @@
+<functionLibrary xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3">
+    <name>mid-7781</name>
+    <function>
+        <expression>
+            <script>
+                <code>
+                    $(@../include/email/sample.html)
+                </code>
+            </script>
+        </expression>
+    </function>
+</functionLibrary>
