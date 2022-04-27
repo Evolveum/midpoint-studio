@@ -399,9 +399,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
         group.add(new Separator());
 
-        processAction = createAnAction("Process", AllIcons.Actions.RealIntentionBulb,
-                e -> processPerformed(e),
-                e -> e.getPresentation().setEnabled(isResultSelected() || StringUtils.isNotEmpty(query.getText())));
+        processAction = createAnAction("Process", AllIcons.Actions.RealIntentionBulb, e -> processPerformed(e));
         group.add(processAction);
 
 

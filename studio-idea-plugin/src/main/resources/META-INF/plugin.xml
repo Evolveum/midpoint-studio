@@ -130,6 +130,9 @@
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"
                                 order="before xmlLocation"/>
 
+        <xml.tagNameProvider
+                implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
+
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
@@ -163,7 +166,7 @@
 
         <action id="MidPoint.Action.GenerateRandomOid"
                 class="com.evolveum.midpoint.studio.action.GenerateRandomOid"
-                icon="/icons/random_oid.png"
+                icon="com.evolveum.midpoint.studio.MidPointIcons.RandomOid"
                 text="Generate Random OID"
                 description="Generate Random OID"/>
 

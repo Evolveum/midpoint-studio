@@ -9,7 +9,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,7 +63,11 @@ public class Expander {
     }
 
     public String expand(String object) {
-        return expand(object, null);
+        return expand(object, (ExpanderOptions) null);
+    }
+
+    public String expand(String object, ExpanderOptions opts) {
+        return expand(object, null, opts);
     }
 
     /**
@@ -74,8 +80,16 @@ public class Expander {
      * @return
      */
     public String expand(String object, VirtualFile file) {
+        return expand(object, file, null);
+    }
+
+    public String expand(String object, VirtualFile file, ExpanderOptions opts) {
         if (object == null) {
             return null;
+        }
+
+        if (opts == null) {
+            opts = new ExpanderOptions();
         }
 
         Matcher matcher = PATTERN.matcher(object);
@@ -90,7 +104,7 @@ public class Expander {
                 continue;
             }
 
-            String value = expandKey(key, file);
+            String value = expandKey(key, file, opts.expandEncrypted());
             if (value == null) {
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group()));
                 missingKeys.add(key);
@@ -172,21 +186,26 @@ public class Expander {
         return set;
     }
 
-    private String expandKey(String key, VirtualFile file) {
+    private String expandKey(String key, VirtualFile file, boolean expandEncrypted) {
         if (key != null && key.startsWith("@")) {
             String filePath = key.replaceFirst("@", "");
-            File contentFile = new File(filePath);
-            if (contentFile.isAbsolute()) {
-                VirtualFile content = VfsUtil.findFileByIoFile(contentFile, true);
-                return loadContent(content);
+
+            // just windows stuff (mid-7781). Backslash is not correctly handled later in {@link VirtualFile.findFileByRelativePath(path) }
+            filePath = filePath.replace("\\", "/");
+
+            Path uri = Path.of(filePath);
+            if (uri.isAbsolute()) {
+                VirtualFile content = VfsUtil.findFile(uri, true);
+
+                return loadContent(content, key, filePath, null);
             } else {
                 if (file != null) {
                     if (!file.isDirectory()) {
                         file = file.getParent();
                     }
-                    VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
+                    VirtualFile content = file.findFileByRelativePath(filePath);
 
-                    return loadContent(content);
+                    return loadContent(content, key, filePath, file);
                 } else {
                     throw new IllegalStateException("Couldn't load file '" + key + "', unknown path '" + key + "'");
                 }
@@ -199,8 +218,8 @@ public class Expander {
             return value;
         }
 
-        if (encryptionService == null || !encryptionService.isAvailable()) {
-            return expandKeyFromProperties(key, true);
+        if (!expandEncrypted || encryptionService == null || !encryptionService.isAvailable()) {
+            return expandKeyFromProperties(key, expandEncrypted);
         }
 
         EncryptedProperty property = encryptionService.get(key, EncryptedProperty.class);
@@ -233,16 +252,20 @@ public class Expander {
         return value;
     }
 
-    private String loadContent(VirtualFile file) {
+    private String loadContent(VirtualFile file, String key, String contentFilePath, VirtualFile contentParent) {
+        if (file == null) {
+            throw new IllegalStateException("Can't load content for key '" + key + "', file '" + contentFilePath + "' is not present in '" + contentParent + "'");
+        }
+
         if (file.isDirectory()) {
-            throw new IllegalStateException("Can't load content, file '" + file.getPath() + "' is directory");
+            throw new IllegalStateException("Can't load content for key '" + key + "', file '" + file.getPath() + "' is directory");
         }
 
         try {
             byte[] content = file.contentsToByteArray();
             return new String(content, file.getCharset());
         } catch (IOException ex) {
-            throw new IllegalStateException("Couldn't load content of file '\" + file.getPath() + \"', reason: " + ex.getMessage());
+            throw new IllegalStateException("Couldn't load content for key '" + key + "', file '" + file.getPath() + "', reason: " + ex.getMessage());
         }
     }
 }

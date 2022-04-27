@@ -4,8 +4,8 @@ import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.completion.DefaultCompletionContributor;
 import com.intellij.patterns.XmlPatterns;
-import com.intellij.patterns.XmlTagPattern;
 
+import static com.evolveum.midpoint.studio.util.MidPointUtils.*;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
@@ -51,7 +51,7 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                         XmlPatterns
                                 .xmlText()
                                 .withParent(
-                                        commonTag("handlerUri").withParent(commonTag("task"))
+                                        commonTag("handlerUri").withParent(qualifiedTag(SchemaConstantsGenerated.C_TASK))
                                 )),
                 new TaskHandlerAnnotatorCompletionProvider());
 
@@ -73,17 +73,5 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                         )
                 ),
                 new ItemPathCompletionProvider());
-    }
-
-    private XmlTagPattern.Capture commonTag(String localName) {
-        return qualifiedTag(localName, SchemaConstantsGenerated.NS_COMMON);
-    }
-
-    private XmlTagPattern.Capture annotationTag(String localName) {
-        return qualifiedTag(localName, SchemaConstantsGenerated.NS_ANNOTATION);
-    }
-
-    private XmlTagPattern.Capture qualifiedTag(String localName, String namespace) {
-        return XmlPatterns.xmlTag().withLocalName(localName).withNamespace(namespace);
     }
 }

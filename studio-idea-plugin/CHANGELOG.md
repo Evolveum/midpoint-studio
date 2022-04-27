@@ -1,5 +1,13 @@
 # MidPoint Studio
 
+## 4.5.0
+### Fixed
+- MID-7658 task upgrade action fix
+- MID-7691 console logging fixes, upload/test resource weren't logged correctly
+- MID-7695 namespace variants improvements
+- MID-7735 upload/recompute now recomputes all uploaded objects
+- MID-7810 encrypted credentials not expanded in diff now
+
 ## 4.4.2
 ### Changed
 - Changed format of local/remote diff (internal XML file representation)

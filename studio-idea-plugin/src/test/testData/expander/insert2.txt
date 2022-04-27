@@ -1,0 +1,7 @@
+    <notificationConfiguration>
+        <mail>
+            <server>
+                <host>127.0.0.1</host>
+            </server>
+        </mail>
+    </notificationConfiguration>
