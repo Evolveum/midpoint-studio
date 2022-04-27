@@ -1,5 +1,13 @@
 # MidPoint Studio
 
+## [Unreleased]
+### Added
+
+### Fixed
+
+### Changed
+
+
 ## 4.5.0
 ### Fixed
 - MID-7658 task upgrade action fix
