@@ -81,8 +81,7 @@ public class ProcessorUtils {
         }
 
         if (object instanceof RawType) {
-            // todo fix this it's failing to parse and remove condition
-            return null;
+            return ((RawType) object).extractString();
         }
 
         PrismContext prismContext = context.getStore().getPrismContext();
