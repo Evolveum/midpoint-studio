@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -20,7 +21,7 @@ public abstract class MidscribeTest {
 
     protected GenerateOptions prepareOptions(String name) {
         GenerateOptions opts = new GenerateOptions();
-        opts.setSourceDirectory(new File("./src/test/resources"));
+        opts.setSourceDirectory(List.of(new File("./src/test/resources")));
         opts.setInclude(Arrays.asList("objects/**/*.xml"));
         opts.setAdocOutput(new File("./target/" + name + ".adoc"));
         opts.setExportOutput(new File("./target/" + name + ".html"));

@@ -4,31 +4,32 @@ import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.ParameterException;
 
+import java.io.File;
 import java.net.URI;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class URIConverter implements IStringConverter<URI>, IParameterValidator {
+public class FileConverter implements IStringConverter<File>, IParameterValidator {
 
     private String optionName;
 
-    public URIConverter() {
+    public FileConverter() {
         this(null);
     }
 
-    public URIConverter(String optionName) {
+    public FileConverter(String optionName) {
         this.optionName = optionName;
     }
 
     @Override
-    public URI convert(String value) {
+    public File convert(String value) {
         if (value == null) {
             return null;
         }
 
         try {
-            return URI.create(value);
+            return new File(value);
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException("Option " + optionName
                     + " doesn't contain valid URL ('" + value + "')", ex);

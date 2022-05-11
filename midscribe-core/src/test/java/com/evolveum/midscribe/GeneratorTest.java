@@ -22,7 +22,7 @@ public class GeneratorTest extends MidscribeTest {
     @Test
     public void generateExample() throws Exception {
         GenerateOptions opts = prepareOptions("generateExample");
-        opts.setSourceDirectory(new File("./src/test/resources/objects"));
+        opts.setSourceDirectory(List.of(new File("./src/test/resources/objects")));
         opts.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
 
         Generator generator = new Generator(opts);
@@ -32,7 +32,7 @@ public class GeneratorTest extends MidscribeTest {
     @Test
     public void generatePdfExample() throws Exception {
         GenerateOptions opts = prepareOptions("generatePdfExample");
-        opts.setSourceDirectory(new File("./src/test/resources/objects"));
+        opts.setSourceDirectory(List.of(new File("./src/test/resources/objects")));
         opts.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
         opts.setExportFormat(ExportFormat.PDF);
 
@@ -43,7 +43,7 @@ public class GeneratorTest extends MidscribeTest {
     @Test
     public void generateWithCustomZipTemplate() throws Exception {
         GenerateOptions opts = prepareOptions("generateWithCustomZipTemplate");
-        opts.setSourceDirectory(new File("./src/test/resources/objects"));
+        opts.setSourceDirectory(List.of(new File("./src/test/resources/objects")));
         opts.getExclude().addAll(Arrays.asList(new String[]{"users/*.xml", "tasks/misc/*"}));
         opts.setTemplate(new File("./src/test/resources/template.zip"));
 
@@ -82,7 +82,7 @@ public class GeneratorTest extends MidscribeTest {
     @Test
     public void generateHtmlWithCustomLogListener() throws Exception {
         GenerateOptions opts = prepareOptions("generateHtmlWithCustomLogListener");
-        opts.setSourceDirectory(new File("./src/test/resources/objects"));
+        opts.setSourceDirectory(List.of(new File("./src/test/resources/objects")));
         opts.setInclude(Arrays.asList("generateHtmlWithCustomLogListener.xml"));
 
         List<String> messages = new ArrayList<>();
