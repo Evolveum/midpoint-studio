@@ -32,7 +32,7 @@ $!utils.stripIndent($expression.getDocumentation())
 #set($value = $expression.getExpressionEvaluator().get(0).getValue())
 
 [indent=0,subs="verbatim,attributes",role="primary"]
-.${value.getClass().getSimpleName().replaceFirst("ExpressionEvaluatorType", "")}
+.${value.getClass().getSimpleName().replaceFirst("ExpressionEvaluatorType", "").replaceFirst("RawType", "Value")}
 ----
 $!value.getDescription()
 
