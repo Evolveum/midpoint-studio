@@ -56,9 +56,9 @@ public class CmdGenerateOptions extends GenerateOptions {
         super.setExportOutput(exportOutput);
     }
 
-    @Parameter(names = {P_SOURCE_DIRECTORY, P_SOURCE_DIRECTORY_LONG}, validateWith = URIConverter.class, descriptionKey = "generate.sourceDirectory")
+    @Parameter(names = {P_SOURCE_DIRECTORY, P_SOURCE_DIRECTORY_LONG}, converter = FileConverter.class, validateWith = FileConverter.class, descriptionKey = "generate.sourceDirectory")
     @Override
-    public void setSourceDirectory(File sourceDirectory) {
+    public void setSourceDirectory(List<File> sourceDirectory) {
         super.setSourceDirectory(sourceDirectory);
     }
 

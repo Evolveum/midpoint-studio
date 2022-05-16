@@ -64,38 +64,39 @@ public class InMemoryObjectStore implements MidPointObjectStore {
 
         ParsingContext parsingContext = prismContext.createParsingContextForCompatibilityMode();
 
-        File sources = options.getSourceDirectory();
-        Iterator<File> files = FileUtils.iterateFiles(sources,
-                new InMemoryFileFilter(sources, options.getInclude(), options.getExclude()), TrueFileFilter.INSTANCE);
+        for (File source : options.getSourceDirectory()) {
+            Iterator<File> files = FileUtils.iterateFiles(source,
+                    new InMemoryFileFilter(source, options.getInclude(), options.getExclude()), TrueFileFilter.INSTANCE);
 
-        while (files.hasNext()) {
-            File file = files.next();
+            while (files.hasNext()) {
+                File file = files.next();
 
-            LOG.debug("Loading {}", file);
+                LOG.debug("Loading {}", file);
 
-            try (InputStream is = new FileInputStream(file)) {
-                List<PrismObject<? extends Objectable>> objects;
-                if (options.isExpand()) {
-                    InputStream expanded = expander.expand(is, StandardCharsets.UTF_8);
-                    PrismParser parser = prismContext.parserFor(expanded).language(PrismContext.LANG_XML).context(parsingContext);
-                    objects = parser.parseObjects();
-                } else {
-                    PrismParser parser = prismContext.parserFor(is).language(PrismContext.LANG_XML).context(parsingContext);
-                    objects = parser.parseObjects();
-                }
-
-                for (PrismObject<? extends Objectable> object : objects) {
-                    ObjectType obj = (ObjectType) object.asObjectable();
-
-                    List<ObjectType> list = this.objects.get(obj.getClass());
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        this.objects.put(obj.getClass(), list);
+                try (InputStream is = new FileInputStream(file)) {
+                    List<PrismObject<? extends Objectable>> objects;
+                    if (options.isExpand()) {
+                        InputStream expanded = expander.expand(is, StandardCharsets.UTF_8);
+                        PrismParser parser = prismContext.parserFor(expanded).language(PrismContext.LANG_XML).context(parsingContext);
+                        objects = parser.parseObjects();
+                    } else {
+                        PrismParser parser = prismContext.parserFor(is).language(PrismContext.LANG_XML).context(parsingContext);
+                        objects = parser.parseObjects();
                     }
-                    list.add(obj);
+
+                    for (PrismObject<? extends Objectable> object : objects) {
+                        ObjectType obj = (ObjectType) object.asObjectable();
+
+                        List<ObjectType> list = this.objects.get(obj.getClass());
+                        if (list == null) {
+                            list = new ArrayList<>();
+                            this.objects.put(obj.getClass(), list);
+                        }
+                        list.add(obj);
+                    }
+                } catch (Exception ex) {
+                    LOG.warn("Couldn't load file {}, reason: {}", file.getPath(), ex.getMessage());
                 }
-            } catch (Exception ex) {
-                LOG.warn("Couldn't load file {}, reason: {}", file.getPath(), ex.getMessage());
             }
         }
         LOG.debug("Initialization done");

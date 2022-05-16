@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class GenerateOptions {
 
-    private File sourceDirectory;
+    private List<File> sourceDirectory;
 
     private List<String> include;
 
@@ -67,11 +67,11 @@ public class GenerateOptions {
         this.exportOutput = exportOutput;
     }
 
-    public File getSourceDirectory() {
+    public List<File> getSourceDirectory() {
         return sourceDirectory;
     }
 
-    public void setSourceDirectory(File sourceDirectory) {
+    public void setSourceDirectory(List<File> sourceDirectory) {
         this.sourceDirectory = sourceDirectory;
     }
 

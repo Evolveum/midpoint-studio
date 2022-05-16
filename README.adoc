@@ -49,7 +49,7 @@ Usage: java [-Dlogback.configurationFile=logback.xml] -jar midscribe.jar [option
             Include files
             Default: []
           -s, --source-directory
-            Source directory with XML files
+            Source directory with XML files. This option can be used multiple times to define more than one directory.
           -t, --template
             Template file. File should be ZIP containing "template" directory with Velocity templates or path to directory with templates. Main template is "documentation.vm"
 ```
