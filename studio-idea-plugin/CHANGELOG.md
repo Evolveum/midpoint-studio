@@ -1,13 +1,20 @@
 # MidPoint Studio
 
-## 4.5.1
+## [Unreleased]
+### Added
+
+### Changed
+
+### Fixed
+
+## [4.5.1]
 ### Added
 - Support for IC 2022.2
 
 ### Changed
 - Removed support for IC 2020.3
 
-## 4.5.0
+## [4.5.0]
 ### Fixed
 - MID-7658 task upgrade action fix
 - MID-7691 console logging fixes, upload/test resource weren't logged correctly
@@ -15,7 +22,7 @@
 - MID-7735 upload/recompute now recomputes all uploaded objects
 - MID-7810 encrypted credentials not expanded in diff now
 
-## 4.4.2
+## [4.4.2]
 ### Changed
 - Changed format of local/remote diff (internal XML file representation)
 
@@ -25,7 +32,7 @@
 - MID-7695 namespace variants missing fix
 - MID-7691 console logs didn't correspond with task being executed (upload/test resource)
 
-## 4.4.1
+## [4.4.1]
 ### Added
 - Model authorizations were added to list of possibilities when completion dialog is shown
 - Added partial AXIOM query support
@@ -42,7 +49,7 @@
 - Fixed defaults file includes when generating documentation
 - Fixed file including for documentation generator on Windows
 
-## 4.4.0
+## [4.4.0]
 ### Added
 - Xml autocompletion
     - OIDs for existing objects in workspace
@@ -69,7 +76,7 @@
 - REST actions cancelling
 - UI Freezes
 
-## 4.3
+## [4.3]
 ### Added
 - Bulk refresh predefined objects
 - Import/export encrypted properties
@@ -83,7 +90,7 @@
 - Xml diff simplified UI, multiple diff strategies available
 - Updated documentation generator
 
-## 4.2
+## [4.2]
 ### Added
 - Browse/Upload with raw options for both operations
 - Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project

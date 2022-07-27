@@ -156,7 +156,8 @@ intellij {
 changelog {
     version.set(properties("pluginVersion"))
     groups.set(emptyList())
-    headerParserRegex.set("\\d+(\\.\\d+){1,2}") // this can be removed when we'll start using semantic versioning (e.g. 4.4.0)
+    // this supports old versions like x.y as well as semantic version x.y.z
+    headerParserRegex.set("""(^(0|[1-9]\d*)(\.(0|[1-9]\d*)){1,2})""".toRegex())
 }
 
 // Configure detekt plugin.
@@ -203,8 +204,14 @@ tasks {
             }.joinToString("\n").run { markdownToHTML(this) }
         )
 
-        // Get the latest available change notes from the changelog file
-        changeNotes.set(provider { changelog.getLatest().toHTML() })
+        var hasChangelog = changelog.has(properties("pluginVersion"))
+        var changelogContent = ""
+        if (hasChangelog) {
+            changelogContent = changelog.get(properties("pluginVersion")).toHTML()
+        } else {
+            changelogContent = changelog.getUnreleased().toHTML()
+        }
+        changeNotes.set(changelogContent)
     }
 
     runPluginVerifier {
