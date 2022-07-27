@@ -1,12 +1,11 @@
 # MidPoint Studio
 
-## [Unreleased]
+## 4.5.1
 ### Added
-
-### Fixed
+- Support for IC 2022.2
 
 ### Changed
-
+- Removed support for IC 2020.3
 
 ## 4.5.0
 ### Fixed
