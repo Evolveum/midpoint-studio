@@ -15,7 +15,7 @@ plugins {
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
     id("org.jetbrains.changelog") version "1.3.1"
     // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
-    id("io.gitlab.arturbosch.detekt") version "1.17.1"
+    id("io.gitlab.arturbosch.detekt") version "1.21.0"
     // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
     id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
     // git plugin - read more: https://github.com/palantir/gradle-git-version
@@ -27,23 +27,9 @@ version = properties("pluginVersion")
 
 val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 
-val pluginImplementation by configurations.creating {
-    extendsFrom(configurations.implementation.get())
-}
-
-val resolvableCompileOnly by configurations.creating {
-    extendsFrom(configurations.compileOnly.get())
-}
-
-sourceSets {
-    main {
-        compileClasspath = pluginImplementation + resolvableCompileOnly
-    }
-}
-
 // Configure project's dependencies
 dependencies {
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.17.1")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
 
     implementation(projects.midpointClient)
 
@@ -119,7 +105,7 @@ if (publishChannel.isBlank() || publishChannel == "null") {
 }
 
 var channelSuffix = ""
-if (!publishChannel.isBlank() && publishChannel.toLowerCase() != "default") {
+if (publishChannel.isNotBlank() && publishChannel.toLowerCase() != "default") {
     channelSuffix = "-$publishChannel-$buildNumber"
 }
 
@@ -204,8 +190,9 @@ tasks {
             }.joinToString("\n").run { markdownToHTML(this) }
         )
 
-        var hasChangelog = changelog.has(properties("pluginVersion"))
         var changelogContent = ""
+
+        val hasChangelog = changelog.has(properties("pluginVersion"))
         if (hasChangelog) {
             changelogContent = changelog.get(properties("pluginVersion")).toHTML()
         } else {
