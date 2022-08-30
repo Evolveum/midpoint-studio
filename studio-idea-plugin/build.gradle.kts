@@ -66,7 +66,9 @@ dependencies {
         exclude("ch.qos.logback")
     }
     implementation(libs.asciidoctorj.tabbed.code)
-    implementation("org.apache.velocity", "velocity-engine-core")
+    implementation("org.apache.velocity", "velocity-engine-core") {
+        exclude("org.slf4j")
+    }
 
     implementation(libs.openkeepass)
     implementation(libs.commons.lang)
