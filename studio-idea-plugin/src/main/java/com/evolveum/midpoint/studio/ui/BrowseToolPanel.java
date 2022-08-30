@@ -4,9 +4,8 @@ import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
-import com.evolveum.midpoint.prism.impl.query.EqualFilterImpl;
-import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.query.*;
+import com.evolveum.midpoint.prism.query.builder.S_ConditionEntry;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.AsyncAction;
@@ -691,6 +690,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             return null;
         }
 
+
         QueryFactory qf = ctx.queryFactory();
         OrFilter or = qf.createOr();
 
@@ -713,8 +713,9 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             }
 
             if (!filteredOids.isEmpty()) {
-                InOidFilter inOid = qf.createInOid(filteredOids);
-                or.addCondition(inOid);
+                or.addCondition(ctx.queryFor(ObjectType.class)
+                        .id(filteredOids.toArray(new String[0]))
+                        .buildFilter());
             }
         }
 
@@ -723,9 +724,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             QName matchingRule = PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME;
             List<ObjectFilter> filters = new ArrayList<>();
             for (String s : filtered) {
+                S_ConditionEntry builder = ctx.queryFor(ObjectType.class).item(ObjectType.F_NAME);
+
                 ObjectFilter filter = Objects.equals(nameFilterType, Constants.Q_EQUAL_Q) ?
-                        EqualFilterImpl.createEqual(ctx.path(ObjectType.F_NAME), def, matchingRule, ctx, s) :
-                        SubstringFilterImpl.createSubstring(ctx.path(ObjectType.F_NAME), def, ctx, matchingRule, s, false, false);
+                        builder.eq(s).matching(matchingRule).buildFilter() : builder.contains(s).matching(matchingRule).buildFilter();
 
                 filters.add(filter);
             }
