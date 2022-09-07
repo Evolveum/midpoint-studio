@@ -28,9 +28,4 @@ public class TraceOptionsWindowFactory implements ToolWindowFactory, DumbAware {
         window.setStripeTitle("Trace Options");
         window.setTitle("Trace Options");
     }
-
-    @Override
-    public boolean isDoNotActivateOnStart() {
-        return false;
-    }
 }

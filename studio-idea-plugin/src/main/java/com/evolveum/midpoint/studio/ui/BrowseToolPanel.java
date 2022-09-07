@@ -33,7 +33,6 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -187,7 +186,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                     ObjectTypes type = (ObjectTypes) userObject;
                     String text = type.getTypeQName().getLocalPart();
 
-                    value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+                    value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
                 } else if (userObject instanceof ObjectType) {
                     ObjectType ot = (ObjectType) userObject;
                     value = MidPointUtils.getOrigFromPolyString(ot.getName());

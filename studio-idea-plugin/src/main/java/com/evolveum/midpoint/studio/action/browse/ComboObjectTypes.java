@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,7 +30,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
         String text = selected.getTypeQName().getLocalPart();
 
-        String value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+        String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
         getTemplatePresentation().setText(value);
         e.getPresentation().setText(value);
     }
@@ -92,7 +92,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
             String text = type.getTypeQName().getLocalPart();
 
-            String value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+            String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
             getTemplatePresentation().setText(value);
             e.getPresentation().setText(value);
         }
