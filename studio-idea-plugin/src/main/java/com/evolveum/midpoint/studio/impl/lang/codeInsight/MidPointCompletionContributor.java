@@ -1,9 +1,14 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.completion.DefaultCompletionContributor;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.XmlPatterns;
+import org.jetbrains.annotations.NotNull;
 
 import static com.evolveum.midpoint.studio.util.MidPointUtils.*;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
@@ -73,5 +78,20 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                         )
                 ),
                 new ItemPathCompletionProvider());
+    }
+
+    @Override
+    public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
+        if (parameters.getEditor() == null || parameters.getEditor().getProject() == null) {
+            return;
+        }
+
+        Project project = parameters.getEditor().getProject();
+
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return;
+        }
+
+        super.fillCompletionVariants(parameters, result);
     }
 }
