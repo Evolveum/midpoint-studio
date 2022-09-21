@@ -938,7 +938,7 @@ public class MidPointUtils {
             return null;
         }
 
-        org.w3c.dom.Document doc = DOMUtil.parseDocument(objectXml);
+        org.w3c.dom.Document doc = ClientUtils.parseDocument(objectXml);
         Element rootNode = doc.getDocumentElement();
         QName rootName = new QName(rootNode.getNamespaceURI(), rootNode.getLocalName());
 

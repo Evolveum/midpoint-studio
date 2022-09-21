@@ -83,8 +83,26 @@ public class ClientUtils {
         }
     }
 
-    public static List<MidPointObject> parseText(String text, File file) {
+    public static Document parseDocument(String text) {
+        if (text == null) {
+            return null;
+        }
         Document doc = DOMUtil.parseDocument(text);
+        DOMUtil.preserveFormattingIfPresent(doc.getDocumentElement());
+
+        return doc;
+    }
+
+    public static void addPreserveSpace(Document document) {
+        if (document == null || document.getDocumentElement() == null) {
+            return;
+        }
+        document.getDocumentElement().setAttributeNS(DOMUtil.W3C_XML_XML_URI, "xml:space", "preserve");
+    }
+
+    public static List<MidPointObject> parseText(String text, File file) {
+        Document doc = parseDocument(text);
+
         String displayName = file != null ? file.getPath() : null;
 
         List<MidPointObject> objects = parseDocument(doc, file, displayName);

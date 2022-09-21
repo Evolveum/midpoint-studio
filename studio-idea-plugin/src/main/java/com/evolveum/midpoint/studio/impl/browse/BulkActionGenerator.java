@@ -4,6 +4,7 @@ import com.evolveum.midpoint.model.api.ModelPublicConstants;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.task.GeneratorTask;
+import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -219,7 +220,7 @@ public class BulkActionGenerator extends Generator {
                 Element objectQuery = DOMUtil.createSubElement(extension, MEXT_OBJECT_QUERY_PREFIXED);
 
                 try {
-                    Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
+                    Element originalQuery = ClientUtils.parseDocument(options.getOriginalQuery()).getDocumentElement();
                     DOMUtil.listChildElements(originalQuery).forEach(e -> objectQuery.appendChild(objectQuery.getOwnerDocument().adoptNode(e)));
                 } catch (RuntimeException e) {
                     MidPointUtils.publishExceptionNotification(project, null, BulkActionGenerator.class,

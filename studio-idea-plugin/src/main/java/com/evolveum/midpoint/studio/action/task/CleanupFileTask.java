@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
+import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
@@ -102,7 +103,7 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
             return null;
         }
 
-        Document doc = DOMUtil.parseDocument(content);
+        Document doc = ClientUtils.parseDocument(content);
         Element root = doc.getDocumentElement();
 
         ObjectTypes type = object.getType();
