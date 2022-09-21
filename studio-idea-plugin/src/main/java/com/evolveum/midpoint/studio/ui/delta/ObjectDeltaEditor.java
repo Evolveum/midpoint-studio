@@ -7,6 +7,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.UserDataHolder;
+import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +22,8 @@ import java.beans.PropertyChangeListener;
 public class ObjectDeltaEditor implements FileEditor, UserDataHolder, DumbAware {
 
     public static final String NOTIFICATION_KEY = "Object Delta Editor";
+
+    private UserDataHolderBase userDataHolder = new UserDataHolderBase();
 
     private Project project;
 
@@ -87,11 +90,12 @@ public class ObjectDeltaEditor implements FileEditor, UserDataHolder, DumbAware 
 
     @Override
     public <T> @Nullable T getUserData(@NotNull Key<T> key) {
-        return null;
+        return userDataHolder.getUserData(key);
     }
 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T value) {
+        userDataHolder.putUserData(key, value);
     }
 
     @NotNull

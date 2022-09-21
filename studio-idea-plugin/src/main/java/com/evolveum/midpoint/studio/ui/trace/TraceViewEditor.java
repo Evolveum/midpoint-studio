@@ -22,6 +22,8 @@ import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.project.PossiblyDumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.UserDataHolder;
+import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.panels.Wrapper;
 import org.jetbrains.annotations.NotNull;
@@ -35,11 +37,13 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
+public class TraceViewEditor implements FileEditor, UserDataHolder, PossiblyDumbAware {
 
     private static final Logger LOG = Logger.getInstance(TraceViewEditor.class);
 
     public static final String NOTIFICATION_KEY = "Trace View";
+
+    private UserDataHolderBase userDataHolder = new UserDataHolderBase();
 
     private Project project;
 
@@ -179,12 +183,12 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
     @Nullable
     @Override
     public <T> T getUserData(@NotNull Key<T> key) {
-        return null;
+        return userDataHolder.getUserData(key);
     }
 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T value) {
-
+        userDataHolder.putUserData(key, value);
     }
 
     @Override
