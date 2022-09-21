@@ -27,7 +27,6 @@ dependencyResolutionManagement {
             version("stax", "1.2.0")
             version("testng", "6.14.3")
             version("xchart", "3.5.4")
-            version("xml-apis", "1.4.01")
             version("remote-robot", "0.11.7")
             version("xmlunit", "2.8.3")
 
@@ -53,7 +52,6 @@ dependencyResolutionManagement {
             library("spring-core", "org.springframework", "spring-core").versionRef("spring")
             library("stax", "stax", "stax").versionRef("stax")
             library("xchart", "org.knowm.xchart", "xchart").versionRef("xchart")
-            library("xml-apis", "xml-apis", "xml-apis").versionRef("xml-apis")
             library("remote-robot", "com.intellij.remoterobot", "remote-robot").versionRef("remote-robot")
             library("remote-fixtures", "com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
             library("xmlunit-core", "org.xmlunit", "xmlunit-core").versionRef("xmlunit")

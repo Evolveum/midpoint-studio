@@ -48,6 +48,7 @@ dependencies {
         exclude("org.apache.cxf")
         exclude("org.slf4j")
         exclude("ch.qos.logback")
+        exclude("xerces")
     }
     implementation(libs.security.api) {
         isTransitive = false
@@ -64,6 +65,7 @@ dependencies {
 
         exclude("org.slf4j")
         exclude("ch.qos.logback")
+        exclude("xerces")
     }
     implementation(libs.asciidoctorj.tabbed.code)
     implementation("org.apache.velocity", "velocity-engine-core") {
@@ -77,7 +79,6 @@ dependencies {
     implementation(libs.okhttp.logging)
 
     implementation(libs.stax)
-    implementation(libs.xml.apis)
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {
