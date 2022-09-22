@@ -58,6 +58,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.messages.MessageBus;
+import com.intellij.util.ui.ColorIcon;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
@@ -1065,5 +1066,13 @@ public class MidPointUtils {
 
     public static XmlTagPattern.Capture qualifiedTag(String localName, String namespace) {
         return XmlPatterns.xmlTag().withLocalName(localName).withNamespace(namespace);
+    }
+
+    public static Icon createEnvironmentIcon(Color color) {
+        if (color == null) {
+            return null;
+        }
+
+        return new ColorIcon(24, 14, 24, 14, color, true);
     }
 }

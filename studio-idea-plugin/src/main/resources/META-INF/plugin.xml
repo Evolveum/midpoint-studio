@@ -421,9 +421,6 @@
 
             <separator/>
 
-            <action id="MidPoint.Action.EnvironmentColor"
-                    class="com.evolveum.midpoint.studio.action.environment.EnvironmentColor"/>
-
             <action id="MidPoint.Action.ComboEnvironmentAction"
                     class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
 
