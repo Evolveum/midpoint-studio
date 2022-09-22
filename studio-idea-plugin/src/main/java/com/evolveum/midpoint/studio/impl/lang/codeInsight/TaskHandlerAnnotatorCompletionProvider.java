@@ -89,6 +89,10 @@ public class TaskHandlerAnnotatorCompletionProvider extends CompletionProvider<C
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+        if (!MidPointUtils.hasMidPointFacet(element.getProject())) {
+            return;
+        }
+
         if (!(element instanceof XmlTag)) {
             return;
         }

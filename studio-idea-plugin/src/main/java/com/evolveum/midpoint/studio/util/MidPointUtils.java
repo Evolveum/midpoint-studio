@@ -703,7 +703,11 @@ public class MidPointUtils {
         return result;
     }
 
-    public static boolean hasMidPointFacet(@NotNull Project project) {
+    public static boolean hasMidPointFacet(Project project) {
+        if (project == null) {
+            return false;
+        }
+
         ModuleManager mm = ModuleManager.getInstance(project);
         Module[] modules = mm.getModules();
         if (modules == null || modules.length == 0) {

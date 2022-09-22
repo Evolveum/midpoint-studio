@@ -6,6 +6,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.xml.XmlAttribute;
@@ -26,6 +27,11 @@ public class RefOidAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+        Project project = element.getProject();
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return;
+        }
+
         PsiElement parent = element.getParent();
         if (!(element instanceof XmlAttributeValue)
                 || !(parent instanceof XmlAttribute)
