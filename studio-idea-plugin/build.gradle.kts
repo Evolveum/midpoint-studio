@@ -1,7 +1,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -74,7 +74,6 @@ dependencies {
 
     implementation(libs.openkeepass)
     implementation(libs.commons.lang)
-    // compile(libs.xchart)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
 
@@ -86,12 +85,18 @@ dependencies {
         isTransitive = false
     }
 
-    testImplementation(libs.jupiter.api)
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher") {
+        because("Only needed to run tests in a version of IntelliJ IDEA that bundles older versions")
+    }
+    testImplementation("org.junit.jupiter:junit-jupiter-engine")
+
     testImplementation(libs.remote.robot)
     testImplementation(libs.remote.fixtures)
+
     testImplementation(libs.xmlunit.core)
 
-    testRuntimeOnly(libs.jupiter.engine)
+    testImplementation(libs.xalan)
 }
 
 var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
@@ -207,10 +212,13 @@ tasks {
 
     runPluginVerifier {
         ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
-        failureLevel.set(listOf(
-            RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-            RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
-            RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN))
+        failureLevel.set(
+            listOf(
+                RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+                RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
+                RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN
+            )
+        )
     }
 
     publishPlugin {

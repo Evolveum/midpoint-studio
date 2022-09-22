@@ -26,9 +26,9 @@ dependencyResolutionManagement {
             version("spring", "5.3.8")
             version("stax", "1.2.0")
             version("testng", "6.14.3")
-            version("xchart", "3.5.4")
             version("remote-robot", "0.11.7")
             version("xmlunit", "2.8.3")
+            version("xalan", "2.7.2")
 
             library("asciidoctorj-tabbed-code", "com.bmuschko", "asciidoctorj-tabbed-code-extension").versionRef("asciidoctorj-tabbed-code")
             library("common", "com.evolveum.midpoint.infra", "common").versionRef("midpoint")
@@ -51,10 +51,10 @@ dependencyResolutionManagement {
             library("security-api", "com.evolveum.midpoint.repo", "security-api").versionRef("midpoint")
             library("spring-core", "org.springframework", "spring-core").versionRef("spring")
             library("stax", "stax", "stax").versionRef("stax")
-            library("xchart", "org.knowm.xchart", "xchart").versionRef("xchart")
             library("remote-robot", "com.intellij.remoterobot", "remote-robot").versionRef("remote-robot")
             library("remote-fixtures", "com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
             library("xmlunit-core", "org.xmlunit", "xmlunit-core").versionRef("xmlunit")
+            library("xalan", "xalan", "xalan").versionRef("xalan")
         }
     }
 }
