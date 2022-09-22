@@ -72,12 +72,14 @@ dependencies {
         exclude("org.slf4j")
     }
 
-    implementation(libs.openkeepass)
+    implementation(libs.openkeepass) {
+        exclude("stax", "stax-api")
+    }
     implementation(libs.commons.lang)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
 
-    implementation(libs.stax)
+//    implementation(libs.stax)
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {
