@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.impl.browse;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.task.GeneratorTask;
-import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -114,7 +113,7 @@ public class TaskGenerator extends Generator {
                 if (StringUtils.isNotEmpty(options.getOriginalQuery())) {
                     Element objectQuery = DOMUtil.createSubElement(extension, new QName(Constants.MEXT_NS, "objectQuery", "mext"));
                     try {
-                        Element originalQuery = ClientUtils.parseDocument(options.getOriginalQuery()).getDocumentElement();
+                        Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
                         List<Element> children = DOMUtil.listChildElements(originalQuery);
                         for (Element child : children) {
                             DOMUtil.fixNamespaceDeclarations(child);

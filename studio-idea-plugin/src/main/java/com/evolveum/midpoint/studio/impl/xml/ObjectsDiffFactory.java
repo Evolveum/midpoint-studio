@@ -46,7 +46,7 @@ public class ObjectsDiffFactory {
             return null;
         }
 
-        Document doc = ClientUtils.parseDocument(xml);
+        Document doc = DOMUtil.parseDocument(xml);
         return parseObjectsDiff(doc.getDocumentElement());
     }
 
@@ -164,7 +164,7 @@ public class ObjectsDiffFactory {
         }
 
         String xml = ClientUtils.getSerializer(prismContext).serializeRealValue(object, Q_OBJECT);
-        Document d = ClientUtils.parseDocument(xml);
+        Document d = DOMUtil.parseDocument(xml);
 
         Element element = d.getDocumentElement();
         doc.adoptNode(element);

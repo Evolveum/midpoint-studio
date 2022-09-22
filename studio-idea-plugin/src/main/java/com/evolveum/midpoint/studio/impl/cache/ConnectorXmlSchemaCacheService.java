@@ -200,7 +200,7 @@ public class ConnectorXmlSchemaCacheService {
     }
 
     private Element getXsdSchema(String connector) {
-        Document doc = ClientUtils.parseDocument(connector);
+        Document doc = DOMUtil.parseDocument(connector);
         Element schema = DOMUtil.getChildElement(doc.getDocumentElement(), ConnectorType.F_SCHEMA.asSingleName());
         if (schema == null) {
             return null;
