@@ -992,7 +992,7 @@ public class MidPointUtils {
             root.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "xsi:type", type.getTypeQName().getLocalPart());
         }
 
-        return DOMUtil.serializeDOMToString(doc);
+        return ClientUtils.serializeDOMToString(doc);
     }
 
     public static void subscribeToEnvironmentChange(Project project, Consumer<Environment> refreshFunction) {

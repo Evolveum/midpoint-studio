@@ -78,10 +78,16 @@ public class ClientUtils {
             return null;
         }
 
+        Document doc;
+        if (node instanceof Document) {
+            doc = (Document) node;
+        } else {
+            doc = node.getOwnerDocument();
+        }
+
         // TODO HACK
         // This is just a hack that adds xml:space="preserve" to root DOM element if needed before serialization to string.
         // After serialization xml attribute is removed from string
-        Document doc = node.getOwnerDocument();
         DOMUtil.preserveFormattingIfPresent(doc.getDocumentElement());
 
         String xml = DOMUtil.serializeDOMToString(node);
