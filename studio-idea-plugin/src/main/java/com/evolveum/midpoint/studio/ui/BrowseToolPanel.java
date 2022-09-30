@@ -29,17 +29,21 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.lang.Language;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.ui.EditorTextField;
+import com.intellij.ui.EditorTextFieldProvider;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.components.JBTextArea;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -85,7 +89,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private Project project;
 
-    private JBTextArea query;
+    private EditorTextField query;
     private JXTreeTable results;
 
     private ComboObjectTypes objectType;
@@ -142,7 +146,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         toolbar.setTargetComponent(this);
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
-        query = new JBTextArea();
+        query = EditorTextFieldProvider.getInstance().getEditorField(PlainTextLanguage.INSTANCE, project, new ArrayList<>());
+        query.setOneLineMode(false);
         JBScrollPane pane = new JBScrollPane(query);
         root.add(pane, BorderLayout.CENTER);
 
@@ -270,6 +275,16 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 if (queryType.getSelected() == null || query == null) {
                     return;
                 }
+
+
+                String text = query.getText();
+                Container parent = query.getParent();
+                parent.remove(query);
+
+                Language lang = queryType.getSelected() == Type.QUERY_XML ? XMLLanguage.INSTANCE : PlainTextLanguage.INSTANCE;
+                query = EditorTextFieldProvider.getInstance().getEditorField(lang, project, new ArrayList<>());
+                query.setText(text);
+                parent.add(query);
 
                 switch (queryType.getSelected()) {
                     case QUERY_XML:
