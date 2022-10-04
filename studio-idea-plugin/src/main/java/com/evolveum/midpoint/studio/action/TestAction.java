@@ -41,7 +41,7 @@ public class TestAction extends AnAction {
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
-        if (isPluginVersionRelease) {
+        if (isPluginVersionRelease || true) {
             e.getPresentation().setVisible(false);
             return;
         }
