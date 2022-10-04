@@ -146,8 +146,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         toolbar.setTargetComponent(this);
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
-        query = EditorTextFieldProvider.getInstance().getEditorField(PlainTextLanguage.INSTANCE, project, new ArrayList<>());
-        query.setOneLineMode(false);
+        query = createQueryTextField(ComboQueryType.Type.NAME);
         JBScrollPane pane = new JBScrollPane(query);
         root.add(pane, BorderLayout.CENTER);
 
@@ -261,6 +260,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         clipboard.setContents(selection, selection);
     }
 
+    private EditorTextField createQueryTextField(ComboQueryType.Type type) {
+        Language lang = type == ComboQueryType.Type.QUERY_XML ? XMLLanguage.INSTANCE : PlainTextLanguage.INSTANCE;
+        EditorTextField editor = EditorTextFieldProvider.getInstance().getEditorField(lang, project, new ArrayList<>());
+        editor.setOneLineMode(false);
+
+        return editor;
+    }
+
     private DefaultActionGroup createQueryActionGroup() {
         DefaultActionGroup group = new DefaultActionGroup();
         objectType = new ComboObjectTypes();
@@ -281,8 +288,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 Container parent = query.getParent();
                 parent.remove(query);
 
-                Language lang = queryType.getSelected() == Type.QUERY_XML ? XMLLanguage.INSTANCE : PlainTextLanguage.INSTANCE;
-                query = EditorTextFieldProvider.getInstance().getEditorField(lang, project, new ArrayList<>());
+                query = createQueryTextField(queryType.getSelected());
                 query.setText(text);
                 parent.add(query);
 
