@@ -78,6 +78,12 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                         )
                 ),
                 new ItemPathCompletionProvider());
+
+        extend(CompletionType.BASIC,
+                psiElement().inside(
+                        XmlPatterns.xmlText().withParent(commonTag("panelType"))
+                ),
+                new PanelTypeCompletionProvider());
     }
 
     @Override

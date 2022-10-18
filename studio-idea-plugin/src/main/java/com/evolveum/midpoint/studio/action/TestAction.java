@@ -11,9 +11,17 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.impl.search.JavaFilesSearchScope;
+import com.intellij.psi.search.SearchScope;
+import com.intellij.psi.search.searches.AllClassesSearch;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -41,7 +49,7 @@ public class TestAction extends AnAction {
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
-        if (isPluginVersionRelease || true) {
+        if (isPluginVersionRelease) {
             e.getPresentation().setVisible(false);
             return;
         }
@@ -52,22 +60,25 @@ public class TestAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
-        if (evt.getProject() == null) {
+        Project project = evt.getProject();
+        if (project == null) {
             return;
         }
 
-//        Project project = evt.getProject();
-//
-//        ResourceWizard wizard = ResourceWizard.createWizard(project);
-//        wizard.showAndGet();
+        SearchScope scope = new JavaFilesSearchScope(project);
 
-        RunnableUtils.executeWithPluginClassloader(() -> {
+        AllClassesSearch.SearchParameters params = new AllClassesSearch.SearchParameters(scope, project);
+        PsiClass[] classes = AllClassesSearch.INSTANCE
+                .createQuery(params)
+                .filtering(c -> c.getAnnotation("com.evolveum.midpoint.web.application.PanelType") != null)
+                .toArray(new PsiClass[0]);
 
-            EnvironmentService es = EnvironmentService.getInstance(evt.getProject());
-            MidPointClient client = new MidPointClient(evt.getProject(), es.getSelected(), true, true);
-            Map<SchemaFileType, String> result = client.getExtensionSchemas();
-            System.out.println(result);
-            return result;
-        });
+        List<String> panelNamesQuoted = Arrays.stream(classes)
+                .map(p -> p.getAnnotation("com.evolveum.midpoint.web.application.PanelType"))
+                .map(a -> a.findAttributeValue("name").getText())
+                .sorted()
+                .collect(Collectors.toList());
+
+        System.out.println("CLASSES>>> " + classes.length);
     }
 }
