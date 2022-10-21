@@ -671,7 +671,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         }
 
         ObjectTypes type = objectType.getSelected();
-        return ctx.createQueryParser().parseQuery(type.getClassDefinition(), text);
+        return ctx.createQueryParser().parseFilter(type.getClassDefinition(), text);
     }
 
     private ObjectQuery parseQuery(MidPointClient client) throws SchemaException, IOException {
