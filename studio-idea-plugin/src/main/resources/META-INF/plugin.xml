@@ -149,7 +149,7 @@
 
         <fileBasedIndex implementation="com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl"/>
 
-        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.resource.ResourceEditorProvider"/>
+<!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.resource.ResourceEditorProvider"/>-->
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
