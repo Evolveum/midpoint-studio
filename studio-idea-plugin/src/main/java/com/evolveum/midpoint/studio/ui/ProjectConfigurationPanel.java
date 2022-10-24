@@ -55,7 +55,20 @@ public class ProjectConfigurationPanel extends JPanel {
     }
 
     public boolean isModified() {
-        return midpointSettingsPanel.isModified() || environmentsPanel.isModified();
+        return midpointSettingsPanel.isModified() || environmentsPanel.isModified() ||
+                (getString(password1) != null || getString(password2) != null || getString(oldPassword) != null);
+    }
+
+    private String getString(JPasswordField passwordfield) {
+        if (passwordfield == null) {
+            return null;
+        }
+        char[] value = passwordfield.getPassword();
+        if (value == null || value.length == 0) {
+            return null;
+        }
+
+        return new String(value);
     }
 
     public ProjectSettings getSettings() {
