@@ -238,24 +238,6 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         };
     }
 
-    private void doTestConnectionAction(ActionEvent evt) {
-        Task.Backgroundable task = new Task.Backgroundable(project, "Saving Operation Result Xml") {
-
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                new RunnableUtils.PluginClasspathRunnable() {
-
-                    @Override
-                    public void runWithPluginClassLoader() {
-                        executeTestConnection(project, testConnection);
-                    }
-                }.run();
-            }
-        };
-        // todo run synchronously
-        ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
-    }
-
     private void executeTestConnection(Project project, JLabel testConnection) {
         Environment env = new Environment();
         populateEnvironment(env);
@@ -307,6 +289,24 @@ public class EnvironmentEditorDialog extends DialogWrapper {
                 if (infoList.stream().anyMatch(info1 -> !info1.okEnabled)) return;
             }
             doTestConnectionAction(e);
+        }
+
+        private void doTestConnectionAction(ActionEvent evt) {
+            Task.Backgroundable task = new Task.Backgroundable(project, "Saving Operation Result Xml") {
+
+                @Override
+                public void run(@NotNull ProgressIndicator indicator) {
+                    new RunnableUtils.PluginClasspathRunnable() {
+
+                        @Override
+                        public void runWithPluginClassLoader() {
+                            executeTestConnection(project, testConnection);
+                        }
+                    }.run();
+                }
+            };
+            // todo run synchronously
+            ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
         }
     }
 }
