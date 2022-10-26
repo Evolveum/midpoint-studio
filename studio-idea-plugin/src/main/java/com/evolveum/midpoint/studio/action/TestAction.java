@@ -2,9 +2,9 @@ package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaFileType;
+import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.ui.GeneralConfiguration;
+import com.evolveum.midpoint.studio.ui.GeneralConfigurationPanel;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -12,16 +12,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.impl.search.JavaFilesSearchScope;
-import com.intellij.psi.search.SearchScope;
-import com.intellij.psi.search.searches.AllClassesSearch;
+import com.intellij.openapi.ui.DialogWrapper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import javax.swing.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -65,20 +60,29 @@ public class TestAction extends AnAction {
             return;
         }
 
-        SearchScope scope = new JavaFilesSearchScope(project);
+        DialogWrapper dialog = new TestDialog(evt.getProject());
+        dialog.setSize(1000, 500);
+        dialog.showAndGet();
+    }
 
-        AllClassesSearch.SearchParameters params = new AllClassesSearch.SearchParameters(scope, project);
-        PsiClass[] classes = AllClassesSearch.INSTANCE
-                .createQuery(params)
-                .filtering(c -> c.getAnnotation("com.evolveum.midpoint.web.application.PanelType") != null)
-                .toArray(new PsiClass[0]);
+    private static class TestDialog extends DialogWrapper {
 
-        List<String> panelNamesQuoted = Arrays.stream(classes)
-                .map(p -> p.getAnnotation("com.evolveum.midpoint.web.application.PanelType"))
-                .map(a -> a.findAttributeValue("name").getText())
-                .sorted()
-                .collect(Collectors.toList());
+        private Project project;
 
-        System.out.println("CLASSES>>> " + classes.length);
+        public TestDialog(Project project) {
+            super(false);
+
+            this.project = project;
+            init();
+        }
+
+        @Override
+        protected @Nullable JComponent createCenterPanel() {
+            MidPointService mm = MidPointService.getInstance(project);
+            EnvironmentService em = EnvironmentService.getInstance(project);
+
+            GeneralConfigurationPanel gcp = new GeneralConfigurationPanel(project, new GeneralConfiguration(), mm.getSettings(), em.getFullSettings());
+            return gcp.createPanel();
+        }
     }
 }
