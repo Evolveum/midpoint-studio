@@ -1,4 +1,5 @@
 fun properties(key: String) = project.findProperty(key)?.toString()
+fun Jar.patchManifest() = manifest { attributes("Version" to project.version) }
 
 plugins {
     `java-gradle-plugin`
@@ -78,4 +79,10 @@ publishing {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks {
+    jar {
+        patchManifest()
+    }
 }
