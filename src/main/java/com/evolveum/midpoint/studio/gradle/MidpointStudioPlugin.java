@@ -56,10 +56,10 @@ public class MidpointStudioPlugin implements Plugin<Project> {
 
         project.getTasks().register(TASK_SETUP_DEPENDENCIES, SetupDependenciesTask.class).configure((task) -> {
 
+            info(context, "Midpoint version: " + extension.getMidpointVersion());
+
             Configuration midpointConfiguration = project.getConfigurations().create(CONFIGURATION_NAME);
             midpointConfiguration.setVisible(false);
-
-            System.out.println("Midpoint version: " + extension.getMidpointVersion());
 
             addDependency(project, midpointConfiguration, "com.evolveum.midpoint.model:model-impl:" + extension.getMidpointVersion());
 
