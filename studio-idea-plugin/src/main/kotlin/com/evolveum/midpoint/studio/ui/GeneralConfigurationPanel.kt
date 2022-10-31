@@ -16,6 +16,8 @@ import com.intellij.ui.layout.ValidationInfoBuilder
 import javax.swing.JTextField
 import javax.swing.ListCellRenderer
 
+import com.evolveum.midpoint.studio.util.MidPointBundle.message
+
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -28,15 +30,15 @@ open class GeneralConfigurationPanel(
 
     fun createPanel(): DialogPanel {
         return panel {
-            groupRowsRange("General") {
-                row("MidPoint module:") {
+            groupRowsRange(message("midpoint.configuration.general.group.title")) {
+                row(message("midpoint.configuration.general.midpointModule")) {
                     comboBox(
                         listOfModules(),
                         modulesRenderer()
                     )
                         .bindItemNullable(model::midpointModule)
-                }.comment("Select module which will have Midpoint Facet to enable Midpoint Studio functionality")
-                row("Import from Eclipse:") {
+                }.comment(message("midpoint.configuration.general.midpointModule.comment"))
+                row(message("midpoint.configuration.general.importFormEclipse")) {
                     button("Import") {
                         onImportFromEclipseClicked()
                     }
@@ -106,7 +108,6 @@ open class GeneralConfigurationPanel(
                         .horizontalAlign(HorizontalAlign.FILL)
                 }
             }
-
         }
     }
 
