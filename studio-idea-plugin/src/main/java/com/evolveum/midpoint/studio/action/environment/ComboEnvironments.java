@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.action.environment;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
@@ -35,8 +36,13 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
         Environment env = envManager.getSelected();
 
         String text = env != null ? env.getName() : "None Selected";
+
         getTemplatePresentation().setText(text);
         e.getPresentation().setText(text);
+
+        Icon icon = MidPointUtils.createEnvironmentIcon(env.getAwtColor());
+        getTemplatePresentation().setIcon(icon);
+        e.getPresentation().setIcon(icon);
     }
 
     @Override

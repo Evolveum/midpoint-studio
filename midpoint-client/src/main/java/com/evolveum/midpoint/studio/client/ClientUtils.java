@@ -12,9 +12,10 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBElement;
@@ -70,6 +71,29 @@ public class ClientUtils {
         return objects.stream()
                 .filter(o -> o.getType() != null || ((o.isExecutable() || o.isDelta()) && !includeObjectsOnly))
                 .collect(Collectors.toList());
+    }
+
+    public static String serializeDOMToString(Node node) {
+        if (node == null) {
+            return null;
+        }
+
+        Document doc;
+        if (node instanceof Document) {
+            doc = (Document) node;
+        } else {
+            doc = node.getOwnerDocument();
+        }
+
+        // TODO HACK
+        // This is just a hack that adds xml:space="preserve" to root DOM element if needed before serialization to string.
+        // After serialization xml attribute is removed from string
+        DOMUtil.preserveFormattingIfPresent(doc.getDocumentElement());
+
+        String xml = DOMUtil.serializeDOMToString(node);
+        xml = xml.replaceFirst("xml:space=\"preserve\"", "");
+
+        return xml;
     }
 
     public static List<MidPointObject> parseText(String text) {
@@ -157,7 +181,7 @@ public class ClientUtils {
 
         ObjectTypes type = getObjectType(element);
 
-        MidPointObject o = new MidPointObject(DOMUtil.serializeDOMToString(element), type, executable);
+        MidPointObject o = new MidPointObject(ClientUtils.serializeDOMToString(element), type, executable);
         o.setDelta(delta);
 
         String oid = element.getAttribute("oid");

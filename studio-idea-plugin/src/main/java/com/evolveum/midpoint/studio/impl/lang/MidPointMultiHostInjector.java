@@ -4,6 +4,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ScriptExpressionEvaluatorType;
 import com.intellij.lang.injection.MultiHostInjector;
 import com.intellij.lang.injection.MultiHostRegistrar;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLanguageInjectionHost;
@@ -22,6 +23,11 @@ public class MidPointMultiHostInjector implements MultiHostInjector {
 
     @Override
     public void getLanguagesToInject(@NotNull MultiHostRegistrar registrar, @NotNull PsiElement context) {
+        Project project = context.getProject();
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return;
+        }
+
         if (!(context instanceof XmlText)) {
             return;
         }

@@ -7,6 +7,8 @@ import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.project.PossiblyDumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.UserDataHolder;
+import com.intellij.openapi.util.UserDataHolderBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,7 +18,9 @@ import java.beans.PropertyChangeListener;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ProfilingEditor implements FileEditor, PossiblyDumbAware {
+public class ProfilingEditor implements FileEditor, UserDataHolder, PossiblyDumbAware {
+
+    private UserDataHolderBase userDataHolder = new UserDataHolderBase();
 
     private Project project;
     private ProfilingPanel panel = new ProfilingPanel();
@@ -98,12 +102,12 @@ public class ProfilingEditor implements FileEditor, PossiblyDumbAware {
     @Nullable
     @Override
     public <T> T getUserData(@NotNull Key<T> key) {
-        return null;
+        return userDataHolder.getUserData(key);
     }
 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T value) {
-
+        userDataHolder.putUserData(key, value);
     }
 
     @Override

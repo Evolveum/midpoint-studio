@@ -1,11 +1,21 @@
 # MidPoint Studio
 
-## [Unreleased]
+## [4.6.0]
 ### Added
+- Added support for 2022.3
+- MID-7672 autocomplete and highlighting for xml queries in browser panel
+- Added panelType contributor, autocomplete support (if java lib for admin-gui is on classpath as maven dependency)
 
 ### Changed
+- Studio now uses MidPoint 4.6 libraries
+- Removed support for 2021.*
 
 ### Fixed
+- MID-8076 fix for remote diff editor "User data is not supported"
+- Multiple occurrences of premature plugin components initialization
+- MID-8000 improved environment combobox selection, added colors
+- MID-8128 fixed task upgrade to activity (stax classpath issue)
+- MID-8045 password field handling in configuration editor
 
 ## [4.5.1]
 ### Added

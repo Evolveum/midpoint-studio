@@ -22,6 +22,8 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ItemPathCacheService"/>
 
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PanelTypeCacheService"/>
+
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
@@ -43,8 +45,6 @@
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
-
-        <!--        <errorHandler implementation="com.evolveum.midpoint.studio.impl.ide.error.JiraErrorReporter"/>-->
 
         <!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
 
@@ -148,6 +148,8 @@
         <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectOidIndex"/>-->
 
         <fileBasedIndex implementation="com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl"/>
+
+<!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.resource.ResourceEditorProvider"/>-->
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
@@ -422,9 +424,6 @@
             <reference ref="MidPoint.Action.GenerateRandomOid"/>
 
             <separator/>
-
-            <action id="MidPoint.Action.EnvironmentColor"
-                    class="com.evolveum.midpoint.studio.action.environment.EnvironmentColor"/>
 
             <action id="MidPoint.Action.ComboEnvironmentAction"
                     class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>

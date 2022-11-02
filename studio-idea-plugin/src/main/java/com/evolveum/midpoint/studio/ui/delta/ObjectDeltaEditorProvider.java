@@ -28,7 +28,7 @@ public class ObjectDeltaEditorProvider implements FileEditorProvider, DumbAware 
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile file) {
-        if (project == null || file == null) {
+        if (!MidPointUtils.hasMidPointFacet(project)) {
             return false;
         }
 

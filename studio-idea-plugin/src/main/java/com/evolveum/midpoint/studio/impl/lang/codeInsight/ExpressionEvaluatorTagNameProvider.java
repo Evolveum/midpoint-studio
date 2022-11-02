@@ -60,6 +60,10 @@ public class ExpressionEvaluatorTagNameProvider implements XmlTagNameProvider {
 
     @Override
     public void addTagNameVariants(List<LookupElement> elements, @NotNull XmlTag tag, String prefix) {
+        if (!MidPointUtils.hasMidPointFacet(tag.getProject())) {
+            return;
+        }
+
         if (!PlatformPatterns.psiElement()
                 .withParent(MidPointUtils.qualifiedTag(SchemaConstantsGenerated.C_EXPRESSION))
                 .accepts(tag)) {

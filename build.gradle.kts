@@ -13,6 +13,9 @@ allprojects {
         maven {
             url = uri("https://nexus.evolveum.com/nexus/repository/intellij-dependencies/")
         }
+        maven {
+            url = uri("https://nexus.evolveum.com/nexus/repository/intellij-plugin-verifier/")
+        }
     }
 }
 

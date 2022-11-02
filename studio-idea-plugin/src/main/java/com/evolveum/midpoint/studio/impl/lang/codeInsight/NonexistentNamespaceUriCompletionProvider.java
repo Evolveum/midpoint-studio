@@ -1,10 +1,12 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.patterns.XmlPatterns;
@@ -29,6 +31,16 @@ public class NonexistentNamespaceUriCompletionProvider extends CompletionContrib
 
     @Override
     public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
+        if (parameters.getEditor() == null || parameters.getEditor().getProject() == null) {
+            return;
+        }
+
+        Project project = parameters.getEditor().getProject();
+
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return;
+        }
+
         if (!shouldAddVariants(parameters.getPosition())) {
             return;
         }

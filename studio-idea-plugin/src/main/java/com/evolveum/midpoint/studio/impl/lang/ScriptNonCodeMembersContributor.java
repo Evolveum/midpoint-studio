@@ -7,6 +7,7 @@ import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.path.NameItemPathSegment;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -97,7 +98,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             XmlTag typeTag = MidPointUtils.findSubTag(parameter, ExpressionParameterType.F_TYPE.asSingleName());
 
             String name = null;
-            if (nameTag != null && nameTag.getValue() != null) {
+            if (nameTag != null) {
                 name = nameTag.getValue().getText();
             }
 
@@ -106,7 +107,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             }
 
             Class type = Object.class;
-            if (typeTag != null && typeTag.getValue() != null) {
+            if (typeTag != null) {
                 type = getParameterVariableType(typeTag);
             }
 
@@ -144,7 +145,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             XmlTag nameTag = MidPointUtils.findSubTag(source, SchemaConstants.C_NAME);
 
             List<QName> namePath = new ArrayList<>();
-            if (pathTag != null && pathTag.getValue() != null) {
+            if (pathTag != null) {
                 namePath = parseNamePath(pathTag.getValue().getText());
             }
 
@@ -153,7 +154,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
                 name = namePath.get(namePath.size() - 1).getLocalPart();
             }
 
-            if (nameTag != null && nameTag.getValue() != null && nameTag.getValue().getText() != null) {
+            if (nameTag != null) {
                 name = nameTag.getValue().getText();
             }
 
@@ -184,7 +185,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             UniformItemPath itemPath = ItemPathHolder.parseFromString(path);
             itemPath = itemPath.namedSegmentsOnly();
 
-            itemPath.getSegments().stream().forEach(s -> names.add(((NameItemPathSegment) s).getName()));
+            itemPath.getSegments().forEach(s -> names.add(((NameItemPathSegment) s).getName()));
         } catch (Exception ex) {
         }
 
@@ -192,7 +193,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
     }
 
     private Class getParameterVariableType(XmlTag typeTag) {
-        if (typeTag == null || typeTag.getValue() == null) {
+        if (typeTag == null) {
             return Object.class;
         }
 
@@ -252,8 +253,10 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         }
 
         for (ItemDefinition def : results) {
-            if (def.getTypeClassIfKnown() != null) {
-                return def.getTypeClassIfKnown();
+            QName name = def.getTypeName();
+            Class clazz = XsdTypeMapper.toJavaTypeIfKnown(name);
+            if (clazz != null) {
+                return clazz;
             }
         }
 

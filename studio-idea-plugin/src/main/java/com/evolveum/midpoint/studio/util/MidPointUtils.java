@@ -58,6 +58,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.messages.MessageBus;
+import com.intellij.util.ui.ColorIcon;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
@@ -66,8 +67,7 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -704,7 +704,11 @@ public class MidPointUtils {
         return result;
     }
 
-    public static boolean hasMidPointFacet(@NotNull Project project) {
+    public static boolean hasMidPointFacet(Project project) {
+        if (project == null) {
+            return false;
+        }
+
         ModuleManager mm = ModuleManager.getInstance(project);
         Module[] modules = mm.getModules();
         if (modules == null || modules.length == 0) {
@@ -940,31 +944,55 @@ public class MidPointUtils {
         }
 
         org.w3c.dom.Document doc = DOMUtil.parseDocument(objectXml);
-        Node previousRoot = doc.removeChild(doc.getDocumentElement());
+        Element rootNode = doc.getDocumentElement();
+        QName rootName = new QName(rootNode.getNamespaceURI(), rootNode.getLocalName());
 
-        QName elementName = new QName(previousRoot.getNamespaceURI(), previousRoot.getLocalName());
-        ObjectTypes type = null;
-        for (ObjectTypes ot : ObjectTypes.values()) {
-            if (elementName.equals(ot.getElementName())) {
-                type = ot;
-                break;
-            }
-        }
-
-        if (type == null) {
+        if (rootName.equals(ObjectTypes.OBJECT) && rootNode.hasAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type")) {
             return objectXml;
         }
 
+        Node previousRoot = doc.removeChild(rootNode);
+
         Element root = DOMUtil.createElement(doc, SchemaConstantsGenerated.C_OBJECT);
         doc.appendChild(root);
-        root.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "xsi:type", type.getTypeQName().getLocalPart());
 
-        while (previousRoot.hasChildNodes()) {
-            Node child = previousRoot.getFirstChild();
-            root.appendChild(child);
+        NodeList list = previousRoot.getChildNodes();
+        for (int i = 0; i < list.getLength(); i++) {
+            Node copied = doc.importNode(list.item(i), true);
+            root.appendChild(copied);
         }
 
-        return DOMUtil.serializeDOMToString(doc);
+        NamedNodeMap attributes = previousRoot.getAttributes();
+        if (attributes != null) {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                Node node = attributes.item(i);
+                if (node.getNodeType() != Node.ATTRIBUTE_NODE) {
+                    continue;
+                }
+
+                Attr attr = (Attr) doc.importNode(node, true);
+                root.setAttributeNodeNS(attr);
+            }
+        }
+
+        // if there's no xsi:type in root, we'll try to figure out and add it
+        if (!root.hasAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type")) {
+            ObjectTypes type = null;
+            for (ObjectTypes ot : ObjectTypes.values()) {
+                if (rootName.equals(ot.getElementName())) {
+                    type = ot;
+                    break;
+                }
+            }
+
+            if (type == null) {
+                return objectXml;
+            }
+
+            root.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "xsi:type", type.getTypeQName().getLocalPart());
+        }
+
+        return ClientUtils.serializeDOMToString(doc);
     }
 
     public static void subscribeToEnvironmentChange(Project project, Consumer<Environment> refreshFunction) {
@@ -1038,5 +1066,13 @@ public class MidPointUtils {
 
     public static XmlTagPattern.Capture qualifiedTag(String localName, String namespace) {
         return XmlPatterns.xmlTag().withLocalName(localName).withNamespace(namespace);
+    }
+
+    public static Icon createEnvironmentIcon(Color color) {
+        if (color == null) {
+            return null;
+        }
+
+        return new ColorIcon(24, 14, 24, 14, color, true);
     }
 }

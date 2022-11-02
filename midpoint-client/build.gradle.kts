@@ -15,6 +15,7 @@ dependencies {
         exclude("org.apache.cxf")
         exclude("org.slf4j")
         exclude("ch.qos.logback")
+        exclude("xerces")
     }
 
     implementation(libs.okhttp3)

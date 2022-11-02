@@ -28,9 +28,4 @@ public class TraceLensContextToolWindowFactory implements ToolWindowFactory, Dum
         window.setStripeTitle("Lens Context");
         window.setTitle("Lens Context");
     }
-
-    @Override
-    public boolean isDoNotActivateOnStart() {
-        return false;
-    }
 }

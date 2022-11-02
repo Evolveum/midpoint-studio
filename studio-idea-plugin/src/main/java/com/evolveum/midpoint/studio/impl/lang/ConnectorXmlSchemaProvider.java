@@ -22,6 +22,12 @@ public class ConnectorXmlSchemaProvider extends XmlSchemaProvider {
 
     @Override
     public boolean isAvailable(@NotNull XmlFile file) {
+        Project project = file.getProject();
+
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return false;
+        }
+
         if (file.getRootTag() == null) {
             return false;
         }

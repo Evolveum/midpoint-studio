@@ -1,7 +1,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -9,15 +9,15 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.6.10"
+    id("org.jetbrains.kotlin.jvm") version "1.7.10"
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.7.0"
+    id("org.jetbrains.intellij") version "1.9.0"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
     id("org.jetbrains.changelog") version "1.3.1"
     // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
-    id("io.gitlab.arturbosch.detekt") version "1.17.1"
+    id("io.gitlab.arturbosch.detekt") version "1.21.0"
     // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
-    id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
+    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
     // git plugin - read more: https://github.com/palantir/gradle-git-version
     id("com.palantir.git-version") version "0.12.2"
 }
@@ -27,23 +27,9 @@ version = properties("pluginVersion")
 
 val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 
-val pluginImplementation by configurations.creating {
-    extendsFrom(configurations.implementation.get())
-}
-
-val resolvableCompileOnly by configurations.creating {
-    extendsFrom(configurations.compileOnly.get())
-}
-
-sourceSets {
-    main {
-        compileClasspath = pluginImplementation + resolvableCompileOnly
-    }
-}
-
 // Configure project's dependencies
 dependencies {
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.17.1")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
 
     implementation(projects.midpointClient)
 
@@ -62,6 +48,7 @@ dependencies {
         exclude("org.apache.cxf")
         exclude("org.slf4j")
         exclude("ch.qos.logback")
+        exclude("xerces")
     }
     implementation(libs.security.api) {
         isTransitive = false
@@ -78,17 +65,21 @@ dependencies {
 
         exclude("org.slf4j")
         exclude("ch.qos.logback")
+        exclude("xerces")
     }
     implementation(libs.asciidoctorj.tabbed.code)
+    implementation("org.apache.velocity", "velocity-engine-core") {
+        exclude("org.slf4j")
+    }
 
-    implementation(libs.openkeepass)
+    implementation(libs.openkeepass) {
+        exclude("stax", "stax-api")
+    }
     implementation(libs.commons.lang)
-    // compile(libs.xchart)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
 
-    implementation(libs.stax)
-    implementation(libs.xml.apis)
+//    implementation(libs.stax)
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {
@@ -96,12 +87,18 @@ dependencies {
         isTransitive = false
     }
 
-    testImplementation(libs.jupiter.api)
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher") {
+        because("Only needed to run tests in a version of IntelliJ IDEA that bundles older versions")
+    }
+    testImplementation("org.junit.jupiter:junit-jupiter-engine")
+
     testImplementation(libs.remote.robot)
     testImplementation(libs.remote.fixtures)
+
     testImplementation(libs.xmlunit.core)
 
-    testRuntimeOnly(libs.jupiter.engine)
+    testImplementation(libs.xalan)
 }
 
 var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
@@ -119,7 +116,7 @@ if (publishChannel.isBlank() || publishChannel == "null") {
 }
 
 var channelSuffix = ""
-if (!publishChannel.isBlank() && publishChannel.toLowerCase() != "default") {
+if (publishChannel.isNotBlank() && publishChannel.toLowerCase() != "default") {
     channelSuffix = "-$publishChannel-$buildNumber"
 }
 
@@ -204,8 +201,9 @@ tasks {
             }.joinToString("\n").run { markdownToHTML(this) }
         )
 
-        var hasChangelog = changelog.has(properties("pluginVersion"))
         var changelogContent = ""
+
+        val hasChangelog = changelog.has(properties("pluginVersion"))
         if (hasChangelog) {
             changelogContent = changelog.get(properties("pluginVersion")).toHTML()
         } else {
@@ -216,10 +214,13 @@ tasks {
 
     runPluginVerifier {
         ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
-        failureLevel.set(listOf(
-            RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-            RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
-            RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN))
+        failureLevel.set(
+            listOf(
+                RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+                RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
+                RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN
+            )
+        )
     }
 
     publishPlugin {

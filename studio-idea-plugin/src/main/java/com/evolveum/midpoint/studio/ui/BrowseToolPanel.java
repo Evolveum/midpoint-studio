@@ -4,9 +4,8 @@ import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
-import com.evolveum.midpoint.prism.impl.query.EqualFilterImpl;
-import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.query.*;
+import com.evolveum.midpoint.prism.query.builder.S_ConditionEntry;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.AsyncAction;
@@ -30,18 +29,21 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.lang.Language;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.ui.EditorTextField;
+import com.intellij.ui.EditorTextFieldProvider;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.components.JBTextArea;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -87,7 +89,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
     private Project project;
 
-    private JBTextArea query;
+    private EditorTextField query;
     private JXTreeTable results;
 
     private ComboObjectTypes objectType;
@@ -144,7 +146,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         toolbar.setTargetComponent(this);
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
-        query = new JBTextArea();
+        query = createQueryTextField(ComboQueryType.Type.NAME);
         JBScrollPane pane = new JBScrollPane(query);
         root.add(pane, BorderLayout.CENTER);
 
@@ -188,7 +190,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                     ObjectTypes type = (ObjectTypes) userObject;
                     String text = type.getTypeQName().getLocalPart();
 
-                    value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+                    value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
                 } else if (userObject instanceof ObjectType) {
                     ObjectType ot = (ObjectType) userObject;
                     value = MidPointUtils.getOrigFromPolyString(ot.getName());
@@ -258,6 +260,14 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         clipboard.setContents(selection, selection);
     }
 
+    private EditorTextField createQueryTextField(ComboQueryType.Type type) {
+        Language lang = type == ComboQueryType.Type.QUERY_XML ? XMLLanguage.INSTANCE : PlainTextLanguage.INSTANCE;
+        EditorTextField editor = EditorTextFieldProvider.getInstance().getEditorField(lang, project, new ArrayList<>());
+        editor.setOneLineMode(false);
+
+        return editor;
+    }
+
     private DefaultActionGroup createQueryActionGroup() {
         DefaultActionGroup group = new DefaultActionGroup();
         objectType = new ComboObjectTypes();
@@ -272,6 +282,15 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 if (queryType.getSelected() == null || query == null) {
                     return;
                 }
+
+
+                String text = query.getText();
+                Container parent = query.getParent();
+                parent.remove(query);
+
+                query = createQueryTextField(queryType.getSelected());
+                query.setText(text);
+                parent.add(query);
 
                 switch (queryType.getSelected()) {
                     case QUERY_XML:
@@ -652,7 +671,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         }
 
         ObjectTypes type = objectType.getSelected();
-        return ctx.createQueryParser().parseQuery(type.getClassDefinition(), text);
+        return ctx.createQueryParser().parseFilter(type.getClassDefinition(), text);
     }
 
     private ObjectQuery parseQuery(MidPointClient client) throws SchemaException, IOException {
@@ -691,6 +710,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             return null;
         }
 
+
         QueryFactory qf = ctx.queryFactory();
         OrFilter or = qf.createOr();
 
@@ -713,8 +733,9 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             }
 
             if (!filteredOids.isEmpty()) {
-                InOidFilter inOid = qf.createInOid(filteredOids);
-                or.addCondition(inOid);
+                or.addCondition(ctx.queryFor(ObjectType.class)
+                        .id(filteredOids.toArray(new String[0]))
+                        .buildFilter());
             }
         }
 
@@ -723,9 +744,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
             QName matchingRule = PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME;
             List<ObjectFilter> filters = new ArrayList<>();
             for (String s : filtered) {
+                S_ConditionEntry builder = ctx.queryFor(ObjectType.class).item(ObjectType.F_NAME);
+
                 ObjectFilter filter = Objects.equals(nameFilterType, Constants.Q_EQUAL_Q) ?
-                        EqualFilterImpl.createEqual(ctx.path(ObjectType.F_NAME), def, matchingRule, ctx, s) :
-                        SubstringFilterImpl.createSubstring(ctx.path(ObjectType.F_NAME), def, ctx, matchingRule, s, false, false);
+                        builder.eq(s).matching(matchingRule).buildFilter() : builder.contains(s).matching(matchingRule).buildFilter();
 
                 filters.add(filter);
             }

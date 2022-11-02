@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace.overview;
 
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.schema.ResourceShadowDiscriminator;
 import com.evolveum.midpoint.schema.traces.operations.ProjectorProjectionOpNode;
 import com.evolveum.midpoint.studio.ui.trace.Colors;
 import com.evolveum.midpoint.studio.ui.trace.ViewingState;
@@ -22,7 +21,7 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
  *
  */
 public class ProjectorProjectionOverviewProvider implements OverviewProvider<ProjectorProjectionOpNode> {
-    
+
     private static final Logger LOG = Logger.getInstance(ProjectorProjectionOverviewProvider.class);
 
     @Override
@@ -32,9 +31,9 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         ProjectorComponentTraceType trace = node.getTrace();
         if (trace != null) {
 
-            ResourceShadowDiscriminator rsd = getRsd(node, trace);
+            ShadowDiscriminatorType rsd = getRsd(node, trace);
 
-            PrismValueNode.create("Discriminator", rsd != null ? rsd.toResourceShadowDiscriminatorType() : null, root);
+            PrismValueNode.create("Discriminator", rsd != null ? rsd : null, root);
 
             LensContextType inputContext = trace.getInputLensContext();
             if (inputContext != null) {
@@ -111,7 +110,7 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         }
     }
 
-    private LensProjectionContextType findProjectionContext(LensContextType context, ResourceShadowDiscriminator rsd) {
+    private LensProjectionContextType findProjectionContext(LensContextType context, ShadowDiscriminatorType rsd) {
         if (rsd == null) {
             if (context.getProjectionContext().size() == 1) {
                 return context.getProjectionContext().get(0); // TODO ok?
@@ -123,7 +122,7 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         for (LensProjectionContextType projCtx : context.getProjectionContext()) {
             ShadowDiscriminatorType projRsd = projCtx.getResourceShadowDiscriminator();
             if (projRsd != null && projRsd.getResourceRef() != null && projRsd.getResourceRef().getOid() != null &&
-                    projRsd.getResourceRef().getOid().equals(rsd.getResourceOid()) &&
+                    projRsd.getResourceRef().equals(rsd.getResourceRef()) &&
                     defaultIfNull(projRsd.getKind(), ShadowKindType.ACCOUNT) == defaultIfNull(rsd.getKind(), ShadowKindType.ACCOUNT) &&
                     defaultIfNull(projRsd.getIntent(), "default").equals(defaultIfNull(rsd.getIntent(), "default"))) {
                 return projCtx;
@@ -132,15 +131,15 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         return null;
     }
 
-    private ResourceShadowDiscriminator getRsd(ProjectorProjectionOpNode node, ProjectorComponentTraceType trace) {
+    private ShadowDiscriminatorType getRsd(ProjectorProjectionOpNode node, ProjectorComponentTraceType trace) {
         if (trace.getResourceShadowDiscriminator() != null) {
-            return ResourceShadowDiscriminator.fromResourceShadowDiscriminatorType(trace.getResourceShadowDiscriminator(), false);
+            return trace.getResourceShadowDiscriminator();
         } else {
             return getRsdGuessed(node);
         }
     }
 
-    private ResourceShadowDiscriminator getRsdGuessed(ProjectorProjectionOpNode node) {
+    private ShadowDiscriminatorType getRsdGuessed(ProjectorProjectionOpNode node) {
         List<String> qualifiers = node.getResult().getQualifier();
         if (qualifiers.size() != 1) {
             LOG.info("Wrong # of qualifiers: " + qualifiers);
@@ -152,7 +151,18 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
             LOG.info("Wrong # of parts: " + qualifiers);
         }
         try {
-            return new ResourceShadowDiscriminator(parts[2], ShadowKindType.fromValue(parts[3]), parts[4], null, false);
+            ShadowDiscriminatorType sd = new ShadowDiscriminatorType();
+            sd.setResourceRef(new ObjectReferenceType()
+                    .oid(parts[2])
+                    .type(ResourceType.COMPLEX_TYPE));
+            sd.kind(ShadowKindType.fromValue(parts[3]));
+            sd.setIntent(parts[4]);
+            sd.setTag(null);
+
+            // todo set gone = false, probably via tombstone
+            sd.setTombstone(false);
+
+            return sd;
         } catch (Throwable t) {
             LOG.info("Exception: " + t);
             return null;
