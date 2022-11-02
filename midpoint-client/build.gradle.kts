@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.evolveum.midpoint.studio"
-version = "4.4"
+version = "4.6.1"
 
 dependencies {
     api(libs.common) {
@@ -23,6 +23,11 @@ dependencies {
 
     testImplementation(libs.jupiter.api)
     testRuntimeOnly(libs.jupiter.engine)
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.getByName<Test>("test") {
