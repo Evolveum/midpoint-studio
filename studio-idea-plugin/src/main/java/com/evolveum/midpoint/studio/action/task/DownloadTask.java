@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.IOUtils;
@@ -90,8 +91,6 @@ public class DownloadTask extends SimpleBackgroundableTask {
             BufferedWriter out = null;
             VirtualFile file = null;
             try {
-                indicator.setFraction(0d);
-
                 file = FileUtils.createScratchFile(project, environment);
 
                 out = new BufferedWriter(new OutputStreamWriter(file.getOutputStream(this), StandardCharsets.UTF_8));
@@ -100,9 +99,9 @@ public class DownloadTask extends SimpleBackgroundableTask {
                 }
 
                 if (oids != null) {
-                    showByOid(out);
+                    showByOid(out, indicator);
                 } else {
-                    showByQuery(out);
+                    showByQuery(out, indicator);
                 }
 
                 if (oids.size() > 1) {
@@ -119,10 +118,20 @@ public class DownloadTask extends SimpleBackgroundableTask {
         });
     }
 
-    private void showByOid(Writer out) {
-        for (Pair<String, ObjectTypes> oid : oids) {
+    private void showByOid(Writer out, ProgressIndicator indicator) {
+        indicator.setIndeterminate(false);
+
+        int i = 0;
+        for (Pair<String, ObjectTypes> pair : oids) {
+            ProgressManager.checkCanceled();
+
+            i++;
+            indicator.setFraction((double) i / oids.size());
+            indicator.setText("Showing " + pair.getSecond().getElementName().getLocalPart());
+            indicator.setText2("Oid: " + pair.getFirst());
+
             try {
-                MidPointObject object = client.get(oid.getSecond().getClassDefinition(), oid.getFirst(), new SearchOptions().raw(raw));
+                MidPointObject object = client.get(pair.getSecond().getClassDefinition(), pair.getFirst(), new SearchOptions().raw(raw));
                 if (object == null) {
                     continue;
                 }
@@ -132,13 +141,20 @@ public class DownloadTask extends SimpleBackgroundableTask {
                 IOUtils.write(content, out);
             } catch (Exception ex) {
                 MidPointUtils.publishExceptionNotification(getProject(), getEnvironment(), DownloadTask.class, NOTIFICATION_KEY,
-                        "Exception occurred when getting object " + oid.getFirst() + " ("
-                                + oid.getSecond().getTypeQName().getLocalPart() + ")", ex);
+                        "Exception occurred when getting object " + pair.getFirst() + " ("
+                                + pair.getSecond().getTypeQName().getLocalPart() + ")", ex);
             }
         }
     }
 
-    private void showByQuery(Writer out) {
+    private void showByQuery(Writer out, ProgressIndicator indicator) {
+        indicator.setIndeterminate(true);
+
+        ProgressManager.checkCanceled();
+
+        indicator.setText("Showing " + type.getElementName().getLocalPart());
+        indicator.setText2("Raw: " + raw);
+
         // todo implement later
     }
 
@@ -150,9 +166,9 @@ public class DownloadTask extends SimpleBackgroundableTask {
             indicator.setFraction(0d);
 
             if (oids != null) {
-                downloadByOid();
+                downloadByOid(indicator);
             } else {
-                downloadByQuery();
+                downloadByQuery(indicator);
             }
         } catch (Exception ex) {
             MidPointUtils.publishExceptionNotification(getProject(), getEnvironment(), DownloadTask.class,
@@ -162,10 +178,20 @@ public class DownloadTask extends SimpleBackgroundableTask {
         }
     }
 
-    private void downloadByOid() {
+    private void downloadByOid(ProgressIndicator indicator) {
+        indicator.setIndeterminate(false);
+
         List<VirtualFile> files = new ArrayList<>();
 
+        int i = 0;
         for (Pair<String, ObjectTypes> pair : oids) {
+            ProgressManager.checkCanceled();
+
+            i++;
+            indicator.setFraction((double) i / oids.size());
+            indicator.setText("Downloading " + pair.getSecond().getElementName().getLocalPart());
+            indicator.setText2("Oid: " + pair.getFirst());
+
             try {
                 LOG.debug("Downloading " + pair);
 
@@ -197,7 +223,14 @@ public class DownloadTask extends SimpleBackgroundableTask {
         }
     }
 
-    private void downloadByQuery() {
+    private void downloadByQuery(ProgressIndicator indicator) {
+        indicator.setIndeterminate(true);
+
+        ProgressManager.checkCanceled();
+
+        indicator.setText("Downloading " + type.getElementName().getLocalPart());
+        indicator.setText2("Raw: " + raw);
+
         List<VirtualFile> files = new ArrayList<>();
 
         try {
