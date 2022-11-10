@@ -142,7 +142,7 @@ public class DownloadTask extends SimpleBackgroundableTask {
         // todo implement later
     }
 
-    public void download(ProgressIndicator indicator) {
+    private void download(ProgressIndicator indicator) {
         indicator.setIndeterminate(true);
 
         BufferedWriter out = null;

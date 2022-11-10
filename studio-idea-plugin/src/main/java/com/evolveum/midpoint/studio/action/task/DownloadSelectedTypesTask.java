@@ -15,6 +15,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -68,15 +69,11 @@ public class DownloadSelectedTypesTask extends SimpleBackgroundableTask {
 
         List<ObjectTypes> typesToDownload = determineTypesToDownload(settings);
         for (ObjectTypes type : typesToDownload) {
-            try {
-                DownloadTask dt = new DownloadTask(event, null, type, query, false, false, true);
-                dt.setEnvironment(environment);
-                dt.setOpenAfterDownload(false);
+            DownloadTask dt = new DownloadTask(event, null, type, query, false, false, true);
+            dt.setEnvironment(environment);
+            dt.setOpenAfterDownload(false);
 
-                dt.download(indicator);
-            } catch (Exception ex) {
-                midPointService.printToConsole(environment, getClass(), "Couldn't download objects of type '" + type.getValue() + "'. Reason: " + ex.getMessage());
-            }
+            ProgressManager.getInstance().run(dt);
         }
     }
 
