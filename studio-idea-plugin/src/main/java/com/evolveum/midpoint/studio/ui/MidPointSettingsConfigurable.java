@@ -1,8 +1,16 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.impl.MidPointFacetType;
 import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.facet.FacetManager;
+import com.intellij.facet.FacetType;
+import com.intellij.facet.FacetTypeRegistry;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.BoundSearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogPanel;
@@ -17,8 +25,10 @@ public class MidPointSettingsConfigurable extends BoundSearchableConfigurable {
 
     private Project project;
 
+    private GeneralConfigurationPanel panel;
+
     public MidPointSettingsConfigurable(@NotNull Project project) {
-        super("MidPoint 2", "","midpoint.project.structure");
+        super("MidPoint 2", "", "midpoint.project.structure");
         this.project = project;
     }
 
@@ -28,14 +38,54 @@ public class MidPointSettingsConfigurable extends BoundSearchableConfigurable {
         MidPointService mm = MidPointService.getInstance(project);
         EnvironmentService em = EnvironmentService.getInstance(project);
 
-        GeneralConfigurationPanel panel = new GeneralConfigurationPanel(project, GeneralConfigurationKt.asGeneralConfiguration(mm.getSettings()), mm.getSettings(), em.getFullSettings()) {
+        GeneralConfiguration config = GeneralConfigurationKt.asGeneralConfiguration(mm.getSettings());
+
+        panel = new GeneralConfigurationPanel(project, config, mm.getSettings(), em.getFullSettings()) {
 
             @Override
             public void onImportFromEclipseClicked() {
-                LOG.info("AAAAAAAAAAAAAAA");
+                MidPointSettingsConfigurable.this.onImportFromEclipseClicked();
             }
         };
 
         return panel.createPanel();
+    }
+
+    @Override
+    public void apply() {
+        super.apply();
+
+        Module module = panel.getModel().getMidpointModule();
+        if (module == null) {
+            return;
+        }
+
+        validateFacet(module);
+    }
+
+    private void onImportFromEclipseClicked() {
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            validateModule();
+
+            Module module = MidPointUtils.guessMidpointModule(project);
+            validateFacet(module);
+        });
+    }
+
+    private void validateModule() {
+        new MidPointModuleBuilder().createProjectFiles(project, project.getBaseDir());
+    }
+
+    private void validateFacet(Module module) {
+        if (module == null) {
+            return;
+        }
+
+        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
+        FacetManager fm = FacetManager.getInstance(module);
+
+        if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) == null) {
+            fm.addFacet(facetType, facetType.getDefaultFacetName(), null);
+        }
     }
 }
