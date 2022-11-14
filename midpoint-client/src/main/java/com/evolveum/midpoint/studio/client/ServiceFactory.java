@@ -204,16 +204,14 @@ public class ServiceFactory {
     }
 
     private void setupAuthentication(OkHttpClient.Builder builder) {
-        builder.authenticator((route, response) -> {
-
-            if (response.request().header("Authorization") != null) {
-                return null; // Give up, we've already failed to authenticate.
-            }
+        builder.addInterceptor(chain -> {
 
             String credential = Credentials.basic(username, password);
-            return response.request().newBuilder()
+            Request request = chain.request().newBuilder()
                     .header("Authorization", credential)
                     .build();
+
+            return chain.proceed(request);
         });
     }
 
