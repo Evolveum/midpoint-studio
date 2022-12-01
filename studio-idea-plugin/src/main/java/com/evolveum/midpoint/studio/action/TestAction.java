@@ -4,7 +4,7 @@ import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.ui.GeneralConfiguration;
-import com.evolveum.midpoint.studio.ui.GeneralConfigurationPanel;
+import com.evolveum.midpoint.studio.ui.FullConfigurationPanel;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -81,7 +81,7 @@ public class TestAction extends AnAction {
             MidPointService mm = MidPointService.getInstance(project);
             EnvironmentService em = EnvironmentService.getInstance(project);
 
-            GeneralConfigurationPanel gcp = new GeneralConfigurationPanel(project, new GeneralConfiguration(), mm.getSettings(), em.getFullSettings());
+            FullConfigurationPanel gcp = new FullConfigurationPanel(project, new GeneralConfiguration(), mm.getSettings(), em.getFullSettings());
             return gcp.createPanel();
         }
     }

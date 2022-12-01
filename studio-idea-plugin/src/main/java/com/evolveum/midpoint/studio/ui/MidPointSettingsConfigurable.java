@@ -25,7 +25,7 @@ public class MidPointSettingsConfigurable extends BoundSearchableConfigurable {
 
     private Project project;
 
-    private GeneralConfigurationPanel panel;
+    private FullConfigurationPanel panel;
 
     public MidPointSettingsConfigurable(@NotNull Project project) {
         super("MidPoint 2", "", "midpoint.project.structure");
@@ -38,9 +38,9 @@ public class MidPointSettingsConfigurable extends BoundSearchableConfigurable {
         MidPointService mm = MidPointService.getInstance(project);
         EnvironmentService em = EnvironmentService.getInstance(project);
 
-        GeneralConfiguration config = GeneralConfigurationKt.asGeneralConfiguration(mm.getSettings());
+        GeneralConfiguration config = FullConfigurationKt.asGeneralConfiguration(mm.getSettings());
 
-        panel = new GeneralConfigurationPanel(project, config, mm.getSettings(), em.getFullSettings()) {
+        panel = new FullConfigurationPanel(project, config, mm.getSettings(), em.getFullSettings()) {
 
             @Override
             public void onImportFromEclipseClicked() {

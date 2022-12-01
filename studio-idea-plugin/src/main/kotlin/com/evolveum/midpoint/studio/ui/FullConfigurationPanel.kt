@@ -21,7 +21,7 @@ import com.evolveum.midpoint.studio.util.MidPointBundle.message
 /**
  * Created by Viliam Repan (lazyman).
  */
-open class GeneralConfigurationPanel(
+open class FullConfigurationPanel(
     val project: Project,
     val model: GeneralConfiguration,
     val midpointSettings: MidPointSettings,

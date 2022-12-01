@@ -64,6 +64,8 @@
 
         <moduleBuilder builderClass="com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder"/>
 
+        <moduleBuilder builderClass="com.evolveum.midpoint.studio.ui.MidpointModuleBuilder2"/>
+
         <facet.toolWindow id="MidPoint"
                           facetIdList="MidPointFacet"
                           anchor="bottom"
