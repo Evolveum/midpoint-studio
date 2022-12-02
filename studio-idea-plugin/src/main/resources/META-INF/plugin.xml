@@ -185,6 +185,10 @@
                 text="Upload/Execute"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
 
+        <action id="MidPoint.ExpUI.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
+                text="Upload/Execute"
+                icon="com.evolveum.midpoint.studio.MidPointIcons.ExpUI.UploadExecute"/>
+
         <action id="MidPoint.Action.UploadExecuteStopOnError"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnErrorAction"
                 text="Upload/Execute (stop on error)"
@@ -272,6 +276,9 @@
                 class="com.evolveum.midpoint.studio.action.DiffLocalAction"
                 text="Diff Local"
                 icon="AllIcons.Actions.Diff"/>
+
+        <action id="MidPoint.Action.ComboEnvironmentAction"
+                class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
 
         <!-- GROUPS -->
 
@@ -425,12 +432,7 @@
 
             <separator/>
 
-            <action id="MidPoint.Action.ComboEnvironmentAction"
-                    class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
-
-            <!--<action id="MidPoint.Action.ProfileAction" class="com.evolveum.midpoint.studio.action.ProfileEnvironment"
-                    text="Profile Environment"
-                    icon="AllIcons.Actions.Profile"/>-->
+            <reference ref="MidPoint.Action.ComboEnvironmentAction"/>
 
             <reference ref="MidPoint.Action.TestConnection"/>
 
@@ -440,10 +442,64 @@
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
         </group>
 
+        <group id="MidPoint.ExpUI.Toolbar.Main">
+
+            <reference ref="MidPoint.Action.TestAction"/>
+
+            <reference ref="MidPoint.ExpUI.Action.UploadExecute"/>
+            <reference ref="MidPoint.Action.UploadRecompute"/>
+            <reference ref="MidPoint.Action.UploadTestResource"/>
+
+            <separator/>
+
+            <reference ref="MidPoint.Action.Refresh"/>
+            <reference ref="MidPoint.Action.DiffRemote"/>
+
+            <separator/>
+
+            <reference ref="MidPoint.Action.ComboEnvironmentAction"/>
+
+            <group id="MidPoint.ExpUI.Toolbar.Others"
+                   text="Other Actions"
+                   popup="true"
+                   icon="AllIcons.Actions.More">
+
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+                <reference ref="MidPoint.Action.Recompute"/>
+                <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
+                <reference ref="MidPoint.Action.TestResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.Delete"/>
+                <reference ref="MidPoint.Action.DeleteRaw"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.DiffLocal"/>
+                <reference ref="MidPoint.Action.CleanupFile"/>
+                <reference ref="MidPoint.Action.VerifyAction"/>
+                <reference ref="MidPoint.Action.UpgradeTask"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.ExtractLocalizationPropertiesAction"/>
+                <reference ref="MidPoint.Group.Menu.ServerLog"/>
+                <reference ref="MidPoint.Action.GenerateRandomOid"/>
+                <reference ref="MidPoint.Action.TestConnection"/>
+                <reference ref="MidPoint.Action.Documentation"/>
+
+            </group>
+
+            <add-to-group group-id="MainToolbarRight" anchor="first"/>
+        </group>
+
         <group id="MidPoint.Group.Menu.Editor">
             <reference ref="MidPoint.Group.Menu"/>
             <add-to-group anchor="last" group-id="EditorPopupMenu"/>
         </group>
+
         <group id="MidPoint.Group.Menu.NonEditor">
             <reference ref="MidPoint.Group.Menu"/>
             <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
