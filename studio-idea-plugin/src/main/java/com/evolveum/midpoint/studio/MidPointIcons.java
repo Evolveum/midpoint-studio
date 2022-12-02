@@ -33,6 +33,8 @@ public class MidPointIcons {
 
         public static final @NotNull Icon UploadExecute = load("icons/expui/uploadExecute.svg");
 
+
+        public static final @NotNull Icon UploadTest = load("icons/expui/uploadTest.svg");
     }
 
     private static @NotNull Icon load(@NotNull String path) {

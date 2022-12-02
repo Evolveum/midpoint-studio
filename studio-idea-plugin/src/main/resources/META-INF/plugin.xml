@@ -216,6 +216,11 @@
                 text="Upload/Test Resource"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadTest"/>
 
+        <action id="MidPoint.ExpUI.Action.UploadTestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResourceAction"
+                text="Upload/Test Resource"
+                icon="com.evolveum.midpoint.studio.MidPointIcons.ExpUI.UploadTest"/>
+
         <action id="MidPoint.Action.UploadTestValidateResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestValidateResourceAction"
                 text="Upload/Test/Validate Resource"
@@ -448,7 +453,7 @@
 
             <reference ref="MidPoint.ExpUI.Action.UploadExecute"/>
             <reference ref="MidPoint.Action.UploadRecompute"/>
-            <reference ref="MidPoint.Action.UploadTestResource"/>
+            <reference ref="MidPoint.ExpUI.Action.UploadTestResource"/>
 
             <separator/>
 
