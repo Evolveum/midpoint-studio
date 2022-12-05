@@ -32,6 +32,7 @@ dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
 
     implementation(projects.midpointClient)
+    implementation(projects.midscribe)
 
     implementation(libs.model.common) {
         isTransitive = false
@@ -58,17 +59,17 @@ dependencies {
     }
     implementation(libs.midpoint.localization)
 
-    implementation(libs.midscribe.core) {
-        exclude("org.springframework")
-        exclude("net.sf.jasperreports")
-        exclude("org.apache.cxf", "cxf-rt-wsdl")
-
-        exclude("org.slf4j")
-        exclude("ch.qos.logback")
-        exclude("xerces")
-    }
+//    implementation(libs.midscribe.core) {
+//        exclude("org.springframework")
+//        exclude("net.sf.jasperreports")
+//        exclude("org.apache.cxf", "cxf-rt-wsdl")
+//
+//        exclude("org.slf4j")
+//        exclude("ch.qos.logback")
+//        exclude("xerces")
+//    }
     implementation(libs.asciidoctorj.tabbed.code)
-    implementation("org.apache.velocity", "velocity-engine-core") {
+    implementation(libs.velocity) {
         exclude("org.slf4j")
     }
 

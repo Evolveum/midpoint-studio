@@ -1,16 +1,17 @@
 package com.evolveum.midscribe;
 
 import com.evolveum.midscribe.generator.*;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.AssertJUnit;
-import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -95,6 +96,6 @@ public class GeneratorTest extends MidscribeTest {
 
         messages.forEach(m -> LOG.info(m));
 
-        AssertJUnit.assertEquals(2, messages.size());
+        assertEquals(2, messages.size());
     }
 }

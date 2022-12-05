@@ -20,7 +20,6 @@ dependencyResolutionManagement {
             version("jupiter", "5.6.0")
             version("logback", "1.2.3")
             version("midpoint", "4.6")
-            version("midscribe", "4.4-SNAPSHOT")
             version("okhttp", "4.10.0")
             version("openkeepass", "0.8.1")
             version("spring", "5.3.8")
@@ -29,8 +28,14 @@ dependencyResolutionManagement {
             version("remote-robot", "0.11.7")
             version("xmlunit", "2.8.3")
             version("xalan", "2.7.2")
+//            version("spring-boot", "2.2.6.RELEASE")
+            version("slf4j", "1.7.32")
+            version("asciidoctorj", "2.5.3")
+            version("asciidoctorj-pdf", "1.6.2")
+            version("asciidoctorj-tabbed-code", "0.3")
+            version("velocity", "2.3")
+            version("jruby", "9.2.19.0")
 
-            library("asciidoctorj-tabbed-code", "com.bmuschko", "asciidoctorj-tabbed-code-extension").versionRef("asciidoctorj-tabbed-code")
             library("common", "com.evolveum.midpoint.infra", "common").versionRef("midpoint")
             library("commons-io", "commons-io", "commons-io").versionRef("commons-io")
             library("commons-lang", "org.apache.commons", "commons-lang3").versionRef("commons-lang")
@@ -40,10 +45,11 @@ dependencyResolutionManagement {
             library("jupiter-engine", "org.junit.jupiter", "junit-jupiter-engine").withoutVersion()
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
             library("midpoint-localization", "com.evolveum.midpoint", "midpoint-localization").versionRef("midpoint")
-            library("midscribe-core", "com.evolveum.midpoint", "midscribe-core").versionRef("midscribe")
+//            library("midscribe-core", "com.evolveum.midpoint", "midscribe-core").versionRef("midscribe")
             library("model-api", "com.evolveum.midpoint.model", "model-api").versionRef("midpoint")
             library("model-common", "com.evolveum.midpoint.model", "model-common").versionRef("midpoint")
             library("model-impl", "com.evolveum.midpoint.model", "model-impl").versionRef("midpoint")
+            library("midpoint-schema", "com.evolveum.midpoint.infra", "schema").versionRef("midpoint")
             library("notifications-api", "com.evolveum.midpoint.model", "notifications-api").versionRef("midpoint")
             library("okhttp-logging", "com.squareup.okhttp3", "logging-interceptor").versionRef("okhttp")
             library("okhttp3", "com.squareup.okhttp3", "okhttp").versionRef("okhttp")
@@ -55,10 +61,20 @@ dependencyResolutionManagement {
             library("remote-fixtures", "com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
             library("xmlunit-core", "org.xmlunit", "xmlunit-core").versionRef("xmlunit")
             library("xalan", "xalan", "xalan").versionRef("xalan")
+            library("slf4j-api", "org.slf4j", "slf4j-api").versionRef("slf4j")
+            library("asciidoctorj", "org.asciidoctor", "asciidoctorj").versionRef("asciidoctorj")
+            library("asciidoctorj-pdf", "org.asciidoctor", "asciidoctorj-pdf").versionRef("asciidoctorj-pdf")
+            library("velocity", "org.apache.velocity", "velocity-engine-core").versionRef("velocity")
+            library(
+                "asciidoctorj-tabbed-code",
+                "com.bmuschko",
+                "asciidoctorj-tabbed-code-extension"
+            ).versionRef("asciidoctorj-tabbed-code")
         }
     }
 }
 
 include("midpoint-client")
+include("midscribe")
 include("studio-idea-plugin")
 

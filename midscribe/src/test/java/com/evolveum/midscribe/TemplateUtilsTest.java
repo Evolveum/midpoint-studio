@@ -1,16 +1,17 @@
 package com.evolveum.midscribe;
 
-import com.evolveum.midpoint.xml.ns._public.common.common_3.CapabilityCollectionType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
+import com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.CapabilityCollectionType;
 import com.evolveum.midscribe.generator.*;
-import org.testng.AssertJUnit;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -41,7 +42,7 @@ public class TemplateUtilsTest extends MidscribeTest {
         generator.generate(props);
 
         File adoc = opts.getAdocOutput();
-        AssertJUnit.assertTrue(adoc.exists());
+        assertTrue(adoc.exists());
 
         assertFilesContentEqual(new File("./src/test/resources/mid-7529/mid-7529.adoc"), adoc);
     }

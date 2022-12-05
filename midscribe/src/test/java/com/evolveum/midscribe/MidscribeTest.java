@@ -4,7 +4,6 @@ import com.evolveum.midscribe.generator.ExportFormat;
 import com.evolveum.midscribe.generator.GenerateOptions;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Validate;
-import org.testng.AssertJUnit;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +12,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -41,14 +43,14 @@ public abstract class MidscribeTest {
             String expectedContent = IOUtils.toString(expectedStream, StandardCharsets.UTF_8);
             String realContent = IOUtils.toString(realStream, StandardCharsets.UTF_8);
 
-            AssertJUnit.assertEquals("Files '" + expected.getPath() + "' and '" + real.getPath() + "' doesn't match", expectedContent, realContent);
+            assertEquals("Files '" + expected.getPath() + "' and '" + real.getPath() + "' doesn't match", expectedContent, realContent);
         }
     }
 
     private static void assertFileExist(File file, String message) {
         Validate.notNull(file, "file must not be null");
 
-        AssertJUnit.assertTrue(message, file.exists() && file.isFile() && file.canRead());
+        assertTrue(file.exists() && file.isFile() && file.canRead(), message);
     }
 
 }
