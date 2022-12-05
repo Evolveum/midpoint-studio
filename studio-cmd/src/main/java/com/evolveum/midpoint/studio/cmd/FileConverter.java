@@ -1,4 +1,4 @@
-package com.evolveum.midscribe.cmd;
+package com.evolveum.midpoint.studio.cmd;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.IStringConverter;

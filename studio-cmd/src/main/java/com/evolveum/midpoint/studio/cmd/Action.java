@@ -1,4 +1,4 @@
-package com.evolveum.midscribe.cmd;
+package com.evolveum.midpoint.studio.cmd;
 
 /**
  * Created by Viliam Repan (lazyman).

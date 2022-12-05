@@ -1,4 +1,4 @@
-package com.evolveum.midscribe.cmd;
+package com.evolveum.midpoint.studio.cmd;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
@@ -12,10 +12,10 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MidScribeMain {
+public class StudioCmdMain {
 
     public static void main(String[] args) {
-        new MidScribeMain().run(args);
+        new StudioCmdMain().run(args);
     }
 
     private void run(String[] args) {
@@ -34,7 +34,7 @@ public class MidScribeMain {
 
         if (base.isVersion()) {
             try {
-                String version = IOUtils.toString(MidScribeMain.class.getResource("/version"), StandardCharsets.UTF_8);
+                String version = IOUtils.toString(StudioCmdMain.class.getResource("/version"), StandardCharsets.UTF_8);
                 System.out.println(version);
             } catch (Exception ex) {
                 handleException(base, ex);

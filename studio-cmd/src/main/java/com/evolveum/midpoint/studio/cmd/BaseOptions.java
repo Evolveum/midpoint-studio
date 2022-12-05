@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.evolveum.midscribe.cmd;
+package com.evolveum.midpoint.studio.cmd;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;

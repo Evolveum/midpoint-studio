@@ -1,6 +1,7 @@
-package com.evolveum.midscribe.cmd;
+package com.evolveum.midpoint.studio.cmd.action;
 
-import org.testng.annotations.Test;
+import com.evolveum.midpoint.studio.cmd.StudioCmdMain;
+import org.junit.jupiter.api.Test;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -22,7 +23,7 @@ public class CmdTest {
                 "./src/test/resources/example.properties"
         };
 
-        MidScribeMain.main(args);
+        StudioCmdMain.main(args);
     }
 
     @Test
@@ -40,6 +41,6 @@ public class CmdTest {
                 "./src/test/resources/example.properties"
         };
 
-        MidScribeMain.main(args);
+        StudioCmdMain.main(args);
     }
 }
