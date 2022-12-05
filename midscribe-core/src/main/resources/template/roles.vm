@@ -1,0 +1,16 @@
+## FUNCTION LIBRARIES
+
+#set($roles=$processor.loadRoles())
+
+#if(!$roles.isEmpty())
+
+== Roles
+
+#set($objects=$roles)
+#parse("/template/objects-sumary-table.vm")
+
+#foreach($object in $roles)
+    #parse("/template/role.vm")
+#end
+
+#end

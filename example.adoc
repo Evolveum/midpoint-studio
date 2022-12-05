@@ -1,0 +1,2400 @@
+= MidPoint Project Documentation
+Evolveum, s.r.o.
+Version 0.1, {localdate}
+:sectnums:
+:toc: left
+:toclevels: 4
+:toc-title: Table of Contents
+
+:imagesdir: ./img
+
+This is the optional preamble (an untitled section body).Useful for writing simple sectionless documents consisting only of a preamble.
+
+
+
+
+== Object Templates
+
+=== Default Project and Org Template
+
+
+
+
+
+==== Include References
+
+// todo
+
+==== Iterator Specification
+
+// todo
+
+==== Items
+
+// todo
+
+==== Mappings
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+| Description
+3+| A hack to avoid feedback to HR feed - deleting accounts because they are not assigned
+
+| Documentation
+3+a|
+
+==== More technical documentation
+
+here we go. With some list:
+
+* A
+* B
+* C
+
+==== Another title
+
+there is is. were're using asciidoc.
+
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+`orgType` +
+
+h| Target
+a|
+
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+| Description
+3+| A hack to avoid feedback to HR feed - deleting accounts because they are not assigned
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+`orgType` +
+
+h| Target
+a|
+
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+// todo
+
+=== Default User Template
+
+
+
+
+aaa I don't know that to put here, it's just an *example*.
+[cols=3, options=header]
+|===
+| col1
+| col2
+| col3
+
+| row1
+| row2
+| row3
+|===
+
+
+
+==== Include References
+
+// todo
+
+==== Iterator Specification
+
+// todo
+
+==== Items
+
+// todo
+
+==== Mappings
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| Some name
+
+
+| Documentation
+3+a|
+
+I don't know that to put here, it's just an *example*. Table should follow:
+[cols=3, options=header]
+!===
+! col1
+! col2
+! col3
+
+! row1
+! row2
+! row3
+!===
+
+
+
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+| Channels
+3+a|
+
+`asdf` +
+`jklo` +
+
+| Except channels
+3+a|
+
+`zxcv` +
+`opiu` +
+
+| Source
+a|
+
+`$user/givenName` +
+`$user/familyName` +
+ &nbsp;&nbsp;&nbsp;&nbsp;=> `familyNameeee` + 
+h| Target
+a|
+
+`fullName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+| Description
+3+| A hack to avoid feedback to HR feed - deleting accounts because they are not assigned
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+`employeeType` +
+
+h| Target
+a|
+
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+`employeeType` +
+
+h| Target
+a|
+
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *strong* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+`employeeType` +
+
+h| Target
+a|
+
+`assignment`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+// todo
+
+
+
+
+
+
+== Resources
+
+
+=== Addressbook
+
+
+        Simple database application that maintains addresses and telephone numbers of people.
+        It is authoritative only for telephone number. It also has postal address that no
+        other application has.
+    
+
+
+
+==== Connector
+
+
+Resource uses  connector. Artifact details:
+
+* **Connector type:** 
+* **Connector version:** 
+* **Connector bundle:** 
+* **Namespace:** 
+
+===== Connector Configuration
+
+[cols=3,options=header]
+|===
+|Parameter
+|Value
+|Description
+
+|port
+|5432
+|
+
+|host
+|localhost
+|
+
+|user
+|addressbook
+|
+
+|password
+|XML
+|
+
+|database
+|addressbook
+|
+
+|table
+|people
+|
+
+|keyColumn
+|username
+|
+
+|passwordColumn
+|password
+|
+
+|jdbcDriver
+|org.postgresql.Driver
+|
+
+|jdbcUrlTemplate
+|jdbc:postgresql://%h:%p/%d
+|
+
+|enableEmptyString
+|false
+|
+
+|rethrowAllSQLExceptions
+|true
+|
+
+|nativeTimestamps
+|true
+|
+
+|===
+
+
+
+==== Object Types
+===== Default Account
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|uid (Entry ID)
+|
+|
+
+|name (Username)
+|
+|
+
+|first_name (First Name)
+|
+|
+
+|last_name (Last name)
+|
+|
+
+|tel_number (Telephone Number)
+|
+|
+
+|city (City)
+|
+|
+
+|===
+
+====== Attribute Details
+
+*uid (Entry ID)*
+
+
+*name (Username)*
+
+
+[.underline]#Outbounds#
+
+*first_name (First Name)*
+
+
+[.underline]#Outbounds#
+
+*last_name (Last name)*
+
+
+[.underline]#Outbounds#
+
+*tel_number (Telephone Number)*
+
+
+[.underline]#Outbounds#
+
+*city (City)*
+
+
+[.underline]#Outbounds#
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+
+
+==== Capabilities
+
+===== Native
+
+$object.getCapabilities().getNative()
+
+===== Configured
+
+PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@3e60be48[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@68312b85[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}validity,enableValue=[true],disableValue=[false, ],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
+
+=== HR Feed
+
+Some description, more usable for midpoint UI
+
+
+==== More technical documentation
+
+here we go. With some list:
+
+* A
+* B
+* C
+
+==== Another title
+
+there is is. were're using asciidoc.
+
+
+
+==== Connector
+
+
+Resource uses  connector. Artifact details:
+
+* **Connector type:** 
+* **Connector version:** 
+* **Connector bundle:** 
+* **Namespace:** 
+
+===== Connector Configuration
+
+[cols=3,options=header]
+|===
+|Parameter
+|Value
+|Description
+
+|filePath
+|/var/opt/hr/export.csv
+|
+
+|encoding
+|utf-8
+|
+
+|valueQualifier
+|"
+|
+
+|fieldDelimiter
+|,
+|
+
+|multivalueDelimiter
+|;
+|
+
+|usingMultivalue
+|false
+|
+
+|uniqueAttribute
+|empnum
+|
+
+|===
+
+
+
+==== Object Types
+===== Default Account
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|uid (ICF UID)
+|
+|
+
+|name (Employee#)
+|
+|
+
+|firstname (First Name)
+|
+|Definition of Firstname attribute handling.
+
+|lastname (Last name)
+|
+|
+
+|artname (Artistic name)
+|
+|
+
+|emptype (Employee type)
+|
+|
+
+|===
+
+====== Attribute Details
+
+*uid (ICF UID)*
+
+
+*name (Employee#)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength: 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/employeeNumber`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+*firstname (First Name)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength: 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/givenName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+*lastname (Last name)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength: 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/familyName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+*artname (Artistic name)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength: 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/extension/artisticName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/nickName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/name`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+*emptype (Employee type)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength: 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/employeeType`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+
+==== Synchronization
+
+
+===== Object Types
+
+===== , ACCOUNT/default 
+
+
+
+
+==== Capabilities
+
+===== Native
+
+$object.getCapabilities().getNative()
+
+===== Configured
+
+$object.getCapabilities().getConfigured()
+
+=== LDAP Server (OpenDJ)
+
+
+
+
+
+==== Connector
+
+
+Resource uses  connector. Artifact details:
+
+* **Connector type:** 
+* **Connector version:** 
+* **Connector bundle:** 
+* **Namespace:** 
+
+===== Connector Configuration
+
+[cols=3,options=header]
+|===
+|Parameter
+|Value
+|Description
+
+|modifiersNamesToFilterOut
+|uid=idm,ou=Administrators,dc=example,dc=com
+|
+
+|credentials
+|XML
+|
+
+|port
+|1389
+|
+
+|vlvSortAttribute
+|uid
+|
+
+|principal
+|uid=idm,ou=Administrators,dc=example,dc=com
+|
+
+|baseContexts
+|ou=people,dc=example,dc=com
+|
+
+|baseContexts
+|ou=groups,dc=example,dc=com
+|
+
+|host
+|localhost
+|
+
+|usePagedResultControl
+|true
+|
+
+|maintainLdapGroupMembership
+|true
+|
+
+|accountOperationalAttributes
+|ds-pwp-account-disabled
+|
+
+|===
+
+
+
+==== Object Types
+===== Organizational Unit, GENERIC/ou 
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|dn ()
+|
+|
+
+|ou ()
+|
+|
+
+|===
+
+====== Attribute Details
+
+*dn ()*
+
+
+[.underline]#Outbounds#
+
+*ou ()*
+
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+
+==== Synchronization
+
+
+===== Object Types
+
+===== sync, GENERIC/ou 
+
+
+
+
+==== Capabilities
+
+===== Native
+
+$object.getCapabilities().getNative()
+
+===== Configured
+
+$object.getCapabilities().getConfigured()
+
+=== LDAP Server (OpenDJ)
+
+
+
+
+
+==== Connector
+
+
+Resource uses  connector. Artifact details:
+
+* **Connector type:** 
+* **Connector version:** 
+* **Connector bundle:** 
+* **Namespace:** 
+
+===== Connector Configuration
+
+[cols=3,options=header]
+|===
+|Parameter
+|Value
+|Description
+
+|modifiersNamesToFilterOut
+|uid=idm,ou=Administrators,dc=example,dc=com
+|
+
+|credentials
+|XML
+|
+
+|port
+|1389
+|
+
+|vlvSortAttribute
+|uid
+|
+
+|principal
+|uid=idm,ou=Administrators,dc=example,dc=com
+|
+
+|baseContexts
+|ou=people,dc=example,dc=com
+|
+
+|baseContexts
+|ou=groups,dc=example,dc=com
+|
+
+|host
+|localhost
+|
+
+|usePagedResultControl
+|true
+|
+
+|maintainLdapGroupMembership
+|true
+|
+
+|accountOperationalAttributes
+|ds-pwp-account-disabled
+|
+
+|===
+
+
+
+==== Object Types
+===== LDAP project groups, ENTITLEMENT/ldapProject 
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|name ()
+|
+|
+
+|cn ()
+|
+|
+
+|description ()
+|
+|
+
+|===
+
+====== Attribute Details
+
+*name ()*
+
+
+[.underline]#Outbounds#
+
+*cn ()*
+
+
+[.underline]#Outbounds#
+
+*description ()*
+
+
+[.underline]#Outbounds#
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+
+
+==== Capabilities
+
+===== Native
+
+$object.getCapabilities().getNative()
+
+===== Configured
+
+$object.getCapabilities().getConfigured()
+
+=== LDAP Server (OpenDJ) over new LDAPConn.
+
+
+        LDAP resource using new LDAP Connector based on Apache Directory API. It contains configuration
+        for connecting to an OpenDJ instance running on the localhost.
+    
+
+
+
+==== Connector
+
+
+Resource uses  connector. Artifact details:
+
+* **Connector type:** 
+* **Connector version:** 
+* **Connector bundle:** 
+* **Namespace:** 
+
+===== Connector Configuration
+
+[cols=3,options=header]
+|===
+|Parameter
+|Value
+|Description
+
+|port
+|1389
+|
+
+|host
+|localhost
+|
+
+|baseContextsToSynchronize
+|ou=people,dc=example,dc=com
+|
+
+|baseContextsToSynchronize
+|ou=groups,dc=example,dc=com
+|
+
+|bindDn
+|uid=idm,ou=Administrators,dc=example,dc=com
+|
+
+|pagingStrategy
+|none
+|
+
+|bindPassword
+|XML
+|
+
+|modifiersNamesToFilterOut
+|uid=idm,ou=Administrators,dc=example,dc=com
+|
+
+|vlvSortAttribute
+|uid
+|
+
+|operationalAttributes
+|ds-pwp-account-disabled
+|
+
+|===
+
+
+
+
+====== Results Handlers Configuration
+
+[cols=2,options=header]
+|===
+|Parameter
+|Value
+
+|enableFilteredResultsHandler
+|false
+
+|===
+
+
+==== Object Types
+===== Default Account
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|dn (Distinguished Name)
+|
+|
+
+|entryUUID (Entry UUID)
+|
+|
+
+|cn (Common Name)
+|
+|
+
+|sn (Surname)
+|
+|
+
+|givenName (Given Name)
+|
+|
+
+|uid (Login Name)
+|
+|
+
+|description ()
+|
+|
+
+|l ()
+|
+|
+
+|telephoneNumber ()
+|
+|
+
+|employeeNumber ()
+|
+|
+
+|employeeType ()
+|
+|
+
+|===
+
+====== Attribute Details
+
+*dn (Distinguished Name)*
+
+
+[.underline]#Outbounds#
+
+*entryUUID (Entry UUID)*
+
+
+*cn (Common Name)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/fullName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*sn (Surname)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`familyName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*givenName (Given Name)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/givenName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*uid (Login Name)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/name`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*description ()*
+
+
+[.underline]#Outbounds#
+
+*l ()*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength: 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/locality`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+*telephoneNumber ()*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength: 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/telephoneNumber`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*employeeNumber ()*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/employeeNumber`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*employeeType ()*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/employeeType`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+===== Group, ENTITLEMENT/group 
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|===
+
+====== Attribute Details
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+===== LDAP project groups, ENTITLEMENT/ldapProject 
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|dn ()
+|
+|
+
+|cn ()
+|
+|
+
+|description ()
+|
+|
+
+|===
+
+====== Attribute Details
+
+*dn ()*
+
+
+[.underline]#Outbounds#
+
+*cn ()*
+
+
+[.underline]#Outbounds#
+
+*description ()*
+
+
+[.underline]#Outbounds#
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+===== Organizational Unit, GENERIC/ou 
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|dn ()
+|
+|
+
+|ou ()
+|
+|
+
+|===
+
+====== Attribute Details
+
+*dn ()*
+
+
+[.underline]#Outbounds#
+
+*ou ()*
+
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+
+==== Synchronization
+
+
+===== Object Types
+
+===== sync account, ACCOUNT/default 
+
+
+===== sync group, ENTITLEMENT/ldapProject 
+
+
+===== sync, GENERIC/ou 
+
+
+
+
+==== Capabilities
+
+===== Native
+
+$object.getCapabilities().getNative()
+
+===== Configured
+
+PCV(null):[PP({http://midpoint.evolveum.com/xml/ns/public/resource/capabilities-3}activation):[PPV(ActivationCapabilityType:com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationCapabilityType@1e40edb7[status=com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.ActivationStatusCapabilityType@27381497[returnedByDefault=<null>,attribute={http://midpoint.evolveum.com/xml/ns/public/resource/instance-3}ds-pwp-account-disabled,enableValue=[],disableValue=[true],ignoreAttribute=<null>,enabled=<null>],validFrom=<null>,validTo=<null>,lockoutStatus=<null>,enabled=<null>])]]
+
+=== LDAP Server (OpenLDAP) over new LDAPConn.
+
+
+        LDAP resource using new LDAP Connector based on Apache Directory API. It contains configuration
+        for connecting to an OpenLDAP instance running on the localhost.
+    
+
+
+
+==== Connector
+
+
+Resource uses  connector. Artifact details:
+
+* **Connector type:** 
+* **Connector version:** 
+* **Connector bundle:** 
+* **Namespace:** 
+
+===== Connector Configuration
+
+[cols=3,options=header]
+|===
+|Parameter
+|Value
+|Description
+
+|port
+|389
+|
+
+|vlvSortAttribute
+|uid
+|
+
+|baseContext
+|dc=example,dc=com
+|
+
+|vlvSortOrderingRule
+|2.5.13.3
+|
+
+|bindDn
+|cn=idm,ou=Administrators,dc=example,dc=com
+|
+
+|pagingStrategy
+|auto
+|
+
+|operationalAttributes
+|memberOf
+|
+
+|operationalAttributes
+|createTimestamp
+|
+
+|host
+|localhost
+|
+
+|bindPassword
+|XML
+|
+
+|===
+
+
+
+
+====== Results Handlers Configuration
+
+[cols=2,options=header]
+|===
+|Parameter
+|Value
+
+|enableFilteredResultsHandler
+|false
+
+|===
+
+
+==== Object Types
+===== Default Account
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|dn (Distinguished Name)
+|
+|
+
+|entryUUID (Entry UUID)
+|
+|
+
+|cn (Common Name)
+|
+|
+
+|sn (Surname)
+|
+|
+
+|givenName (Given Name)
+|
+|
+
+|uid (Login Name)
+|
+|
+
+|description ()
+|
+|
+
+|l ()
+|
+|
+
+|telephoneNumber ()
+|
+|
+
+|employeeNumber ()
+|
+|
+
+|employeeType ()
+|
+|
+
+|===
+
+====== Attribute Details
+
+*dn (Distinguished Name)*
+
+
+[.underline]#Outbounds#
+
+*entryUUID (Entry UUID)*
+
+
+*cn (Common Name)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/fullName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*sn (Surname)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`familyName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*givenName (Given Name)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/givenName`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*uid (Login Name)*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/name`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*description ()*
+
+
+[.underline]#Outbounds#
+
+*l ()*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength: 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/locality`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+*telephoneNumber ()*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength: 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/telephoneNumber`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*employeeNumber ()*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/employeeNumber`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+*employeeType ()*
+
+[.underline]#Inbounds#
+
+
+[cols="h,d,d,d"]
+|===
+| Name
+3+| 
+
+
+
+| Options
+| Strength:  *weak* 
+| Authoritative: 
+| Exclusive: 
+
+
+
+| Source
+a|
+
+
+h| Target
+a|
+
+`$user/employeeType`  +
+
+| Expression
+3+a| Expression documentation block
+|===
+
+
+[.underline]#Outbounds#
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+===== Group, ENTITLEMENT/group 
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|===
+
+====== Attribute Details
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+===== LDAP project groups, ENTITLEMENT/ldapProject 
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|dn ()
+|
+|
+
+|cn ()
+|
+|
+
+|description ()
+|
+|
+
+|===
+
+====== Attribute Details
+
+*dn ()*
+
+
+[.underline]#Outbounds#
+
+*cn ()*
+
+
+[.underline]#Outbounds#
+
+*description ()*
+
+
+[.underline]#Outbounds#
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+===== Organizational Unit, GENERIC/ou 
+
+
+
+
+
+====== Overview
+
+[cols=3,options=header]
+|===
+|Attribute
+|Type
+|Description
+|dn ()
+|
+|
+
+|ou ()
+|
+|
+
+|===
+
+====== Attribute Details
+
+*dn ()*
+
+
+[.underline]#Outbounds#
+
+*ou ()*
+
+
+
+====== Credentials
+
+====== Activation
+
+====== Association
+
+
+==== Synchronization
+
+
+===== Object Types
+
+===== sync account, ACCOUNT/default 
+
+
+===== sync group, ENTITLEMENT/ldapProject 
+
+
+===== sync, GENERIC/ou 
+
+
+
+
+==== Capabilities
+
+===== Native
+
+$object.getCapabilities().getNative()
+
+===== Configured
+
+$object.getCapabilities().getConfigured()
+
+
+
+
+
+
+
+
+== Organization Units
+
+=== F0000
+
+Famous workshop of Leonardo da Vinci
+
+
+
+=== F0100
+
+Fine arts and stuff
+
+
+
+=== F0110
+
+Painting, drawing, carving, scratching whatever
+
+
+
+=== F0120
+
+Bigger than life
+
+
+
+=== F0200
+
+Everything that moves or otherwise.
+
+
+
+=== F0210
+
+We can destroy it for you wholesale
+
+
+
+=== P0000
+
+Project organizational structure root
+
+
+
+=== P0001
+
+Create the most appealing visual representation of a smile
+
+
+
+=== P0002
+
+
+
+
+
+
+
+
+
+
+== Roles
+
+=== Contractor role
+
+Role that gives contractors necessary access.
+
+
+
+=== Full Time Employee
+
+Basic role for full-time employee. It contains basic access rights that every employee should get automatically.
+
+
+
+=== LDAP Orgs MetaRole
+
+using to push new Orgs to LDAP automatically
+
+
+
+=== LDAP Projects MetaRole
+
+using to push new Projects to LDAP automatically
+
+
+
+=== Patron
+
+A role for art patrons. Designed to be assigned manually.
+
+
+
+
+
+
+
+
+== Tasks
+
+
+
+
+

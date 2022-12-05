@@ -1,0 +1,15 @@
+## main object: $objects (List<? extends ObjectType>)
+
+[cols=3,options=header]
+|===
+|Name
+|Description
+|Oid
+
+#foreach($object in $objects)
+|$object.name.orig
+|$!object.description
+|$object.oid
+
+#end
+|===

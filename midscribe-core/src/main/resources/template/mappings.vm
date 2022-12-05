@@ -1,0 +1,3 @@
+#foreach($mapping in $mappings)
+#parse("/template/mapping.vm")
+#end

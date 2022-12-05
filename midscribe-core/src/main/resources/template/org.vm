@@ -1,0 +1,6 @@
+=== $!utils.getOrig($object.getName())
+
+$!object.getDescription()
+
+$!utils.stripIndent($object.getDocumentation())
+

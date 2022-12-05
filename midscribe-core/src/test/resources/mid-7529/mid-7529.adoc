@@ -1,0 +1,65 @@
+[cols=2,options=header]
+|===
+|Capability
+|Options
+
+|activation
+a|
+* status:
+** attribute: *ri:dis*
+** disableValue: *true*
+** enableValue: *false*
+
+
+|activation
+a|
+* status:
+** attribute: *ri:disabled*
+** disableValue: *true*
+** enableValue: *_EMPTY STRING_*, *false*
+
+
+|activation
+a|
+* lockoutStatus
+* status
+* validTo
+
+|countObjects
+a|
+* simulate:
+** value: *sequentialSearch*
+
+
+|pagedSearch
+a|
+* defaultSortField: *ri:cn*
+
+|read
+a|
+* cachingOnly: *true*
+
+|delete
+a|
+* enabled: *false*
+
+|credentials
+a|
+* password
+
+|credentials
+a|
+* password:
+** returnedByDefault: *false*
+
+
+|liveSync
+a|
+
+|testConnection
+a|
+
+|addRemoveAttributeValues
+a|
+
+|===
