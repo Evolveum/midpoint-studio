@@ -1,7 +1,8 @@
-package com.evolveum.midpoint.studio.cmd;
+package com.evolveum.midpoint.studio.cmd.option;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.evolveum.midpoint.studio.cmd.FileConverter;
 import com.evolveum.midscribe.generator.ExportFormat;
 import com.evolveum.midscribe.generator.GenerateOptions;
 

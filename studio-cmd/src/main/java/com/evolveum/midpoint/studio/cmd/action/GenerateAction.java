@@ -1,5 +1,7 @@
-package com.evolveum.midpoint.studio.cmd;
+package com.evolveum.midpoint.studio.cmd.action;
 
+import com.evolveum.midpoint.studio.cmd.Action;
+import com.evolveum.midpoint.studio.cmd.option.CmdGenerateOptions;
 import com.evolveum.midscribe.generator.Generator;
 
 /**

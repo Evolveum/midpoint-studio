@@ -118,7 +118,7 @@ public class StudioCmdMain {
         }
 
         JCommander jc = builder.build();
-        jc.setProgramName("java [-Dlogback.configurationFile=logback.xml] -jar midscribe.jar");
+        jc.setProgramName("java [-Dlogback.configurationFile=logback.xml] -jar studio.jar");
         jc.setColumnSize(150);
 
         return jc;

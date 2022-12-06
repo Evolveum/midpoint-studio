@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.cmd;
 
+import com.evolveum.midpoint.studio.cmd.action.GenerateAction;
+import com.evolveum.midpoint.studio.cmd.option.CmdGenerateOptions;
+
 /**
  * @author Viliam Repan (lazyman)
  */

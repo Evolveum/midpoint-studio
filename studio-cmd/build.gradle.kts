@@ -25,6 +25,10 @@ tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
 
+base {
+    archivesName.set("studio")
+}
+
 springBoot {
     mainClass.set("com.evolveum.midpoint.studio.cmd.StudioCmdMain")
 }
