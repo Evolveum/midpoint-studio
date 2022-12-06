@@ -5,16 +5,18 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.slf4j.api)
     implementation(libs.commons.io)
     implementation(libs.asciidoctorj)
     implementation(libs.asciidoctorj.pdf)
     implementation(libs.asciidoctorj.pdf)
     implementation(libs.asciidoctorj.tabbed.code)
     implementation(libs.velocity)
+
     implementation(libs.midpoint.schema)
 
-    testImplementation(libs.jupiter.api)
-    testRuntimeOnly(libs.jupiter.engine)
+    testImplementation(testLibs.jupiter.api)
+    testRuntimeOnly(testLibs.jupiter.engine)
 }
 
 java {

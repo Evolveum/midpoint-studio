@@ -17,8 +17,8 @@ dependencies {
     implementation(libs.commons.lang)
     implementation(libs.logback.classic)
 
-    testImplementation(libs.jupiter.api)
-    testRuntimeOnly(libs.jupiter.engine)
+    testImplementation(testLibs.jupiter.api)
+    testRuntimeOnly(testLibs.jupiter.engine)
 }
 
 tasks.getByName<Test>("test") {
