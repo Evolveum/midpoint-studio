@@ -31,6 +31,11 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
             return;
         }
 
+        if (!MidPointUtils.isVisibleWithMidPointFacet(e)) {
+            e.getPresentation().setVisible(false);
+            return;
+        }
+
         EnvironmentService envManager = EnvironmentService.getInstance(e.getProject());
 
         Environment env = envManager.getSelected();

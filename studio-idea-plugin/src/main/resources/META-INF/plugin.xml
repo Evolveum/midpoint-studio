@@ -447,7 +447,7 @@
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
         </group>
 
-        <group id="MidPoint.ExpUI.Toolbar.Main">
+        <group id="MidPoint.ExpUI.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
             <reference ref="MidPoint.Action.TestAction"/>
 
