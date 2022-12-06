@@ -3,6 +3,7 @@ package com.evolveum.midscribe;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.evolveum.midpoint.xml.ns._public.resource.capabilities_3.CapabilityCollectionType;
 import com.evolveum.midscribe.generator.*;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class TemplateUtilsTest extends MidscribeTest {
 
+    @Disabled
     @Test
     public void testDescribeCapability() throws Exception {
         GenerateOptions opts = prepareOptions("mid-7529");
