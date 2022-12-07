@@ -9,7 +9,7 @@ group = "com.evolveum.midpoint.studio"
 version = "4.6.1"
 
 dependencies {
-    api(libs.common) {
+    api(libs.midpoint.common) {
         exclude("org.springframework")
         exclude("net.sf.jasperreports")
         exclude("org.apache.cxf")
@@ -21,8 +21,8 @@ dependencies {
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
 
-    testImplementation(libs.jupiter.api)
-    testRuntimeOnly(libs.jupiter.engine)
+    testImplementation(testLibs.jupiter.api)
+    testRuntimeOnly(testLibs.jupiter.engine)
 }
 
 java {

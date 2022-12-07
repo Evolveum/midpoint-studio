@@ -1,0 +1,16 @@
+## FUNCTION LIBRARIES
+
+#set($users=$processor.loadUsers())
+
+#if(!$users.isEmpty())
+
+== Users
+
+#set($objects=$users)
+#parse("/template/objects-sumary-table.vm")
+
+#foreach($object in $users)
+#parse("/template/user.vm")
+#end
+
+#end

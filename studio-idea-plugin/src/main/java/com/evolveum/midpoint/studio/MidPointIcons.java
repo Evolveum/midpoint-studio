@@ -29,6 +29,14 @@ public class MidPointIcons {
 
     public static final @NotNull Icon UploadTestValidate = load("icons/uploadTestValidate.svg");
 
+    public static class ExpUI {
+
+        public static final @NotNull Icon UploadExecute = load("icons/expui/uploadExecute.svg");
+
+
+        public static final @NotNull Icon UploadTest = load("icons/expui/uploadTest.svg");
+    }
+
     private static @NotNull Icon load(@NotNull String path) {
         return IconManager.getInstance().getIcon(path, MidPointIcons.class);
     }

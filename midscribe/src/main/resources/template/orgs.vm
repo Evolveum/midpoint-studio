@@ -1,0 +1,16 @@
+## FUNCTION LIBRARIES
+
+#set($orgs=$processor.loadOrgs())
+
+#if(!$orgs.isEmpty())
+
+== Organization Units
+
+#set($objects=$orgs)
+#parse("/template/objects-sumary-table.vm")
+
+#foreach($object in $orgs)
+#parse("/template/org.vm")
+#end
+
+#end

@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.action;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.ui.GeneralConfiguration;
 import com.evolveum.midpoint.studio.ui.FullConfigurationPanel;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
@@ -43,6 +44,11 @@ public class TestAction extends AnAction {
     @Override
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
+
+        if (!MidPointUtils.isVisibleWithMidPointFacet(e)) {
+            e.getPresentation().setVisible(false);
+            return;
+        }
 
         if (isPluginVersionRelease) {
             e.getPresentation().setVisible(false);

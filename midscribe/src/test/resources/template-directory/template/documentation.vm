@@ -1,0 +1,16 @@
+= $processor.getProperty("project.name")
+$processor.getProperty("project.author")
+Version $processor.getProperty("project.version"), $processor.getProperty("project.date")
+:sectnums:
+:toc: left
+:toclevels: 4
+:toc-title: Example override of template
+
+:imagesdir: ./img
+
+$processor.getProperty("project.description")
+
+Aaaaaaa
+some override of my templateeeeee
+
+#parse("/template/templates.vm")

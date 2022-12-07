@@ -11,7 +11,7 @@ plugins {
     // Kotlin support
     id("org.jetbrains.kotlin.jvm") version "1.7.20"
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.9.0"
+    id("org.jetbrains.intellij") version "1.10.0"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
     id("org.jetbrains.changelog") version "1.3.1"
     // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
@@ -32,17 +32,25 @@ dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
 
     implementation(projects.midpointClient)
+    implementation(projects.midscribe) {
+        exclude("org.springframework")
+        exclude("net.sf.jasperreports")
+        exclude("org.apache.cxf")
+        exclude("org.slf4j")
+        exclude("ch.qos.logback")
+        exclude("xerces")
+    }
 
-    implementation(libs.model.common) {
+    implementation(libs.midpoint.model.common) {
         isTransitive = false
     }
-    implementation(libs.model.api) {
+    implementation(libs.midpoint.model.api) {
         isTransitive = false
     }
-    implementation(libs.model.impl) {
+    implementation(libs.midpoint.model.impl) {
         isTransitive = false
     }
-    implementation(libs.common) {
+    implementation(libs.midpoint.common) {
         exclude("org.springframework")
         exclude("net.sf.jasperreports")
         exclude("org.apache.cxf")
@@ -58,17 +66,17 @@ dependencies {
     }
     implementation(libs.midpoint.localization)
 
-    implementation(libs.midscribe.core) {
-        exclude("org.springframework")
-        exclude("net.sf.jasperreports")
-        exclude("org.apache.cxf", "cxf-rt-wsdl")
-
-        exclude("org.slf4j")
-        exclude("ch.qos.logback")
-        exclude("xerces")
-    }
+//    implementation(libs.midscribe.core) {
+//        exclude("org.springframework")
+//        exclude("net.sf.jasperreports")
+//        exclude("org.apache.cxf", "cxf-rt-wsdl")
+//
+//        exclude("org.slf4j")
+//        exclude("ch.qos.logback")
+//        exclude("xerces")
+//    }
     implementation(libs.asciidoctorj.tabbed.code)
-    implementation("org.apache.velocity", "velocity-engine-core") {
+    implementation(libs.velocity) {
         exclude("org.slf4j")
     }
 
@@ -93,12 +101,12 @@ dependencies {
     }
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
 
-    testImplementation(libs.remote.robot)
-    testImplementation(libs.remote.fixtures)
+    testImplementation(testLibs.remote.robot)
+    testImplementation(testLibs.remote.fixtures)
 
-    testImplementation(libs.xmlunit.core)
+    testImplementation(testLibs.xmlunit.core)
 
-    testImplementation(libs.xalan)
+    testImplementation(testLibs.xalan)
 }
 
 var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()

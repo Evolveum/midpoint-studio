@@ -1,0 +1,30 @@
+= $processor.getProperty("project.name")
+$processor.getProperty("project.author")
+Version $processor.getProperty("project.version"), $processor.getProperty("project.date")
+:sectnums:
+:sectlinks:
+:toc: left
+:toclevels: 4
+:toc-title: Table of Contents
+:source-highlighter: highlightjs
+:highlightjs-languages: groovy, xml, json
+
+:imagesdir: ./img
+
+#parse("/template/introduction.vm")
+
+#parse("/template/templates.vm")
+
+#parse("/template/resources.vm")
+
+#parse("/template/libraries.vm")
+
+#parse("/template/orgs.vm")
+
+#parse("/template/roles.vm")
+
+#parse("/template/tasks.vm")
+
+#parse("/template/users.vm")
+
+#parse("/template/conclusion.vm")
