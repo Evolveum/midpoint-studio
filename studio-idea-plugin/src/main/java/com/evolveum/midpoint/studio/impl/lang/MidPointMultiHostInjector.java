@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
+import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ScriptExpressionEvaluatorType;
 import com.intellij.lang.injection.MultiHostInjector;
@@ -39,7 +40,7 @@ public class MidPointMultiHostInjector implements MultiHostInjector {
         }
 
         XmlTag script = code.getParentTag();
-        if (script == null || !"script".equalsIgnoreCase(script.getName())) {
+        if (!isParentScript(code)) {
             return;
         }
 
@@ -60,5 +61,11 @@ public class MidPointMultiHostInjector implements MultiHostInjector {
     @Override
     public List<? extends Class<? extends PsiElement>> elementsToInjectIn() {
         return Collections.singletonList(XmlText.class);
+    }
+
+    private boolean isParentScript(XmlTag code) {
+        XmlTag parent = code.getParentTag();
+
+        return MidPointUtils.isTagMatchingNameOrType(parent, SchemaConstantsGenerated.C_SCRIPT, ScriptExpressionEvaluatorType.COMPLEX_TYPE);
     }
 }
