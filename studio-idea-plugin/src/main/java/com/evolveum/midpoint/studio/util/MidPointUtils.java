@@ -603,6 +603,24 @@ public class MidPointUtils {
 
     }
 
+    public static boolean isTagMatchingNameOrType(XmlTag tag, QName name, QName type) {
+        if (tag == null) {
+            return false;
+        }
+
+        QName realName = createQName(tag);
+        if (name != null && name.equals(realName)) {
+            return true;
+        }
+
+        QName realType = elementXsiType(tag);
+        if (type != null && type.equals(realType)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static QName elementXsiType(XmlTag tag) {
         if (tag == null) {
             return null;
