@@ -111,12 +111,12 @@ open class FullConfigurationPanel(
         }
     }
 
-    private fun listOfModules(): Collection<Module> {
+    private fun listOfModules(): Collection<Module?> {
         val manager = ModuleManager.getInstance(project)
 
-        val list = manager.modules.toMutableList()
-        list.sortWith(compareBy<Module> { it.name })
-        list.add(0, null);
+        val list:MutableList<Module?> = manager.modules.toMutableList()
+        list.sortWith(compareBy { it?.name })
+        list.add(0, null)
 
         return list
     }
@@ -140,19 +140,19 @@ open class FullConfigurationPanel(
     }
 
     private fun translateTypesToString(list: List<ObjectTypes>): String {
-        if (list.isNullOrEmpty()) {
+        if (list.isEmpty()) {
             return ""
         }
 
-        return list.map { it.value }.joinToString()
+        return list.joinToString { it.value }
     }
 
     private fun translateStringToTypes(value: String): List<ObjectTypes> {
-        if (value.isNullOrEmpty()) {
+        if (value.isEmpty()) {
             return emptyList()
         }
 
-        return value.split("[,\\s]").map { translateToObjectType(it) }.filter { it != null }
+        return value.split("[,\\s]").mapNotNull { translateToObjectType(it) }
             .toList() as List<ObjectTypes>
     }
 
@@ -170,7 +170,7 @@ open class FullConfigurationPanel(
     }
 
     private fun translateToObjectType(item: String): ObjectTypes? {
-        if (item.isNullOrBlank()) {
+        if (item.isBlank()) {
             return null
         }
 
