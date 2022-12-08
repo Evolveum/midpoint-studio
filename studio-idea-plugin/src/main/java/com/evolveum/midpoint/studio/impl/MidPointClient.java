@@ -42,15 +42,15 @@ public class MidPointClient {
 
     private static final String NOTIFICATION_KEY = "MidPoint Rest Client";
 
-    private Project project;
+    private final Project project;
 
-    private Environment environment;
+    private final Environment environment;
 
-    private boolean suppressNotifications;
+    private final boolean suppressNotifications;
 
-    private boolean suppressConsole;
+    private final boolean suppressConsole;
 
-    private Optional<Console> console;
+    private final Optional<Console> console;
 
     private Service client;
 
@@ -203,7 +203,7 @@ public class MidPointClient {
 
         SearchResultList<O> result = null;
         try {
-            result = (SearchResultList) client.list(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
+            result = client.list(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
 
             printToConsole("Search done");
         } catch (Exception ex) {
@@ -359,7 +359,7 @@ public class MidPointClient {
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
-            InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
+            InputStream expanded = expander.expand(is, charset);
 
             PrismParser parser = createParser(expanded);
             return parser.parse();

@@ -32,8 +32,8 @@ public class HtmlExporter extends ExporterBase {
                 .build();
 //                .templateDir(new File("./src/test/resources/css"));
 
-        Asciidoctor doctor = createAsciidoctor();
-
-        doctor.convertFile(adocFile, options);
+        try (Asciidoctor doctor = createAsciidoctor()) {
+            doctor.convertFile(adocFile, options);
+        }
     }
 }

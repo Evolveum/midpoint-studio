@@ -24,7 +24,7 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
     public static final String ACTION_ID = MidPointConstants.ACTION_ID_PREFIX + ComboEnvironments.class.getSimpleName();
 
     @Override
-    public void update(AnActionEvent e) {
+    public void update(@NotNull @NotNull AnActionEvent e) {
         super.update(e);
 
         if (e.getProject() == null) {
@@ -51,7 +51,7 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull @NotNull AnActionEvent e) {
     }
 
     @NotNull

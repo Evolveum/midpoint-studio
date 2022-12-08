@@ -34,8 +34,8 @@ public class PdfExporter extends ExporterBase {
                 .backend("pdf")
                 .build();
 
-        Asciidoctor doctor = createAsciidoctor();
-
-        doctor.convertFile(adocFile, options);
+        try (Asciidoctor doctor = createAsciidoctor()) {
+            doctor.convertFile(adocFile, options);
+        }
     }
 }

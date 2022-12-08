@@ -21,7 +21,7 @@ public interface LogListener {
 
         UNKNOWN(Severity.UNKNOWN);
 
-        private Severity severity;
+        private final Severity severity;
 
         Level(Severity severity) {
             this.severity = severity;
@@ -37,7 +37,7 @@ public interface LogListener {
             }
 
             for (Level l : values()) {
-                if (severity.equals(severity)) {
+                if (severity.equals(l)) {
                     return l;
                 }
             }

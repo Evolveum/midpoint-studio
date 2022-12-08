@@ -10,11 +10,11 @@ public enum Command {
 
     GENERATE("generate", CmdGenerateOptions.class, GenerateAction.class);
 
-    private String commandName;
+    private final String commandName;
 
-    private Class options;
+    private final Class options;
 
-    private Class<? extends Action> action;
+    private final Class<? extends Action> action;
 
     Command(String commandName, Class options, Class<? extends Action> action) {
         this.commandName = commandName;

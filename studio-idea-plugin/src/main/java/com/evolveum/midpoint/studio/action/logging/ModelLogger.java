@@ -17,9 +17,9 @@ public enum ModelLogger {
 
     LENS_TRACE("com.evolveum.midpoint.model.impl.lens", "'lens trace' (previous + lens.*=TRACE)");
 
-    private String logger;
+    private final String logger;
 
-    private String label;
+    private final String label;
 
     ModelLogger(String logger, String label) {
         this.logger = logger;

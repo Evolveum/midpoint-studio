@@ -37,7 +37,7 @@ public class EncryptedPropertiesSerializer {
              * not very nice way to make properties sorted when stored to file
              */
             @Override
-            public Set<Map.Entry<Object, Object>> entrySet() {
+            public @NotNull Set<Map.Entry<Object, Object>> entrySet() {
                 Set<Map.Entry<Object, Object>> set = new TreeSet<>((o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare((String) o1.getKey(), (String) o2.getKey()));
 
                 set.addAll(super.entrySet());

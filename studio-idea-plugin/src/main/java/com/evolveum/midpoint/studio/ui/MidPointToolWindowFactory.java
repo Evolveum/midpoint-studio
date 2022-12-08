@@ -81,6 +81,6 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     @Override
-    public void init(ToolWindow window) {
+    public void init(@NotNull ToolWindow window) {
     }
 }

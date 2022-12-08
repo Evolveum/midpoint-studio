@@ -25,7 +25,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
     private ObjectTypes selected = ObjectTypes.OBJECT;
 
     @Override
-    public void update(AnActionEvent e) {
+    public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
         String text = selected.getTypeQName().getLocalPart();
@@ -81,13 +81,13 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
         }
 
         @Override
-        public void actionPerformed(AnActionEvent e) {
+        public void actionPerformed(@NotNull AnActionEvent e) {
             combo.setSelected(type);
             combo.update(e);
         }
 
         @Override
-        public void update(AnActionEvent e) {
+        public void update(@NotNull AnActionEvent e) {
             super.update(e);
 
             String text = type.getTypeQName().getLocalPart();
