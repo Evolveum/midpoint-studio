@@ -67,9 +67,9 @@ publishing {
 
                 developers {
                     developer {
-                        id.set("viliam.repan")
-                        name.set("Viliam Repan")
-                        email.set("viliam.repan@evolveum.com")
+                        id.set("midpoint-studio-team")
+                        name.set("MidPoint Studio Team")
+                        email.set("studio@evolveum.com")
                     }
                 }
             }
@@ -79,6 +79,8 @@ publishing {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+
+    testLogging.showStandardStreams = true
 }
 
 tasks {

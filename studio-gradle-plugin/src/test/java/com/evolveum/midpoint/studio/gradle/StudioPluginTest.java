@@ -12,10 +12,12 @@ public class StudioPluginTest extends StudioPluginTestBase {
     @Test
     public void checkPluginUpdate() throws Exception {
         BuildResult result = GradleRunner.create()
+                .forwardOutput()
                 .withProjectDir(testProjectPath)
                 .withArguments("clean", "build", "--info")
                 .withPluginClasspath()
                 .build();
-        System.out.println(result);
+
+//        System.out.println(">>>> " + result.getOutput());
     }
 }
