@@ -91,7 +91,7 @@ public class OidInlayParameterHintsProvider implements InlayParameterHintsProvid
 
     @Nullable
     @Override
-    public HintInfo getHintInfo(PsiElement element) {
+    public HintInfo getHintInfo(@NotNull PsiElement element) {
         return null;
     }
 

@@ -29,7 +29,7 @@ val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDe
 
 // Configure project's dependencies
 dependencies {
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.22.0")
 
     implementation(projects.midpointClient)
     implementation(projects.midscribe) {
@@ -117,7 +117,7 @@ var buildNumber = properties("buildNumber")
 
 if (publishChannel.isBlank() || publishChannel == "null") {
     if (gitLocalBranch.isEmpty() || gitLocalBranch == "null") {
-        gitLocalBranch = versionDetails()?.branchName
+        gitLocalBranch = versionDetails().branchName
     }
 
     publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
@@ -170,12 +170,6 @@ changelog {
 detekt {
     config = files("./detekt-config.yml")
     buildUponDefaultConfig = true
-
-    reports {
-        html.enabled = false
-        xml.enabled = false
-        txt.enabled = false
-    }
 }
 
 tasks {
@@ -189,6 +183,11 @@ tasks {
 
     withType<Detekt> {
         jvmTarget = properties("javaVersion")
+        reports {
+            html.required.set(false)
+            xml.required.set(false)
+            txt.required.set(false)
+        }
     }
 
     patchPluginXml {
@@ -209,13 +208,11 @@ tasks {
             }.joinToString("\n").run { markdownToHTML(this) }
         )
 
-        var changelogContent = ""
-
         val hasChangelog = changelog.has(properties("pluginVersion"))
-        if (hasChangelog) {
-            changelogContent = changelog.get(properties("pluginVersion")).toHTML()
+        val changelogContent = if (hasChangelog) {
+            changelog.get(properties("pluginVersion")).toHTML()
         } else {
-            changelogContent = changelog.getUnreleased().toHTML()
+            changelog.getUnreleased().toHTML()
         }
         changeNotes.set(changelogContent)
     }

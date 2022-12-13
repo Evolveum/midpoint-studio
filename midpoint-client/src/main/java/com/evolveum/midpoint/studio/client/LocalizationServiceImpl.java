@@ -4,6 +4,7 @@ import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.CommonException;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
@@ -25,7 +26,7 @@ public class LocalizationServiceImpl implements LocalizationService {
     }
 
     @Override
-    public Locale getDefaultLocale() {
+    public @NotNull Locale getDefaultLocale() {
         return Locale.getDefault();
     }
 

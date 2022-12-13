@@ -66,7 +66,7 @@ public class PropertiesInlayParameterHintsProvider implements InlayParameterHint
 
     @Nullable
     @Override
-    public HintInfo getHintInfo(PsiElement element) {
+    public HintInfo getHintInfo(@NotNull PsiElement element) {
         return null;
     }
 

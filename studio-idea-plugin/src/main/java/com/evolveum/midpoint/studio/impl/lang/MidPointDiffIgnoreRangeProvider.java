@@ -56,7 +56,7 @@ public class MidPointDiffIgnoreRangeProvider implements DiffIgnoredRangeProvider
             psiFile.accept(new PsiElementVisitor() {
 
                 @Override
-                public void visitElement(PsiElement element) {
+                public void visitElement(@NotNull PsiElement element) {
                     if (element.getTextLength() == 0) return;
 
                     if (isIgnored(element)) {

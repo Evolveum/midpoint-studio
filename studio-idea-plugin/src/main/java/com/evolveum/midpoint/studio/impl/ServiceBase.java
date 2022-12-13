@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.ModificationTracker;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
@@ -44,7 +45,7 @@ public abstract class ServiceBase<T extends Serializable>
     }
 
     @Override
-    public void loadState(T state) {
+    public void loadState(@NotNull T state) {
         T settings = createEmptySettings();
         XmlSerializerUtil.copyBean(state, settings);
 

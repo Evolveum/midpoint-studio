@@ -56,9 +56,9 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
 
         FILES("file", "files");
 
-        private String singular;
+        private final String singular;
 
-        private String plural;
+        private final String plural;
 
         ConfirmationUnit(String singular, String plural) {
             this.singular = singular;

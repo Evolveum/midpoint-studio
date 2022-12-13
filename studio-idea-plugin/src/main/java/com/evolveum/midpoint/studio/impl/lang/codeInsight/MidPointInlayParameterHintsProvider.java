@@ -54,7 +54,7 @@ public class MidPointInlayParameterHintsProvider implements InlayParameterHintsP
 
     @Nullable
     @Override
-    public HintInfo getHintInfo(PsiElement element) {
+    public HintInfo getHintInfo(@NotNull PsiElement element) {
         return null;
     }
 }

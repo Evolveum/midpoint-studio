@@ -57,9 +57,9 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
         REAL_VALUE("Real Value", ParameterizedEquivalenceStrategy.REAL_VALUE);
 
-        private String label;
+        private final String label;
 
-        private ParameterizedEquivalenceStrategy strategy;
+        private final ParameterizedEquivalenceStrategy strategy;
 
         DiffStrategy(String label, ParameterizedEquivalenceStrategy strategy) {
             this.label = label;

@@ -220,7 +220,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
     @NotNull
     @Override
-    protected Action[] createActions() {
+    protected Action @NotNull [] createActions() {
         return new Action[]{
                 getCancelAction(),
                 getOKAction(),

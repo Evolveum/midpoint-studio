@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -37,7 +38,7 @@ public class SplitFileEditorState implements FileEditorState {
     }
 
     @Override
-    public boolean canBeMergedWith(FileEditorState other, FileEditorStateLevel level) {
+    public boolean canBeMergedWith(@NotNull FileEditorState other, @NotNull FileEditorStateLevel level) {
         if (!(other instanceof SplitFileEditorState)) {
             return false;
         }
@@ -54,11 +55,11 @@ public class SplitFileEditorState implements FileEditorState {
 
         BOTH(true, true, "Editor and preview");
 
-        private boolean showEditor;
+        private final boolean showEditor;
 
-        private boolean showPreview;
+        private final boolean showPreview;
 
-        private String label;
+        private final String label;
 
         SplitLayout(boolean showEditor, boolean showPreview, String label) {
             this.showEditor = showEditor;

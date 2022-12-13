@@ -235,7 +235,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         }
 
         @Override
-        public void update(AnActionEvent e) {
+        public void update(@NotNull AnActionEvent e) {
             super.update(e);
 
             String text = getFormat().getDisplayName();

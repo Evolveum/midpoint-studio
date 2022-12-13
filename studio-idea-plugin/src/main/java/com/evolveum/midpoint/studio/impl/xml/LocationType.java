@@ -9,7 +9,7 @@ public enum LocationType {
 
     REMOTE("remote");
 
-    private String value;
+    private final String value;
 
     LocationType(String value) {
         this.value = value;

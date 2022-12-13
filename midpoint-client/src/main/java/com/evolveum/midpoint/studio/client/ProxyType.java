@@ -11,7 +11,7 @@ public enum ProxyType {
 
     SOCKS(Proxy.Type.SOCKS);
 
-    private Proxy.Type type;
+    private final Proxy.Type type;
 
     ProxyType(Proxy.Type type) {
         this.type = type;

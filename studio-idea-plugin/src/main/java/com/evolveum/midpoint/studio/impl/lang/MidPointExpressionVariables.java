@@ -64,11 +64,11 @@ public enum MidPointExpressionVariables {
 
     LOCALIZATION_SERVICE("localizationService",LocalizationService.class);
 
-    private String variable;
+    private final String variable;
 
-    private Class type;
+    private final Class type;
 
-    private Class instanceType;
+    private final Class instanceType;
 
     MidPointExpressionVariables(String variable, Class type) {
         this(variable, type, type);

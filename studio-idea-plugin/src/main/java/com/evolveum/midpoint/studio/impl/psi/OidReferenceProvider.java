@@ -22,7 +22,7 @@ public class OidReferenceProvider extends PsiReferenceProvider {
     // todo for object[oid] show only data from /objects folder maybe?
     @NotNull
     @Override
-    public PsiReference[] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
+    public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
         if (!(element instanceof XmlAttributeValue)) {
             return new PsiReference[0];
         }

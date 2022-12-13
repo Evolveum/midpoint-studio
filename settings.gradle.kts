@@ -60,7 +60,7 @@ dependencyResolutionManagement {
             library("velocity", "org.apache.velocity", "velocity-engine-core").versionRef("velocity")
         }
         create("testLibs") {
-            version("jupiter", "5.6.0")
+            version("jupiter", "5.8.1")
             version("remote-robot", "0.11.7")
             version("xmlunit", "2.8.3")
             version("xalan", "2.7.2")
@@ -79,3 +79,4 @@ include("midpoint-client")
 include("midscribe")
 include("studio-cmd")
 include("studio-idea-plugin")
+include("studio-gradle-plugin")

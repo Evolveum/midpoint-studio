@@ -19,7 +19,7 @@ public interface Console {
 
         ERROR_OUTPUT(ConsoleViewContentType.ERROR_OUTPUT);
 
-        private ConsoleViewContentType type;
+        private final ConsoleViewContentType type;
 
         ContentType(ConsoleViewContentType type) {
             this.type = type;

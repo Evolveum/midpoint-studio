@@ -24,7 +24,7 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
     public static final String ACTION_ID = MidPointConstants.ACTION_ID_PREFIX + ComboEnvironments.class.getSimpleName();
 
     @Override
-    public void update(AnActionEvent e) {
+    public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
         if (e.getProject() == null) {
@@ -45,13 +45,17 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
         getTemplatePresentation().setText(text);
         e.getPresentation().setText(text);
 
-        Icon icon = MidPointUtils.createEnvironmentIcon(env.getAwtColor());
-        getTemplatePresentation().setIcon(icon);
-        e.getPresentation().setIcon(icon);
+        Color color = env != null ? env.getAwtColor() : null;
+        if (color != null) {
+            Icon icon = MidPointUtils.createEnvironmentIcon(color);
+
+            getTemplatePresentation().setIcon(icon);
+            e.getPresentation().setIcon(icon);
+        }
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
     }
 
     @NotNull
@@ -74,19 +78,20 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
         return panel;
     }
 
-    @NotNull
     @Override
-    protected DefaultActionGroup createPopupActionGroup(JComponent jComponent) {
+    protected @NotNull DefaultActionGroup createPopupActionGroup(JComponent button) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        Project project = DataManager.getInstance().getDataContext(jComponent).getData(CommonDataKeys.PROJECT);
-        EnvironmentService manager = EnvironmentService.getInstance(project);
+        Project project = DataManager.getInstance().getDataContext(button).getData(CommonDataKeys.PROJECT);
+        if (project != null) {
+            EnvironmentService manager = EnvironmentService.getInstance(project);
 
-        for (Environment env : manager.getEnvironments()) {
-            group.add(new SelectEnvironment(env));
+            for (Environment env : manager.getEnvironments()) {
+                group.add(new SelectEnvironment(env));
+            }
+
+            group.addSeparator();
         }
-
-        group.addSeparator();
 
         group.add(new SelectEnvironment(null));
 

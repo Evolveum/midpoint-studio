@@ -70,7 +70,7 @@ public class TemplateUtils {
         return sb.toString();
     }
 
-    private static final int countSkipCharacters(String[] lines) {
+    private static int countSkipCharacters(String[] lines) {
         int count = 0;
 
         outer:
