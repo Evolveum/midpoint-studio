@@ -1,4 +1,3 @@
-import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -9,15 +8,11 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.7.10"
+    id("org.jetbrains.kotlin.jvm") version "1.7.21"
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.10.0"
+    id("org.jetbrains.intellij") version "1.10.1"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-    id("org.jetbrains.changelog") version "1.3.1"
-    // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
-    id("io.gitlab.arturbosch.detekt") version "1.21.0"
-    // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
-    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
+    id("org.jetbrains.changelog") version "2.0.0"
     // git plugin - read more: https://github.com/palantir/gradle-git-version
     id("com.palantir.git-version") version "0.12.2"
 }
@@ -29,8 +24,6 @@ val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDe
 
 // Configure project's dependencies
 dependencies {
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.22.0")
-
     implementation(projects.midpointClient)
     implementation(projects.midscribe) {
         exclude("org.springframework")
@@ -66,15 +59,6 @@ dependencies {
     }
     implementation(libs.midpoint.localization)
 
-//    implementation(libs.midscribe.core) {
-//        exclude("org.springframework")
-//        exclude("net.sf.jasperreports")
-//        exclude("org.apache.cxf", "cxf-rt-wsdl")
-//
-//        exclude("org.slf4j")
-//        exclude("ch.qos.logback")
-//        exclude("xerces")
-//    }
     implementation(libs.asciidoctorj.tabbed.code)
     implementation(libs.velocity) {
         exclude("org.slf4j")
@@ -86,8 +70,6 @@ dependencies {
     implementation(libs.commons.lang)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
-
-//    implementation(libs.stax)
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {
@@ -136,6 +118,10 @@ channel = publishChannel
 println("Plugin version: $pluginVersion")
 println("Publish channel: $channel")
 
+kotlin {
+    jvmToolchain(17)
+}
+
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
@@ -165,13 +151,6 @@ changelog {
     headerParserRegex.set("""(^(0|[1-9]\d*)(\.(0|[1-9]\d*)){1,2})""".toRegex())
 }
 
-// Configure detekt plugin.
-// Read more: https://detekt.github.io/detekt/kotlindsl.html
-detekt {
-    config = files("./detekt-config.yml")
-    buildUponDefaultConfig = true
-}
-
 tasks {
     withType<JavaCompile> {
         sourceCompatibility = properties("javaVersion")
@@ -179,15 +158,6 @@ tasks {
     }
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = properties("javaVersion")
-    }
-
-    withType<Detekt> {
-        jvmTarget = properties("javaVersion")
-        reports {
-            html.required.set(false)
-            xml.required.set(false)
-            txt.required.set(false)
-        }
     }
 
     patchPluginXml {
@@ -245,8 +215,13 @@ tasks {
         jvmArgs("--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED")
     }
 
+    // Configure UI tests plugin
+    // Read more: https://github.com/JetBrains/intellij-ui-test-robot
     runIdeForUiTests {
-        systemProperty("robot-server.port", "8082") // default port 8580
+        systemProperty("robot-server.port", "8082")
+        systemProperty("ide.mac.message.dialogs.as.sheets", "false")
+        systemProperty("jb.privacy.policy.text", "<!--999.999-->")
+        systemProperty("jb.consents.confirmation.enabled", "false")
     }
 
     downloadRobotServerPlugin {
