@@ -10,7 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class DeleteAction extends AsyncObjectsAction {
 
-    public static final String ACTION_NAME = "Delete";
+    public static final String ACTION_NAME = "Delete from Server";
 
     private boolean raw;
 

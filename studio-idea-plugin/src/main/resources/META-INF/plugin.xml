@@ -233,12 +233,12 @@
 
         <action id="MidPoint.Action.DeleteRaw"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
-                text="Delete (raw)"
+                text="Delete from Server (raw)"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.RemoveRaw"/>
 
         <action id="MidPoint.Action.Delete"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
-                text="Delete (non-raw)"
+                text="Delete from Server (non-raw)"
                 icon="AllIcons.Vcs.Remove"/>
 
         <!-- OTHERS -->
