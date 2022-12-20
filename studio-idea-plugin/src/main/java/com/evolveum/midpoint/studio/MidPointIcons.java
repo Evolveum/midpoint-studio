@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio;
 
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.ui.IconManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -38,6 +37,6 @@ public class MidPointIcons {
     }
 
     private static @NotNull Icon load(@NotNull String path) {
-        return IconManager.getInstance().getIcon(path, MidPointIcons.class);
+        return IconLoader.getIcon(path, MidPointIcons.class);
     }
 }
