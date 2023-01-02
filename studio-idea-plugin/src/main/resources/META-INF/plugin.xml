@@ -150,6 +150,8 @@
         <fileBasedIndex implementation="com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl"/>
 
 <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.resource.ResourceEditorProvider"/>-->
+        
+        <customizableActionGroupProvider implementation="com.evolveum.midpoint.studio.action.ExpUiActionGroupProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
@@ -497,7 +499,7 @@
 
             </group>
 
-            <add-to-group group-id="MainToolbarRight" anchor="first"/>
+            <add-to-group group-id="RunToolbarWidgetCustomizableActionGroup" anchor="first"/>
         </group>
 
         <group id="MidPoint.Group.Menu.Editor">
