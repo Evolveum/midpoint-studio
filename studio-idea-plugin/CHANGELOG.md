@@ -2,10 +2,15 @@
 
 ## [Unreleased]
 ### Added
+- MID-8304 if midpoint namespace url is defined by user as external resource warning will be printed to midpoint console now
 
 ### Changed
+- MID-8411 improved naming and confirmation messages for delete operation
 
 ### Fixed
+- MID-8376 fix for code element not being marked and highlighted as groovy in sysconfig/globalPolicies
+- MID-8397 updated template for new projects (4.4 -> 4.6)
+- MID-8411 fixed non-existed MainToolbarRight group id for positioning in 2022.2 (that group exists in 2022.3)
 
 ## [4.6.0]
 ### Added
