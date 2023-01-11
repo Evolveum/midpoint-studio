@@ -16,7 +16,7 @@ public class AxiomQueryParser extends ANTLRParserAdaptor {
 
     @Override
     protected ParseTree parse(Parser parser, IElementType root) {
-        // todo implement
-        return null;
+        com.evolveum.axiom.lang.antlr.query.AxiomQueryParser qp = (com.evolveum.axiom.lang.antlr.query.AxiomQueryParser) parser;
+        return qp.firstComponent();
     }
 }

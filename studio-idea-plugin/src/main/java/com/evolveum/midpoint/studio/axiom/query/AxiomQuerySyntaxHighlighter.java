@@ -21,7 +21,12 @@ public class AxiomQuerySyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey STRING =
             createTextAttributesKey("AXIOM_QUERY_STRING", DefaultLanguageHighlighterColors.STRING);
 
+    public static final TextAttributesKey IDENTIFIER =
+            createTextAttributesKey("AXIOM_QUERY_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER);
+
     public static final TextAttributesKey[] STRING_KEYS = pack(STRING);
+
+    public static final TextAttributesKey[] IDENTIFIER_KEYS = pack(IDENTIFIER);
 
     @Override
     public @NotNull Lexer getHighlightingLexer() {
@@ -33,6 +38,10 @@ public class AxiomQuerySyntaxHighlighter extends SyntaxHighlighterBase {
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
         if (tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.STRING_DOUBLEQUOTE)) {
             return STRING_KEYS;
+        }
+
+        if (tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.IDENTIFIER)) {
+            return IDENTIFIER_KEYS;
         }
 
         return new TextAttributesKey[0];

@@ -25,7 +25,9 @@ public class AxiomQueryTokenTypes {
             AxiomQueryLanguage.INSTANCE,
             AxiomQueryLexer.LINE_COMMENT);
 
-    public static final TokenSet WHITESPACES = TokenSet.EMPTY;
+    public static final TokenSet WHITESPACES = PSIElementTypeFactory.createTokenSet(
+            AxiomQueryLanguage.INSTANCE,
+            AxiomQueryLexer.SEP);
 
     public static final TokenSet STRINGS =
             PSIElementTypeFactory.createTokenSet(

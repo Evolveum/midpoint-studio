@@ -5,7 +5,11 @@ import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTFactory;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.impl.source.tree.CompositeElement;
+import com.intellij.psi.impl.source.tree.LeafElement;
 import com.intellij.psi.tree.IElementType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,5 +45,15 @@ public class AxiomQueryASTFactory extends ASTFactory {
         PsiElementFactory factory = RULE_ELEMENT_TYPE_TO_PSI_FACTORY.get(tokenType);
 
         return factory != null ? factory.createElement(node) : new ASTWrapperPsiElement(node);
+    }
+
+    @Override
+    public @Nullable CompositeElement createComposite(@NotNull IElementType type) {
+        return super.createComposite(type);
+    }
+
+    @Override
+    public @Nullable LeafElement createLeaf(@NotNull IElementType type, @NotNull CharSequence text) {
+        return super.createLeaf(type, text);
     }
 }

@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.axiom.query;
 
-import com.evolveum.midpoint.studio.axiom.AxiomLanguage;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,6 +38,6 @@ public class AxiomQueryFileType extends LanguageFileType {
     @Nullable
     @Override
     public Icon getIcon() {
-        return AxiomLanguage.ICON;
+        return AxiomQueryLanguage.ICON;
     }
 }

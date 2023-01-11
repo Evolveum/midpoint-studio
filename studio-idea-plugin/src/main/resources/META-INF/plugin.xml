@@ -122,11 +122,17 @@
                 language="Axiom Query"
                 extensions="axq"/>
 
-        <syntaxHighlighter factoryClass="com.evolveum.midpoint.studio.axiom.query.AxiomQuerySyntaxHighlighterFactory"/>
+        <lang.syntaxHighlighterFactory language="Axiom" implementationClass="com.evolveum.midpoint.studio.axiom.AxiomSyntaxHighlighterFactory"/>
+
+        <lang.syntaxHighlighterFactory language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQuerySyntaxHighlighterFactory"/>
 
         <lang.parserDefinition language="Axiom" implementationClass="com.evolveum.midpoint.studio.axiom.AxiomParserDefinition"/>
 
         <lang.parserDefinition language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryParserDefinition"/>
+
+        <lang.ast.factory language="Axiom" implementationClass="com.evolveum.midpoint.studio.axiom.AxiomASTFactory"/>
+
+        <lang.ast.factory language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryASTFactory"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
