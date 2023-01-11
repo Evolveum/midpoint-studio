@@ -1,3 +1,4 @@
+import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -118,6 +119,11 @@ channel = publishChannel
 println("Plugin version: $pluginVersion")
 println("Publish channel: $channel")
 
+var customSandboxDir = System.getProperty("customSandboxDir")
+if (customSandboxDir == null || customSandboxDir.isBlank()) {
+    customSandboxDir = "${project.buildDir}/idea-sandbox"
+}
+
 kotlin {
     jvmToolchain(17)
 }
@@ -140,6 +146,8 @@ intellij {
         maven("https://nexus.evolveum.com/nexus/repository/jetbrains-plugins/")
         getRepositories()
     }
+
+    sandboxDir.set(customSandboxDir)
 }
 
 // Configure gradle-changelog-plugin plugin.
@@ -167,7 +175,7 @@ tasks {
 
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         pluginDescription.set(
-            File(projectDir, "README.md").readText().lines().run {
+            file("README.md").readText().lines().run {
                 val start = "<!-- Plugin description -->"
                 val end = "<!-- Plugin description end -->"
 
@@ -175,16 +183,18 @@ tasks {
                     throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
                 }
                 subList(indexOf(start) + 1, indexOf(end))
-            }.joinToString("\n").run { markdownToHTML(this) }
+            }.joinToString("\n").let { markdownToHTML(it) }
         )
 
-        val hasChangelog = changelog.has(properties("pluginVersion"))
-        val changelogContent = if (hasChangelog) {
-            changelog.get(properties("pluginVersion")).toHTML()
-        } else {
-            changelog.getUnreleased().toHTML()
-        }
-        changeNotes.set(changelogContent)
+        // Get the latest available change notes from the changelog file
+        changeNotes.set(provider {
+            with(changelog) {
+                renderItem(
+                    getOrNull(properties("pluginVersion")) ?: getLatest(),
+                    Changelog.OutputType.HTML,
+                )
+            }
+        })
     }
 
     runPluginVerifier {
