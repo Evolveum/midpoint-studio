@@ -115,7 +115,18 @@
                 language="Axiom"
                 extensions="axiom"/>
 
+        <fileType
+                name="Axiom Query File"
+                implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryFileType"
+                fieldName="INSTANCE"
+                language="Axiom Query"
+                extensions="axq"/>
+
+        <syntaxHighlighter factoryClass="com.evolveum.midpoint.studio.axiom.query.AxiomQuerySyntaxHighlighterFactory"/>
+
         <lang.parserDefinition language="Axiom" implementationClass="com.evolveum.midpoint.studio.axiom.AxiomParserDefinition"/>
+
+        <lang.parserDefinition language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryParserDefinition"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 

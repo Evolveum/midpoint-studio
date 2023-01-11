@@ -14,6 +14,7 @@ import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
 import com.evolveum.midpoint.studio.action.task.BackgroundableTask;
 import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
+import com.evolveum.midpoint.studio.axiom.query.AxiomQueryLanguage;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
@@ -261,7 +262,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private EditorTextField createQueryTextField(ComboQueryType.Type type) {
-        Language lang = type == ComboQueryType.Type.QUERY_XML ? XMLLanguage.INSTANCE : PlainTextLanguage.INSTANCE;
+        Language lang;
+        switch(type) {
+            case QUERY_XML:
+                lang = XMLLanguage.INSTANCE;
+                break;
+            case AXIOM:
+                lang = AxiomQueryLanguage.INSTANCE;
+                break;
+            case OID:
+            case NAME:
+            case NAME_OR_OID:
+            default:
+                lang = PlainTextLanguage.INSTANCE;
+        }
+
         EditorTextField editor = EditorTextFieldProvider.getInstance().getEditorField(lang, project, new ArrayList<>());
         editor.setOneLineMode(false);
 
