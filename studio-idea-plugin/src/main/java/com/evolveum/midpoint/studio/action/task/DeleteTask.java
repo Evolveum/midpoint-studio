@@ -12,9 +12,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public class DeleteTask extends ClientBackgroundableTask<TaskState> {
 
-    public static String TITLE = "Delete task";
+    public static String TITLE = "Delete from Server task";
 
-    public static final String NOTIFICATION_KEY = "Delete task";
+    public static final String NOTIFICATION_KEY = "Delete from Server task";
 
     private boolean raw;
 
@@ -35,7 +35,10 @@ public class DeleteTask extends ClientBackgroundableTask<TaskState> {
 
     @Override
     protected String getConfirmationMessage(int count, ConfirmationUnit unit) {
-        return "Do you want to delete " + count + " " + unit.getString(count) + "?";
+        String obj = ConfirmationUnit.FILES == unit ? "objects from " : "";
+        String raw = this.raw ? " (raw)" : " (non-raw)";
+
+        return String.format("Do you want to delete %s%s %s from server%s?", obj, count, unit.getString(count), raw);
     }
 
     @Override

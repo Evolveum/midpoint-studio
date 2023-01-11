@@ -5,7 +5,7 @@ package com.evolveum.midpoint.studio.action.transfer;
  */
 public class DeleteRawAction extends DeleteAction {
 
-    public static final String ACTION_NAME = "Delete (raw)";
+    public static final String ACTION_NAME = "Delete from Server (raw)";
 
     public DeleteRawAction() {
         super(ACTION_NAME);

@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio;
 
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.ui.IconManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -11,7 +10,7 @@ import javax.swing.*;
  */
 public class MidPointIcons {
 
-    public static final Icon ACTION_RANDOM_OID = IconLoader.findIcon("/icons/random_oid.png");
+    public static final @NotNull Icon RandomOid = load("icons/dice.svg");
 
     public static final @NotNull Icon Midpoint = load("icons/midpoint.svg");
 
@@ -29,7 +28,15 @@ public class MidPointIcons {
 
     public static final @NotNull Icon UploadTestValidate = load("icons/uploadTestValidate.svg");
 
+    public static class ExpUI {
+
+        public static final @NotNull Icon UploadExecute = load("icons/expui/uploadExecute.svg");
+
+
+        public static final @NotNull Icon UploadTest = load("icons/expui/uploadTest.svg");
+    }
+
     private static @NotNull Icon load(@NotNull String path) {
-        return IconManager.getInstance().getIcon(path, MidPointIcons.class);
+        return IconLoader.getIcon(path, MidPointIcons.class);
     }
 }

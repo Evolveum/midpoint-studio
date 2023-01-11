@@ -10,6 +10,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.SynchronizationReact
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
@@ -27,6 +28,11 @@ public class ResourceTypeAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+        Project project = element.getProject();
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return;
+        }
+
         PsiFile file = element.getContainingFile();
         if (!(file instanceof XmlFile)) {
             return;

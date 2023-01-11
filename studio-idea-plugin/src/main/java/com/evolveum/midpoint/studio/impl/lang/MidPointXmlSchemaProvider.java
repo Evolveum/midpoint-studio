@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
 import com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -19,7 +20,9 @@ public class MidPointXmlSchemaProvider extends XmlSchemaProvider {
 
     @Override
     public boolean isAvailable(@NotNull XmlFile file) {
-        return true;
+        Project project = file.getProject();
+
+        return MidPointUtils.hasMidPointFacet(project);
     }
 
     @Nullable

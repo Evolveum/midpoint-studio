@@ -1,0 +1,57 @@
+## main object: $expression (ExpressionType)
+
+$!expression.getDescription()
+
+$!utils.stripIndent($expression.getDocumentation())
+
+## todo describe expression evaluator
+##* {@link JAXBElement }{@code <}{@link GenerateExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link SequentialValueExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link AsIsExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link AssignmentTargetSearchExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ScriptExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link AssociationFromLinkExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ShadowDiscriminatorExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ReferenceSearchExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link FunctionExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ItemPathType }{@code >}
+##* {@link JAXBElement }{@code <}{@link SearchObjectExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ConstExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link ProportionalExpressionEvaluatorType }{@code >}
+##* {@link JAXBElement }{@code <}{@link Object }{@code >}
+##* {@link JAXBElement }{@code <}{@link Object }{@code >}
+
+#if ($expression.getExpressionEvaluator().isEmpty())
+    #break
+#end
+
+#if (!($expression.getExpressionEvaluator().get(0).getClass().getSimpleName() == "JAXBElement"))
+    #break
+#end
+
+#set($value = $expression.getExpressionEvaluator().get(0).getValue())
+
+[indent=0,subs="verbatim,attributes",role="primary"]
+.${value.getClass().getSimpleName().replaceFirst("ExpressionEvaluatorType", "").replaceFirst("RawType", "Value")}
+----
+$!value.getDescription()
+
+$!utils.stripIndent($value.getDocumentation())
+
+Relativity: $!value.getRelativityMode()
+Include null inputs: $!value.isIncludeNullInputs()
+----
+
+#if($value.getClass().getSimpleName() == "ScriptExpressionEvaluatorType")
+[source,groovy,indent=0,subs="verbatim,attributes",role="secondary"]
+.Groovy
+----
+$utils.stripIndent($value.getCode())
+----
+#else
+[source,xml,indent=0,subs="verbatim,attributes",role="secondary"]
+.XML
+----
+$utils.stripIndent($processor.serialize($value))
+----
+#end

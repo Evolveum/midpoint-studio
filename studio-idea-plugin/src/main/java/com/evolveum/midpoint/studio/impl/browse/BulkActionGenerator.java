@@ -215,7 +215,7 @@ public class BulkActionGenerator extends Generator {
                 }
             }
         } else {
-            if (StringUtils.isNotEmpty(options.getOriginalQuery())) {
+            if (StringUtils.isNotBlank(options.getOriginalQuery())) {
                 Element objectQuery = DOMUtil.createSubElement(extension, MEXT_OBJECT_QUERY_PREFIXED);
 
                 try {

@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.profiler;
 
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;
 import com.intellij.openapi.fileEditor.FileEditorProvider;
@@ -17,6 +18,10 @@ public class ProfilingEditorProvider implements FileEditorProvider, DumbAware {
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile file) {
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return false;
+        }
+
         return file.getExtension().equalsIgnoreCase("aaa");
     }
 

@@ -1,0 +1,16 @@
+## FUNCTION LIBRARIES
+
+#set($libraries=$processor.loadFunctionLibraries())
+
+#if(!$libraries.isEmpty())
+
+== Function Libraries
+
+#set($objects=$libraries)
+#parse("/template/objects-sumary-table.vm")
+
+#foreach($object in $libraries)
+#parse("/template/library.vm")
+#end
+
+#end

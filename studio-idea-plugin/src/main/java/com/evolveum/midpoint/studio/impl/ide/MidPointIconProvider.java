@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl.ide;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.studio.MidPointIcons;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ide.FileIconProvider;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -40,7 +41,7 @@ public class MidPointIconProvider implements DumbAware, FileIconProvider {
     @Nullable
     @Override
     public Icon getIcon(@NotNull VirtualFile file, int flags, @Nullable Project project) {
-        if (project == null) {
+        if (project == null || !MidPointUtils.hasMidPointFacet(project)) {
             return null;
         }
 

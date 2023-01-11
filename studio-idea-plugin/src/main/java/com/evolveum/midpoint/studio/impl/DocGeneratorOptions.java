@@ -141,7 +141,7 @@ public class DocGeneratorOptions {
         go.setExportFormat(opts.getExportFormat());
         go.setTemplate(opts.getTemplate());
         go.setExportOutput(opts.getExportOutput());
-        go.setSourceDirectory(opts.getSourceDirectory());
+        go.setSourceDirectory(List.of(opts.getSourceDirectory()));
         go.setInclude(opts.getInclude());
         go.setExclude(opts.getExclude());
 
@@ -151,7 +151,9 @@ public class DocGeneratorOptions {
     public static DocGeneratorOptions buildDocGenerateOptions(GenerateOptions opts) {
         DocGeneratorOptions dgo = new DocGeneratorOptions();
 
-        dgo.setSourceDirectory(opts.getSourceDirectory());
+        List<File> sources = opts.getSourceDirectory();
+        File source = sources != null && !sources.isEmpty() ? sources.get(0) : null;
+        dgo.setSourceDirectory(source);
         dgo.setInclude(opts.getInclude());
         dgo.setExclude(opts.getExclude());
         dgo.setExportFormat(opts.getExportFormat());

@@ -37,9 +37,9 @@ public enum SyncAction {
 
     DISABLE_USER("http://midpoint.evolveum.com/xml/ns/public/model/action-3#disableUser", true);
 
-    private String uri;
+    private final String uri;
 
-    private boolean deprecated;
+    private final boolean deprecated;
 
     SyncAction(String uri) {
         this(uri, false);

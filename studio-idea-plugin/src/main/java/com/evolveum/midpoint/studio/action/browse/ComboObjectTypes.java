@@ -7,7 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,12 +25,12 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
     private ObjectTypes selected = ObjectTypes.OBJECT;
 
     @Override
-    public void update(AnActionEvent e) {
+    public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
         String text = selected.getTypeQName().getLocalPart();
 
-        String value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+        String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
         getTemplatePresentation().setText(value);
         e.getPresentation().setText(value);
     }
@@ -81,18 +81,18 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
         }
 
         @Override
-        public void actionPerformed(AnActionEvent e) {
+        public void actionPerformed(@NotNull AnActionEvent e) {
             combo.setSelected(type);
             combo.update(e);
         }
 
         @Override
-        public void update(AnActionEvent e) {
+        public void update(@NotNull AnActionEvent e) {
             super.update(e);
 
             String text = type.getTypeQName().getLocalPart();
 
-            String value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+            String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
             getTemplatePresentation().setText(value);
             e.getPresentation().setText(value);
         }

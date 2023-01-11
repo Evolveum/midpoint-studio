@@ -61,6 +61,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
     private JTextField proxyUsername;
     private JLabel testConnection;
     private JPanel colorPanel;
+    private JCheckBox useHttp2;
 
     private Project project;
 
@@ -177,6 +178,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         environment.setUsername(username.getText());
         environment.setPassword(String.copyValueOf(password.getPassword()));
         environment.setIgnoreSslErrors(ignoreSslErrors.isSelected());
+        environment.setUseHttp2(useHttp2.isSelected());
 
         environment.setProxyServerHost(proxyHost.getText());
         String port = proxyPort.getToolTipText();
@@ -204,6 +206,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         username.setText(environment.getUsername());
         password.setText(environment.getPassword());
         ignoreSslErrors.setSelected(environment.isIgnoreSslErrors());
+        useHttp2.setSelected(environment.isUseHttp2());
 
         proxyHost.setText(environment.getProxyServerHost());
         proxyPort.setText(environment.getProxyServerPort() != null ? environment.getProxyServerPort().toString() : null);
@@ -217,7 +220,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
     @NotNull
     @Override
-    protected Action[] createActions() {
+    protected Action @NotNull [] createActions() {
         return new Action[]{
                 getCancelAction(),
                 getOKAction(),

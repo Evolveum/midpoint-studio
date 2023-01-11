@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.studio.impl.trace.MPTraceFileType;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;
@@ -27,6 +28,10 @@ public class TraceViewEditorProvider implements FileEditorProvider, DumbAware {
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile file) {
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return false;
+        }
+
         String ext = file.getExtension();
 
         if (MPTraceFileType.DEFAULT_EXTENSION.equalsIgnoreCase(ext)) {

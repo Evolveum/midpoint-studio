@@ -22,6 +22,8 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ItemPathCacheService"/>
 
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PanelTypeCacheService"/>
+
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
@@ -43,8 +45,6 @@
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
-
-        <!--        <errorHandler implementation="com.evolveum.midpoint.studio.impl.ide.error.JiraErrorReporter"/>-->
 
         <!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
 
@@ -157,6 +157,10 @@
         <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectOidIndex"/>-->
 
         <fileBasedIndex implementation="com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl"/>
+
+<!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.resource.ResourceEditorProvider"/>-->
+        
+        <customizableActionGroupProvider implementation="com.evolveum.midpoint.studio.action.ExpUiActionGroupProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
@@ -175,7 +179,7 @@
 
         <action id="MidPoint.Action.GenerateRandomOid"
                 class="com.evolveum.midpoint.studio.action.GenerateRandomOid"
-                icon="/icons/random_oid.png"
+                icon="com.evolveum.midpoint.studio.MidPointIcons.RandomOid"
                 text="Generate Random OID"
                 description="Generate Random OID"/>
 
@@ -191,6 +195,10 @@
         <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
                 text="Upload/Execute"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
+
+        <action id="MidPoint.ExpUI.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
+                text="Upload/Execute"
+                icon="com.evolveum.midpoint.studio.MidPointIcons.ExpUI.UploadExecute"/>
 
         <action id="MidPoint.Action.UploadExecuteStopOnError"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnErrorAction"
@@ -219,6 +227,11 @@
                 text="Upload/Test Resource"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadTest"/>
 
+        <action id="MidPoint.ExpUI.Action.UploadTestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResourceAction"
+                text="Upload/Test Resource"
+                icon="com.evolveum.midpoint.studio.MidPointIcons.ExpUI.UploadTest"/>
+
         <action id="MidPoint.Action.UploadTestValidateResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestValidateResourceAction"
                 text="Upload/Test/Validate Resource"
@@ -231,12 +244,12 @@
 
         <action id="MidPoint.Action.DeleteRaw"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
-                text="Delete (raw)"
+                text="Delete from Server (raw)"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.RemoveRaw"/>
 
         <action id="MidPoint.Action.Delete"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
-                text="Delete (non-raw)"
+                text="Delete from Server (non-raw)"
                 icon="AllIcons.Vcs.Remove"/>
 
         <!-- OTHERS -->
@@ -279,6 +292,9 @@
                 class="com.evolveum.midpoint.studio.action.DiffLocalAction"
                 text="Diff Local"
                 icon="AllIcons.Actions.Diff"/>
+
+        <action id="MidPoint.Action.ComboEnvironmentAction"
+                class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
 
         <!-- GROUPS -->
 
@@ -432,15 +448,7 @@
 
             <separator/>
 
-            <action id="MidPoint.Action.EnvironmentColor"
-                    class="com.evolveum.midpoint.studio.action.environment.EnvironmentColor"/>
-
-            <action id="MidPoint.Action.ComboEnvironmentAction"
-                    class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
-
-            <!--<action id="MidPoint.Action.ProfileAction" class="com.evolveum.midpoint.studio.action.ProfileEnvironment"
-                    text="Profile Environment"
-                    icon="AllIcons.Actions.Profile"/>-->
+            <reference ref="MidPoint.Action.ComboEnvironmentAction"/>
 
             <reference ref="MidPoint.Action.TestConnection"/>
 
@@ -450,10 +458,64 @@
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
         </group>
 
+        <group id="MidPoint.ExpUI.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
+
+            <reference ref="MidPoint.Action.TestAction"/>
+
+            <reference ref="MidPoint.ExpUI.Action.UploadExecute"/>
+            <reference ref="MidPoint.Action.UploadRecompute"/>
+            <reference ref="MidPoint.ExpUI.Action.UploadTestResource"/>
+
+            <separator/>
+
+            <reference ref="MidPoint.Action.Refresh"/>
+            <reference ref="MidPoint.Action.DiffRemote"/>
+
+            <separator/>
+
+            <reference ref="MidPoint.Action.ComboEnvironmentAction"/>
+
+            <group id="MidPoint.ExpUI.Toolbar.Others"
+                   text="Other Actions"
+                   popup="true"
+                   icon="AllIcons.Actions.More">
+
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+                <reference ref="MidPoint.Action.Recompute"/>
+                <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
+                <reference ref="MidPoint.Action.TestResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.Delete"/>
+                <reference ref="MidPoint.Action.DeleteRaw"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.DiffLocal"/>
+                <reference ref="MidPoint.Action.CleanupFile"/>
+                <reference ref="MidPoint.Action.VerifyAction"/>
+                <reference ref="MidPoint.Action.UpgradeTask"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.ExtractLocalizationPropertiesAction"/>
+                <reference ref="MidPoint.Group.Menu.ServerLog"/>
+                <reference ref="MidPoint.Action.GenerateRandomOid"/>
+                <reference ref="MidPoint.Action.TestConnection"/>
+                <reference ref="MidPoint.Action.Documentation"/>
+
+            </group>
+
+            <add-to-group group-id="RunToolbarWidgetCustomizableActionGroup" anchor="first"/>
+        </group>
+
         <group id="MidPoint.Group.Menu.Editor">
             <reference ref="MidPoint.Group.Menu"/>
             <add-to-group anchor="last" group-id="EditorPopupMenu"/>
         </group>
+
         <group id="MidPoint.Group.Menu.NonEditor">
             <reference ref="MidPoint.Group.Menu"/>
             <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>

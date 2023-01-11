@@ -42,15 +42,15 @@ public class MidPointClient {
 
     private static final String NOTIFICATION_KEY = "MidPoint Rest Client";
 
-    private Project project;
+    private final Project project;
 
-    private Environment environment;
+    private final Environment environment;
 
-    private boolean suppressNotifications;
+    private final boolean suppressNotifications;
 
-    private boolean suppressConsole;
+    private final boolean suppressConsole;
 
-    private Optional<Console> console;
+    private final Optional<Console> console;
 
     private Service client;
 
@@ -106,6 +106,7 @@ public class MidPointClient {
                     .proxyUsername(environment.getProxyUsername())
                     .proxyPassword(environment.getProxyPassword())
                     .ignoreSSLErrors(environment.isIgnoreSslErrors())
+                    .useHttp2(environment.isUseHttp2())
                     .responseTimeout(settings.getRestResponseTimeout());
 
             factory.messageListener((message) -> {
@@ -202,7 +203,7 @@ public class MidPointClient {
 
         SearchResultList<O> result = null;
         try {
-            result = (SearchResultList) client.list(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
+            result = client.list(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
 
             printToConsole("Search done");
         } catch (Exception ex) {
@@ -316,10 +317,14 @@ public class MidPointClient {
     }
 
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
+        return parseObject(xml, null);
+    }
+
+    public PrismObject<?> parseObject(String xml, ExpanderOptions opts) throws IOException, SchemaException {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
         Expander expander = new Expander(environment, cm, project);
 
-        String expanded = expander.expand(xml);
+        String expanded = expander.expand(xml, opts);
 
         PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()));
         return parser.parse();
@@ -354,7 +359,7 @@ public class MidPointClient {
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
-            InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
+            InputStream expanded = expander.expand(is, charset);
 
             PrismParser parser = createParser(expanded);
             return parser.parse();

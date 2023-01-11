@@ -1,0 +1,38 @@
+=== $!utils.getOrig($object.getName())
+
+$!object.getDescription()
+
+$!utils.stripIndent($object.getDocumentation())
+
+#set($includeRef = $object.getIncludeRef())
+#if ($includeRef)
+==== Include References
+#set($references=$includeRef)
+#parse("/template/references.vm")
+#end
+
+#set($iterationSpecification = $object.getIterationSpecification())
+#if ($iterationSpecification)
+==== Iterator Specification
+#set($headingLevel=5)
+#parse("/template/iterationSpecification.vm")
+#end
+
+#set($items = $object.getItem())
+#if ($items)
+==== Items
+
+#foreach($item in $items)
+[discrete]
+===== $item.ref
+##todo
+#end
+#end
+
+#set($mappings = $object.getMapping())
+#if ($mappings)
+==== Mappings
+#parse("/template/mappings.vm")
+#end
+
+##todo describe mappings, items, archetypes, includeRef, iterations

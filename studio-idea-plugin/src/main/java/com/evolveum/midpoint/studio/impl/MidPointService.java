@@ -9,13 +9,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
-import com.intellij.util.ModalityUiUtil;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,6 +31,8 @@ import java.util.Date;
         name = "MidPointManager", storages = @Storage(value = "midpoint.xml")
 )
 public class MidPointService extends ServiceBase<MidPointSettings> {
+
+    private static final Logger LOG = Logger.getInstance(MidPointService.class);
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
@@ -52,6 +53,11 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
 
     public void focusConsole() {
         ToolWindow tw = ToolWindowManager.getInstance(getProject()).getToolWindow(MidPointToolWindowFactory.WINDOW_ID);
+        if (tw == null) {
+            LOG.debug("Midpoint tool windows was not found");
+            return;
+        }
+
         tw.show(null);
 
         ContentManager cm = tw.getContentManager();

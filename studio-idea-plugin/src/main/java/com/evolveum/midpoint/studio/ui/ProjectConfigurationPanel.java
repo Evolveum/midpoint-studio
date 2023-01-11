@@ -2,7 +2,10 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.ProjectSettings;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.util.text.VersionComparatorUtil;
+import com.intellij.util.ui.JBUI;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -52,7 +55,20 @@ public class ProjectConfigurationPanel extends JPanel {
     }
 
     public boolean isModified() {
-        return midpointSettingsPanel.isModified() || environmentsPanel.isModified();
+        return midpointSettingsPanel.isModified() || environmentsPanel.isModified() ||
+                (getString(password1) != null || getString(password2) != null || getString(oldPassword) != null);
+    }
+
+    private String getString(JPasswordField passwordfield) {
+        if (passwordfield == null) {
+            return null;
+        }
+        char[] value = passwordfield.getPassword();
+        if (value == null || value.length == 0) {
+            return null;
+        }
+
+        return new String(value);
     }
 
     public ProjectSettings getSettings() {
@@ -72,6 +88,11 @@ public class ProjectConfigurationPanel extends JPanel {
     }
 
     private void createUIComponents() {
+        ApplicationInfo ai = ApplicationInfo.getInstance();
+        if (VersionComparatorUtil.compare(ai.getFullVersion(), "2022.1") >= 0) {
+            setBorder(JBUI.Borders.empty(20));
+        }
+
         midpointSettingsPanel = new MidPointSettingsPanel(settings.getMidPointSettings());
         environmentsPanel = new EnvironmentsPanel(null, settings.getMidPointSettings(), settings.getEnvironmentSettings());
     }

@@ -1,6 +1,50 @@
 # MidPoint Studio
 
-## 4.4.2
+## [Unreleased]
+### Added
+- MID-8304 if midpoint namespace url is defined by user as external resource warning will be printed to midpoint console now
+
+### Changed
+- MID-8411 improved naming and confirmation messages for delete operation
+
+### Fixed
+- MID-8376 fix for code element not being marked and highlighted as groovy in sysconfig/globalPolicies
+- MID-8397 updated template for new projects (4.4 -> 4.6)
+- MID-8411 fixed non-existed MainToolbarRight group id for positioning in 2022.2 (that group exists in 2022.3)
+
+## [4.6.0]
+### Added
+- Added support for 2022.3
+- MID-7672 autocomplete and highlighting for xml queries in browser panel
+- Added panelType contributor, autocomplete support (if java lib for admin-gui is on classpath as maven dependency)
+
+### Changed
+- Studio now uses MidPoint 4.6 libraries
+- Removed support for 2021.*
+
+### Fixed
+- MID-8076 fix for remote diff editor "User data is not supported"
+- Multiple occurrences of premature plugin components initialization
+- MID-8000 improved environment combobox selection, added colors
+- MID-8128 fixed task upgrade to activity (stax classpath issue)
+- MID-8045 password field handling in configuration editor
+
+## [4.5.1]
+### Added
+- Support for IC 2022.2
+
+### Changed
+- Removed support for IC 2020.3
+
+## [4.5.0]
+### Fixed
+- MID-7658 task upgrade action fix
+- MID-7691 console logging fixes, upload/test resource weren't logged correctly
+- MID-7695 namespace variants improvements
+- MID-7735 upload/recompute now recomputes all uploaded objects
+- MID-7810 encrypted credentials not expanded in diff now
+
+## [4.4.2]
 ### Changed
 - Changed format of local/remote diff (internal XML file representation)
 
@@ -10,7 +54,7 @@
 - MID-7695 namespace variants missing fix
 - MID-7691 console logs didn't correspond with task being executed (upload/test resource)
 
-## 4.4.1
+## [4.4.1]
 ### Added
 - Model authorizations were added to list of possibilities when completion dialog is shown
 - Added partial AXIOM query support
@@ -27,7 +71,7 @@
 - Fixed defaults file includes when generating documentation
 - Fixed file including for documentation generator on Windows
 
-## 4.4.0
+## [4.4.0]
 ### Added
 - Xml autocompletion
     - OIDs for existing objects in workspace
@@ -54,7 +98,7 @@
 - REST actions cancelling
 - UI Freezes
 
-## 4.3
+## [4.3]
 ### Added
 - Bulk refresh predefined objects
 - Import/export encrypted properties
@@ -68,7 +112,7 @@
 - Xml diff simplified UI, multiple diff strategies available
 - Updated documentation generator
 
-## 4.2
+## [4.2]
 ### Added
 - Browse/Upload with raw options for both operations
 - Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project

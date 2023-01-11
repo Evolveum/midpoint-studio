@@ -1,7 +1,7 @@
-import io.gitlab.arturbosch.detekt.Detekt
+import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -9,19 +9,13 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.6.10"
+    id("org.jetbrains.kotlin.jvm") version "1.7.21"
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.4.0"
+    id("org.jetbrains.intellij") version "1.11.0"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-    id("org.jetbrains.changelog") version "1.3.1"
-    // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
-    id("io.gitlab.arturbosch.detekt") version "1.17.1"
-    // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
-    id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
+    id("org.jetbrains.changelog") version "2.0.0"
     // git plugin - read more: https://github.com/palantir/gradle-git-version
     id("com.palantir.git-version") version "0.12.2"
-    // antlr plugin, todo probably not needed
-    id("antlr")
 }
 
 group = properties("pluginGroup")
@@ -29,46 +23,34 @@ version = properties("pluginVersion")
 
 val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 
-val pluginImplementation by configurations.creating {
-    extendsFrom(configurations.implementation.get())
-}
-
-val resolvableCompileOnly by configurations.creating {
-    extendsFrom(configurations.compileOnly.get())
-}
-
-sourceSets {
-    main {
-        compileClasspath = pluginImplementation + resolvableCompileOnly
-    }
-}
-
 // Configure project's dependencies
 dependencies {
-    antlr(libs.antlr) {
-        exclude("comibm.icu")
-    }
-    implementation("org.antlr:antlr4-intellij-adaptor:0.1")
-
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.17.1")
-
     implementation(projects.midpointClient)
-
-    implementation(libs.model.common) {
-        isTransitive = false
-    }
-    implementation(libs.model.api) {
-        isTransitive = false
-    }
-    implementation(libs.model.impl) {
-        isTransitive = false
-    }
-    implementation(libs.common) {
+    implementation(projects.midscribe) {
         exclude("org.springframework")
         exclude("net.sf.jasperreports")
         exclude("org.apache.cxf")
         exclude("org.slf4j")
         exclude("ch.qos.logback")
+        exclude("xerces")
+    }
+
+    implementation(libs.midpoint.model.common) {
+        isTransitive = false
+    }
+    implementation(libs.midpoint.model.api) {
+        isTransitive = false
+    }
+    implementation(libs.midpoint.model.impl) {
+        isTransitive = false
+    }
+    implementation(libs.midpoint.common) {
+        exclude("org.springframework")
+        exclude("net.sf.jasperreports")
+        exclude("org.apache.cxf")
+        exclude("org.slf4j")
+        exclude("ch.qos.logback")
+        exclude("xerces")
     }
     implementation(libs.security.api) {
         isTransitive = false
@@ -78,25 +60,17 @@ dependencies {
     }
     implementation(libs.midpoint.localization)
 
-    implementation(libs.midscribe.core) {
-        exclude("org.springframework")
-        exclude("net.sf.jasperreports")
-        exclude("org.apache.cxf", "cxf-rt-wsdl")
-
-        exclude("org.slf4j")
-        exclude("ch.qos.logback")
-    }
     implementation(libs.asciidoctorj.tabbed.code)
+    implementation(libs.velocity) {
+        exclude("org.slf4j")
+    }
 
-    implementation(libs.openkeepass)
+    implementation(libs.openkeepass) {
+        exclude("stax", "stax-api")
+    }
     implementation(libs.commons.lang)
-    // compile(libs.xchart)
-    implementation(libs.slf4j.log4j12)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
-
-    implementation(libs.stax)
-    implementation(libs.xml.apis)
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {
@@ -104,12 +78,18 @@ dependencies {
         isTransitive = false
     }
 
-    testImplementation(libs.jupiter.api)
-    testImplementation(libs.remote.robot)
-    testImplementation(libs.remote.fixtures)
-    testImplementation(libs.xmlunit.core)
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher") {
+        because("Only needed to run tests in a version of IntelliJ IDEA that bundles older versions")
+    }
+    testImplementation("org.junit.jupiter:junit-jupiter-engine")
 
-    testRuntimeOnly(libs.jupiter.engine)
+    testImplementation(testLibs.remote.robot)
+    testImplementation(testLibs.remote.fixtures)
+
+    testImplementation(testLibs.xmlunit.core)
+
+    testImplementation(testLibs.xalan)
 }
 
 var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
@@ -120,14 +100,14 @@ var buildNumber = properties("buildNumber")
 
 if (publishChannel.isBlank() || publishChannel == "null") {
     if (gitLocalBranch.isEmpty() || gitLocalBranch == "null") {
-        gitLocalBranch = versionDetails()?.branchName
+        gitLocalBranch = versionDetails().branchName
     }
 
     publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
 }
 
 var channelSuffix = ""
-if (!publishChannel.isBlank() && publishChannel.toLowerCase() != "default") {
+if (publishChannel.isNotBlank() && publishChannel.toLowerCase() != "default") {
     channelSuffix = "-$publishChannel-$buildNumber"
 }
 
@@ -138,6 +118,15 @@ channel = publishChannel
 
 println("Plugin version: $pluginVersion")
 println("Publish channel: $channel")
+
+var customSandboxDir = System.getProperty("customSandboxDir")
+if (customSandboxDir == null || customSandboxDir.isBlank()) {
+    customSandboxDir = "${project.buildDir}/idea-sandbox"
+}
+
+kotlin {
+    jvmToolchain(17)
+}
 
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
@@ -157,6 +146,8 @@ intellij {
         maven("https://nexus.evolveum.com/nexus/repository/jetbrains-plugins/")
         getRepositories()
     }
+
+    sandboxDir.set(customSandboxDir)
 }
 
 // Configure gradle-changelog-plugin plugin.
@@ -164,20 +155,8 @@ intellij {
 changelog {
     version.set(properties("pluginVersion"))
     groups.set(emptyList())
-    headerParserRegex.set("\\d+(\\.\\d+){1,2}") // this can be removed when we'll start using semantic versioning (e.g. 4.4.0)
-}
-
-// Configure detekt plugin.
-// Read more: https://detekt.github.io/detekt/kotlindsl.html
-detekt {
-    config = files("./detekt-config.yml")
-    buildUponDefaultConfig = true
-
-    reports {
-        html.enabled = false
-        xml.enabled = false
-        txt.enabled = false
-    }
+    // this supports old versions like x.y as well as semantic version x.y.z
+    headerParserRegex.set("""(^(0|[1-9]\d*)(\.(0|[1-9]\d*)){1,2})""".toRegex())
 }
 
 tasks {
@@ -189,10 +168,6 @@ tasks {
         kotlinOptions.jvmTarget = properties("javaVersion")
     }
 
-    withType<Detekt> {
-        jvmTarget = properties("javaVersion")
-    }
-
     patchPluginXml {
         version.set(pluginVersion)
         sinceBuild.set(properties("pluginSinceBuild"))
@@ -200,7 +175,7 @@ tasks {
 
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         pluginDescription.set(
-            File(projectDir, "README.md").readText().lines().run {
+            file("README.md").readText().lines().run {
                 val start = "<!-- Plugin description -->"
                 val end = "<!-- Plugin description end -->"
 
@@ -208,19 +183,29 @@ tasks {
                     throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
                 }
                 subList(indexOf(start) + 1, indexOf(end))
-            }.joinToString("\n").run { markdownToHTML(this) }
+            }.joinToString("\n").let { markdownToHTML(it) }
         )
 
         // Get the latest available change notes from the changelog file
-        changeNotes.set(provider { changelog.getLatest().toHTML() })
+        changeNotes.set(provider {
+            with(changelog) {
+                renderItem(
+                    getOrNull(properties("pluginVersion")) ?: getUnreleased(),
+                    Changelog.OutputType.HTML,
+                )
+            }
+        })
     }
 
     runPluginVerifier {
         ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
-        failureLevel.set(listOf(
-            RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-            RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
-            RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN))
+        failureLevel.set(
+            listOf(
+                RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+                RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
+                RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN
+            )
+        )
     }
 
     publishPlugin {
@@ -240,8 +225,13 @@ tasks {
         jvmArgs("--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED")
     }
 
+    // Configure UI tests plugin
+    // Read more: https://github.com/JetBrains/intellij-ui-test-robot
     runIdeForUiTests {
-        systemProperty("robot-server.port", "8082") // default port 8580
+        systemProperty("robot-server.port", "8082")
+        systemProperty("ide.mac.message.dialogs.as.sheets", "false")
+        systemProperty("jb.privacy.policy.text", "<!--999.999-->")
+        systemProperty("jb.consents.confirmation.enabled", "false")
     }
 
     downloadRobotServerPlugin {

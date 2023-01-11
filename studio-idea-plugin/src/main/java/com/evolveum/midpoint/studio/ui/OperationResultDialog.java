@@ -105,7 +105,7 @@ public class OperationResultDialog extends DialogWrapper {
         return new ColoredTableCellRenderer() {
 
             @Override
-            protected void customizeCellRenderer(JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
+            protected void customizeCellRenderer(@NotNull JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
                 append(value != null ? value.toString() : "");
 
                 if (!(value instanceof OperationResultStatus)) {

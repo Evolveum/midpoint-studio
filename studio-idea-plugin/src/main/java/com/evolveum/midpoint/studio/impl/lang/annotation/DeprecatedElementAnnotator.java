@@ -1,9 +1,11 @@
 package com.evolveum.midpoint.studio.impl.lang.annotation;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
@@ -21,6 +23,11 @@ public class DeprecatedElementAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+        Project project = element.getProject();
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return;
+        }
+
         if (element == null || !element.isValid()) {
             return;
         }

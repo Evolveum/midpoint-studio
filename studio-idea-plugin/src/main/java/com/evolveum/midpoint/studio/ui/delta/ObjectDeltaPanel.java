@@ -23,6 +23,7 @@ import com.intellij.diff.requests.DiffRequest;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -42,6 +43,8 @@ import java.util.List;
  */
 public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
+    private static final Logger LOG = Logger.getInstance(ObjectDeltaPanel.class);
+
     public enum DiffStrategy {
 
         LITERAL("Literal", ParameterizedEquivalenceStrategy.LITERAL),
@@ -54,9 +57,9 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
         REAL_VALUE("Real Value", ParameterizedEquivalenceStrategy.REAL_VALUE);
 
-        private String label;
+        private final String label;
 
-        private ParameterizedEquivalenceStrategy strategy;
+        private final ParameterizedEquivalenceStrategy strategy;
 
         DiffStrategy(String label, ParameterizedEquivalenceStrategy strategy) {
             this.label = label;
@@ -136,8 +139,21 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
                     DiffObjectType first = diff.getFirstObject();
                     DiffObjectType second = diff.getSecondObject();
 
-                    PrismObject local = first.getObject().asPrismObject();
-                    PrismObject remote = second.getObject().asPrismObject();
+                    if (first == null || first.getObject() == null) {
+                        LOG.debug("First object not defined in DiffObjectType");
+                        return;
+                    }
+
+                    if (second == null) {
+                        LOG.debug("Second object not defined in DiffObjectType");
+                        return;
+                    }
+
+                    ObjectType firstObject = first.getObject();
+                    ObjectType secondObject = second.getObject();
+
+                    PrismObject local = firstObject.asPrismObject();
+                    PrismObject remote = secondObject != null ? secondObject.asPrismObject() : null;
 
                     PrismObject o1 = local;
                     PrismObject o2 = local.clone();
