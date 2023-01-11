@@ -52,7 +52,9 @@
         <!--<xmlStructureViewBuilderProvider
                 implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>-->
 
-        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.MidPointMultiHostInjector"/>
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.GroovyMultiHostInjector"/>
+
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.AxiomMultiHostInjector"/>
 
         <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
 

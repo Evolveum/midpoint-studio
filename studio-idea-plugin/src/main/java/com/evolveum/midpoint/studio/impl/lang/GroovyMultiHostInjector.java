@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MidPointMultiHostInjector implements MultiHostInjector {
+public class GroovyMultiHostInjector implements MultiHostInjector {
 
     @Override
     public void getLanguagesToInject(@NotNull MultiHostRegistrar registrar, @NotNull PsiElement context) {

@@ -38,7 +38,11 @@ public class AxiomQueryTokenTypes {
                     AxiomQueryLexer.STRING_MULTILINE,
                     AxiomQueryLexer.STRING_BACKTICK_TRIQOUTE);
 
-    public static final TokenSet KEYWORDS = TokenSet.EMPTY;
+    public static final TokenSet KEYWORDS = PSIElementTypeFactory.createTokenSet(
+            AxiomQueryLanguage.INSTANCE,
+            AxiomQueryLexer.AND_KEYWORD,
+            AxiomQueryLexer.OR_KEYWORD,
+            AxiomQueryLexer.NOT_KEYWORD);
 
     public static RuleIElementType getRuleElementType(@MagicConstant(valuesFromClass = AxiomQueryParser.class) int ruleIndex) {
         return RULE_ELEMENT_TYPES.get(ruleIndex);
