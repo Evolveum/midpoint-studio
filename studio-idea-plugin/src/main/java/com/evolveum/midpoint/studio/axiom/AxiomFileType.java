@@ -20,19 +20,19 @@ public class AxiomFileType extends LanguageFileType {
     @NotNull
     @Override
     public String getName() {
-        return "Simple File";
+        return "Axiom File";
     }
 
     @NotNull
     @Override
     public String getDescription() {
-        return "Simple language file";
+        return "Axiom language file";
     }
 
     @NotNull
     @Override
     public String getDefaultExtension() {
-        return "simple";
+        return "axiom";
     }
 
     @Nullable

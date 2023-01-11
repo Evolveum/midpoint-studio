@@ -26,26 +26,16 @@ public class AxiomTokenTypes {
             AxiomLanguage.INSTANCE,
             AxiomLexer.LINE_COMMENT);
 
-//    public static final TokenSet WHITESPACES = PSIElementTypeFactory.createTokenSet(
-//            AxiomLanguage.INSTANCE,
-//            AxiomLexer.);
-//
-//    public static final TokenSet KEYWORDS = PSIElementTypeFactory.createTokenSet(
-//            AxiomLanguage.INSTANCE,
-//            AxiomLexer.LEXER,
-//            AxiomLexer.PROTECTED,
-//            AxiomLexer.IMPORT,
-//            AxiomLexer.CATCH,
-//            AxiomLexer.PRIVATE,
-//            AxiomLexer.FRAGMENT,
-//            AxiomLexer.PUBLIC,
-//            AxiomLexer.MODE,
-//            AxiomLexer.FINALLY,
-//            AxiomLexer.RETURNS,
-//            AxiomLexer.THROWS,
-//            AxiomLexer.GRAMMAR,
-//            AxiomLexer.LOCALS,
-//            AxiomLexer.PARSER);
+    public static final TokenSet WHITESPACES = TokenSet.EMPTY;
+
+    public static final TokenSet STRINGS =
+            PSIElementTypeFactory.createTokenSet(
+                    AxiomLanguage.INSTANCE,
+                    AxiomLexer.STRING_SINGLEQUOTE,
+                    AxiomLexer.STRING_DOUBLEQUOTE,
+                    AxiomLexer.STRING_MULTILINE_START);
+
+    public static final TokenSet KEYWORDS = TokenSet.EMPTY;
 
     public static RuleIElementType getRuleElementType(@MagicConstant(valuesFromClass = AxiomParser.class) int ruleIndex) {
         return RULE_ELEMENT_TYPES.get(ruleIndex);

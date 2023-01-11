@@ -25,6 +25,8 @@ val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDe
 
 // Configure project's dependencies
 dependencies {
+    implementation("org.antlr:antlr4-intellij-adaptor:0.1")
+
     implementation(projects.midpointClient)
     implementation(projects.midscribe) {
         exclude("org.springframework")

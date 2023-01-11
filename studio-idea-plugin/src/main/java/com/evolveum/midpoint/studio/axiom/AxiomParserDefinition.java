@@ -23,11 +23,7 @@ public class AxiomParserDefinition implements ParserDefinition {
     public static final IFileElementType FILE = new IFileElementType(AxiomLanguage.INSTANCE);
 
     public AxiomParserDefinition() {
-        PSIElementTypeFactory.defineLanguageIElementTypes(
-                AxiomLanguage.INSTANCE,
-                AxiomLexer.tokenNames,
-                AxiomParser.ruleNames
-        );
+        PSIElementTypeFactory.defineLanguageIElementTypes(AxiomLanguage.INSTANCE, AxiomParser.tokenNames, AxiomParser.ruleNames);
     }
 
     @NotNull
@@ -39,45 +35,42 @@ public class AxiomParserDefinition implements ParserDefinition {
 
     @NotNull
     public PsiParser createParser(final Project project) {
-        return new ANTLRv4GrammarParser();
+        return new com.evolveum.midpoint.studio.axiom.AxiomParser();
     }
 
     @NotNull
     public TokenSet getWhitespaceTokens() {
-        return ANTLRv4TokenTypes.WHITESPACES;
+        return AxiomTokenTypes.WHITESPACES;
     }
 
     @NotNull
     public TokenSet getCommentTokens() {
-        return ANTLRv4TokenTypes.COMMENTS;
+        return AxiomTokenTypes.COMMENTS;
     }
 
     @NotNull
     public TokenSet getStringLiteralElements() {
-        return TokenSet.EMPTY;
+        return AxiomTokenTypes.STRINGS;
     }
 
     @Override
-    public IFileElementType getFileNodeType() {
+    public @NotNull IFileElementType getFileNodeType() {
         return FILE;
     }
 
+    @NotNull
     @Override
-    public PsiFile createFile(FileViewProvider viewProvider) {
-        return new ANTLRv4FileRoot(viewProvider);
+    public PsiFile createFile(@NotNull FileViewProvider viewProvider) {
+        return new AxiomFileRoot(viewProvider);
     }
 
-    public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode left, ASTNode right) {
+    @Override
+    public @NotNull SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode left, ASTNode right) {
         return SpaceRequirements.MAY;
     }
 
-    /**
-     * Convert from internal parse node (AST they call it) to final PSI node. This
-     * converts only internal rule nodes apparently, not leaf nodes. Leaves
-     * are just tokens I guess.
-     */
     @NotNull
     public PsiElement createElement(ASTNode node) {
-        return ANTLRv4ASTFactory.createInternalParseTreeNode(node);
+        return AxiomASTFactory.createInternalParseTreeNode(node);
     }
 }

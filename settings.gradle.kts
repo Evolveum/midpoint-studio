@@ -30,6 +30,7 @@ dependencyResolutionManagement {
             version("asciidoctorj-tabbed-code", "0.3")
             version("velocity", "2.3")
             version("jruby", "9.2.19.0")
+            version("antlr", "4.9.3")
 
             library("asciidoctorj", "org.asciidoctor", "asciidoctorj").versionRef("asciidoctorj")
             library("asciidoctorj-pdf", "org.asciidoctor", "asciidoctorj-pdf").versionRef("asciidoctorj-pdf")
@@ -58,6 +59,7 @@ dependencyResolutionManagement {
             library("stax", "stax", "stax").versionRef("stax")
             library("slf4j-api", "org.slf4j", "slf4j-api").versionRef("slf4j")
             library("velocity", "org.apache.velocity", "velocity-engine-core").versionRef("velocity")
+            library("antlr", "org.antlr", "antlr4").versionRef("antlr")
         }
         create("testLibs") {
             version("jupiter", "5.8.1")
