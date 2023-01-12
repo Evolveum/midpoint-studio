@@ -15,46 +15,47 @@ import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAtt
  */
 public class AxiomQuerySyntaxHighlighter extends SyntaxHighlighterBase {
 
-    public static final TextAttributesKey KEYWORD =
-            createTextAttributesKey("AXIOM_QUERY_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD);
+    public static final TextAttributesKey[] KEYWORD_KEYS =
+            pack(createTextAttributesKey("AXIOM_QUERY_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD));
 
-    public static final TextAttributesKey STRING =
-            createTextAttributesKey("AXIOM_QUERY_STRING", DefaultLanguageHighlighterColors.STRING);
+    public static final TextAttributesKey[] STRING_KEYS =
+            pack(createTextAttributesKey("AXIOM_QUERY_STRING", DefaultLanguageHighlighterColors.STRING));
 
-    public static final TextAttributesKey IDENTIFIER =
-            createTextAttributesKey("AXIOM_QUERY_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER);
+    public static final TextAttributesKey[] NUMBER_KEYS =
+            pack(createTextAttributesKey("AXIOM_QUERY_NUMBER", DefaultLanguageHighlighterColors.NUMBER));
 
-    public static final TextAttributesKey LINE_COMMENT =
-            createTextAttributesKey("AXIOM_QUERY_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
+    public static final TextAttributesKey[] IDENTIFIER_KEYS =
+            pack(createTextAttributesKey("AXIOM_QUERY_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER));
 
-    public static final TextAttributesKey PARENTHESES =
-            createTextAttributesKey("AXIOM_QUERY_PARENTHESES", DefaultLanguageHighlighterColors.PARENTHESES);
-
-    public static final TextAttributesKey LOCAL_VARIABLE =
-            createTextAttributesKey("AXIOM_QUERY_LOCAL_VARIABLE", DefaultLanguageHighlighterColors.LOCAL_VARIABLE);
-
-    public static final TextAttributesKey[] STRING_KEYS = pack(STRING);
-
-    public static final TextAttributesKey[] IDENTIFIER_KEYS = pack(IDENTIFIER);
-
-    public static final TextAttributesKey[] COMMENT_KEYS = pack(LINE_COMMENT);
-
-    public static final TextAttributesKey[] KEYWORD_KEYS = pack(KEYWORD);
+    public static final TextAttributesKey[] COMMENT_KEYS =
+            pack(createTextAttributesKey("AXIOM_QUERY_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT));
 
     @Override
     public @NotNull Lexer getHighlightingLexer() {
-        AxiomQueryLexer lexer = new AxiomQueryLexer(null);
-        return new AxiomQueryLexerAdaptor(lexer);
+        return AxiomQueryLexerAdaptor.newInstance();
     }
 
     @Override
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
-        if (AxiomQueryTokenTypes.KEYWORDS.contains(tokenType)) {
+        if (AxiomQueryTokenTypes.KEYWORDS.contains(tokenType)
+                || tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.T__0)   // null
+                || tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.T__1)   // true
+                || tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.T__2)   // false
+        ) {
             return KEYWORD_KEYS;
         }
 
-        if (tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.STRING_DOUBLEQUOTE)) {
+        if (tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.STRING_SINGLEQUOTE)
+                || tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.STRING_DOUBLEQUOTE)
+                || tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.STRING_MULTILINE)
+                || tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.STRING_BACKTICK)
+                || tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.STRING_BACKTICK_TRIQOUTE)) {
             return STRING_KEYS;
+        }
+
+        if (tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.INT)
+                || tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.FLOAT)) {
+            return NUMBER_KEYS;
         }
 
         if (tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.IDENTIFIER)) {

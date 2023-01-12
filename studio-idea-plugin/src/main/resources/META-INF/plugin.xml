@@ -136,6 +136,10 @@
 
         <lang.ast.factory language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryASTFactory"/>
 
+        <lang.commenter language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryCommenter"/>
+
+        <lang.braceMatcher language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryBraceMatcher"/>
+
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>

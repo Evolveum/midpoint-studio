@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.axiom.query;
 
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
@@ -29,8 +28,7 @@ public class AxiomQueryParserDefinition implements ParserDefinition {
     @NotNull
     @Override
     public Lexer createLexer(Project project) {
-        AxiomQueryLexer lexer = new AxiomQueryLexer(null);
-        return new AxiomQueryLexerAdaptor(lexer);
+        return AxiomQueryLexerAdaptor.newInstance();
     }
 
     @NotNull

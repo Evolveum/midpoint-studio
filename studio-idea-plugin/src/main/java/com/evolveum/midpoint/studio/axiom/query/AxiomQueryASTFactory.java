@@ -1,13 +1,20 @@
 package com.evolveum.midpoint.studio.axiom.query;
 
+import com.evolveum.axiom.lang.antlr.AxiomParser;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
+import com.evolveum.midpoint.studio.axiom.AxiomTokenTypes;
 import com.evolveum.midpoint.studio.axiom.PsiElementFactory;
+import com.evolveum.midpoint.studio.axiom.query.psi.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTFactory;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.CompositeElement;
+import com.intellij.psi.impl.source.tree.FileElement;
 import com.intellij.psi.impl.source.tree.LeafElement;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.tree.IFileElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,8 +31,8 @@ public class AxiomQueryASTFactory extends ASTFactory {
     static {
         // later auto gen with tokens from some spec in grammar?
 
-//        RULE_ELEMENT_TYPE_TO_PSI_FACTORY.put(
-//                AxiomTokenTypes.RULE_ELEMENT_TYPES.get(com.evolveum.axiom.lang.antlr.AxiomParser.RULE_rules), RulesNode.Factory.INSTANCE);
+        RULE_ELEMENT_TYPE_TO_PSI_FACTORY.put(
+                AxiomTokenTypes.RULE_ELEMENT_TYPES.get(AxiomParser.RULE_path), PathNode.Factory.INSTANCE);
 //        RULE_ELEMENT_TYPE_TO_PSI_FACTORY.put(
 //                AxiomTokenTypes.RULE_ELEMENT_TYPES.get(com.evolveum.axiom.lang.antlr.AxiomParser.RULE_parserRuleSpec), ParserRuleSpecNode.Factory.INSTANCE);
 //        RULE_ELEMENT_TYPE_TO_PSI_FACTORY.put(
@@ -49,11 +56,31 @@ public class AxiomQueryASTFactory extends ASTFactory {
 
     @Override
     public @Nullable CompositeElement createComposite(@NotNull IElementType type) {
-        return super.createComposite(type);
+        if (type instanceof IFileElementType) {
+            return new FileElement(type, null);
+        }
+
+        if (type == AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParser.RULE_root)) {
+            return new AQRoot();
+        }
+
+        if (type == AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParser.RULE_path)) {
+            return new AQPath();
+        }
+
+        return new CompositeElement(type);
     }
 
     @Override
     public @Nullable LeafElement createLeaf(@NotNull IElementType type, @NotNull CharSequence text) {
-        return super.createLeaf(type, text);
+        if (type == AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParser.RULE_filterName)) {
+            return new AQFilterName(text);
+        }
+
+        if (type == AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParser.RULE_filterName)) {
+            return new AQFilterAlias(text);
+        }
+
+        return new LeafPsiElement(type, text);
     }
 }

@@ -1,9 +1,14 @@
 package com.evolveum.midpoint.studio.axiom.query;
 
+import com.intellij.lang.ASTNode;
+import com.intellij.lang.PsiBuilder;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.tree.IFileElementType;
+import org.antlr.intellij.adaptor.parser.ANTLRParseTreeToPSIConverter;
 import org.antlr.intellij.adaptor.parser.ANTLRParserAdaptor;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -17,6 +22,16 @@ public class AxiomQueryParser extends ANTLRParserAdaptor {
     @Override
     protected ParseTree parse(Parser parser, IElementType root) {
         com.evolveum.axiom.lang.antlr.query.AxiomQueryParser qp = (com.evolveum.axiom.lang.antlr.query.AxiomQueryParser) parser;
-        return qp.firstComponent();
+
+        if (root instanceof IFileElementType) {
+            return qp.root();
+        }
+
+        throw new UnsupportedOperationException(String.format("cannot start parsing using root element %s", root));
+    }
+
+    @Override
+    protected ANTLRParseTreeToPSIConverter createListener(Parser parser, IElementType root, PsiBuilder builder) {
+        return super.createListener(parser, root, builder);
     }
 }

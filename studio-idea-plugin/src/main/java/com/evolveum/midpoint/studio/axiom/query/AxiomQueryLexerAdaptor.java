@@ -8,7 +8,13 @@ import org.antlr.intellij.adaptor.lexer.ANTLRLexerAdaptor;
  */
 public class AxiomQueryLexerAdaptor extends ANTLRLexerAdaptor {
 
-    public AxiomQueryLexerAdaptor(AxiomQueryLexer lexer) {
+    private AxiomQueryLexerAdaptor(AxiomQueryLexer lexer) {
         super(AxiomQueryLanguage.INSTANCE, lexer);
+    }
+
+    public static AxiomQueryLexerAdaptor newInstance() {
+        AxiomQueryLexer lexer = new AxiomQueryLexer(null);
+
+        return new AxiomQueryLexerAdaptor(lexer);
     }
 }
