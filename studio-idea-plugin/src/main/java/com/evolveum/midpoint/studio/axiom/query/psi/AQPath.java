@@ -12,4 +12,9 @@ public class AQPath extends CompositePsiElement {
     public AQPath() {
         super(AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParser.RULE_path));
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ":" + getName();
+    }
 }

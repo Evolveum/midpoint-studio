@@ -13,4 +13,9 @@ public class AQFilterAlias extends LeafPsiElement {
     public AQFilterAlias(@NotNull CharSequence text) {
         super(AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParser.RULE_filterNameAlias), text);
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ":" + getName();
+    }
 }

@@ -68,6 +68,14 @@ public class AxiomQueryASTFactory extends ASTFactory {
             return new AQPath();
         }
 
+        if (type == AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParser.RULE_filter)) {
+            return new AQFilter();
+        }
+
+        if (type == AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParser.RULE_itemFilter)) {
+            return new AQItemFilter();
+        }
+
         return new CompositeElement(type);
     }
 

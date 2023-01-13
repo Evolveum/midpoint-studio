@@ -12,4 +12,9 @@ public class AQRoot extends CompositePsiElement {
     public AQRoot() {
         super(AxiomQueryTokenTypes.RULE_ELEMENT_TYPES.get(AxiomQueryParser.RULE_root));
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ":" + getName();
+    }
 }
