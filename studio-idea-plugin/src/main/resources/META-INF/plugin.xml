@@ -110,35 +110,39 @@
                 language=""
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
 
-        <fileType
-                name="Axiom File"
-                implementationClass="com.evolveum.midpoint.studio.axiom.AxiomFileType"
-                fieldName="INSTANCE"
-                language="Axiom"
-                extensions="axiom"/>
+        <!-- Axiom Query language support -->
 
-        <fileType
-                name="Axiom Query File"
-                implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryFileType"
-                fieldName="INSTANCE"
-                language="Axiom Query"
-                extensions="axq"/>
+        <fileType language="Axiom Query"
+                  implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryFileType"
+                  name="Axiom Query File" fieldName="INSTANCE" extensions="axq"/>
+        <lang.syntaxHighlighterFactory language="Axiom Query"
+                                       implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQuerySyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="Axiom Query"
+                               implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryParserDefinition"/>
+        <lang.ast.factory language="Axiom Query"
+                          implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryASTFactory"/>
+        <lang.braceMatcher language="Axiom Query"
+                           implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryBraceMatcher"/>
+        <lang.commenter language="Axiom Query"
+                        implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryCommenter"/>
+        <completion.contributor language="Axiom Query"
+                                implementationClass="com.evolveum.midpoint.studio.axiom.query.lang.AxiomQueryCompletionContributor"/>
 
-        <lang.syntaxHighlighterFactory language="Axiom" implementationClass="com.evolveum.midpoint.studio.axiom.AxiomSyntaxHighlighterFactory"/>
+        <!-- Axiom Query language support end -->
 
-        <lang.syntaxHighlighterFactory language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQuerySyntaxHighlighterFactory"/>
+        <!-- Axiom language support -->
 
-        <lang.parserDefinition language="Axiom" implementationClass="com.evolveum.midpoint.studio.axiom.AxiomParserDefinition"/>
+        <fileType language="Axiom"
+                  implementationClass="com.evolveum.midpoint.studio.axiom.AxiomFileType"
+                  name="Axiom File" fieldName="INSTANCE" extensions="axiom"/>
+        <lang.syntaxHighlighterFactory language="Axiom"
+                                       implementationClass="com.evolveum.midpoint.studio.axiom.AxiomSyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="Axiom"
+                               implementationClass="com.evolveum.midpoint.studio.axiom.AxiomParserDefinition"/>
+        <lang.ast.factory language="Axiom"
+                          implementationClass="com.evolveum.midpoint.studio.axiom.AxiomASTFactory"/>
 
-        <lang.parserDefinition language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryParserDefinition"/>
-
-        <lang.ast.factory language="Axiom" implementationClass="com.evolveum.midpoint.studio.axiom.AxiomASTFactory"/>
-
-        <lang.ast.factory language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryASTFactory"/>
-
-        <lang.commenter language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryCommenter"/>
-
-        <lang.braceMatcher language="Axiom Query" implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryBraceMatcher"/>
+        <!-- Axiom language support end -->
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
@@ -181,8 +185,8 @@
 
         <fileBasedIndex implementation="com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl"/>
 
-<!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.resource.ResourceEditorProvider"/>-->
-        
+        <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.resource.ResourceEditorProvider"/>-->
+
         <customizableActionGroupProvider implementation="com.evolveum.midpoint.studio.action.ExpUiActionGroupProvider"/>
     </extensions>
 
@@ -211,15 +215,18 @@
                 text="Recompute"
                 icon="AllIcons.Actions.Compile"/>
 
-        <action id="MidPoint.Action.DownloadSelectedTypes" class="com.evolveum.midpoint.studio.action.transfer.DownloadSelectedTypes"
+        <action id="MidPoint.Action.DownloadSelectedTypes"
+                class="com.evolveum.midpoint.studio.action.transfer.DownloadSelectedTypes"
                 text="Download Selected Types"
                 icon="AllIcons.Actions.Download"/>
 
-        <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
+        <action id="MidPoint.Action.UploadExecute"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
                 text="Upload/Execute"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
 
-        <action id="MidPoint.ExpUI.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
+        <action id="MidPoint.ExpUI.Action.UploadExecute"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
                 text="Upload/Execute"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.ExpUI.UploadExecute"/>
 
