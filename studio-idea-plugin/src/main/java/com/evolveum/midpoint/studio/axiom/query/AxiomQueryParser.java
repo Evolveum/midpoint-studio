@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.axiom.query;
 
-import com.intellij.lang.ASTNode;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.IFileElementType;
@@ -8,7 +7,6 @@ import org.antlr.intellij.adaptor.parser.ANTLRParseTreeToPSIConverter;
 import org.antlr.intellij.adaptor.parser.ANTLRParserAdaptor;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Viliam Repan (lazyman).

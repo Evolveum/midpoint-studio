@@ -127,6 +127,8 @@
                         implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryCommenter"/>
         <completion.contributor language="Axiom Query"
                                 implementationClass="com.evolveum.midpoint.studio.axiom.query.lang.AxiomQueryCompletionContributor"/>
+        <!--<lang.foldingBuilder language="Axiom Query"
+                             implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryFoldingBuilder" />-->
 
         <!-- Axiom Query language support end -->
 
