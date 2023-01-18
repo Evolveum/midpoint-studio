@@ -18,11 +18,9 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogEarthquakeShaker;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.util.ui.JBUI;
 import org.apache.commons.lang.StringUtils;
@@ -297,10 +295,6 @@ public class EnvironmentEditorDialog extends DialogWrapper {
                 ValidationInfo info = infoList.get(0);
                 if (info.component != null && info.component.isVisible()) {
                     IdeFocusManager.getInstance(null).requestFocus(info.component, true);
-                }
-
-                if (!Registry.is("ide.inplace.validation.tooltip")) {
-                    DialogEarthquakeShaker.shake(getPeer().getWindow());
                 }
 
                 startTrackingValidation();

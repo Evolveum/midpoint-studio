@@ -5,10 +5,8 @@ import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
 import com.evolveum.midpoint.studio.util.LocalizedRenderer;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.openapi.ui.DialogEarthquakeShaker;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.IdeFocusManager;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
@@ -217,10 +215,6 @@ public class ProcessResultsDialog extends DialogWrapper {
                 ValidationInfo info = infoList.get(0);
                 if (info.component != null && info.component.isVisible()) {
                     IdeFocusManager.getInstance(null).requestFocus(info.component, true);
-                }
-
-                if (!Registry.is("ide.inplace.validation.tooltip")) {
-                    DialogEarthquakeShaker.shake(getPeer().getWindow());
                 }
 
                 startTrackingValidation();
