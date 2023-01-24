@@ -2,7 +2,9 @@ package com.evolveum.midpoint.studio.impl.lang;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ScriptExpressionEvaluatorType;
+import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ExecuteScriptActionExpressionType;
 import com.intellij.lang.injection.MultiHostInjector;
 import com.intellij.lang.injection.MultiHostRegistrar;
 import com.intellij.openapi.project.Project;
@@ -35,7 +37,7 @@ public class MidPointMultiHostInjector implements MultiHostInjector {
 
         XmlText text = (XmlText) context;
         XmlTag code = text.getParentTag();
-        if (code == null || !"code".equalsIgnoreCase(code.getName())) {
+        if (code == null || !MidPointUtils.isTagMatchingNameOrType(code, ScriptExpressionEvaluatorType.F_CODE, DOMUtil.XSD_STRING)) {
             return;
         }
 
@@ -66,6 +68,7 @@ public class MidPointMultiHostInjector implements MultiHostInjector {
     private boolean isParentScript(XmlTag code) {
         XmlTag parent = code.getParentTag();
 
-        return MidPointUtils.isTagMatchingNameOrType(parent, SchemaConstantsGenerated.C_SCRIPT, ScriptExpressionEvaluatorType.COMPLEX_TYPE);
+        return MidPointUtils.isTagMatchingNameOrType(parent, ExecuteScriptActionExpressionType.F_SCRIPT, ScriptExpressionEvaluatorType.COMPLEX_TYPE)
+                || MidPointUtils.isTagMatchingNameOrType(parent, SchemaConstantsGenerated.C_SCRIPT, ScriptExpressionEvaluatorType.COMPLEX_TYPE);
     }
 }
