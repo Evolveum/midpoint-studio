@@ -46,6 +46,12 @@ public class GroovyMultiHostInjector implements MultiHostInjector {
             return;
         }
 
+        String codeText = code.getValue().getText();
+        if (codeText.trim().startsWith("$(")) {
+            // currently we'll disable groovy completion if there's $() for property replacement
+            return;
+        }
+
         XmlTag language = MidPointUtils.findSubTag(script, ScriptExpressionEvaluatorType.F_LANGUAGE);
         if (language != null) {
             if (!"groovy".equals(language.getValue().getText())) {
