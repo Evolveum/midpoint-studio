@@ -110,6 +110,23 @@
                 language=""
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
 
+        <!-- Studio properties language support -->
+
+        <fileType language="Studio Properties"
+                  implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesFileType"
+                  name="Studio Properties File" fieldName="INSTANCE" extensions="sproperties"/>
+        <lang.parserDefinition language="Studio Properties"
+                               implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesParserDefinition"/>
+        <lang.ast.factory language="Studio Properties"
+                          implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesASTFactory"/>
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesMultiHostInjector"/>
+        <lang.syntaxHighlighterFactory language="Studio Properties"
+                                       implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesSyntaxHighlighterFactory"/>
+        <lang.braceMatcher language="Studio Properties"
+                           implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesBraceMatcher"/>
+
+        <!-- Studio properties language support end -->
+
         <!-- Axiom Query language support -->
 
         <fileType language="Axiom Query"

@@ -11,6 +11,7 @@ plugins {
     // Kotlin support
     id("org.jetbrains.kotlin.jvm") version "1.7.21"
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
+    id("antlr")
     id("org.jetbrains.intellij") version "1.12.0"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
     id("org.jetbrains.changelog") version "2.0.0"
@@ -25,6 +26,11 @@ val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDe
 
 // Configure project's dependencies
 dependencies {
+    antlr("org.antlr:antlr4:4.9.2") {
+        exclude("com.ibm.icu")
+//        exclude("org.antlr")
+    }
+    implementation("org.antlr:antlr4-runtime:4.9.2")
     implementation("org.antlr:antlr4-intellij-adaptor:0.1")
 
     implementation(projects.midpointClient)
@@ -238,5 +244,20 @@ tasks {
 
     downloadRobotServerPlugin {
         version.set("0.11.7")
+    }
+
+    generateGrammarSource {
+//        include("**/antlr4/**/*.g4")
+//        arguments.addAll(listOf(
+//            "-package", "com.evolveum.midpoint.studio.lang.properties"
+//        ))
+//        arguments = arguments + listOf("-visitor", "-long-messages")
+//        include("/antlr4/*.g4")
+//
+//        arguments += [
+//            "-package", "com.evolveum.midpoint.studio.lang.properties",
+//            "-lib", "src/main/antlr/org/antlr/intellij/plugin/parser",
+//            "-Xexact-output-dir"
+//        ]
     }
 }
