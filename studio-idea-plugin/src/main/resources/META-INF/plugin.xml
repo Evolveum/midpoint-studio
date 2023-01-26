@@ -130,36 +130,36 @@
         <!-- Axiom Query language support -->
 
         <fileType language="Axiom Query"
-                  implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryFileType"
+                  implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryFileType"
                   name="Axiom Query File" fieldName="INSTANCE" extensions="axq"/>
         <lang.syntaxHighlighterFactory language="Axiom Query"
-                                       implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQuerySyntaxHighlighterFactory"/>
+                                       implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQuerySyntaxHighlighterFactory"/>
         <lang.parserDefinition language="Axiom Query"
-                               implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryParserDefinition"/>
+                               implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryParserDefinition"/>
         <lang.ast.factory language="Axiom Query"
-                          implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryASTFactory"/>
+                          implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryASTFactory"/>
         <lang.braceMatcher language="Axiom Query"
-                           implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryBraceMatcher"/>
+                           implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryBraceMatcher"/>
         <lang.commenter language="Axiom Query"
-                        implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryCommenter"/>
+                        implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCommenter"/>
         <completion.contributor language="Axiom Query"
-                                implementationClass="com.evolveum.midpoint.studio.axiom.query.lang.AxiomQueryCompletionContributor"/>
+                                implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCompletionContributor"/>
         <!--<lang.foldingBuilder language="Axiom Query"
-                             implementationClass="com.evolveum.midpoint.studio.axiom.query.AxiomQueryFoldingBuilder" />-->
+                             implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryFoldingBuilder" />-->
 
         <!-- Axiom Query language support end -->
 
         <!-- Axiom language support -->
 
         <fileType language="Axiom"
-                  implementationClass="com.evolveum.midpoint.studio.axiom.AxiomFileType"
+                  implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomFileType"
                   name="Axiom File" fieldName="INSTANCE" extensions="axiom"/>
         <lang.syntaxHighlighterFactory language="Axiom"
-                                       implementationClass="com.evolveum.midpoint.studio.axiom.AxiomSyntaxHighlighterFactory"/>
+                                       implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomSyntaxHighlighterFactory"/>
         <lang.parserDefinition language="Axiom"
-                               implementationClass="com.evolveum.midpoint.studio.axiom.AxiomParserDefinition"/>
+                               implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomParserDefinition"/>
         <lang.ast.factory language="Axiom"
-                          implementationClass="com.evolveum.midpoint.studio.axiom.AxiomASTFactory"/>
+                          implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomASTFactory"/>
 
         <!-- Axiom language support end -->
 

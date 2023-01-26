@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
-import com.evolveum.midpoint.studio.axiom.query.AxiomQueryLanguage;
+import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryLanguage;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;

@@ -14,7 +14,7 @@ import com.evolveum.midpoint.studio.action.browse.ComboQueryType;
 import com.evolveum.midpoint.studio.action.browse.DownloadAction;
 import com.evolveum.midpoint.studio.action.task.BackgroundableTask;
 import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
-import com.evolveum.midpoint.studio.axiom.query.AxiomQueryLanguage;
+import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryLanguage;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
