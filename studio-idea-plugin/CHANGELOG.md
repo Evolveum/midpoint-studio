@@ -1,6 +1,6 @@
 # MidPoint Studio
 
-## [Unreleased]
+## [4.6.1]
 ### Added
 - MID-8304 if midpoint namespace url is defined by user as external resource warning will be printed to midpoint console now
 
@@ -11,6 +11,8 @@
 - MID-8376 fix for code element not being marked and highlighted as groovy in sysconfig/globalPolicies
 - MID-8397 updated template for new projects (4.4 -> 4.6)
 - MID-8411 fixed non-existed MainToolbarRight group id for positioning in 2022.2 (that group exists in 2022.3)
+- MID-8453 fixed groovy code injection in s:script/s:code (reports)
+- MID-8452 improved problem with groovy reference via $(@FILE_PATH)
 
 ## [4.6.0]
 ### Added
