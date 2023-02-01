@@ -1,5 +1,12 @@
 # MidPoint Studio
 
+## [Unreleased]
+### Added
+
+### Changed
+
+### Fixed
+
 ## [4.6.1]
 ### Added
 - MID-8304 if midpoint namespace url is defined by user as external resource warning will be printed to midpoint console now
