@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
+import com.intellij.openapi.editor.HighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
@@ -29,6 +30,8 @@ public class AxiomQuerySyntaxHighlighter extends SyntaxHighlighterBase {
 
     public static final TextAttributesKey[] COMMENT_KEYS =
             pack(createTextAttributesKey("AXIOM_QUERY_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT));
+
+    private static final TextAttributesKey[] BAD_CHAR_KEYS = pack(HighlighterColors.BAD_CHARACTER);
 
     @Override
     public @NotNull Lexer getHighlightingLexer() {
@@ -64,6 +67,10 @@ public class AxiomQuerySyntaxHighlighter extends SyntaxHighlighterBase {
 
         if (tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(LINE_COMMENT)) {
             return COMMENT_KEYS;
+        }
+
+        if (tokenType == AxiomQueryTokenTypes.BAD_TOKEN_TYPE) {
+            return BAD_CHAR_KEYS;
         }
 
         return new TextAttributesKey[0];

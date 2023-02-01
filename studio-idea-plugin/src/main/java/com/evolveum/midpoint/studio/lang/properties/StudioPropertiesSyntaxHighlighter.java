@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.lang.properties;
 import com.evolveum.midpoint.studio.lang.properties.antlr.StudioPropertiesLexer;
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
+import com.intellij.openapi.editor.HighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
@@ -21,6 +22,8 @@ public class StudioPropertiesSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey[] STRING_KEYS =
             pack(createTextAttributesKey("STUDIO_PROPERTIES_STRING", DefaultLanguageHighlighterColors.STRING));
 
+    private static final TextAttributesKey[] BAD_CHAR_KEYS = pack(HighlighterColors.BAD_CHARACTER);
+
     @Override
     public @NotNull Lexer getHighlightingLexer() {
         return StudioPropertiesLexerAdaptor.newInstance();
@@ -37,6 +40,10 @@ public class StudioPropertiesSyntaxHighlighter extends SyntaxHighlighterBase {
                 || tokenType == StudioPropertiesTokenTypes.TOKEN_ELEMENT_TYPES.get(StudioPropertiesLexer.PATH_SELF)
                 || tokenType == StudioPropertiesTokenTypes.TOKEN_ELEMENT_TYPES.get(StudioPropertiesLexer.PATH_PARENT)) {
             return STRING_KEYS;
+        }
+
+        if (tokenType == StudioPropertiesTokenTypes.BAD_TOKEN_TYPE) {
+            return BAD_CHAR_KEYS;
         }
 
         return new TextAttributesKey[0];
