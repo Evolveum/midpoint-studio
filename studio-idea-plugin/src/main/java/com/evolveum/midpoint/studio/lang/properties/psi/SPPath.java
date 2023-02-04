@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.lang.properties.psi;
 
 import com.evolveum.midpoint.studio.lang.properties.StudioPropertiesTokenTypes;
 import com.evolveum.midpoint.studio.lang.properties.antlr.StudioPropertiesParser;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.impl.source.tree.CompositePsiElement;
 
 /**
@@ -16,5 +17,10 @@ public class SPPath extends CompositePsiElement {
     @Override
     public String toString() {
         return getClass().getSimpleName() + ":" + getName();
+    }
+
+    @Override
+    public PsiReference getReference() {
+        return new SPPathReference(this);
     }
 }

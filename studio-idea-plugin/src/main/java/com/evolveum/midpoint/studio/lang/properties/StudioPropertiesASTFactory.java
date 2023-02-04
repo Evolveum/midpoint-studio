@@ -42,15 +42,15 @@ public class StudioPropertiesASTFactory extends ASTFactory {
             return new SPPath();
         }
 
+        if (type == StudioPropertiesTokenTypes.getRuleElementType(RULE_pathItem)) {
+            return new SPPathItem();
+        }
+
         return new CompositeElement(type);
     }
 
     @Override
     public @Nullable LeafElement createLeaf(@NotNull IElementType type, @NotNull CharSequence text) {
-        if (type == StudioPropertiesTokenTypes.getRuleElementType(RULE_pathItem)) {
-            return new SPPathItem(text);
-        }
-
         return new LeafPsiElement(type, text);
     }
 
