@@ -112,18 +112,27 @@
 
         <!-- Studio properties language support -->
 
-        <fileType language="Studio Properties"
-                  implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesFileType"
-                  name="Studio Properties File" fieldName="INSTANCE" extensions="sproperties"/>
-        <lang.parserDefinition language="Studio Properties"
-                               implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesParserDefinition"/>
-        <lang.ast.factory language="Studio Properties"
-                          implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesASTFactory"/>
-        <multiHostInjector implementation="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesMultiHostInjector"/>
-        <lang.syntaxHighlighterFactory language="Studio Properties"
-                                       implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesSyntaxHighlighterFactory"/>
-        <lang.braceMatcher language="Studio Properties"
-                           implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesBraceMatcher"/>
+        <fileType
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesFileType"
+                name="Studio Properties File" fieldName="INSTANCE" extensions="sproperties"/>
+        <lang.parserDefinition
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesParserDefinition"/>
+        <lang.ast.factory
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesASTFactory"/>
+        <multiHostInjector
+                implementation="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesMultiHostInjector"/>
+        <lang.syntaxHighlighterFactory
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesSyntaxHighlighterFactory"/>
+        <lang.braceMatcher
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesBraceMatcher"/>
+        <lang.elementManipulator
+                forClass="com.evolveum.midpoint.studio.lang.properties.psi.SPPath"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPPathManipulator"/>
 
         <!-- Studio properties language support end -->
 
