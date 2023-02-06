@@ -47,7 +47,7 @@ public class SPPathReference extends PsiReferenceBase<SPPath> {
         if (!ioPath.isAbsolute()) {
             VirtualFile spFileDirectory = spFile.getParent();
             if (spFileDirectory == null) {
-                // we'll try to check whether we're injected inside other psi (langugage), e.g. in xml
+                // we'll try to check whether we're injected inside other psi (language), e.g. in xml
                 PsiLanguageInjectionHost injectionHost = InjectedLanguageManager.getInstance(path.getProject()).getInjectionHost(path);
                 if (injectionHost != null) {
                     PsiFile injectionHostFile = injectionHost.getContainingFile();
