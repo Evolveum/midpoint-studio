@@ -1,9 +1,11 @@
 package com.evolveum.midpoint.studio.lang.properties.psi;
 
+import com.intellij.lang.injection.InjectedLanguageManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiLanguageInjectionHost;
 import com.intellij.psi.PsiReferenceBase;
 import com.intellij.psi.impl.PsiManagerEx;
 import org.apache.commons.lang3.StringUtils;
@@ -24,29 +26,40 @@ public class SPPathReference extends PsiReferenceBase<SPPath> {
     @Override
     public @Nullable PsiElement resolve() {
         SPPath path = getElement();
-        String filePath = path.getText();
-        if (StringUtils.isEmpty(filePath)) {
+        String pathString = path.getText();
+        if (StringUtils.isEmpty(pathString)) {
             return null;
         }
 
-        PsiFile root = path.getContainingFile();
-        if (root == null) {
+        PsiFile spPsiFile = path.getContainingFile();
+        if (spPsiFile == null) {
             return null;
         }
 
-        VirtualFile rootFile = root.getVirtualFile();
-        if (rootFile == null) {
+        VirtualFile spFile = spPsiFile.getVirtualFile();
+        if (spFile == null) {
             return null;
         }
 
-        Path ioPath = Path.of(filePath);
-        VirtualFile file;
+        VirtualFile file = null;
+
+        Path ioPath = Path.of(pathString);
         if (!ioPath.isAbsolute()) {
-            if (rootFile.getParent() == null) {
-                // todo if this psi is inside of another psi (like embedded in xml file) then this is null
-                return null;
+            VirtualFile spFileDirectory = spFile.getParent();
+            if (spFileDirectory == null) {
+                // we'll try to check whether we're injected inside other psi (langugage), e.g. in xml
+                PsiLanguageInjectionHost injectionHost = InjectedLanguageManager.getInstance(path.getProject()).getInjectionHost(path);
+                if (injectionHost != null) {
+                    PsiFile injectionHostFile = injectionHost.getContainingFile();
+                    if (injectionHostFile != null && injectionHostFile.getVirtualFile() != null) {
+                        spFileDirectory = injectionHostFile.getVirtualFile().getParent();
+                    }
+                }
             }
-            file = rootFile.getParent().findFileByRelativePath("/" + filePath);
+
+            if (spFileDirectory != null) {
+                file = spFileDirectory.findFileByRelativePath("/" + pathString);
+            }
         } else {
             file = VfsUtil.findFile(ioPath, true);
         }
