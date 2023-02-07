@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
+import com.evolveum.midpoint.studio.lang.properties.SPInlayParameterHintsProvider;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.hints.HintInfo;
 import com.intellij.codeInsight.hints.InlayInfo;
@@ -21,7 +22,7 @@ public class MidPointInlayParameterHintsProvider implements InlayParameterHintsP
 
     private static final InlayParameterHintsProvider[] PROVIDERS = {
             new OidInlayParameterHintsProvider(),
-            new PropertiesInlayParameterHintsProvider()
+            new SPInlayParameterHintsProvider()
     };
 
     @Override

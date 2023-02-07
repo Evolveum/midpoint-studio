@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.lang.codeInsight;
+package com.evolveum.midpoint.studio.lang.properties;
 
 import com.evolveum.midpoint.studio.impl.Expander;
 import com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService;
@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class PropertiesInlayParameterHintsProvider implements InlayParameterHintsProvider {
+public class SPInlayParameterHintsProvider implements InlayParameterHintsProvider {
 
     @Override
     public @NotNull List<InlayInfo> getParameterHints(@NotNull PsiElement element) {

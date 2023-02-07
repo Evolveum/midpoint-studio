@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.lang.codeInsight;
+package com.evolveum.midpoint.studio.lang.properties;
 
 import com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class PropertiesCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class SPPropertiesCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
