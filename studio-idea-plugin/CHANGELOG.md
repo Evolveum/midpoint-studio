@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Added
+- Support for Idea 2023.1
 
 ### Changed
 
