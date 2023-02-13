@@ -13,11 +13,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class StudioPropertiesMultiHostInjector implements MultiHostInjector {
+
+    private static final Pattern CODE_PATTERN = Pattern.compile("\\$\\(.+?\\)");
 
     @Override
     public void getLanguagesToInject(@NotNull MultiHostRegistrar registrar, @NotNull PsiElement context) {
@@ -36,15 +40,15 @@ public class StudioPropertiesMultiHostInjector implements MultiHostInjector {
             return;
         }
 
-        String str = tag.getValue().getText();
-        if (!str.trim().startsWith("$(")) {
-            return;
-        }
+        String str = context.getText();
 
-        registrar
-                .startInjecting(StudioPropertiesLanguage.INSTANCE)
-                .addPlace(null, null, (PsiLanguageInjectionHost) context, new TextRange(0, context.getTextLength()))
-                .doneInjecting();
+        Matcher matcher = CODE_PATTERN.matcher(str);
+        matcher.results().forEach(mr -> {
+            registrar
+                    .startInjecting(StudioPropertiesLanguage.INSTANCE)
+                    .addPlace(null, null, (PsiLanguageInjectionHost) context, new TextRange(mr.start(), mr.end()))
+                    .doneInjecting();
+        });
     }
 
     @NotNull
@@ -53,3 +57,4 @@ public class StudioPropertiesMultiHostInjector implements MultiHostInjector {
         return Collections.singletonList(XmlText.class);
     }
 }
+
