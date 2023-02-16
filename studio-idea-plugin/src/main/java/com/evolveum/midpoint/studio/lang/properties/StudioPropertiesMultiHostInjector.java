@@ -7,11 +7,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLanguageInjectionHost;
-import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.literals.GrLiteralContainer;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,13 +30,7 @@ public class StudioPropertiesMultiHostInjector implements MultiHostInjector {
             return;
         }
 
-        if (!(context instanceof XmlText)) {
-            return;
-        }
-
-        XmlText text = (XmlText) context;
-        XmlTag tag = text.getParentTag();
-        if (tag == null) {
+        if (!(context instanceof PsiLanguageInjectionHost)) {
             return;
         }
 
@@ -54,7 +48,7 @@ public class StudioPropertiesMultiHostInjector implements MultiHostInjector {
     @NotNull
     @Override
     public List<? extends Class<? extends PsiElement>> elementsToInjectIn() {
-        return Collections.singletonList(XmlText.class);
+        return Arrays.asList(XmlText.class, GrLiteralContainer.class);
     }
 }
 
