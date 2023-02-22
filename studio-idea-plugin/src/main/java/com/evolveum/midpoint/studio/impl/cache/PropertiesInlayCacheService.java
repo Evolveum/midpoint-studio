@@ -109,7 +109,7 @@ public class PropertiesInlayCacheService {
         }
 
         if (expander.isExpandingFile(key, file)) {
-            return "File Content";
+            return "File";
         }
 
         return expander.expandKeyFromProperties(key);

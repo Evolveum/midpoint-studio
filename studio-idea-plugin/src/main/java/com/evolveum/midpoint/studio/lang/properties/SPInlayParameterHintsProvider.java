@@ -24,6 +24,11 @@ public class SPInlayParameterHintsProvider implements InlayParameterHintsProvide
 
     @Override
     public @NotNull List<InlayInfo> getParameterHints(@NotNull PsiElement element) {
+        Project project = element.getProject();
+        if (project == null) {
+            return Collections.emptyList();
+        }
+
         if (!(element instanceof XmlText)) {
             return Collections.emptyList();
         }
@@ -34,32 +39,26 @@ public class SPInlayParameterHintsProvider implements InlayParameterHintsProvide
             return Collections.emptyList();
         }
 
-        Project project = element.getProject();
-
-        if (project == null) {
-            return Collections.emptyList();
-        }
-
         PropertiesInlayCacheService cache = project.getService(PropertiesInlayCacheService.class);
 
         List<InlayInfo> result = new ArrayList<>();
 
         Matcher matcher = Expander.PATTERN.matcher(value);
-        while (matcher.find()) {
-            String key = matcher.group(1);
+        matcher.results().forEach(mr -> {
+            String key = mr.group(1);
             if (key.isEmpty()) {
-                continue;
+                return;
             }
 
-            int offset = element.getTextRange().getStartOffset() + matcher.regionStart();
+            int offset = element.getTextRange().getStartOffset() + mr.start();
 
             String label = cache.expandKeyForInlay(key, element.getContainingFile().getVirtualFile());
             if (label == null) {
-                continue;
+                return;
             }
 
             result.add(new InlayInfo(label, offset, false, true, false));
-        }
+        });
 
         return result;
     }
