@@ -9,7 +9,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.*;
@@ -30,7 +29,7 @@ public class Expander {
 
     public static final String KEY_SERVER_DISPLAY_NAME = "#server.displayName";
 
-    public static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
+    public static final Pattern PATTERN = Pattern.compile("\\$\\((.+?)\\)");
 
     private Environment environment;
 
@@ -148,23 +147,38 @@ public class Expander {
     }
 
     public boolean isExpandingFile(String key, VirtualFile file) {
-        if (key != null && key.startsWith("@")) {
-            String filePath = key.replaceFirst("@", "");
-            File contentFile = new File(filePath);
-            if (contentFile.isAbsolute() && contentFile.exists()) {
-                return true;
-            } else {
-                if (file != null) {
-                    if (!file.isDirectory()) {
-                        file = file.getParent();
-                    }
-                    VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
-                    return content.exists();
+        String filePath = getFilePathFromKey(key);
+        if (filePath == null) {
+            return false;
+        }
+
+        File contentFile = new File(filePath);
+        if (contentFile.isAbsolute() && contentFile.exists()) {
+            return true;
+        } else {
+            if (file != null) {
+                if (!file.isDirectory()) {
+                    file = file.getParent();
                 }
+                VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
+                return content != null && content.exists();
             }
         }
 
         return false;
+    }
+
+    private String getFilePathFromKey(String key) {
+        if (key == null) {
+            return null;
+        }
+
+        key = key.trim();
+        if (!key.startsWith("@")) {
+            return null;
+        }
+
+        return key.replaceFirst("@", "").trim();
     }
 
     public String expandKeyFromProperties(String key) {
@@ -187,9 +201,8 @@ public class Expander {
     }
 
     private String expandKey(String key, VirtualFile file, boolean expandEncrypted) {
-        if (key != null && key.startsWith("@")) {
-            String filePath = key.replaceFirst("@", "");
-
+        String filePath = getFilePathFromKey(key);
+        if (filePath != null) {
             // just windows stuff (mid-7781). Backslash is not correctly handled later in {@link VirtualFile.findFileByRelativePath(path) }
             filePath = filePath.replace("\\", "/");
 
