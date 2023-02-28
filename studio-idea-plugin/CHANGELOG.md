@@ -1,12 +1,11 @@
 # MidPoint Studio
 
-## [Unreleased]
+## [4.6.2]
 ### Added
 - Support for Idea 2023.1
 
-### Changed
-
 ### Fixed
+- MID-8521 improved searching for authorization action URI
 
 ## [4.6.1]
 ### Added
