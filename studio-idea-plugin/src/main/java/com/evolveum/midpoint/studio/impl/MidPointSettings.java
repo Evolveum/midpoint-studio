@@ -5,10 +5,7 @@ import com.evolveum.midpoint.studio.util.ObjectTypesConverter;
 import com.intellij.util.xmlb.annotations.OptionTag;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -27,6 +24,10 @@ public class MidPointSettings implements Serializable {
 
     private DocGeneratorOptions docGeneratorOptions;
 
+    private boolean askToAddMidpointFacet = true;
+
+    private boolean askToValidateEnvironmentCredentials = true;
+
     @OptionTag(converter = ObjectTypesConverter.class)
     private List<ObjectTypes> downloadTypesInclude;
 
@@ -38,6 +39,22 @@ public class MidPointSettings implements Serializable {
     private int restResponseTimeout = 60;
 
     public MidPointSettings() {
+    }
+
+    public boolean isAskToAddMidpointFacet() {
+        return askToAddMidpointFacet;
+    }
+
+    public void setAskToAddMidpointFacet(boolean askToAddMidpointFacet) {
+        this.askToAddMidpointFacet = askToAddMidpointFacet;
+    }
+
+    public boolean isAskToValidateEnvironmentCredentials() {
+        return askToValidateEnvironmentCredentials;
+    }
+
+    public void setAskToValidateEnvironmentCredentials(boolean askToValidateEnvironmentCredentials) {
+        this.askToValidateEnvironmentCredentials = askToValidateEnvironmentCredentials;
     }
 
     public String getMidPointVersion() {
@@ -126,28 +143,30 @@ public class MidPointSettings implements Serializable {
         this.restResponseTimeout = restResponseTimeout;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MidPointSettings settings = (MidPointSettings) o;
+        MidPointSettings that = (MidPointSettings) o;
 
-        if (printRestCommunicationToConsole != settings.printRestCommunicationToConsole) return false;
-        if (typesToDownloadLimit != settings.typesToDownloadLimit) return false;
-        if (restResponseTimeout != settings.restResponseTimeout) return false;
-        if (projectId != null ? !projectId.equals(settings.projectId) : settings.projectId != null) return false;
-        if (midPointVersion != null ? !midPointVersion.equals(settings.midPointVersion) : settings.midPointVersion != null)
+        if (printRestCommunicationToConsole != that.printRestCommunicationToConsole) return false;
+        if (askToAddMidpointFacet != that.askToAddMidpointFacet) return false;
+        if (typesToDownloadLimit != that.typesToDownloadLimit) return false;
+        if (restResponseTimeout != that.restResponseTimeout) return false;
+        if (!Objects.equals(projectId, that.projectId)) return false;
+        if (!Objects.equals(midPointVersion, that.midPointVersion))
             return false;
-        if (dowloadFilePattern != null ? !dowloadFilePattern.equals(settings.dowloadFilePattern) : settings.dowloadFilePattern != null)
+        if (!Objects.equals(dowloadFilePattern, that.dowloadFilePattern))
             return false;
-        if (generatedFilePattern != null ? !generatedFilePattern.equals(settings.generatedFilePattern) : settings.generatedFilePattern != null)
+        if (!Objects.equals(generatedFilePattern, that.generatedFilePattern))
             return false;
-        if (docGeneratorOptions != null ? !docGeneratorOptions.equals(settings.docGeneratorOptions) : settings.docGeneratorOptions != null)
+        if (!Objects.equals(docGeneratorOptions, that.docGeneratorOptions))
             return false;
-        if (downloadTypesInclude != null ? !downloadTypesInclude.equals(settings.downloadTypesInclude) : settings.downloadTypesInclude != null)
+        if (!Objects.equals(downloadTypesInclude, that.downloadTypesInclude))
             return false;
-        return downloadTypesExclude != null ? downloadTypesExclude.equals(settings.downloadTypesExclude) : settings.downloadTypesExclude == null;
+        return Objects.equals(downloadTypesExclude, that.downloadTypesExclude);
     }
 
     @Override
@@ -158,6 +177,7 @@ public class MidPointSettings implements Serializable {
         result = 31 * result + (generatedFilePattern != null ? generatedFilePattern.hashCode() : 0);
         result = 31 * result + (printRestCommunicationToConsole ? 1 : 0);
         result = 31 * result + (docGeneratorOptions != null ? docGeneratorOptions.hashCode() : 0);
+        result = 31 * result + (askToAddMidpointFacet ? 1 : 0);
         result = 31 * result + (downloadTypesInclude != null ? downloadTypesInclude.hashCode() : 0);
         result = 31 * result + (downloadTypesExclude != null ? downloadTypesExclude.hashCode() : 0);
         result = 31 * result + typesToDownloadLimit;
@@ -176,7 +196,6 @@ public class MidPointSettings implements Serializable {
     public static MidPointSettings createDefaultSettings() {
         MidPointSettings settings = new MidPointSettings();
         settings.setProjectId(UUID.randomUUID().toString());
-        settings.setMidPointVersion("4.1-SNAPSHOT");
 
         settings.setDowloadFilePattern("objects/$T/$n.xml");
         settings.setGeneratedFilePattern("scratches/gen/$n.xml");
