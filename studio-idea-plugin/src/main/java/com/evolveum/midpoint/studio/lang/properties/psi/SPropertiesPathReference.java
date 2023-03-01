@@ -17,15 +17,15 @@ import java.nio.file.Path;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class SPPathReference extends PsiReferenceBase<SPPath> {
+public class SPropertiesPathReference extends PsiReferenceBase<SPropertiesPath> {
 
-    public SPPathReference(@NotNull SPPath element) {
+    public SPropertiesPathReference(@NotNull SPropertiesPath element) {
         super(element, true);
     }
 
     @Override
     public @Nullable PsiElement resolve() {
-        SPPath path = getElement();
+        SPropertiesPath path = getElement();
         String pathString = path.getText();
         if (StringUtils.isEmpty(pathString)) {
             return null;

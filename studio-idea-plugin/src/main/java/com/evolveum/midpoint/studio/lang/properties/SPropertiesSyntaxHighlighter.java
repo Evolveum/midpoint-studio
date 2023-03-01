@@ -14,7 +14,7 @@ import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAtt
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class StudioPropertiesSyntaxHighlighter extends SyntaxHighlighterBase {
+public class SPropertiesSyntaxHighlighter extends SyntaxHighlighterBase {
 
     public static final TextAttributesKey[] KEYWORD_KEYS =
             pack(createTextAttributesKey("STUDIO_PROPERTIES_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD));
@@ -26,23 +26,23 @@ public class StudioPropertiesSyntaxHighlighter extends SyntaxHighlighterBase {
 
     @Override
     public @NotNull Lexer getHighlightingLexer() {
-        return StudioPropertiesLexerAdaptor.newInstance();
+        return SPropertiesLexerAdaptor.newInstance();
     }
 
     @Override
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
-        if (StudioPropertiesTokenTypes.KEYWORDS.contains(tokenType)) {
+        if (SPropertiesTokenTypes.KEYWORDS.contains(tokenType)) {
             return KEYWORD_KEYS;
         }
 
-        if (StudioPropertiesTokenTypes.STRINGS.contains(tokenType)
-                || tokenType == StudioPropertiesTokenTypes.TOKEN_ELEMENT_TYPES.get(StudioPropertiesLexer.SLASH)
-                || tokenType == StudioPropertiesTokenTypes.TOKEN_ELEMENT_TYPES.get(StudioPropertiesLexer.PATH_SELF)
-                || tokenType == StudioPropertiesTokenTypes.TOKEN_ELEMENT_TYPES.get(StudioPropertiesLexer.PATH_PARENT)) {
+        if (SPropertiesTokenTypes.STRINGS.contains(tokenType)
+                || tokenType == SPropertiesTokenTypes.TOKEN_ELEMENT_TYPES.get(StudioPropertiesLexer.SLASH)
+                || tokenType == SPropertiesTokenTypes.TOKEN_ELEMENT_TYPES.get(StudioPropertiesLexer.PATH_SELF)
+                || tokenType == SPropertiesTokenTypes.TOKEN_ELEMENT_TYPES.get(StudioPropertiesLexer.PATH_PARENT)) {
             return STRING_KEYS;
         }
 
-        if (tokenType == StudioPropertiesTokenTypes.BAD_TOKEN_TYPE) {
+        if (tokenType == SPropertiesTokenTypes.BAD_TOKEN_TYPE) {
             return BAD_CHAR_KEYS;
         }
 

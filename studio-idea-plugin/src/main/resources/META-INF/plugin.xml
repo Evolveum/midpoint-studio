@@ -114,25 +114,25 @@
 
         <fileType
                 language="Studio Properties"
-                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesFileType"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesFileType"
                 name="Studio Properties File" fieldName="INSTANCE" extensions="sproperties"/>
         <lang.parserDefinition
                 language="Studio Properties"
-                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesParserDefinition"/>
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesParserDefinition"/>
         <lang.ast.factory
                 language="Studio Properties"
-                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesASTFactory"/>
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesASTFactory"/>
         <multiHostInjector
-                implementation="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesMultiHostInjector"/>
+                implementation="com.evolveum.midpoint.studio.lang.properties.SPropertiesMultiHostInjector"/>
         <lang.syntaxHighlighterFactory
                 language="Studio Properties"
-                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesSyntaxHighlighterFactory"/>
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesSyntaxHighlighterFactory"/>
         <lang.braceMatcher
                 language="Studio Properties"
-                implementationClass="com.evolveum.midpoint.studio.lang.properties.StudioPropertiesBraceMatcher"/>
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesBraceMatcher"/>
         <lang.elementManipulator
-                forClass="com.evolveum.midpoint.studio.lang.properties.psi.SPPath"
-                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPPathManipulator"/>
+                forClass="com.evolveum.midpoint.studio.lang.properties.psi.SPropertiesPath"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesPathManipulator"/>
 
         <!-- Studio properties language support end -->
 

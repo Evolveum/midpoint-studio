@@ -9,10 +9,10 @@ import org.antlr.v4.runtime.tree.ParseTree;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class StudioPropertiesParser extends ANTLRParserAdaptor {
+public class SPropertiesParser extends ANTLRParserAdaptor {
 
-    public StudioPropertiesParser() {
-        super(StudioPropertiesLanguage.INSTANCE, new com.evolveum.midpoint.studio.lang.properties.antlr.StudioPropertiesParser(null));
+    public SPropertiesParser() {
+        super(SPropertiesLanguage.INSTANCE, new com.evolveum.midpoint.studio.lang.properties.antlr.StudioPropertiesParser(null));
     }
 
     @Override

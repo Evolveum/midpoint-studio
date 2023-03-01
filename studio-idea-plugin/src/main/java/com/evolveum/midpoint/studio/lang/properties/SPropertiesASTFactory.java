@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.lang.properties;
 
-import com.evolveum.midpoint.studio.lang.properties.psi.SPPath;
-import com.evolveum.midpoint.studio.lang.properties.psi.SPPathItem;
-import com.evolveum.midpoint.studio.lang.properties.psi.SPProperty;
-import com.evolveum.midpoint.studio.lang.properties.psi.SPRoot;
+import com.evolveum.midpoint.studio.lang.properties.psi.SPropertiesPath;
+import com.evolveum.midpoint.studio.lang.properties.psi.SPropertiesPathItem;
+import com.evolveum.midpoint.studio.lang.properties.psi.SPropertiesProperty;
+import com.evolveum.midpoint.studio.lang.properties.psi.SPropertiesRoot;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTFactory;
 import com.intellij.lang.ASTNode;
@@ -22,7 +22,7 @@ import static com.evolveum.midpoint.studio.lang.properties.antlr.StudioPropertie
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class StudioPropertiesASTFactory extends ASTFactory {
+public class SPropertiesASTFactory extends ASTFactory {
 
     @Override
     public @Nullable CompositeElement createComposite(@NotNull IElementType type) {
@@ -30,20 +30,20 @@ public class StudioPropertiesASTFactory extends ASTFactory {
             return new FileElement(type, null);
         }
 
-        if (type == StudioPropertiesTokenTypes.getRuleElementType(RULE_root)) {
-            return new SPRoot();
+        if (type == SPropertiesTokenTypes.getRuleElementType(RULE_root)) {
+            return new SPropertiesRoot();
         }
 
-        if (type == StudioPropertiesTokenTypes.getRuleElementType(RULE_property)) {
-            return new SPProperty();
+        if (type == SPropertiesTokenTypes.getRuleElementType(RULE_property)) {
+            return new SPropertiesProperty();
         }
 
-        if (type == StudioPropertiesTokenTypes.getRuleElementType(RULE_path)) {
-            return new SPPath();
+        if (type == SPropertiesTokenTypes.getRuleElementType(RULE_path)) {
+            return new SPropertiesPath();
         }
 
-        if (type == StudioPropertiesTokenTypes.getRuleElementType(RULE_pathItem)) {
-            return new SPPathItem();
+        if (type == SPropertiesTokenTypes.getRuleElementType(RULE_pathItem)) {
+            return new SPropertiesPathItem();
         }
 
         return new CompositeElement(type);

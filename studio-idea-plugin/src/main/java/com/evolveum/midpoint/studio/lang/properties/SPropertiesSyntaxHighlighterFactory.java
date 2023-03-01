@@ -10,10 +10,10 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class StudioPropertiesSyntaxHighlighterFactory extends SyntaxHighlighterFactory {
+public class SPropertiesSyntaxHighlighterFactory extends SyntaxHighlighterFactory {
 
     @Override
     public @NotNull SyntaxHighlighter getSyntaxHighlighter(@Nullable Project project, @Nullable VirtualFile virtualFile) {
-        return new StudioPropertiesSyntaxHighlighter();
+        return new SPropertiesSyntaxHighlighter();
     }
 }

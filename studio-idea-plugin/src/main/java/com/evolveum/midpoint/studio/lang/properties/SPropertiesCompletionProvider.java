@@ -20,7 +20,7 @@ import java.util.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class SPPropertiesCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class SPropertiesCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {

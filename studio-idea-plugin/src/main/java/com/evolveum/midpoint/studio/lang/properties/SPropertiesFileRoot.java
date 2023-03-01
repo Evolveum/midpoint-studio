@@ -5,16 +5,16 @@ import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.psi.FileViewProvider;
 import org.jetbrains.annotations.NotNull;
 
-public class StudioPropertiesFileRoot extends PsiFileBase {
+public class SPropertiesFileRoot extends PsiFileBase {
 
-    public StudioPropertiesFileRoot(@NotNull FileViewProvider viewProvider) {
-        super(viewProvider, StudioPropertiesLanguage.INSTANCE);
+    public SPropertiesFileRoot(@NotNull FileViewProvider viewProvider) {
+        super(viewProvider, SPropertiesLanguage.INSTANCE);
     }
 
     @NotNull
     @Override
     public FileType getFileType() {
-        return StudioPropertiesFileType.INSTANCE;
+        return SPropertiesFileType.INSTANCE;
     }
 
     @Override

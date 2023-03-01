@@ -16,12 +16,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class StudioPropertiesParserDefinition implements ParserDefinition {
+public class SPropertiesParserDefinition implements ParserDefinition {
 
-    public static final IFileElementType FILE = new IFileElementType(StudioPropertiesLanguage.INSTANCE);
+    public static final IFileElementType FILE = new IFileElementType(SPropertiesLanguage.INSTANCE);
 
-    public StudioPropertiesParserDefinition() {
-        PSIElementTypeFactory.defineLanguageIElementTypes(StudioPropertiesLanguage.INSTANCE,
+    public SPropertiesParserDefinition() {
+        PSIElementTypeFactory.defineLanguageIElementTypes(SPropertiesLanguage.INSTANCE,
                 com.evolveum.midpoint.studio.lang.properties.antlr.StudioPropertiesParser.tokenNames,
                 com.evolveum.midpoint.studio.lang.properties.antlr.StudioPropertiesParser.ruleNames);
     }
@@ -29,17 +29,17 @@ public class StudioPropertiesParserDefinition implements ParserDefinition {
     @NotNull
     @Override
     public Lexer createLexer(Project project) {
-        return StudioPropertiesLexerAdaptor.newInstance();
+        return SPropertiesLexerAdaptor.newInstance();
     }
 
     @NotNull
     public PsiParser createParser(final Project project) {
-        return new StudioPropertiesParser();
+        return new SPropertiesParser();
     }
 
     @NotNull
     public TokenSet getWhitespaceTokens() {
-        return StudioPropertiesTokenTypes.WHITESPACES;
+        return SPropertiesTokenTypes.WHITESPACES;
     }
 
     @NotNull
@@ -49,7 +49,7 @@ public class StudioPropertiesParserDefinition implements ParserDefinition {
 
     @NotNull
     public TokenSet getStringLiteralElements() {
-        return StudioPropertiesTokenTypes.STRINGS;
+        return SPropertiesTokenTypes.STRINGS;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class StudioPropertiesParserDefinition implements ParserDefinition {
     @NotNull
     @Override
     public PsiFile createFile(@NotNull FileViewProvider viewProvider) {
-        return new StudioPropertiesFileRoot(viewProvider);
+        return new SPropertiesFileRoot(viewProvider);
     }
 
     @Override
@@ -70,6 +70,6 @@ public class StudioPropertiesParserDefinition implements ParserDefinition {
 
     @NotNull
     public PsiElement createElement(ASTNode node) {
-        return StudioPropertiesASTFactory.createInternalParseTreeNode(node);
+        return SPropertiesASTFactory.createInternalParseTreeNode(node);
     }
 }

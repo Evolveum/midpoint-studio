@@ -9,12 +9,12 @@ import javax.swing.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class StudioPropertiesFileType extends LanguageFileType {
+public class SPropertiesFileType extends LanguageFileType {
 
-    public static final StudioPropertiesFileType INSTANCE = new StudioPropertiesFileType();
+    public static final SPropertiesFileType INSTANCE = new SPropertiesFileType();
 
-    private StudioPropertiesFileType() {
-        super(StudioPropertiesLanguage.INSTANCE);
+    private SPropertiesFileType() {
+        super(SPropertiesLanguage.INSTANCE);
     }
 
     @NotNull
@@ -38,6 +38,6 @@ public class StudioPropertiesFileType extends LanguageFileType {
     @Nullable
     @Override
     public Icon getIcon() {
-        return StudioPropertiesLanguage.ICON;
+        return SPropertiesLanguage.ICON;
     }
 }

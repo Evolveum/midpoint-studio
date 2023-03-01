@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class StudioPropertiesMultiHostInjector implements MultiHostInjector {
+public class SPropertiesMultiHostInjector implements MultiHostInjector {
 
     private static final Pattern CODE_PATTERN = Pattern.compile("\\$\\(.+?\\)");
 
@@ -39,7 +39,7 @@ public class StudioPropertiesMultiHostInjector implements MultiHostInjector {
         Matcher matcher = CODE_PATTERN.matcher(str);
         matcher.results().forEach(mr -> {
             registrar
-                    .startInjecting(StudioPropertiesLanguage.INSTANCE)
+                    .startInjecting(SPropertiesLanguage.INSTANCE)
                     .addPlace(null, null, (PsiLanguageInjectionHost) context, new TextRange(mr.start(), mr.end()))
                     .doneInjecting();
         });

@@ -7,11 +7,11 @@ import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static com.evolveum.midpoint.studio.lang.properties.StudioPropertiesTokenTypes.getTokenElementType;
+import static com.evolveum.midpoint.studio.lang.properties.SPropertiesTokenTypes.getTokenElementType;
 import static com.evolveum.midpoint.studio.lang.properties.antlr.StudioPropertiesLexer.LEFT_BRACKET;
 import static com.evolveum.midpoint.studio.lang.properties.antlr.StudioPropertiesLexer.RIGHT_BRACKET;
 
-public class StudioPropertiesBraceMatcher implements PairedBraceMatcher {
+public class SPropertiesBraceMatcher implements PairedBraceMatcher {
 
     @NotNull
     @Override

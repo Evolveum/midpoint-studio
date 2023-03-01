@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.studio.lang.properties.SPPropertiesCompletionProvider;
+import com.evolveum.midpoint.studio.lang.properties.SPropertiesCompletionProvider;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -24,7 +24,7 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                 psiElement().inside(
                         XmlPatterns
                                 .xmlText()),
-                new SPPropertiesCompletionProvider());
+                new SPropertiesCompletionProvider());
 
         extend(CompletionType.BASIC,
                 psiElement().inside(

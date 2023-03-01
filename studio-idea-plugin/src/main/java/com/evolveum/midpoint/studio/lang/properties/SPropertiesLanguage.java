@@ -8,13 +8,13 @@ import javax.swing.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class StudioPropertiesLanguage extends Language {
+public class SPropertiesLanguage extends Language {
 
-    public static final StudioPropertiesLanguage INSTANCE = new StudioPropertiesLanguage();
+    public static final SPropertiesLanguage INSTANCE = new SPropertiesLanguage();
 
     public static final Icon ICON = MidPointIcons.Midpoint;
 
-    private StudioPropertiesLanguage() {
+    private SPropertiesLanguage() {
         super("Studio Properties");
     }
 }

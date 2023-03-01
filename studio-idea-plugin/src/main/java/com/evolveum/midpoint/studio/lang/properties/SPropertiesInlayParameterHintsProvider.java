@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class SPInlayParameterHintsProvider implements InlayParameterHintsProvider {
+public class SPropertiesInlayParameterHintsProvider implements InlayParameterHintsProvider {
 
     @Override
     public @NotNull List<InlayInfo> getParameterHints(@NotNull PsiElement element) {

@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.lang.properties;
 
-import com.evolveum.midpoint.studio.lang.properties.psi.SPPath;
+import com.evolveum.midpoint.studio.lang.properties.psi.SPropertiesPath;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
@@ -19,11 +19,11 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class SPPathManipulator extends AbstractElementManipulator<SPPath> {
+public class SPropertiesPathManipulator extends AbstractElementManipulator<SPropertiesPath> {
 
     @Override
-    public @Nullable SPPath handleContentChange(
-            @NotNull SPPath element, @NotNull TextRange range, String newContent) throws IncorrectOperationException {
+    public @Nullable SPropertiesPath handleContentChange(
+            @NotNull SPropertiesPath element, @NotNull TextRange range, String newContent) throws IncorrectOperationException {
 
         CheckUtil.checkWritable(element);
 
@@ -49,7 +49,7 @@ public class SPPathManipulator extends AbstractElementManipulator<SPPath> {
 
     @Override
     @NotNull
-    public TextRange getRangeInElement(@NotNull final SPPath path) {
+    public TextRange getRangeInElement(@NotNull final SPropertiesPath path) {
         final PsiElement first = path.getFirstChild();
         if (first == null) {
             return TextRange.EMPTY_RANGE;
