@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider;
+import com.evolveum.midpoint.studio.util.MidPointStudioBundle;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.codeInspection.ex.InspectionProfileImpl;
@@ -149,11 +150,12 @@ public class MidPointStartupActivity implements StartupActivity {
 
             Module module = modules[0];
 
-            MidPointUtils.publishNotification(project, NOTIFICATION_KEY, "Found MidPoint Studio configuration",
-                    "Do you want to add MidPoint Studio facet to module " + module.getName() + "?",
+            MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
+                    MidPointStudioBundle.message("MidPointStartupActivity.checkFacet.title"),
+                    MidPointStudioBundle.message("MidPointStartupActivity.checkFacet.msg", module.getName()),
                     NotificationType.INFORMATION,
-                    NotificationAction.createExpiring("Add facet", (evt, notification) -> addFacetPerformed(module)),
-                    NotificationAction.createExpiring("Don't ask again", (evt, notification) -> dontAskAgainPerformed(project)));
+                    NotificationAction.createExpiring(MidPointStudioBundle.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> addFacetPerformed(module)),
+                    NotificationAction.createExpiring(MidPointStudioBundle.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAgainPerformed(project)));
         });
     }
 
