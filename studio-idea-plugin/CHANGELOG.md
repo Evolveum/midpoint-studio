@@ -1,5 +1,12 @@
 # MidPoint Studio
 
+## [Unreleased]
+### Added
+
+### Changed
+
+### Fixed
+
 ## [4.6.2]
 ### Added
 - Support for Idea 2023.1
