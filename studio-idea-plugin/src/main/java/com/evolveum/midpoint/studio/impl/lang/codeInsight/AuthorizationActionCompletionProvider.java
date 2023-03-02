@@ -2,12 +2,14 @@ package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
 import com.evolveum.midpoint.model.api.ModelAuthorizationAction;
 import com.evolveum.midpoint.security.api.AuthorizationConstants;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.PrioritizedLookupElement;
+import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.util.ProcessingContext;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.annotations.NotNull;
@@ -42,20 +44,32 @@ public class AuthorizationActionCompletionProvider extends CompletionProvider<Co
     }
 
     private static LookupElement buildLookupElement(QName q, Class clazz) {
-        return MidPointUtils.buildLookupElement(q.getLocalPart(), q.getNamespaceURI() + "#" + q.getLocalPart(), clazz.getSimpleName(), 100);
+        String name = QNameUtil.qNameToUri(q);
+
+        LookupElement element = LookupElementBuilder.create(name)
+                .withTailText("(" + q.getLocalPart() + ")")
+                .withLookupString(name)
+                .withLookupString(name.toLowerCase())
+                .withLookupString(name.toUpperCase())
+                .withTypeText(clazz.getSimpleName())
+                .withCaseSensitivity(true)
+                .withBoldness(true)
+                .withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
+
+        return PrioritizedLookupElement.withPriority(element, 100);
     }
 
     private static List<QName> getModelAuthorizations() {
-        List<QName> qnames = new ArrayList<>();
+        List<QName> names = new ArrayList<>();
 
         for (ModelAuthorizationAction action : ModelAuthorizationAction.values()) {
             QName qname = QNameUtil.uriToQName(action.getUrl());
-            qnames.add(qname);
+            names.add(qname);
         }
 
-        Collections.sort(qnames, (q1, q2) -> String.CASE_INSENSITIVE_ORDER.compare(q1.getLocalPart(), q2.getLocalPart()));
+        Collections.sort(names, (q1, q2) -> String.CASE_INSENSITIVE_ORDER.compare(q1.getLocalPart(), q2.getLocalPart()));
 
-        return qnames;
+        return names;
     }
 
     private static List<QName> getAuthorizationConstants() {
