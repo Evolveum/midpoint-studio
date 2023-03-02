@@ -9,7 +9,7 @@ import java.util.ResourceBundle;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MidPointStudioBundle {
+public class StudioBundle {
 
     @NotNull
     private static final String BUNDLE_NAME = "messages/MidPointStudio";
