@@ -19,7 +19,7 @@ public class TraceOptionsWindowFactory implements ToolWindowFactory, DumbAware {
         ContentManager contentManager = toolWindow.getContentManager();
 
         TraceOptionsPanel options = new TraceOptionsPanel(project);
-        Content optionsContent = ContentFactory.SERVICE.getInstance().createContent(options, null, false);
+        Content optionsContent = ContentFactory.getInstance().createContent(options, null, false);
         contentManager.addContent(optionsContent);
     }
 

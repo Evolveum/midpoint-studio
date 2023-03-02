@@ -41,33 +41,33 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
 
     private Content buildTraceEntryDetails(Project project) {
         OpDumpPanel panel = new OpDumpPanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(panel, "Operation Details", false);
+        return ContentFactory.getInstance().createContent(panel, "Operation Details", false);
     }
 
     private Content buildTraceEntryDetailsRaw(Project project) {
         OpTraceRawPanel panel = new OpTraceRawPanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(panel, "Trace Entries Raw", false);
+        return ContentFactory.getInstance().createContent(panel, "Trace Entries Raw", false);
     }
 
     private Content buildOperationResultRaw(Project project) {
         OpResultRawPanel panel = new OpResultRawPanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(panel, "Operation Raw", false);
+        return ContentFactory.getInstance().createContent(panel, "Operation Raw", false);
     }
 
     private Content buildTraceTree(Project project) {
         OpDetailsTreePanel variables = new OpDetailsTreePanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(variables, "Tree View", false);
+        return ContentFactory.getInstance().createContent(variables, "Tree View", false);
     }
 
     private Content buildTraceOverview(Project project) {
         OpOverviewTreePanel variables = new OpOverviewTreePanel(project);
-        return ContentFactory.SERVICE.getInstance().createContent(variables, "Overview", false);
+        return ContentFactory.getInstance().createContent(variables, "Overview", false);
     }
 
     private Content buildTracePerformance(Project project) {
         OpPerformancePanel perfInformation = new OpPerformancePanel(project.getMessageBus());
         //return new HeaderDecorator("Trace Performance Information", new JBScrollPane(perfInformation));
-        return ContentFactory.SERVICE.getInstance().createContent(perfInformation, "Performance Information", false);
+        return ContentFactory.getInstance().createContent(perfInformation, "Performance Information", false);
     }
 
     @Override

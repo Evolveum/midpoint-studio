@@ -20,7 +20,7 @@ public class LogWindowFactory implements ToolWindowFactory, DumbAware {
         ContentManager contentManager = toolWindow.getContentManager();
 
         TraceLogsPanel logs = new TraceLogsPanel(project.getMessageBus());
-        Content logsContent = ContentFactory.SERVICE.getInstance().createContent(logs, "Logs", false);
+        Content logsContent = ContentFactory.getInstance().createContent(logs, "Logs", false);
         contentManager.addContent(logsContent);
     }
 
