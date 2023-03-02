@@ -158,7 +158,7 @@
         <membersContributor implementation="com.evolveum.midpoint.studio.impl.lang.ScriptNonCodeMembersContributor"/>
     </extensions>
 
-    <actions>
+    <actions resource-bundle="messages.MidPointStudio">
 
         <!-- MISCELLANEOUS -->
 
@@ -184,7 +184,6 @@
                 icon="AllIcons.Actions.Download"/>
 
         <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
-                text="Upload/Execute"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
 
         <action id="MidPoint.ExpUI.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
