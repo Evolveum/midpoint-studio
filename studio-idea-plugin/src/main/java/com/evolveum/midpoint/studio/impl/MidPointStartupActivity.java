@@ -104,7 +104,10 @@ public class MidPointStartupActivity implements StartupActivity {
         if (parent == null) {
             parent = (DefaultActionGroup) am.getAction("RunToolbarWidgetCustomizableActionGroup");
         }
-        parent.add(action, Constraints.FIRST);
+
+        if (!parent.containsAction(action)) {
+            parent.add(action, Constraints.FIRST);
+        }
     }
 
     private void validateStudioConfiguration(Project project) {
