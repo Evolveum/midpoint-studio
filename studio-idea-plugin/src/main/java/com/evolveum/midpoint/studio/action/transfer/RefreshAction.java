@@ -3,9 +3,9 @@ package com.evolveum.midpoint.studio.action.transfer;
 import com.evolveum.midpoint.studio.action.task.RefreshTask;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.UpdateInBackground;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class RefreshAction extends AnAction implements UpdateInBackground {
+public class RefreshAction extends AnAction {
 
     public static final String NOTIFICATION_KEY = "Refresh Action";
 
@@ -21,6 +21,11 @@ public class RefreshAction extends AnAction implements UpdateInBackground {
 
     public RefreshAction() {
         super(ACTION_TEXT, ACTION_TEXT, AllIcons.Actions.BuildLoadChanges);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     @Override
