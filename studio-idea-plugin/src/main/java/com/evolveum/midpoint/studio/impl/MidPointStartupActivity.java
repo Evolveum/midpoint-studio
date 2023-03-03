@@ -2,9 +2,9 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider;
-import com.evolveum.midpoint.studio.util.StudioBundle;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.studio.util.StudioBundle;
 import com.intellij.codeInspection.ex.InspectionProfileImpl;
 import com.intellij.codeInspection.ex.ToolsImpl;
 import com.intellij.facet.FacetManager;
@@ -21,7 +21,7 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.impl.stores.IProjectStore;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.impl.ModuleManagerEx;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.profile.codeInspection.ProjectInspectionProfileManager;
@@ -123,7 +123,7 @@ public class MidPointStartupActivity implements StartupActivity {
                 return;
             }
 
-            ModuleManagerEx mm = ModuleManagerEx.getInstanceEx(project);
+            ModuleManager mm = ModuleManager.getInstance(project);
             Module[] modules = mm.getModules();
             if (modules.length == 0) {
                 return;
