@@ -133,6 +133,9 @@
         <xml.tagNameProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
 
+        <xml.elementDescriptorProvider
+                implementation="com.evolveum.midpoint.studio.impl.lang.MetadataElementDescriptorProvider"/>
+
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
