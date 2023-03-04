@@ -6,10 +6,12 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInspection.ex.InspectionProfileImpl;
 import com.intellij.codeInspection.ex.ToolsImpl;
 import com.intellij.javaee.ExternalResourceManagerEx;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.profile.codeInspection.ProjectInspectionProfileManager;
+import com.intellij.ui.ExperimentalUI;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -50,6 +52,16 @@ public class MidPointStartupActivity implements StartupActivity {
         ToolsImpl tool = profile.getToolsOrNull("CheckValidXmlInScriptTagBody", project);
         if (tool != null) {
             tool.setEnabled(false);
+        }
+
+        if (ExperimentalUI.isNewUI()) {
+            ActionManager am = ActionManager.getInstance();
+            AnAction action = am.getAction("MidPoint.ExpUI.Toolbar.Main");
+            DefaultActionGroup parent = (DefaultActionGroup) am.getAction("MainToolbarRight");
+            if (parent == null) {
+                parent = (DefaultActionGroup) am.getAction("RunToolbarWidgetCustomizableActionGroup");
+            }
+            parent.add(action, Constraints.FIRST);
         }
     }
 }

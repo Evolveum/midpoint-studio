@@ -15,9 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -62,7 +60,7 @@ public class AuthorizationActionCompletionProvider extends CompletionProvider<Co
 
     private static List<QName> getAuthorizationConstants() {
         List<Field> fields = FieldUtils.getAllFieldsList(AuthorizationConstants.class);
-        List<QName> qnames = new ArrayList<>();
+        Set<QName> qnames = new HashSet<>();
         for (Field field : fields) {
             int modifiers = field.getModifiers();
             if (!Modifier.isPublic(modifiers) || !Modifier.isStatic(modifiers) || !Modifier.isFinal(modifiers)) {
@@ -70,14 +68,20 @@ public class AuthorizationActionCompletionProvider extends CompletionProvider<Co
             }
 
             Class type = field.getType();
-            if (!QName.class.equals(type)) {
-                continue;
-            }
 
             QName value = null;
             try {
-                value = (QName) field.get(AuthorizationConstants.class);
-            } catch (IllegalAccessException e) {
+                if (String.class.equals(type)) {
+                    String uri = (String) field.get(AuthorizationConstants.class);
+                    if (uri == null || !uri.startsWith(AuthorizationConstants.NS_SECURITY_PREFIX) || !uri.contains("#")) {
+                        continue;
+                    }
+
+                    value = QNameUtil.uriToQName(uri);
+                } else if (QName.class.equals(type)) {
+                    value = (QName) field.get(AuthorizationConstants.class);
+                }
+            } catch (Exception e) {
                 // nothing to do
             }
 
@@ -88,8 +92,9 @@ public class AuthorizationActionCompletionProvider extends CompletionProvider<Co
             qnames.add(value);
         }
 
-        Collections.sort(qnames, (q1, q2) -> String.CASE_INSENSITIVE_ORDER.compare(q1.getLocalPart(), q2.getLocalPart()));
+        List<QName> result = new ArrayList<>(qnames);
+        Collections.sort(result, (q1, q2) -> String.CASE_INSENSITIVE_ORDER.compare(q1.getLocalPart(), q2.getLocalPart()));
 
-        return qnames;
+        return result;
     }
 }

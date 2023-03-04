@@ -566,7 +566,10 @@
 
             </group>
 
-            <add-to-group group-id="RunToolbarWidgetCustomizableActionGroup" anchor="first"/>
+            <!-- now handled only through {@link MidPointStartupActivity} since MainToolbarRight is supported since 223.* -->
+            <!-- <add-to-group group-id="MainToolbarRight" anchor="first"/> -->
+            <!-- this one has to be used for older than 223.* -->
+            <!-- <add-to-group group-id="RunToolbarWidgetCustomizableActionGroup" anchor="first"/> -->
         </group>
 
         <group id="MidPoint.Group.Menu.Editor">
