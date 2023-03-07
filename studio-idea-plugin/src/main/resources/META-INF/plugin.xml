@@ -40,6 +40,37 @@
                              displayName="MidPoint"
                              nonDefaultProject="true"/>
 
+        <!--<projectConfigurable
+                parentId="language"
+                instance="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                key="MidPointConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="80"
+                instance="com.evolveum.midpoint.studio.ui.configuration.CredentialsConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.CredentialsConfigurable"
+                key="CredentialsConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="60"
+                instance="com.evolveum.midpoint.studio.ui.configuration.EnvironmentsConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.EnvironmentsConfigurable"
+                key="EnvironmentsConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="40"
+                instance="com.evolveum.midpoint.studio.ui.configuration.OtherConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.OtherConfigurable"
+                key="OtherConfigurable.title"
+                bundle="messages.MidPointStudio"/>-->
+
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
