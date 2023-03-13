@@ -129,17 +129,17 @@ public class MidPointStartupActivity implements StartupActivity {
                 return;
             }
 
-            boolean foundFacet = false;
+            Module moduleWithFacet = null;
             for (Module module : modules) {
                 FacetManager fm = FacetManager.getInstance(module);
                 if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null) {
-                    foundFacet = true;
+                    moduleWithFacet = module;
                     break;
                 }
             }
 
-            if (foundFacet) {
-                validateCredentialsConfiguration(project);
+            if (moduleWithFacet != null) {
+                validateCredentialsConfiguration(moduleWithFacet);
                 return;
             }
 
@@ -158,7 +158,7 @@ public class MidPointStartupActivity implements StartupActivity {
                     StudioBundle.message("MidPointStartupActivity.checkFacet.msg", module.getName()),
                     NotificationType.INFORMATION,
                     NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> addFacetPerformed(module)),
-                    NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAgainPerformed(project)));
+                    NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAboutMidpointConfigurationAgainPerformed(project)));
         });
     }
 
@@ -166,24 +166,26 @@ public class MidPointStartupActivity implements StartupActivity {
         RunnableUtils.runWriteAction(() -> {
             FacetManager fm = FacetManager.getInstance(module);
             if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null) {
-                validateCredentialsConfiguration(module.getProject());
+                validateCredentialsConfiguration(module);
                 return;
             }
 
             FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
             fm.addFacet(facetType, facetType.getDefaultFacetName(), null);
 
-            validateCredentialsConfiguration(module.getProject());
+            validateCredentialsConfiguration(module);
         });
     }
 
-    private void dontAskAgainPerformed(Project project) {
+    private void dontAskAboutMidpointConfigurationAgainPerformed(Project project) {
         MidPointService ms = MidPointService.getInstance(project);
         ms.getSettings().setAskToAddMidpointFacet(false);
         ms.settingsUpdated();
     }
 
-    private void validateCredentialsConfiguration(Project project) {
+    private void validateCredentialsConfiguration(Module module) {
+        Project project = module.getProject();
+
         MidPointService ms = MidPointService.getInstance(project);
         boolean ask = ms.getSettings().isAskToValidateEnvironmentCredentials();
         if (!ask) {
@@ -191,5 +193,22 @@ public class MidPointStartupActivity implements StartupActivity {
         }
 
         // todo check credentials configuration, whether kdbx exists and we know pwd for it
+
+        MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
+                StudioBundle.message("MidPointStartupActivity.checkCredentials.title"),
+                StudioBundle.message("MidPointStartupActivity.checkCredentials.msg", module.getName()),
+                NotificationType.INFORMATION,
+                NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> openEnvironmentsConfiguration(module)),
+                NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAboutCredentialsAgainPerformed(project)));
+    }
+
+    private void openEnvironmentsConfiguration(Module module) {
+        // todoo call ShowEnvironmentConfigurationAction
+    }
+
+    private void dontAskAboutCredentialsAgainPerformed(Project project) {
+        MidPointService ms = MidPointService.getInstance(project);
+        ms.getSettings().setAskToValidateEnvironmentCredentials(false);
+        ms.settingsUpdated();
     }
 }

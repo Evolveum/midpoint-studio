@@ -38,7 +38,6 @@ class CredentialsConfigurable : BoundSearchableConfigurable(message("Credentials
             }
             row {
                 checkBox("Separate encrypted properties")
-//                    .bindSelected(model::restLogCommunication)
             }
             group("Encrypted properties") {
                 row("Path to credentials file:") {

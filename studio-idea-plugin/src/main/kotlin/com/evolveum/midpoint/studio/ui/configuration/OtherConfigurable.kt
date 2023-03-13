@@ -13,6 +13,10 @@ class OtherConfigurable : BoundSearchableConfigurable(message("OtherConfigurable
 
     override fun createPanel(): DialogPanel {
         return panel {
+            row() {
+                checkBox("Ignore missing properties")
+                    .comment("E.g. don't fail to upload object if not all properties have been resolved and replaced")
+            }
             group("Experimental") {
                 row() {
                     checkBox("Enable Axiom Query")

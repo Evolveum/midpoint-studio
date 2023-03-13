@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes
 import com.evolveum.midpoint.studio.util.StudioBundle.message
+import com.intellij.ide.wizard.withVisualPadding
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.options.BoundSearchableConfigurable
@@ -15,17 +16,18 @@ import com.intellij.ui.layout.ValidationInfoBuilder
 import javax.swing.JTextField
 import javax.swing.ListCellRenderer
 
+// todo use ConfigurableProvider for this, only make it available if some module has midpoint facet
 /**
  * Created by Viliam Repan (lazyman).
  */
 open class MidPointConfigurable(
-    val project: Project
+
 ) : BoundSearchableConfigurable(message("MidPointConfigurable.title"), "") {
 
-    var model: MidPointConfiguration
+    var model: MidPointSettingsState
 
     init {
-        model = MidPointConfiguration()
+        model = MidPointSettingsState()
     }
 
     override fun createPanel(): DialogPanel {
@@ -37,11 +39,11 @@ open class MidPointConfigurable(
                         modulesRenderer()
                     )//.bindItem(model::midpointModule)
                 }.comment(message("MidPointConfigurable.general.midpointModule.comment"))
-                row(message("MidPointConfigurable.general.importFormEclipse")) {
-                    button(message("MidPointConfigurable.general.import")) {
-                        onImportFromEclipseClicked()
-                    }
-                }.comment(message("MidPointConfigurable.general.import.comment"))
+//                row(message("MidPointConfigurable.general.importFormEclipse")) {
+//                    button(message("MidPointConfigurable.general.import")) {
+//                        onImportFromEclipseClicked()
+//                    }
+//                }.comment(message("MidPointConfigurable.general.import.comment"))
             }
             groupRowsRange(message("MidPointConfigurable.restClient.title")) {
                 row(message("MidPointConfigurable.restClient.downloadFilePattern")) {
@@ -91,17 +93,18 @@ open class MidPointConfigurable(
                         .bindIntText(model::downloadLimit)
                 }
             }
-        }
+        }   // this should be used with module wizard step .withVisualPadding(topField = true)
     }
 
     private fun listOfModules(): Collection<Module?> {
-        val manager = ModuleManager.getInstance(project)
-
-        val list: MutableList<Module?> = manager.modules.toMutableList()
-        list.sortWith(compareBy { it?.name })
-        list.add(0, null)
-
-        return list
+//        val manager = ModuleManager.getInstance(project)
+//
+//        val list: MutableList<Module?> = manager.modules.toMutableList()
+//        list.sortWith(compareBy { it?.name })
+//        list.add(0, null)
+//
+//        return list
+        return ArrayList()
     }
 
     private fun modulesRenderer(): ListCellRenderer<in Module?> {
