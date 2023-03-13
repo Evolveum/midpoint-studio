@@ -8,6 +8,8 @@
     <depends>org.intellij.groovy</depends>
     <depends>org.jetbrains.idea.maven</depends>
 
+    <resource-bundle>messages.MidPointStudio</resource-bundle>
+
     <extensions defaultExtensionNs="com.intellij">
         <applicationService
                 serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
