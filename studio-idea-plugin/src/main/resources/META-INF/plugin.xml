@@ -289,7 +289,7 @@
         <action id="MidPoint.Action.CleanupFile"
                 class="com.evolveum.midpoint.studio.action.CleanupFileAction"
                 text="Cleanup File"
-                icon="AllIcons.Actions.ShowHiddens"/>
+                icon="AllIcons.Actions.ToggleVisibility"/>
 
         <action id="MidPoint.Action.VerifyAction"
                 class="com.evolveum.midpoint.studio.action.VerifyAction"
