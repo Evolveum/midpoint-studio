@@ -66,6 +66,21 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
     private static final String ATTRIBUTE_VALUE = "value";
 
     @Override
+    public void update(@NotNull AnActionEvent evt) {
+        super.update(evt);
+
+        List<VirtualFile> xsdFiles = getSelectedXsdFiles(evt);
+        evt.getPresentation().setVisible(!xsdFiles.isEmpty());
+    }
+
+    private List<VirtualFile> getSelectedXsdFiles(AnActionEvent evt) {
+        VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
+                (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+
+        return MidPointUtils.filterXsdFiles(selectedFiles);
+    }
+
+    @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
         Project project = evt.getProject();
 
@@ -83,10 +98,7 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
             return;
         }
 
-        VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
-                (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
-
-        List<VirtualFile> files = MidPointUtils.filterXsdFiles(selectedFiles);
+        List<VirtualFile> files = getSelectedXsdFiles(evt);
 
         Map<String, String> properties = new HashMap<>();
         for (VirtualFile file : files) {
