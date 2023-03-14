@@ -54,8 +54,8 @@ public class Color implements Serializable {
         this.blue = blue;
     }
 
-    public java.awt.Color asAwtColor() {
-        return new java.awt.Color(red, green, blue);
+    public Color copy() {
+        return new Color(red, green, blue);
     }
 
     @Override
