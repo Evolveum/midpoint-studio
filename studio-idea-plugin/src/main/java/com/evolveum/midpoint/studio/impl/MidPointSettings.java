@@ -12,9 +12,24 @@ import java.util.*;
  */
 public class MidPointSettings implements Serializable {
 
-    private String projectId;
+    private static final List<ObjectTypes> DEFAULT_DOWNLOAD_EXCLUDE;
 
-    private String midPointVersion;
+    static {
+        List<ObjectTypes> types = new ArrayList<>();
+        types.addAll(Arrays.asList(new ObjectTypes[]{
+                ObjectTypes.USER,
+                ObjectTypes.SHADOW,
+                ObjectTypes.CASE,
+                ObjectTypes.REPORT_DATA,
+                ObjectTypes.CONNECTOR,
+                ObjectTypes.ACCESS_CERTIFICATION_CAMPAIGN,
+                ObjectTypes.NODE
+        }));
+
+        DEFAULT_DOWNLOAD_EXCLUDE = Collections.unmodifiableList(types);
+    }
+
+    private String projectId;
 
     private String dowloadFilePattern;
 
@@ -55,14 +70,6 @@ public class MidPointSettings implements Serializable {
 
     public void setAskToValidateEnvironmentCredentials(boolean askToValidateEnvironmentCredentials) {
         this.askToValidateEnvironmentCredentials = askToValidateEnvironmentCredentials;
-    }
-
-    public String getMidPointVersion() {
-        return midPointVersion;
-    }
-
-    public void setMidPointVersion(String midPointVersion) {
-        this.midPointVersion = midPointVersion;
     }
 
     public String getProjectId() {
@@ -143,6 +150,21 @@ public class MidPointSettings implements Serializable {
         this.restResponseTimeout = restResponseTimeout;
     }
 
+    public MidPointSettings copy() {
+        MidPointSettings other = new MidPointSettings();
+        other.projectId = projectId;
+        other.dowloadFilePattern = dowloadFilePattern;
+        other.generatedFilePattern = generatedFilePattern;
+        other.printRestCommunicationToConsole = printRestCommunicationToConsole;
+        other.askToAddMidpointFacet = askToAddMidpointFacet;
+        other.askToValidateEnvironmentCredentials = askToValidateEnvironmentCredentials;
+        other.downloadTypesExclude = downloadTypesExclude != null ? new ArrayList<>(downloadTypesExclude) : null;
+        other.downloadTypesInclude = downloadTypesInclude != null ? new ArrayList<>(downloadTypesInclude) : null;
+        other.typesToDownloadLimit = typesToDownloadLimit;
+        other.restResponseTimeout = restResponseTimeout;
+
+        return other;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -156,8 +178,6 @@ public class MidPointSettings implements Serializable {
         if (typesToDownloadLimit != that.typesToDownloadLimit) return false;
         if (restResponseTimeout != that.restResponseTimeout) return false;
         if (!Objects.equals(projectId, that.projectId)) return false;
-        if (!Objects.equals(midPointVersion, that.midPointVersion))
-            return false;
         if (!Objects.equals(dowloadFilePattern, that.dowloadFilePattern))
             return false;
         if (!Objects.equals(generatedFilePattern, that.generatedFilePattern))
@@ -172,7 +192,6 @@ public class MidPointSettings implements Serializable {
     @Override
     public int hashCode() {
         int result = projectId != null ? projectId.hashCode() : 0;
-        result = 31 * result + (midPointVersion != null ? midPointVersion.hashCode() : 0);
         result = 31 * result + (dowloadFilePattern != null ? dowloadFilePattern.hashCode() : 0);
         result = 31 * result + (generatedFilePattern != null ? generatedFilePattern.hashCode() : 0);
         result = 31 * result + (printRestCommunicationToConsole ? 1 : 0);
@@ -187,10 +206,7 @@ public class MidPointSettings implements Serializable {
 
     @Override
     public String toString() {
-        return "MidPointSettings{" +
-                "projectId='" + projectId + '\'' +
-                ", midPointVersion='" + midPointVersion + '\'' +
-                '}';
+        return "MidPointSettings{projectId='" + projectId + "'}";
     }
 
     public static MidPointSettings createDefaultSettings() {
@@ -200,19 +216,8 @@ public class MidPointSettings implements Serializable {
         settings.setDowloadFilePattern("objects/$T/$n.xml");
         settings.setGeneratedFilePattern("scratches/gen/$n.xml");
 
-        List<ObjectTypes> types = new ArrayList<>();
-        types.addAll(Arrays.asList(new ObjectTypes[]{
-                ObjectTypes.USER,
-                ObjectTypes.SHADOW,
-                ObjectTypes.CASE,
-                ObjectTypes.REPORT_DATA,
-                ObjectTypes.CONNECTOR,
-                ObjectTypes.ACCESS_CERTIFICATION_CAMPAIGN,
-                ObjectTypes.NODE
-        }));
-        settings.setDownloadTypesExclude(types);
+        settings.setDownloadTypesExclude(new ArrayList<>(DEFAULT_DOWNLOAD_EXCLUDE));
         settings.setTypesToDownloadLimit(100);
-
 
         return settings;
     }
