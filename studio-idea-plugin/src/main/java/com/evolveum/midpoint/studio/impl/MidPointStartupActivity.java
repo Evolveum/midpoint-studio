@@ -53,7 +53,7 @@ public class MidPointStartupActivity implements StartupActivity {
 
         initializeUI();
 
-        validateStudioConfiguration(project);
+        ModalityUiUtil.invokeLaterIfNeeded(ModalityState.any(), () -> validateStudioConfiguration(project));
     }
 
     private void initializePrism() {
@@ -108,55 +108,53 @@ public class MidPointStartupActivity implements StartupActivity {
     }
 
     private void validateStudioConfiguration(Project project) {
-        ModalityUiUtil.invokeLaterIfNeeded(ModalityState.any(), () -> {
-            IProjectStore store = ProjectKt.getStateStore(project);
-            Path path = store.getDirectoryStorePath();
-            if (path == null) {
-                return;
+        IProjectStore store = ProjectKt.getStateStore(project);
+        Path path = store.getDirectoryStorePath();
+        if (path == null) {
+            return;
+        }
+
+        File midpoint = new File(path.toFile(), "midpoint.xml");
+        if (!midpoint.exists()) {
+            return;
+        }
+
+        ModuleManager mm = ModuleManager.getInstance(project);
+        Module[] modules = mm.getModules();
+        if (modules.length == 0) {
+            return;
+        }
+
+        Module moduleWithFacet = null;
+        for (Module module : modules) {
+            FacetManager fm = FacetManager.getInstance(module);
+            if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null) {
+                moduleWithFacet = module;
+                break;
             }
+        }
 
-            File midpoint = new File(path.toFile(), "midpoint.xml");
-            if (!midpoint.exists()) {
-                return;
-            }
+        if (moduleWithFacet != null) {
+            validateCredentialsConfiguration(moduleWithFacet);
+            return;
+        }
 
-            ModuleManager mm = ModuleManager.getInstance(project);
-            Module[] modules = mm.getModules();
-            if (modules.length == 0) {
-                return;
-            }
+        // we would like to add midpoint studio facet
 
-            Module moduleWithFacet = null;
-            for (Module module : modules) {
-                FacetManager fm = FacetManager.getInstance(module);
-                if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null) {
-                    moduleWithFacet = module;
-                    break;
-                }
-            }
+        MidPointService ms = MidPointService.getInstance(project);
+        boolean ask = ms.getSettings().isAskToAddMidpointFacet();
+        if (!ask) {
+            return;
+        }
 
-            if (moduleWithFacet != null) {
-                validateCredentialsConfiguration(moduleWithFacet);
-                return;
-            }
+        Module module = modules[0];
 
-            // we would like to add midpoint studio facet
-
-            MidPointService ms = MidPointService.getInstance(project);
-            boolean ask = ms.getSettings().isAskToAddMidpointFacet();
-            if (!ask) {
-                return;
-            }
-
-            Module module = modules[0];
-
-            MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
-                    StudioBundle.message("MidPointStartupActivity.checkFacet.title"),
-                    StudioBundle.message("MidPointStartupActivity.checkFacet.msg", module.getName()),
-                    NotificationType.INFORMATION,
-                    NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> addFacetPerformed(module)),
-                    NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAboutMidpointConfigurationAgainPerformed(project)));
-        });
+        MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
+                StudioBundle.message("MidPointStartupActivity.checkFacet.title"),
+                StudioBundle.message("MidPointStartupActivity.checkFacet.msg", module.getName()),
+                NotificationType.INFORMATION,
+                NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> addFacetPerformed(module)),
+                NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAboutMidpointConfigurationAgainPerformed(project)));
     }
 
     private void addFacetPerformed(Module module) {
@@ -188,6 +186,14 @@ public class MidPointStartupActivity implements StartupActivity {
         if (!ask) {
             return;
         }
+
+        // todo check whether there is credentials.kdbx and master password is available and valid
+
+        validateEnvironmentsConfiguration(module);
+    }
+
+    private void validateEnvironmentsConfiguration(Module module) {
+        Project project = module.getProject();
 
         boolean check = false;
         EnvironmentService es = EnvironmentService.getInstance(project);
