@@ -1,40 +1,29 @@
 package com.evolveum.midpoint.studio.ui.configuration;
 
 
-import com.intellij.diagnostic.LoadingState;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.PersistentStateComponentWithModificationTracker;
-import com.intellij.openapi.components.SettingsCategory;
-import com.intellij.openapi.components.State;
-import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.components.*;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /*
  * Created by Viliam Repan (lazyman).
  */
+@Service(Service.Level.PROJECT)
 @State(name = "MidPointSettings", storages = @Storage(value = "midpoint-studio.xml"), useLoadedStateAsExisting = false, category = SettingsCategory.PLUGINS)
-public class MidPointSettings implements PersistentStateComponentWithModificationTracker<MidPointSettingsState> {
-
-    private static volatile MidPointSettings INSTANCE;
+public final class MidPointSettings implements PersistentStateComponentWithModificationTracker<MidPointSettingsState> {
 
     private MidPointSettingsState state = new MidPointSettingsState();
 
-    public static MidPointSettings getInstance() {
-        MidPointSettings instance = INSTANCE;
-        if (instance == null) {
-            LoadingState.CONFIGURATION_STORE_INITIALIZED.checkOccurred();
+    private long modificationCount;
 
-            instance = ApplicationManager.getApplication().getService(MidPointSettings.class);
-            INSTANCE = instance;
-        }
-
-        return instance;
+    public static MidPointSettings getInstance(Project project) {
+        return project.getService(MidPointSettings.class);
     }
 
     @Override
     public long getStateModificationCount() {
-        return state.getModificationCount();
+        return modificationCount;
     }
 
     @Override
@@ -44,6 +33,12 @@ public class MidPointSettings implements PersistentStateComponentWithModificatio
 
     @Override
     public void loadState(@NotNull MidPointSettingsState state) {
+        setState(state);
+    }
+
+    public void setState(@NotNull MidPointSettingsState state) {
         this.state = state;
+
+        modificationCount++;
     }
 }

@@ -9,7 +9,7 @@ import java.util.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MidPointSettingsState extends BaseState {
+public class MidPointSettingsState implements Serializable {
 
     private static final List<ObjectTypes> DOWNLOAD_EXLUDE;
 
