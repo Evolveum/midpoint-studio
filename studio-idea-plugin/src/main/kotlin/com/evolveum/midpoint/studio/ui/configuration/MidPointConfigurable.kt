@@ -1,8 +1,11 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes
+import com.evolveum.midpoint.studio.impl.MidPointService
+import com.evolveum.midpoint.studio.impl.MidPointSettings
 import com.evolveum.midpoint.studio.util.StudioBundle.message
 import com.intellij.openapi.options.BoundSearchableConfigurable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.dsl.builder.*
@@ -10,30 +13,26 @@ import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ValidationInfoBuilder
 import javax.swing.JTextField
 
-// todo use ConfigurableProvider for this, only make it available if some module has midpoint facet
 /**
  * Created by Viliam Repan (lazyman).
  */
-open class MidPointConfigurable(
+open class MidPointConfigurable(val project: Project) :
+    BoundSearchableConfigurable(message("MidPointConfigurable.title"), "") {
 
-) : BoundSearchableConfigurable(message("MidPointConfigurable.title"), "") {
-
-    var model: MidPointSettingsState
+    var model: MidPointSettings
 
     init {
-        model = loadModel()
-    }
-
-    open fun loadModel(): MidPointSettingsState {
-        return MidPointSettingsState()
+        model = MidPointService.getInstance(project).settings.copy()
     }
 
     override fun apply() {
         val modified = isModified
+
         super.apply()
 
         if (modified) {
-            MidPointSettings.getInstance().loadState(model)
+            val ms = MidPointService.getInstance(project)
+            ms.settings = model.copy()
         }
     }
 
@@ -43,24 +42,26 @@ open class MidPointConfigurable(
                 row(message("MidPointConfigurable.restClient.downloadFilePattern")) {
                     textField()
                         .columns(COLUMNS_LARGE)
-                        .bindText(model::downloadFilePattern)
+                        .bindText({ model.dowloadFilePattern }, { model.dowloadFilePattern = it })
                         .validationOnInput(::validateNotBlank)
                         .validationOnApply(::validateNotBlank)
                 }
                 row(message("MidPointConfigurable.restClient.generatedFilePattern")) {
                     textField()
                         .columns(COLUMNS_LARGE)
-                        .bindText(model::generatedFilePattern)
+                        .bindText({ model.generatedFilePattern }, { model.generatedFilePattern = it })
                         .validationOnInput(::validateNotBlank)
                         .validationOnApply(::validateNotBlank)
                 }
                 row(message("MidPointConfigurable.restClient.timeout")) {
                     intTextField(IntRange(1, 600), 1)
-                        .bindIntText(model::restClientTimeout)
+                        .bindIntText({ model.restResponseTimeout }, { model.restResponseTimeout = it })
                 }.comment(message("MidPointConfigurable.restClient.timeout.comment"))
                 row {
                     checkBox(message("MidPointConfigurable.restClient.logCommunication"))
-                        .bindSelected(model::restLogCommunication)
+                        .bindSelected(
+                            { model.isPrintRestCommunicationToConsole },
+                            { model.isPrintRestCommunicationToConsole = it })
                 }
             }
             groupRowsRange(message("MidPointConfigurable.download.title")) {
@@ -84,7 +85,7 @@ open class MidPointConfigurable(
                 }
                 row(message("MidPointConfigurable.download.limit")) {
                     intTextField(IntRange(1, 500), 1)
-                        .bindIntText(model::downloadLimit)
+                        .bindIntText({ model.typesToDownloadLimit }, { model.typesToDownloadLimit = it })
                 }
             }
         }   // this should be used with module wizard step .withVisualPadding(topField = true)
