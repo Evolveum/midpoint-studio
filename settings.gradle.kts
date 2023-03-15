@@ -18,7 +18,7 @@ dependencyResolutionManagement {
             version("jaxb-runtime", "2.3.2")
             version("jcommander", "1.81")
             version("logback", "1.2.3")
-            version("midpoint", "4.7-M3")
+            version("midpoint", "4.7-RC1")
             version("okhttp", "4.10.0")
             version("openkeepass", "0.8.1")
             version("spring", "5.3.8")
