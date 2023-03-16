@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Added
+- MID-8404 added new option ignoreMissingKeys
 
 ### Changed
 
