@@ -13,9 +13,7 @@ import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.layout.ValidationInfoBuilder
 import javax.swing.JTextField
 
-/**
- * Created by Viliam Repan (lazyman).
- */
+
 open class MidPointConfigurable(val project: Project) :
     BoundSearchableConfigurable(message("MidPointConfigurable.title"), "") {
 
@@ -82,10 +80,6 @@ open class MidPointConfigurable(val project: Project) :
                             { translateTypesToString(model.downloadTypesExclude) },
                             { translateStringToTypes(it) })
                         .horizontalAlign(HorizontalAlign.FILL)
-                }
-                row(message("MidPointConfigurable.download.limit")) {
-                    intTextField(IntRange(1, 500), 1)
-                        .bindIntText({ model.typesToDownloadLimit }, { model.typesToDownloadLimit = it })
                 }
             }
         }   // this should be used with module wizard step .withVisualPadding(topField = true)
