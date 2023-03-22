@@ -43,6 +43,8 @@ public class MidPointSettings implements Serializable {
 
     private boolean askToValidateEnvironmentCredentials = true;
 
+    private boolean ignoreMissingKeys;
+
     @OptionTag(converter = ObjectTypesConverter.class)
     private List<ObjectTypes> downloadTypesInclude;
 
@@ -150,6 +152,14 @@ public class MidPointSettings implements Serializable {
         this.restResponseTimeout = restResponseTimeout;
     }
 
+    public boolean isIgnoreMissingKeys() {
+        return ignoreMissingKeys;
+    }
+
+    public void setIgnoreMissingKeys(boolean ignoreMissingKeys) {
+        this.ignoreMissingKeys = ignoreMissingKeys;
+    }
+
     public MidPointSettings copy() {
         MidPointSettings other = new MidPointSettings();
         other.projectId = projectId;
@@ -162,6 +172,7 @@ public class MidPointSettings implements Serializable {
         other.downloadTypesInclude = downloadTypesInclude != null ? new ArrayList<>(downloadTypesInclude) : null;
         other.typesToDownloadLimit = typesToDownloadLimit;
         other.restResponseTimeout = restResponseTimeout;
+        other.ignoreMissingKeys = ignoreMissingKeys;
 
         return other;
     }
@@ -175,6 +186,8 @@ public class MidPointSettings implements Serializable {
 
         if (printRestCommunicationToConsole != that.printRestCommunicationToConsole) return false;
         if (askToAddMidpointFacet != that.askToAddMidpointFacet) return false;
+        if (askToValidateEnvironmentCredentials != that.askToValidateEnvironmentCredentials) return false;
+        if (ignoreMissingKeys != that.ignoreMissingKeys) return false;
         if (typesToDownloadLimit != that.typesToDownloadLimit) return false;
         if (restResponseTimeout != that.restResponseTimeout) return false;
         if (!Objects.equals(projectId, that.projectId)) return false;
@@ -197,6 +210,8 @@ public class MidPointSettings implements Serializable {
         result = 31 * result + (printRestCommunicationToConsole ? 1 : 0);
         result = 31 * result + (docGeneratorOptions != null ? docGeneratorOptions.hashCode() : 0);
         result = 31 * result + (askToAddMidpointFacet ? 1 : 0);
+        result = 31 * result + (askToValidateEnvironmentCredentials ? 1 : 0);
+        result = 31 * result + (ignoreMissingKeys ? 1 : 0);
         result = 31 * result + (downloadTypesInclude != null ? downloadTypesInclude.hashCode() : 0);
         result = 31 * result + (downloadTypesExclude != null ? downloadTypesExclude.hashCode() : 0);
         result = 31 * result + typesToDownloadLimit;

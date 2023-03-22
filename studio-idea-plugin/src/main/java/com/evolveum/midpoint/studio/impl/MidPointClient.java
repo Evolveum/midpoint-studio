@@ -266,10 +266,18 @@ public class MidPointClient {
         return client.execute(object);
     }
 
+    private Expander createExpander() {
+        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
+        MidPointService ms = project != null ? MidPointService.getInstance(project) : null;
+
+        boolean ignoreMissingKeys = ms != null ? ms.getSettings().isIgnoreMissingKeys() : false;
+
+        return new Expander(environment, cm, project, ignoreMissingKeys);
+    }
+
     public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand, VirtualFile file) throws IOException, AuthenticationException {
         if (expand) {
-            EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-            Expander expander = new Expander(environment, cm, project);
+            Expander expander = createExpander();
 
             String expanded = expander.expand(obj.getContent(), file);
 
@@ -321,8 +329,7 @@ public class MidPointClient {
     }
 
     public PrismObject<?> parseObject(String xml, ExpanderOptions opts) throws IOException, SchemaException {
-        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm, project);
+        Expander expander = createExpander();
 
         String expanded = expander.expand(xml, opts);
 
@@ -331,8 +338,7 @@ public class MidPointClient {
     }
 
     public List<PrismObject<?>> parseObjects(String xml) throws IOException, SchemaException {
-        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm, project);
+        Expander expander = createExpander();
 
         String expanded = expander.expand(xml);
 
@@ -341,8 +347,7 @@ public class MidPointClient {
     }
 
     public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
-        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm, project);
+        Expander expander = createExpander();
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
@@ -354,8 +359,7 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> PrismObject<O> parseObject(VirtualFile file) throws IOException, SchemaException {
-        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm, project);
+        Expander expander = createExpander();
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
