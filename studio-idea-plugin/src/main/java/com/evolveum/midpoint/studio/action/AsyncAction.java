@@ -4,9 +4,9 @@ import com.evolveum.midpoint.studio.action.task.BackgroundableTask;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.UpdateInBackground;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.NlsActions;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +17,7 @@ import javax.swing.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public abstract class AsyncAction<T extends BackgroundableTask> extends AnAction implements UpdateInBackground {
+public abstract class AsyncAction<T extends BackgroundableTask> extends AnAction {
 
     public AsyncAction() {
         this(null);
@@ -29,6 +29,11 @@ public abstract class AsyncAction<T extends BackgroundableTask> extends AnAction
 
     public AsyncAction(@Nullable @NlsActions.ActionText String text, @Nullable Icon icon) {
         super(text, text, icon);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     @Override

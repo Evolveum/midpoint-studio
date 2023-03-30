@@ -1,14 +1,13 @@
 package com.evolveum.midpoint.studio;
 
-import com.evolveum.midpoint.studio.impl.EncryptionService;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.Expander;
+import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import org.apache.commons.io.FileSystem;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -50,7 +49,7 @@ public class ExpanderTest extends StudioActionTest {
     }
 
     @Test
-    public void testMid7781Variant() throws IOException{
+    public void testMid7781Variant() throws IOException {
         if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
             testMid7781Variants("$(@..\\include\\email\\sample.html)");
         }
@@ -61,7 +60,8 @@ public class ExpanderTest extends StudioActionTest {
     private void testMid7781Variants(String keyToExpand) throws IOException {
         Project project = getProject();
         EnvironmentService es = EnvironmentService.getInstance(project);
-        Expander expander = new Expander(es.getSelected(), null, project);
+        MidPointService ms = MidPointService.getInstance(project);
+        Expander expander = new Expander(es.getSelected(), null, project, ms.getSettings().isIgnoreMissingKeys());
 
         PsiFile psiFile = myFixture.configureByFile("mid-7781/functionalLibraries/lib.xml");
         VirtualFile file = psiFile.getVirtualFile();
@@ -91,8 +91,7 @@ public class ExpanderTest extends StudioActionTest {
         EnvironmentService es = EnvironmentService.getInstance(project);
         es.add(environment);
 
-        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm, project);
+        Expander expander = new Expander(environment, project);
 
         String result = expander.expand(text, file.getVirtualFile());
 

@@ -8,6 +8,8 @@
     <depends>org.intellij.groovy</depends>
     <depends>org.jetbrains.idea.maven</depends>
 
+    <resource-bundle>messages.MidPointStudio</resource-bundle>
+
     <extensions defaultExtensionNs="com.intellij">
         <applicationService
                 serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
@@ -39,6 +41,37 @@
                              id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
                              displayName="MidPoint"
                              nonDefaultProject="true"/>
+
+        <!--<projectConfigurable
+                parentId="language"
+                instance="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                key="MidPointConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="80"
+                instance="com.evolveum.midpoint.studio.ui.configuration.CredentialsConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.CredentialsConfigurable"
+                key="CredentialsConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="60"
+                instance="com.evolveum.midpoint.studio.ui.configuration.EnvironmentsConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.EnvironmentsConfigurable"
+                key="EnvironmentsConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="40"
+                instance="com.evolveum.midpoint.studio.ui.configuration.OtherConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.OtherConfigurable"
+                key="OtherConfigurable.title"
+                bundle="messages.MidPointStudio"/>-->
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
@@ -197,6 +230,9 @@
         <xml.tagNameProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
 
+        <xml.elementDescriptorProvider
+                implementation="com.evolveum.midpoint.studio.impl.lang.MetadataElementDescriptorProvider"/>
+
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
@@ -222,7 +258,7 @@
         <membersContributor implementation="com.evolveum.midpoint.studio.impl.lang.ScriptNonCodeMembersContributor"/>
     </extensions>
 
-    <actions>
+    <actions resource-bundle="messages.MidPointStudio">
 
         <!-- MISCELLANEOUS -->
 
@@ -250,7 +286,6 @@
 
         <action id="MidPoint.Action.UploadExecute"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
-                text="Upload/Execute"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
 
         <action id="MidPoint.ExpUI.Action.UploadExecute"
@@ -325,7 +360,7 @@
         <action id="MidPoint.Action.CleanupFile"
                 class="com.evolveum.midpoint.studio.action.CleanupFileAction"
                 text="Cleanup File"
-                icon="AllIcons.Actions.ShowHiddens"/>
+                icon="AllIcons.Actions.ToggleVisibility"/>
 
         <action id="MidPoint.Action.VerifyAction"
                 class="com.evolveum.midpoint.studio.action.VerifyAction"

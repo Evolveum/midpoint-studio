@@ -5,19 +5,31 @@ import com.evolveum.midpoint.studio.util.ObjectTypesConverter;
 import com.intellij.util.xmlb.annotations.OptionTag;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointSettings implements Serializable {
 
-    private String projectId;
+    private static final List<ObjectTypes> DEFAULT_DOWNLOAD_EXCLUDE;
 
-    private String midPointVersion;
+    static {
+        List<ObjectTypes> types = new ArrayList<>();
+        types.addAll(Arrays.asList(new ObjectTypes[]{
+                ObjectTypes.USER,
+                ObjectTypes.SHADOW,
+                ObjectTypes.CASE,
+                ObjectTypes.REPORT_DATA,
+                ObjectTypes.CONNECTOR,
+                ObjectTypes.ACCESS_CERTIFICATION_CAMPAIGN,
+                ObjectTypes.NODE
+        }));
+
+        DEFAULT_DOWNLOAD_EXCLUDE = Collections.unmodifiableList(types);
+    }
+
+    private String projectId;
 
     private String dowloadFilePattern;
 
@@ -26,6 +38,12 @@ public class MidPointSettings implements Serializable {
     private boolean printRestCommunicationToConsole;
 
     private DocGeneratorOptions docGeneratorOptions;
+
+    private boolean askToAddMidpointFacet = true;
+
+    private boolean askToValidateEnvironmentCredentials = true;
+
+    private boolean ignoreMissingKeys;
 
     @OptionTag(converter = ObjectTypesConverter.class)
     private List<ObjectTypes> downloadTypesInclude;
@@ -40,12 +58,20 @@ public class MidPointSettings implements Serializable {
     public MidPointSettings() {
     }
 
-    public String getMidPointVersion() {
-        return midPointVersion;
+    public boolean isAskToAddMidpointFacet() {
+        return askToAddMidpointFacet;
     }
 
-    public void setMidPointVersion(String midPointVersion) {
-        this.midPointVersion = midPointVersion;
+    public void setAskToAddMidpointFacet(boolean askToAddMidpointFacet) {
+        this.askToAddMidpointFacet = askToAddMidpointFacet;
+    }
+
+    public boolean isAskToValidateEnvironmentCredentials() {
+        return askToValidateEnvironmentCredentials;
+    }
+
+    public void setAskToValidateEnvironmentCredentials(boolean askToValidateEnvironmentCredentials) {
+        this.askToValidateEnvironmentCredentials = askToValidateEnvironmentCredentials;
     }
 
     public String getProjectId() {
@@ -126,38 +152,66 @@ public class MidPointSettings implements Serializable {
         this.restResponseTimeout = restResponseTimeout;
     }
 
+    public boolean isIgnoreMissingKeys() {
+        return ignoreMissingKeys;
+    }
+
+    public void setIgnoreMissingKeys(boolean ignoreMissingKeys) {
+        this.ignoreMissingKeys = ignoreMissingKeys;
+    }
+
+    public MidPointSettings copy() {
+        MidPointSettings other = new MidPointSettings();
+        other.projectId = projectId;
+        other.dowloadFilePattern = dowloadFilePattern;
+        other.generatedFilePattern = generatedFilePattern;
+        other.printRestCommunicationToConsole = printRestCommunicationToConsole;
+        other.askToAddMidpointFacet = askToAddMidpointFacet;
+        other.askToValidateEnvironmentCredentials = askToValidateEnvironmentCredentials;
+        other.downloadTypesExclude = downloadTypesExclude != null ? new ArrayList<>(downloadTypesExclude) : null;
+        other.downloadTypesInclude = downloadTypesInclude != null ? new ArrayList<>(downloadTypesInclude) : null;
+        other.typesToDownloadLimit = typesToDownloadLimit;
+        other.restResponseTimeout = restResponseTimeout;
+        other.ignoreMissingKeys = ignoreMissingKeys;
+
+        return other;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MidPointSettings settings = (MidPointSettings) o;
+        MidPointSettings that = (MidPointSettings) o;
 
-        if (printRestCommunicationToConsole != settings.printRestCommunicationToConsole) return false;
-        if (typesToDownloadLimit != settings.typesToDownloadLimit) return false;
-        if (restResponseTimeout != settings.restResponseTimeout) return false;
-        if (projectId != null ? !projectId.equals(settings.projectId) : settings.projectId != null) return false;
-        if (midPointVersion != null ? !midPointVersion.equals(settings.midPointVersion) : settings.midPointVersion != null)
+        if (printRestCommunicationToConsole != that.printRestCommunicationToConsole) return false;
+        if (askToAddMidpointFacet != that.askToAddMidpointFacet) return false;
+        if (askToValidateEnvironmentCredentials != that.askToValidateEnvironmentCredentials) return false;
+        if (ignoreMissingKeys != that.ignoreMissingKeys) return false;
+        if (typesToDownloadLimit != that.typesToDownloadLimit) return false;
+        if (restResponseTimeout != that.restResponseTimeout) return false;
+        if (!Objects.equals(projectId, that.projectId)) return false;
+        if (!Objects.equals(dowloadFilePattern, that.dowloadFilePattern))
             return false;
-        if (dowloadFilePattern != null ? !dowloadFilePattern.equals(settings.dowloadFilePattern) : settings.dowloadFilePattern != null)
+        if (!Objects.equals(generatedFilePattern, that.generatedFilePattern))
             return false;
-        if (generatedFilePattern != null ? !generatedFilePattern.equals(settings.generatedFilePattern) : settings.generatedFilePattern != null)
+        if (!Objects.equals(docGeneratorOptions, that.docGeneratorOptions))
             return false;
-        if (docGeneratorOptions != null ? !docGeneratorOptions.equals(settings.docGeneratorOptions) : settings.docGeneratorOptions != null)
+        if (!Objects.equals(downloadTypesInclude, that.downloadTypesInclude))
             return false;
-        if (downloadTypesInclude != null ? !downloadTypesInclude.equals(settings.downloadTypesInclude) : settings.downloadTypesInclude != null)
-            return false;
-        return downloadTypesExclude != null ? downloadTypesExclude.equals(settings.downloadTypesExclude) : settings.downloadTypesExclude == null;
+        return Objects.equals(downloadTypesExclude, that.downloadTypesExclude);
     }
 
     @Override
     public int hashCode() {
         int result = projectId != null ? projectId.hashCode() : 0;
-        result = 31 * result + (midPointVersion != null ? midPointVersion.hashCode() : 0);
         result = 31 * result + (dowloadFilePattern != null ? dowloadFilePattern.hashCode() : 0);
         result = 31 * result + (generatedFilePattern != null ? generatedFilePattern.hashCode() : 0);
         result = 31 * result + (printRestCommunicationToConsole ? 1 : 0);
         result = 31 * result + (docGeneratorOptions != null ? docGeneratorOptions.hashCode() : 0);
+        result = 31 * result + (askToAddMidpointFacet ? 1 : 0);
+        result = 31 * result + (askToValidateEnvironmentCredentials ? 1 : 0);
+        result = 31 * result + (ignoreMissingKeys ? 1 : 0);
         result = 31 * result + (downloadTypesInclude != null ? downloadTypesInclude.hashCode() : 0);
         result = 31 * result + (downloadTypesExclude != null ? downloadTypesExclude.hashCode() : 0);
         result = 31 * result + typesToDownloadLimit;
@@ -167,33 +221,18 @@ public class MidPointSettings implements Serializable {
 
     @Override
     public String toString() {
-        return "MidPointSettings{" +
-                "projectId='" + projectId + '\'' +
-                ", midPointVersion='" + midPointVersion + '\'' +
-                '}';
+        return "MidPointSettings{projectId='" + projectId + "'}";
     }
 
     public static MidPointSettings createDefaultSettings() {
         MidPointSettings settings = new MidPointSettings();
         settings.setProjectId(UUID.randomUUID().toString());
-        settings.setMidPointVersion("4.1-SNAPSHOT");
 
         settings.setDowloadFilePattern("objects/$T/$n.xml");
         settings.setGeneratedFilePattern("scratches/gen/$n.xml");
 
-        List<ObjectTypes> types = new ArrayList<>();
-        types.addAll(Arrays.asList(new ObjectTypes[]{
-                ObjectTypes.USER,
-                ObjectTypes.SHADOW,
-                ObjectTypes.CASE,
-                ObjectTypes.REPORT_DATA,
-                ObjectTypes.CONNECTOR,
-                ObjectTypes.ACCESS_CERTIFICATION_CAMPAIGN,
-                ObjectTypes.NODE
-        }));
-        settings.setDownloadTypesExclude(types);
+        settings.setDownloadTypesExclude(new ArrayList<>(DEFAULT_DOWNLOAD_EXCLUDE));
         settings.setTypesToDownloadLimit(100);
-
 
         return settings;
     }

@@ -88,8 +88,7 @@ public class PropertiesInlayCacheService {
             return;
         }
 
-        EncryptionService enc = EncryptionService.getInstance(project);
-        expander = new Expander(environment, enc, project);
+        expander = new Expander(environment, project);
 
         // force re-highlight editors, this probably shouldn't be here, but right now no better place
         ParameterHintsPassFactory.forceHintsUpdateOnNextPass();

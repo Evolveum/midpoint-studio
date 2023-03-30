@@ -23,6 +23,7 @@ public class MidPointSettingsPanel extends JPanel {
     private JTextField typesIncluded;
     private JTextField typesExcluded;
     private JTextField restClientTimeout;
+    private JCheckBox ignoreUknownProperties;
 
     private MidPointSettings settings;
 
@@ -47,6 +48,7 @@ public class MidPointSettingsPanel extends JPanel {
         typesExcluded.setText(converter.toString(settings.getDownloadTypesExclude()));
 
         typesDownloadLimit.setText(Integer.toString(settings.getTypesToDownloadLimit()));
+        ignoreUknownProperties.setSelected(settings.isIgnoreMissingKeys());
     }
 
     public boolean isModified() {
@@ -73,6 +75,8 @@ public class MidPointSettingsPanel extends JPanel {
         settings.setDownloadTypesExclude(converter.fromString(typesExcluded.getText()));
 
         settings.setTypesToDownloadLimit(Integer.parseInt(typesDownloadLimit.getText()));
+
+        settings.setIgnoreMissingKeys(ignoreUknownProperties.isSelected());
 
         return settings;
     }

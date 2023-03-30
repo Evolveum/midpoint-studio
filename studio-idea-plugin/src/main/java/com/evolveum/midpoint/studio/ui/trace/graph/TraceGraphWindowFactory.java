@@ -17,7 +17,7 @@ public class TraceGraphWindowFactory implements ToolWindowFactory, DumbAware {
         ContentManager contentManager = toolWindow.getContentManager();
 
         TraceGraphPanel graphPanel = new TraceGraphPanel(project);
-        Content graphContent = ContentFactory.SERVICE.getInstance().createContent(graphPanel, null, false);
+        Content graphContent = ContentFactory.getInstance().createContent(graphPanel, null, false);
         contentManager.addContent(graphContent);
     }
 

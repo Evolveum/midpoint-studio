@@ -1,5 +1,13 @@
 # MidPoint Studio
 
+## [Unreleased]
+### Added
+- MID-8404 added new option ignoreMissingKeys
+
+### Changed
+
+### Fixed
+
 ## [4.6.2]
 ### Added
 - Support for Idea 2023.1

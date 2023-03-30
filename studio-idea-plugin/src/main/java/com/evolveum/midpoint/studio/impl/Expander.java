@@ -39,10 +39,20 @@ public class Expander {
 
     private Map<String, String> projectProperties = new HashMap<>();
 
-    public Expander(Environment environment, EncryptionService encryptionService, Project project) {
+    private boolean ignoreMissingKeys;
+
+    public Expander(Environment environment, Project project) {
+        this(environment,
+                project != null ? EncryptionService.getInstance(project) : null, project,
+                project != null ? MidPointService.getInstance(project).getSettings().isIgnoreMissingKeys() : false);
+    }
+
+    public Expander(Environment environment, EncryptionService encryptionService, Project project, boolean ignoreMissingKeys) {
         this.environment = environment;
         this.encryptionService = encryptionService;
         this.environmentProperties = new EnvironmentProperties(project, environment);
+
+        this.ignoreMissingKeys = ignoreMissingKeys;
 
         initProjectProperties(project);
     }
@@ -220,6 +230,9 @@ public class Expander {
 
                     return loadContent(content, key, filePath, file);
                 } else {
+                    if (ignoreMissingKeys) {
+                        return null;
+                    }
                     throw new IllegalStateException("Couldn't load file '" + key + "', unknown path '" + key + "'");
                 }
             }
@@ -259,6 +272,9 @@ public class Expander {
         String value = environmentProperties.get(key);
 
         if (value == null && throwExceptionIfNotFound) {
+            if (ignoreMissingKeys) {
+                return null;
+            }
             throw new IllegalStateException("Couldn't translate key '" + key + "'");
         }
 
@@ -267,10 +283,16 @@ public class Expander {
 
     private String loadContent(VirtualFile file, String key, String contentFilePath, VirtualFile contentParent) {
         if (file == null) {
+            if (ignoreMissingKeys) {
+                return null;
+            }
             throw new IllegalStateException("Can't load content for key '" + key + "', file '" + contentFilePath + "' is not present in '" + contentParent + "'");
         }
 
         if (file.isDirectory()) {
+            if (ignoreMissingKeys) {
+                return null;
+            }
             throw new IllegalStateException("Can't load content for key '" + key + "', file '" + file.getPath() + "' is directory");
         }
 
@@ -278,6 +300,9 @@ public class Expander {
             byte[] content = file.contentsToByteArray();
             return new String(content, file.getCharset());
         } catch (IOException ex) {
+            if (ignoreMissingKeys) {
+                return null;
+            }
             throw new IllegalStateException("Couldn't load content for key '" + key + "', file '" + file.getPath() + "', reason: " + ex.getMessage());
         }
     }
