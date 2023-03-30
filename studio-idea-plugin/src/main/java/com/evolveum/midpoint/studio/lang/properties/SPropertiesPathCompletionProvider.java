@@ -21,8 +21,9 @@ import java.util.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class SPropertiesKeyCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class SPropertiesPathCompletionProvider extends CompletionProvider<CompletionParameters> {
 
+    // todo finish implementation and fix proper injection in contributor
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         Editor editor = parameters.getEditor();
@@ -32,18 +33,11 @@ public class SPropertiesKeyCompletionProvider extends CompletionProvider<Complet
             return;
         }
 
-        PropertiesInlayCacheService cache = project.getService(PropertiesInlayCacheService.class);
-        Set<String> keys = cache.getKeys();
+        List<String> sorted = new ArrayList<>();
 
-        List<String> sorted = new ArrayList<>(keys);
-        Collections.sort(sorted);
-
-        Document doc = editor.getDocument();
-        VirtualFile vf = FileDocumentManager.getInstance().getFile(doc);
-
-        for (String key : sorted) {
-            result.addElement(build(key, cache.expandKeyForInlay(key, vf)));
-        }
+//        for (String key : sorted) {
+//            result.addElement(build(key, cache.expandKeyForInlay(key, vf)));
+//        }
     }
 
     private LookupElement build(String key, String value) {
