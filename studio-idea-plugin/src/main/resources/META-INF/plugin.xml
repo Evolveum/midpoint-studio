@@ -166,6 +166,10 @@
         <lang.elementManipulator
                 forClass="com.evolveum.midpoint.studio.lang.properties.psi.SPropertiesPath"
                 implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesPathManipulator"/>
+        <completion.contributor
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesCompletionContributor"/>
+
 
         <!-- Studio properties language support end -->
 
@@ -193,7 +197,7 @@
 
         <!-- Axiom language support -->
 
-        <fileType language="Axiom"
+        <!--<fileType language="Axiom"
                   implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomFileType"
                   name="Axiom File" fieldName="INSTANCE" extensions="axiom"/>
         <lang.syntaxHighlighterFactory language="Axiom"
@@ -201,7 +205,7 @@
         <lang.parserDefinition language="Axiom"
                                implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomParserDefinition"/>
         <lang.ast.factory language="Axiom"
-                          implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomASTFactory"/>
+                          implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomASTFactory"/>-->
 
         <!-- Axiom language support end -->
 
