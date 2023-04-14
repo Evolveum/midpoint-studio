@@ -7,6 +7,7 @@
 ### Changed
 
 ### Fixed
+- MID-8744 Fixed remote diff of files that contain file includes
 
 ## [4.6.2]
 ### Added
