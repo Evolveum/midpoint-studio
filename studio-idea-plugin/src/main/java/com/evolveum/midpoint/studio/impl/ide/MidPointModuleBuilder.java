@@ -1,24 +1,21 @@
 package com.evolveum.midpoint.studio.impl.ide;
 
 import com.evolveum.midpoint.studio.MidPointIcons;
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.EncryptionService;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.ProjectSettings;
 import com.evolveum.midpoint.studio.ui.MidPointWizardStep;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.intellij.codeInsight.actions.ReformatCodeProcessor;
+import com.evolveum.midpoint.studio.util.StudioBundle;
 import com.intellij.codeInsight.template.TemplateManager;
 import com.intellij.codeInsight.template.impl.TemplateImpl;
-import com.intellij.facet.FacetManager;
-import com.intellij.facet.FacetType;
-import com.intellij.facet.FacetTypeRegistry;
 import com.intellij.ide.fileTemplates.FileTemplate;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
-import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
@@ -27,22 +24,22 @@ import com.intellij.openapi.module.StdModuleTypes;
 import com.intellij.openapi.project.DumbAwareRunnable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
+import org.jetbrains.idea.maven.utils.MavenUtil;
+import org.jetbrains.idea.maven.wizards.AbstractMavenModuleBuilder;
 
 import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,7 +47,7 @@ import java.util.regex.Pattern;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MidPointModuleBuilder extends ModuleBuilder {
+public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
 
     private static final Logger LOG = Logger.getInstance(MidPointModuleBuilder.class);
 
@@ -58,15 +55,10 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
     public static String MODULE_NAME = "MidPoint";
 
-    private ProjectSettings settings = new ProjectSettings();
+    private final ProjectSettings settings = new ProjectSettings();
 
     public MidPointModuleBuilder() {
         setName(MODULE_NAME);
-    }
-
-    @Override
-    public String getBuilderId() {
-        return getClass().getName();
     }
 
     @Override
@@ -90,57 +82,79 @@ public class MidPointModuleBuilder extends ModuleBuilder {
     }
 
     @Override
-    public void setupRootModel(ModifiableRootModel modifiableRootModel) {
-        VirtualFile root = createAndGetContentEntry();
-        modifiableRootModel.addContentEntry(root);
+    public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext, @NotNull ModulesProvider modulesProvider) {
+        return new ModuleWizardStep[0];
+    }
 
-        Project project = modifiableRootModel.getProject();
+    @Override
+    public void setupRootModel(ModifiableRootModel root) {
+        MavenUtil.runWhenInitialized(root.getProject(), (DumbAwareRunnable) () -> setupProject(root));
+    }
+
+    private void setupProject(ModifiableRootModel root) {
+        Project project = root.getProject();
+
+        String contentPath = getContentEntryPath();
+        String path = FileUtil.toSystemIndependentName(contentPath);
 
         try {
-            VfsUtil.createDirectories(root.getPath() + "/objects");
-            VfsUtil.createDirectories(root.getPath() + "/scratches");
+            Files.createDirectories(Path.of(path));
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(project, null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create directory structure", ex);
+            LOG.error("Couldn't create content path", ex);
         }
 
-        // build pom file
-        MidPointUtils.runWhenInitialized(project, (DumbAwareRunnable) () -> {
+        VirtualFile rootFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(path);
 
-            Application am = ApplicationManager.getApplication();
+        rootFile.refresh(true, false, () -> {
+            createProjectFiles(project, rootFile);
 
-            if (!am.isDispatchThread()) {
-                am.invokeLater(() -> WriteAction.run(() -> createProjectFiles(project, root)));
-                return;
-            }
+            MavenProjectsManager mpm = MavenProjectsManager.getInstance(project);
+            mpm.forceUpdateAllProjectsOrFindAllAvailablePomFiles();
 
-            WriteAction.run(() -> createProjectFiles(project, root));
+            MavenManagerListener listener = new MavenManagerListener(project) {
+
+                private boolean executedOnce;
+
+                @Override
+                public void projectImportCompleted() {
+                    if (executedOnce) {
+                        return;
+                    }
+
+                    super.projectImportCompleted();
+
+                    executedOnce = true;
+                }
+            };
+            mpm.addManagerListener(listener);
         });
-
-        addMidpointFacet(modifiableRootModel);
     }
 
-    public void addMidpointFacet(ModifiableRootModel model) {
-        FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-        FacetManager.getInstance(model.getModule()).addFacet(facetType, facetType.getDefaultFacetName(), null);
-    }
-
-    public void createProjectFiles(Project project, VirtualFile root) {
+    public void createProjectFiles(Project project, VirtualFile rootFile) {
         try {
-            Properties properties = new Properties();
+            // create pom.xml
+            WriteCommandAction.writeCommandAction(project)
+                    .withName(StudioBundle.message("midpoint.new.project")).compute(() -> {
+                        Properties properties = new Properties();
 
-            String escaped =  root.getName().replaceAll("[^a-zA-Z0-9]", "");
+                        String escaped = rootFile.getName().replaceAll("[^a-zA-Z0-9_-]", "");
 
-            properties.setProperty("GROUP_ID", escaped);
-            properties.setProperty("ARTIFACT_ID", escaped);
-            properties.setProperty("VERSION", "1.0-SNAPSHOT");
+                        properties.setProperty("GROUP_ID", escaped);
+                        properties.setProperty("ARTIFACT_ID", escaped);
+                        properties.setProperty("VERSION", "1.0-SNAPSHOT");
 
-            properties.setProperty("PROJECT_NAME", root.getName());
+                        properties.setProperty("PROJECT_NAME", escaped);
 
-            createPomFile(project, root, properties);
 
-            createGitIgnoreFile(project, root);
+                        return createPomFile(project, rootFile, properties);
+                    });
+
+            VfsUtil.createDirectories(rootFile.getPath() + "/objects");
+            VfsUtil.createDirectories(rootFile.getPath() + "/scratches");
+
+            createGitIgnoreFile(project, rootFile);
         } catch (IOException ex) {
-            MidPointUtils.publishExceptionNotification(project, null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create pom.xml file", ex);
+            MidPointUtils.publishExceptionNotification(project, null, MidPointModuleBuilder.class, NOTIFICATION_KEY, "Couldn't create project files", ex);
         }
     }
 
@@ -162,11 +176,11 @@ public class MidPointModuleBuilder extends ModuleBuilder {
         VfsUtil.saveText(file, text);
     }
 
-    private void createPomFile(Project project, VirtualFile root, Properties properties) throws IOException {
+    private VirtualFile createPomFile(Project project, VirtualFile root, Properties properties) throws IOException {
         VirtualFile file = root.findChild(MavenConstants.POM_XML);
         if (file != null && file.exists()) {
             LOG.info("File '" + MavenConstants.POM_XML + "' already exits");
-            return;
+            return file;
         }
 
         file = root.createChildData(this, MavenConstants.POM_XML);
@@ -177,7 +191,7 @@ public class MidPointModuleBuilder extends ModuleBuilder {
         String text = fileTemplate.getText(properties);
         Pattern pattern = Pattern.compile("\\$\\$\\{(.*)\\}");
         Matcher matcher = pattern.matcher(text);
-        StringBuffer builder = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         while (matcher.find()) {
             matcher.appendReplacement(builder, "\\$" + matcher.group(1).toUpperCase() + "\\$");
         }
@@ -196,17 +210,17 @@ public class MidPointModuleBuilder extends ModuleBuilder {
 
         VfsUtil.saveText(file, template.getTemplateText());
 
-        PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
-        if (psiFile != null) {
-            new ReformatCodeProcessor(project, psiFile, null, false).run();
-        }
+        // todo reformat pom file
+//        PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
+//        if (psiFile != null) {
+//            new ReformatCodeProcessor(project, psiFile, null, false).run();
+//        }
 
-        MavenProjectsManager mpManager = MavenProjectsManager.getInstance(project);
-        mpManager.addManagedFilesOrUnignore(Collections.singletonList(file));
+        return file;
     }
 
     @Override
-    public ModuleType getModuleType() {
+    public ModuleType<?> getModuleType() {
         return StdModuleTypes.JAVA;
     }
 
@@ -226,13 +240,5 @@ public class MidPointModuleBuilder extends ModuleBuilder {
         EnvironmentService.getInstance(project).setSettings(settings.getEnvironmentSettings());
 
         return super.commitModule(project, model);
-    }
-
-    private VirtualFile createAndGetContentEntry() {
-        String path = FileUtil.toSystemIndependentName(getContentEntryPath());
-
-        new File(path).mkdirs();
-
-        return LocalFileSystem.getInstance().refreshAndFindFileByPath(path);
     }
 }

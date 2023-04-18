@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.action.ShowEnvironmentConfigurationAction;
+import com.evolveum.midpoint.studio.impl.ide.MavenManagerListener;
 import com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -11,6 +12,7 @@ import com.intellij.codeInspection.ex.ToolsImpl;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.FacetType;
 import com.intellij.facet.FacetTypeRegistry;
+import com.intellij.facet.impl.FacetUtil;
 import com.intellij.javaee.ExternalResourceManagerEx;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
@@ -27,6 +29,7 @@ import com.intellij.project.ProjectKt;
 import com.intellij.ui.ExperimentalUI;
 import com.intellij.util.ModalityUiUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -45,6 +48,12 @@ public class MidPointStartupActivity implements StartupActivity {
 
     @Override
     public void runActivity(@NotNull Project project) {
+        if (MidPointUtils.hasMidPointFacet(project)) {
+            // listen for maven project refresh event (after import) and check whether facet is there
+            MavenProjectsManager mpm = MavenProjectsManager.getInstance(project);
+            mpm.addManagerListener(new MavenManagerListener(project));
+        }
+
         initializePrism();
 
         initializeIgnoredResources();
@@ -158,15 +167,15 @@ public class MidPointStartupActivity implements StartupActivity {
     }
 
     private void addFacetPerformed(Module module) {
-        RunnableUtils.runWriteAction(() -> {
-            FacetManager fm = FacetManager.getInstance(module);
-            if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null) {
-                validateCredentialsConfiguration(module);
-                return;
-            }
+        FacetManager fm = FacetManager.getInstance(module);
+        if (fm.getFacetByType(MidPointFacetType.FACET_TYPE_ID) != null) {
+            validateCredentialsConfiguration(module);
+            return;
+        }
 
+        RunnableUtils.runWriteAction(() -> {
             FacetType<?, ?> facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-            fm.addFacet(facetType, facetType.getDefaultFacetName(), null);
+            FacetUtil.addFacet(module, facetType, facetType.getPresentableName());
 
             validateCredentialsConfiguration(module);
         });
