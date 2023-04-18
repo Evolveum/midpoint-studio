@@ -1,16 +1,12 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.studio.MidPointConstants;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaFileType;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ex.ApplicationManagerEx;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
@@ -21,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -60,7 +55,7 @@ public class TestAction extends AnAction {
             return;
         }
 
-        boolean internal = ApplicationManagerEx.getApplicationEx().isInternal();
+        boolean internal = ApplicationManager.getApplication().isInternal();
         e.getPresentation().setVisible(internal);
     }
 
