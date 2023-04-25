@@ -59,6 +59,11 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         for (MidPointExpressionVariables v : MidPointExpressionVariables.values()) {
             Class type = getVariableType(v);
 
+            if (aClass.getQualifiedName() == null) {
+                // MID-8463 can't create dynamic property
+                continue;
+            }
+
             PsiVariable variable = new GrDynamicImplicitProperty(psiManager, v.getVariable(),
                     type.getName(), aClass.getQualifiedName());
 
