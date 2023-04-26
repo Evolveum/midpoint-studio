@@ -3,10 +3,14 @@
 ## [Unreleased]
 ### Added
 - MID-8404 added new option ignoreMissingKeys
+- Better detection of midpoint files
 
 ### Changed
+- MidPoint libraries updated to 4.7
 
 ### Fixed
+- MID-8744 Fixed remote diff of files that contain file includes
+- MID-8733 Improved create/open midpoint project (also improved support for maven fast import in 2023.1)
 
 ## [4.6.2]
 ### Added

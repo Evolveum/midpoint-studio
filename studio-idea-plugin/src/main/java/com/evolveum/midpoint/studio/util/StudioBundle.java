@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
 public class StudioBundle {
 
     @NotNull
-    private static final String BUNDLE_NAME = "messages/MidPointStudio";
+    private static final String BUNDLE_NAME = "messages.MidPointStudio";
 
     @NotNull
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);

@@ -568,7 +568,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
         } catch (Exception ex) {
             state.incrementFailed();
 
-            publishException(midPointService, "Exception occurred during '" + getTitle() + "' of '" + callable.describe() + "'", ex);
+            publishException(midPointService, "Exception occurred during '" + getTitle() + "' of '" + callable.describe() + "', reason: " + ex.getMessage(), ex);
         }
 
         ProcessObjectResult result = new ProcessObjectResult(null);

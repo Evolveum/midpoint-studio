@@ -41,7 +41,7 @@ public abstract class DiffTask extends SimpleBackgroundableTask {
 
         ExpanderOptions opts = new ExpanderOptions().expandEncrypted(false);
 
-        PrismObject firstObject = client.parseObject(first.getContent(), opts);
+        PrismObject firstObject = client.parseObject(first.getContent(), firstFile, opts);
         PrismObject secondObject = client.parseObject(second.getContent(), opts);
 
         DiffType objectsDiff = new DiffType();

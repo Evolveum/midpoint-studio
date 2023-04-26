@@ -328,10 +328,14 @@ public class MidPointClient {
         return parseObject(xml, null);
     }
 
-    public PrismObject<?> parseObject(String xml, ExpanderOptions opts) throws IOException, SchemaException {
+    public PrismObject<?> parseObject(String xml, ExpanderOptions opts) throws IOException, SchemaException{
+        return parseObject(xml, null, opts);
+    }
+
+    public PrismObject<?> parseObject(String xml, VirtualFile file, ExpanderOptions opts) throws IOException, SchemaException {
         Expander expander = createExpander();
 
-        String expanded = expander.expand(xml, opts);
+        String expanded = expander.expand(xml, file, opts);
 
         PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()));
         return parser.parse();

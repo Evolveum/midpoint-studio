@@ -77,6 +77,8 @@
 
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
+        <framework.detector implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFacetFrameworkDetector"/>
+
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
         <!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
