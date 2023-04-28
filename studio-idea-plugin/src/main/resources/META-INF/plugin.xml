@@ -171,7 +171,7 @@
 
         <!-- Axiom Query language support -->
 
-        <fileType language="Axiom Query"
+        <!--<fileType language="Axiom Query"
                   implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryFileType"
                   name="Axiom Query File" fieldName="INSTANCE" extensions="axq"/>
         <lang.syntaxHighlighterFactory language="Axiom Query"
@@ -185,7 +185,7 @@
         <lang.commenter language="Axiom Query"
                         implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCommenter"/>
         <completion.contributor language="Axiom Query"
-                                implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCompletionContributor"/>
+                                implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCompletionContributor"/>-->
         <!--<lang.foldingBuilder language="Axiom Query"
                              implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryFoldingBuilder" />-->
 
