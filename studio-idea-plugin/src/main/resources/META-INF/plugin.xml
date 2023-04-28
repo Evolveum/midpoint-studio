@@ -81,12 +81,6 @@
 
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
-        <!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
-
-        <!-- TODO finish implementation -->
-        <!--<xmlStructureViewBuilderProvider
-                implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>-->
-
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.GroovyMultiHostInjector"/>
 
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.AxiomQueryMultiHostInjector"/>
@@ -242,20 +236,12 @@
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
-        <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
-
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.delta.ObjectDeltaEditorProvider"/>
 
         <diff.lang.DiffIgnoredRangeProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
 
-        <!--<stubElementTypeHolder class="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointStubElementTypes" externalIdPrefix="xml."/>
-        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectNameIndex"/>
-        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectOidIndex"/>-->
-
         <fileBasedIndex implementation="com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl"/>
-
-        <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.resource.ResourceEditorProvider"/>-->
 
         <customizableActionGroupProvider implementation="com.evolveum.midpoint.studio.action.ExpUiActionGroupProvider"/>
     </extensions>
