@@ -89,7 +89,7 @@
 
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.GroovyMultiHostInjector"/>
 
-        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.AxiomMultiHostInjector"/>
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.AxiomQueryMultiHostInjector"/>
 
         <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
 

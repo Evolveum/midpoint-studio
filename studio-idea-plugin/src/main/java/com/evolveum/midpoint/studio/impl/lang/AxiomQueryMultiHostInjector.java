@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class AxiomMultiHostInjector implements MultiHostInjector {
+public class AxiomQueryMultiHostInjector implements MultiHostInjector {
 
     @Override
     public void getLanguagesToInject(@NotNull MultiHostRegistrar registrar, @NotNull PsiElement context) {
