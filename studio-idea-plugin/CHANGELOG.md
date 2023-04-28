@@ -3,7 +3,9 @@
 ## [Unreleased]
 ### Added
 - MID-8404 added new option ignoreMissingKeys
+- MID-8527 _metadata XSD schema support
 - Better detection of midpoint files
+- Better midpoint expansion syntax highlighting $(...)
 
 ### Changed
 - MidPoint libraries updated to 4.7
