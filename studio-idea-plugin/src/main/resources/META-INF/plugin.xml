@@ -83,8 +83,6 @@
 
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.GroovyMultiHostInjector"/>
 
-        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.AxiomQueryMultiHostInjector"/>
-
         <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
 
         <moduleBuilder builderClass="com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder"/>
@@ -184,6 +182,7 @@
                            implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryBraceMatcher"/>
         <lang.commenter language="Axiom Query"
                         implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCommenter"/>
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.AxiomQueryMultiHostInjector"/>
         <completion.contributor language="Axiom Query"
                                 implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCompletionContributor"/>-->
         <!--<lang.foldingBuilder language="Axiom Query"
