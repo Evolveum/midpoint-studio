@@ -1,5 +1,12 @@
 # MidPoint Studio
 
+## [Unreleased]
+### Added
+
+### Changed
+
+### Fixed
+
 ## [4.7.0]
 ### Added
 - MID-8404 added new option ignoreMissingKeys
