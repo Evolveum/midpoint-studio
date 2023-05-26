@@ -78,9 +78,10 @@ public class DeprecatedElementAnnotator implements Annotator {
             return;
         }
 
-        holder.createAnnotation(HighlightSeverity.WARNING, element.getTextRange(),
-                "Element marked as deprecated (since " + deprecatedSince + ")",
-                "Element marked as deprecated (since <b>" + deprecatedSince + "</b>)");
+        holder.newAnnotation(HighlightSeverity.WARNING, "Element marked as deprecated (since " + deprecatedSince + ")")
+                .range(element.getTextRange())
+                .tooltip("Element marked as deprecated (since <b>" + deprecatedSince + "</b>)")
+                .create();
     }
 
     private XmlTag getFirstSubTag(XmlTag tag, String localName, String namespace) {
