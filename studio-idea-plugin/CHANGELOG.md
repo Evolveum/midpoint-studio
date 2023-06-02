@@ -2,10 +2,10 @@
 
 ## [Unreleased]
 ### Added
-
-### Changed
+- support for Intellij 2023.2
 
 ### Fixed
+- MID-8873 element annotator warning fixed
 
 ## [4.7.0]
 ### Added
