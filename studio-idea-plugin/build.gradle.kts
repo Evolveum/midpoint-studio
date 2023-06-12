@@ -9,12 +9,13 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.8.0"
-    // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
+    id("org.jetbrains.kotlin.jvm") version "1.8.20"
+    // ANTLR4 plugin
     id("antlr")
+    // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
     id("org.jetbrains.intellij") version "1.14.1"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-    id("org.jetbrains.changelog") version "2.0.0"
+    id("org.jetbrains.changelog") version "2.1.0"
     // git plugin - read more: https://github.com/palantir/gradle-git-version
     id("com.palantir.git-version") version "0.12.2"
 }
@@ -115,7 +116,7 @@ if (publishChannel.isBlank() || publishChannel == "null") {
 }
 
 var channelSuffix = ""
-if (publishChannel.isNotBlank() && publishChannel.toLowerCase() != "default") {
+if (publishChannel.isNotBlank() && publishChannel.lowercase() != "default") {
     channelSuffix = "-$publishChannel-$buildNumber"
 }
 
@@ -264,3 +265,5 @@ tasks {
 //        ]
     }
 }
+
+tasks.getByName("compileKotlin").dependsOn("generateGrammarSource")
