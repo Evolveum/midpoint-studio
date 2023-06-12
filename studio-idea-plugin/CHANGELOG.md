@@ -1,5 +1,13 @@
 # MidPoint Studio
 
+## [Unreleased]
+### Added
+
+### Changed
+
+### Fixed
+
+
 ## [4.7.1]
 ### Added
 - support for Intellij 2023.2
