@@ -3,6 +3,8 @@ parser grammar AxiomQueryParser;
 
 options { tokenVocab=AxiomQueryLexer; }
 
+root: SEP* filter SEP*; // Needed for trailing spaces if multiline
+
 stringLiteral : STRING_SINGLEQUOTE #singleQuoteString
     | STRING_DOUBLEQUOTE #doubleQuoteString
     | STRING_MULTILINE # multilineString;
@@ -73,7 +75,7 @@ negation: NOT_KEYWORD;
 // Filter could be Value filter or Logic Filter
 
 
-root: SEP* filter SEP*; // Needed for trailing spaces if multiline
+
 filter: left=filter (SEP+ AND_KEYWORD SEP+ right=filter) #andFilter
            | left=filter (SEP+ OR_KEYWORD SEP+ right=filter) #orFilter
            | itemFilter #genFilter
@@ -85,8 +87,13 @@ subfilterSpec: ROUND_BRACKET_LEFT SEP* filter SEP* ROUND_BRACKET_RIGHT;
 itemFilter: (path SEP* usedAlias=filterNameAlias (matchingRule)? SEP* (subfilterOrValue))
     | (path (SEP+ negation)? SEP+ usedFilter=filterName (matchingRule)? (SEP+ (subfilterOrValue))?);
 
-subfilterOrValue : subfilterSpec | expression | singleValue | valueSet;
+subfilterOrValue : subfilterSpec | expression | singleValue | valueSet | placeholder;
 
+// Placeholder is used for prepared queries / statements, placeholder can be unnamed and / or named
+// Named placeholders currently are written used  COLON, but they may be similar to variables
+// and could be considered same concept?
+placeholder : COLON localName=IDENTIFIER #namedPlaceholder
+  | QUESTION_MARK #anonPlaceholder;
 
 expression : script | constant;
 script: (language=IDENTIFIER)? (scriptSingleline | scriptMultiline);

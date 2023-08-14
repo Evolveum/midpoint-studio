@@ -73,3 +73,4 @@ GT_EQ: '>=';
 EQ: '=';
 NOT_EQ: '!=';
 COMMA: ',';
+QUESTION_MARK: '?';
