@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.util.*;
 
@@ -362,7 +362,7 @@ public class ServiceImpl implements Service {
         try (Response response = client.newCall(req).execute()) {
             validateResponseCode(response, oid);
 
-            if (javax.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
+            if (jakarta.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
                 throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
             }
 
@@ -437,11 +437,11 @@ public class ServiceImpl implements Service {
         try (okhttp3.Response response = client.newCall(req).execute()) {
             validateResponseCode(response, oid);
 
-            if (javax.ws.rs.core.Response.Status.NO_CONTENT.getStatusCode() == response.code()) {
+            if (jakarta.ws.rs.core.Response.Status.NO_CONTENT.getStatusCode() == response.code()) {
                 return null;
             }
 
-            if (javax.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
+            if (jakarta.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
                 throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
             }
 
@@ -475,7 +475,7 @@ public class ServiceImpl implements Service {
         try (okhttp3.Response response = client.newCall(req).execute()) {
             validateResponseCode(response, oid);
 
-            if (javax.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
+            if (jakarta.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
                 throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
             }
 
@@ -484,12 +484,12 @@ public class ServiceImpl implements Service {
     }
 
     private void validateResponseCode(okhttp3.Response response, String oid) throws ObjectNotFoundException, AuthenticationException {
-        if (javax.ws.rs.core.Response.Status.NOT_FOUND.getStatusCode() == response.code()) {
+        if (jakarta.ws.rs.core.Response.Status.NOT_FOUND.getStatusCode() == response.code()) {
             throw new ObjectNotFoundException("Cannot get object with oid '" + oid + "'. Object doesn't exist");
         }
 
-        if (javax.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
-            throw new AuthenticationException(javax.ws.rs.core.Response.Status.fromStatusCode(response.code()).getReasonPhrase());
+        if (jakarta.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
+            throw new AuthenticationException(jakarta.ws.rs.core.Response.Status.fromStatusCode(response.code()).getReasonPhrase());
         }
     }
 

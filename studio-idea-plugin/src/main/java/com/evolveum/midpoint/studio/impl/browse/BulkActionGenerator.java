@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.impl.browse;
 
-import com.evolveum.midpoint.model.api.ModelPublicConstants;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.action.task.GeneratorTask;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -21,6 +21,8 @@ import java.util.UUID;
 import static com.evolveum.midpoint.studio.impl.browse.Constants.*;
 
 public class BulkActionGenerator extends Generator {
+
+    public static final String ITERATIVE_SCRIPT_EXECUTION_TASK_HANDLER_URI = SchemaConstants.NS_MODEL + "/iterative-scripting/handler-3";
 
     public enum Action {
 
@@ -143,7 +145,7 @@ public class BulkActionGenerator extends Generator {
             );
 
             DOMUtil.createSubElement(task, TaskType.F_CATEGORY).setTextContent("BulkActions");
-            DOMUtil.createSubElement(task, TaskType.F_HANDLER_URI).setTextContent(ModelPublicConstants.ITERATIVE_SCRIPT_EXECUTION_TASK_HANDLER_URI);
+            DOMUtil.createSubElement(task, TaskType.F_HANDLER_URI).setTextContent(ITERATIVE_SCRIPT_EXECUTION_TASK_HANDLER_URI);
             DOMUtil.createSubElement(task, TaskType.F_RECURRENCE).setTextContent(TaskRecurrenceType.SINGLE.value());
         }
 
