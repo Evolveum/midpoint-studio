@@ -38,11 +38,6 @@ public class AxiomQueryParserDefinition implements ParserDefinition {
     }
 
     @NotNull
-    public TokenSet getWhitespaceTokens() {
-        return AxiomQueryTokenTypes.WHITESPACES;
-    }
-
-    @NotNull
     public TokenSet getCommentTokens() {
         return AxiomQueryTokenTypes.COMMENTS;
     }
