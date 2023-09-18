@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl.lang.annotation;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
@@ -81,6 +82,7 @@ public class DeprecatedElementAnnotator implements Annotator {
         holder.newAnnotation(HighlightSeverity.WARNING, "Element marked as deprecated (since " + deprecatedSince + ")")
                 .range(element.getTextRange())
                 .tooltip("Element marked as deprecated (since <b>" + deprecatedSince + "</b>)")
+                .highlightType(ProblemHighlightType.LIKE_DEPRECATED)
                 .create();
     }
 

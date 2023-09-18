@@ -17,7 +17,7 @@ dependencyResolutionManagement {
             version("jaxb-runtime", "2.3.2")
             version("jcommander", "1.81")
             version("logback", "1.2.3")
-            version("midpoint", "4.7")
+            version("midpoint", "4.8-M3")
             version("okhttp", "4.10.0")
             version("openkeepass", "0.8.1")
             version("spring", "5.3.8")
@@ -29,7 +29,7 @@ dependencyResolutionManagement {
             version("asciidoctorj-tabbed-code", "0.3")
             version("velocity", "2.3")
             version("jruby", "9.2.19.0")
-            version("antlr", "4.9.3")
+            version("antlr", "4.10.1")
 
             library("asciidoctorj", "org.asciidoctor", "asciidoctorj").versionRef("asciidoctorj")
             library("asciidoctorj-pdf", "org.asciidoctor", "asciidoctorj-pdf").versionRef("asciidoctorj-pdf")

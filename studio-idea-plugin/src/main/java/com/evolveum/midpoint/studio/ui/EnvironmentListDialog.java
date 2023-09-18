@@ -37,8 +37,6 @@ public class EnvironmentListDialog extends DialogWrapper {
         setOKButtonText("Save");
         setCancelButtonText("Cancel");
 
-        setButtonsAlignment(SwingConstants.RIGHT);
-
         init();
     }
 

@@ -25,6 +25,7 @@ import org.jetbrains.plugins.groovy.lang.resolve.ResolveUtilKt;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -187,7 +188,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         }
 
         try {
-            UniformItemPath itemPath = ItemPathHolder.parseFromString(path);
+            UniformItemPath itemPath = ItemPathHolder.parseFromString(path, new HashMap<>());   // todo recheck second argument
             itemPath = itemPath.namedSegmentsOnly();
 
             itemPath.getSegments().forEach(s -> names.add(((NameItemPathSegment) s).getName()));
