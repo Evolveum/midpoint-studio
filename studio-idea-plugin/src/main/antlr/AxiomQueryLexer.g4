@@ -9,8 +9,9 @@ LEFT_BRACE : '{';
 RIGHT_BRACE : '}';
 COLON : ':';
 PLUS : '+';
-LINE_COMMENT :  [ \n\r\t]* ('//' (~[\r\n]*)) [ \n\r\t]* -> skip;
-SEP: [ \n\r\t]+;
+//LINE_COMMENT :  [ \n\r\t]* ('//' (~[\r\n]*)) [ \n\r\t]* -> channel(HIDDEN);
+LINE_COMMENT : '//' .*? ('\n'|EOF)	-> channel(HIDDEN) ;
+SEP: [ \n\r\t]+ -> channel(HIDDEN);
 
 AND_KEYWORD: 'and'|'AND';
 OR_KEYWORD: 'or'|'OR';
@@ -74,3 +75,4 @@ EQ: '=';
 NOT_EQ: '!=';
 COMMA: ',';
 QUESTION_MARK: '?';
+ERRCHAR:	.	-> channel(HIDDEN);
