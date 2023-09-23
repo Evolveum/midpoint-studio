@@ -1,3 +1,5 @@
+fun properties(key: String) = project.findProperty(key).toString()
+
 allprojects {
     repositories {
         mavenLocal()
@@ -23,6 +25,8 @@ subprojects {
     tasks {
         withType<JavaCompile> {
             options.encoding = "UTF-8"
+            sourceCompatibility = properties("javaVersion")
+            targetCompatibility = properties("javaVersion")
         }
     }
 }
