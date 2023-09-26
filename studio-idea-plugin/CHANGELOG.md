@@ -2,11 +2,14 @@
 
 ## [Unreleased]
 ### Added
+- Axiom query language support (highlighting, autocompletion, brackets matching) 
+- Support for Intellij 2023.3
 
 ### Changed
+- Updated MidPoint libraries to version 4.8
 
 ### Fixed
-
+- Deprecation style for elements in XML files
 
 ## [4.7.1]
 ### Added
