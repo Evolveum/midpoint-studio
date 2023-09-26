@@ -20,6 +20,7 @@ import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.MidPointService;
 import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryLanguage;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -267,8 +268,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 lang = XMLLanguage.INSTANCE;
                 break;
             case AXIOM:
-//                lang = AxiomQueryLanguage.INSTANCE;
-//                break;
+                lang = AxiomQueryLanguage.INSTANCE;
+                break;
             case OID:
             case NAME:
             case NAME_OR_OID:
