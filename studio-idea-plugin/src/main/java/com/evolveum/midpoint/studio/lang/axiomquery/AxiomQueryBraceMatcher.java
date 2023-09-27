@@ -7,8 +7,8 @@ import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer.*;
 import static com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryTokenTypes.getTokenElementType;
-import static com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryLexerV2.*;
 
 public class AxiomQueryBraceMatcher implements PairedBraceMatcher {
 

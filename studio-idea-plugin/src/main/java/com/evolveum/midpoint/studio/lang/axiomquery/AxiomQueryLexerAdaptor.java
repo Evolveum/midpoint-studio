@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
-import com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryLexerV2;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import org.antlr.intellij.adaptor.lexer.ANTLRLexerAdaptor;
 
 /**
@@ -8,12 +8,12 @@ import org.antlr.intellij.adaptor.lexer.ANTLRLexerAdaptor;
  */
 public class AxiomQueryLexerAdaptor extends ANTLRLexerAdaptor {
 
-    private AxiomQueryLexerAdaptor(AxiomQueryLexerV2 lexer) {
+    private AxiomQueryLexerAdaptor(AxiomQueryLexer lexer) {
         super(AxiomQueryLanguage.INSTANCE, lexer);
     }
 
     public static AxiomQueryLexerAdaptor newInstance() {
-        AxiomQueryLexerV2 lexer = new AxiomQueryLexerV2(null);
+        AxiomQueryLexer lexer = new AxiomQueryLexer(null);
 
         return new AxiomQueryLexerAdaptor(lexer);
     }

@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
@@ -22,8 +24,8 @@ public class AxiomQueryParserDefinition implements ParserDefinition {
 
     public AxiomQueryParserDefinition() {
         PSIElementTypeFactory.defineLanguageIElementTypes(AxiomQueryLanguage.INSTANCE,
-                com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryLexerV2.tokenNames,
-                com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryParserV2.ruleNames);
+                AxiomQueryLexer.tokenNames,
+                AxiomQueryParser.ruleNames);
     }
 
     @NotNull

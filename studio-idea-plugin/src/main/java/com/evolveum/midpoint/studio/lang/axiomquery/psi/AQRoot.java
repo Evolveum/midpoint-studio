@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.lang.axiomquery.psi;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryTokenTypes;
 import com.intellij.psi.impl.source.tree.CompositePsiElement;
 
@@ -9,7 +10,7 @@ import com.intellij.psi.impl.source.tree.CompositePsiElement;
 public class AQRoot extends CompositePsiElement {
 
     public AQRoot() {
-        super(AxiomQueryTokenTypes.RULE_ELEMENT_TYPES.get(com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryParserV2.RULE_root));
+        super(AxiomQueryTokenTypes.RULE_ELEMENT_TYPES.get(AxiomQueryParser.RULE_root));
     }
 
     @Override

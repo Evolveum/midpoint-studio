@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.intellij.lang.CodeDocumentationAwareCommenter;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.tree.IElementType;
@@ -17,7 +18,7 @@ public class AxiomQueryCommenter implements CodeDocumentationAwareCommenter {
 
     @Override
     public @Nullable IElementType getLineCommentTokenType() {
-        return AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryLexerV2.LINE_COMMENT);
+        return AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.LINE_COMMENT);
     }
 
     @Override

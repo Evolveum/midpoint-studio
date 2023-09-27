@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.folding.CustomFoldingBuilder;
 import com.intellij.lang.folding.FoldingDescriptor;
@@ -32,7 +33,7 @@ public class AxiomQueryFoldingBuilder extends CustomFoldingBuilder {
     }
 
     private static String getPlaceholderText(PsiElement element) {
-        if (element.getNode().getElementType() == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryLexerV2.LINE_COMMENT)) {
+        if (element.getNode().getElementType() == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.LINE_COMMENT)) {
             return "//...";
         }
 

@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.lang.axiomquery.psi;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryTokenTypes;
-import com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryParserV2;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class AQFilterNameAlias extends LeafPsiElement {
 
     public AQFilterNameAlias(@NotNull CharSequence text) {
-        super(AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParserV2.RULE_filterNameAlias), text);
+        super(AxiomQueryTokenTypes.getRuleElementType(AxiomQueryParser.RULE_filterNameAlias), text);
     }
 
     @Override

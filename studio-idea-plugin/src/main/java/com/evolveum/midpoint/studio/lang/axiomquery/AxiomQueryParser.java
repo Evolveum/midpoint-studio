@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
-import com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryParserV2;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.IFileElementType;
@@ -15,12 +14,12 @@ import org.antlr.v4.runtime.tree.ParseTree;
 public class AxiomQueryParser extends ANTLRParserAdaptor {
 
     public AxiomQueryParser() {
-        super(AxiomQueryLanguage.INSTANCE, new AxiomQueryParserV2(null));
+        super(AxiomQueryLanguage.INSTANCE, new com.evolveum.axiom.lang.antlr.query.AxiomQueryParser(null));
     }
 
     @Override
     protected ParseTree parse(Parser parser, IElementType root) {
-        AxiomQueryParserV2 qp = (AxiomQueryParserV2) parser;
+        com.evolveum.axiom.lang.antlr.query.AxiomQueryParser qp = (com.evolveum.axiom.lang.antlr.query.AxiomQueryParser) parser;
 
         if (root instanceof IFileElementType) {
             return qp.root();

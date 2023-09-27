@@ -251,48 +251,7 @@ tasks {
     }
 
     generateGrammarSource {
-//        include("**/antlr4/**/*.g4")
-//        outputDirectory = file("${project.buildDir}/generated-src/")
-//        arguments.addAll(listOf(
-//            "-package", "com.evolveum.midpoint.studio.lang.properties"
-//        ))
-//        arguments = arguments + listOf("-visitor", "-long-messages")
-//        include("/antlr4/*.g4")
-//
-//        arguments += [
-//            "-package", "com.evolveum.midpoint.studio.lang.properties",
-//            "-lib", "src/main/antlr/org/antlr/intellij/plugin/parser",
-//            "-Xexact-output-dir"
-//        ]
     }
 }
 
-tasks.register("copyGrammarFromAxiom") {
-    val compileClasspath: FileCollection = configurations["compileClasspath"]
-    val grammarFolder = file("${project.buildDir}/generated-src/com/evolveum/midpoint/studio/lang/antlr")
-    dependsOn(compileClasspath)
-
-    doLast {
-        if (!grammarFolder.isDirectory) {
-            project.mkdir(grammarFolder.toString())
-        }
-
-        compileClasspath.map {
-                lib: File -> lib
-            if (lib.name == "axiom-${libs.versions.midpoint.get()}.jar") {
-                zipTree(lib).forEach{
-                    if (it.name.endsWith(".g4")) {
-                        print(it.absolutePath.toString())
-                        copy {
-                            from(layout.buildDirectory.file(it.absolutePath.toString()))
-                            into(layout.buildDirectory.dir(grammarFolder.absolutePath.toString()))
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-tasks.getByName("generateGrammarSource").dependsOn("copyGrammarFromAxiom")
-tasks.getByName("compileKotlin").dependsOn("copyGrammarFromAxiom")
+tasks.getByName("compileKotlin").dependsOn("generateGrammarSource")

@@ -14,7 +14,7 @@ import com.intellij.psi.tree.IFileElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryParserV2.*;
+import static com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
 
 /**
  * Created by Viliam Repan (lazyman).

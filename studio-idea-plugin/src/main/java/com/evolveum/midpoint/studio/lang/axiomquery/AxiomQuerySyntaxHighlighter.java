@@ -8,7 +8,7 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 
-import static com.evolveum.midpoint.studio.lang.axiomquery.antlr.AxiomQueryLexerV2.*;
+import static com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer.*;
 import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey;
 
 /**
