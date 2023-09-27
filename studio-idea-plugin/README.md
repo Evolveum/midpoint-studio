@@ -3,6 +3,7 @@ Integrated development environment for MidPoint configuration.
 
 <b>Features</b>
 <ul>
+    <li>Axiom query language syntax & highlighting support</li>
     <li>Browse/Upload with raw options for both operations</li>
     <li>Properties can be used to replace parts of xml. Properties can also be stored encrypted in keepass2 file within project</li>
     <li>XML tags autocompletion, links to documentation</li>
