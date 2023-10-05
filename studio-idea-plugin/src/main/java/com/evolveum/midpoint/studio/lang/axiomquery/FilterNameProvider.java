@@ -1,17 +1,12 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.midpoint.studio.util.Pair;
-import com.intellij.codeInsight.completion.CompletionParameters;
-import com.intellij.codeInsight.completion.CompletionProvider;
-import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.util.ProcessingContext;
 import com.intellij.util.ReflectionUtil;
-import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 import java.lang.reflect.Method;
@@ -21,11 +16,11 @@ import java.util.stream.Collectors;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class FilterNameProvider extends CompletionProvider<CompletionParameters> {
+public class FilterNameProvider {
 
     private static final Logger LOG = Logger.getInstance(FilterNameProvider.class);
 
-    private static final List<LookupElement> ELEMENTS;
+    public static final List<LookupElement> ELEMENTS;
 
     static {
         List<LookupElement> result;
@@ -85,11 +80,6 @@ public class FilterNameProvider extends CompletionProvider<CompletionParameters>
         }
 
         ELEMENTS = result;
-    }
-
-    @Override
-    protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
-        result.addAllElements(ELEMENTS);
     }
 
     private static LookupElement build(String key, String alias) {
