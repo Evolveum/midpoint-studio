@@ -78,6 +78,5 @@ dependencyResolutionManagement {
 
 include("midpoint-client")
 include("midscribe")
-include("studio-cmd")
 include("studio-idea-plugin")
 include("studio-gradle-plugin")
