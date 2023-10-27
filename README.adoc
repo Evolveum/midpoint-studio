@@ -35,12 +35,12 @@ Documentation is available https://docs.evolveum.com/midpoint/studio/[here].
 
 == Installation
 
-It's available in JetBrains Marketplace https://plugins.jetbrains.com/plugin/13809-midpoint-studio[here] only as `Nightly`.
+It's available in JetBrains Marketplace https://plugins.jetbrains.com/plugin/13809-midpoint-studio[here].
 Installation steps:
 
 . Start Intellij Idea (Community/Ultimate)
 . Go to menu *File -> Settings (Preferences) -> Plugins*
-. For full releases, they are directly available
+. For stable releases, they are directly available
 .. Search for "MidPoint Studio" -> Install
 . For snapshot releases
 .. Go to *Manage plugin repositories*
@@ -86,3 +86,4 @@ Logging settings can be changed during runtime via top menu `Help/Debug Log Sett
 == License
 
 Project is licensed under Apache Licence 2.0.
+See LICENSE file for more details.
