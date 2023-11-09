@@ -1,23 +1,27 @@
 package com.evolveum.midpoint.studio.action.task;
 
+import com.evolveum.midpoint.prism.Definition;
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContainerDefinition;
+import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.namespace.QName;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Modifier;
+import java.util.*;
+
+import static java.util.Collections.sort;
+import static java.util.Comparator.comparing;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -30,49 +34,68 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
 
     private static final Logger LOG = Logger.getInstance(CleanupFileTask.class);
 
-    public static final Map<Class<? extends ObjectType>, List<ItemPath>> CLEANUP_PATHS = new HashMap<>();
+    public static final Map<Class<? extends ObjectType>, List<ItemPath>> CLEANUP_PATHS;
 
     static {
-        CLEANUP_PATHS.put(ObjectType.class, Arrays.asList(
-                ItemPath.create(ObjectType.F_METADATA),
-                ItemPath.create(ObjectType.F_FETCH_RESULT),
-                ItemPath.create(ObjectType.F_OPERATION_EXECUTION),
-                ItemPath.create(ObjectType.F_DIAGNOSTIC_INFORMATION)
-        ));
-
-        CLEANUP_PATHS.put(AssignmentHolderType.class, Arrays.asList(
-                ItemPath.create(AssignmentHolderType.F_ITERATION),
-                ItemPath.create(AssignmentHolderType.F_ITERATION_TOKEN),
-                ItemPath.create(FocusType.F_ASSIGNMENT, AssignmentType.F_METADATA)
-        ));
-
-        CLEANUP_PATHS.put(FocusType.class, Arrays.asList(
-                ItemPath.create(FocusType.F_ROLE_MEMBERSHIP_REF),
-                ItemPath.create(FocusType.F_ACTIVATION, ActivationType.F_EFFECTIVE_STATUS),
-                ItemPath.create(FocusType.F_ACTIVATION, ActivationType.F_ENABLE_TIMESTAMP),
-                ItemPath.create(FocusType.F_ACTIVATION, ActivationType.F_DISABLE_TIMESTAMP),
-                ItemPath.create(FocusType.F_ACTIVATION, ActivationType.F_DISABLE_REASON),
-                ItemPath.create(FocusType.F_CREDENTIALS, CredentialsType.F_PASSWORD, PasswordType.F_METADATA)
-        ));
-
-        CLEANUP_PATHS.put(TaskType.class, Arrays.asList(
-                ItemPath.create(TaskType.F_RESULT),
-                ItemPath.create(TaskType.F_RESULT_STATUS),
-                ItemPath.create(TaskType.F_OPERATION_STATS),
-                ItemPath.create(TaskType.F_COMPLETION_TIMESTAMP),
-                ItemPath.create(TaskType.F_LAST_RUN_FINISH_TIMESTAMP),
-                ItemPath.create(TaskType.F_LAST_RUN_START_TIMESTAMP),
-                ItemPath.create(new QName(SchemaConstants.NS_C, "workState")),  // TaskType.F_WORK_STATE, not available in 4.4 schema
-                ItemPath.create(TaskType.F_TASK_IDENTIFIER),
-                ItemPath.create(TaskType.F_PROGRESS),
-                ItemPath.create(TaskType.F_DIAGNOSTIC_INFORMATION)
-        ));
+        Map<Class<? extends ObjectType>, List<ItemPath>> map = createCleanupPaths();
+        CLEANUP_PATHS = Collections.unmodifiableMap(map);
     }
 
     public CleanupFileTask(@NotNull AnActionEvent event) {
         super(event.getProject(), TITLE, NOTIFICATION_KEY);
 
         setEvent(event);
+    }
+
+    private static Map<Class<? extends ObjectType>, List<ItemPath>> createCleanupPaths() {
+        Map<Class<? extends ObjectType>, List<ItemPath>> result = new HashMap<>();
+
+        Arrays.stream(ObjectTypes.values())
+                .map(ot -> ot.getClassDefinition())
+                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
+                .forEach(clazz -> {
+                    Definition definition = MidPointUtils.DEFAULT_PRISM_CONTEXT.getSchemaRegistry()
+                            .findObjectDefinitionByCompileTimeClass(clazz);
+
+                    List<ItemPath> paths = createCleanupPaths(
+                            definition, ItemPath.EMPTY_PATH, new ArrayList<>(), new IdentityHashMap<>());
+                    sort(paths, comparing(ItemPath::toString));
+
+                    result.put(clazz, paths);
+                });
+
+        return result;
+    }
+
+    private static List<ItemPath> createCleanupPaths(
+            Definition definition, ItemPath parentPath, List<ItemPath> paths, IdentityHashMap<Definition, Boolean> visited) {
+
+        if (visited.containsKey(definition)) {
+            return paths;
+        }
+
+        visited.put(definition, true);
+
+        if (!(definition instanceof ItemDefinition<?> itemDef)) {
+            return paths;
+        }
+
+        if (itemDef.isOperational()) {
+            paths.add(parentPath.append(itemDef.getItemName()));
+            return paths;
+        }
+
+        if (itemDef instanceof PrismContainerDefinition<?> containerDef) {
+
+            ItemPath newParentPath = itemDef instanceof PrismObjectDefinition ?
+                    parentPath : parentPath.append(itemDef.getItemName());
+
+            for (ItemDefinition<?> def : containerDef.getDefinitions()) {
+                createCleanupPaths(def, newParentPath, paths, visited);
+            }
+        }
+
+        return paths;
     }
 
     @Override
@@ -111,15 +134,9 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
         }
 
         boolean cleaned = false;
-        for (Class<? extends ObjectType> clazz : CLEANUP_PATHS.keySet()) {
-            if (!clazz.isAssignableFrom(type.getClassDefinition())) {
-                continue;
-            }
-
-            List<ItemPath> paths = CLEANUP_PATHS.get(clazz);
-            for (ItemPath path : paths) {
-                cleaned = cleaned | cleanupObject(root, path);
-            }
+        List<ItemPath> paths = CLEANUP_PATHS.get(type.getClassDefinition());
+        for (ItemPath path : paths) {
+            cleaned = cleaned | cleanupObject(root, path);
         }
 
         if (!cleaned) {
