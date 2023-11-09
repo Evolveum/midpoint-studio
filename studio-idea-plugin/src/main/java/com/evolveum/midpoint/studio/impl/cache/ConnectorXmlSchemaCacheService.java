@@ -113,6 +113,7 @@ public class ConnectorXmlSchemaCacheService {
 
         Document doc = DOMUtil.getDocument(DOMUtil.XSD_SCHEMA_ELEMENT);
         Element schema = doc.getDocumentElement();
+        schema.setAttribute("xmlns:t", SchemaConstantsGenerated.NS_TYPES);
         schema.setAttribute("xmlns:a", SchemaConstantsGenerated.NS_ANNOTATION);
         schema.setAttribute("xmlns:icfc", SchemaConstantsGenerated.NS_ICF_CONFIGURATION);
         schema.setAttribute("xmlns:con", importNamespace);
@@ -166,6 +167,10 @@ public class ConnectorXmlSchemaCacheService {
     private XmlFile buildConnectorSchema(MidPointObject object) {
         String connector = object.getContent();
         Element xsdSchema = getXsdSchema(connector);
+
+        if (StringUtils.isBlank(xsdSchema.getAttribute("xmlns:t"))) {
+            xsdSchema.setAttribute("xmlns:t", SchemaConstantsGenerated.NS_TYPES);
+        }
 
         List<Element> elements = DOMUtil.getChildElements(xsdSchema, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "element"));
         Optional<Element> connectorConfiguration = elements.stream().filter(e -> "connectorConfiguration".equals(DOMUtil.getAttribute(e, "name"))).findFirst();
