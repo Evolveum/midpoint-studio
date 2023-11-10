@@ -1,6 +1,6 @@
 # MidPoint Studio
 
-## [Unreleased]
+## [4.8.0]
 ### Added
 - Axiom query language support (highlighting, autocompletion, brackets matching) 
 - Support for Intellij 2023.3
