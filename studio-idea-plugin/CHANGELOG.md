@@ -1,5 +1,12 @@
 # MidPoint Studio
 
+## [Unreleased]
+### Added
+
+### Changed
+
+### Fixed
+
 ## [4.8.0]
 ### Added
 - Axiom query language support (highlighting, autocompletion, brackets matching) 
