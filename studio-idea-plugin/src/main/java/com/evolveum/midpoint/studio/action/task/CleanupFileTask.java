@@ -20,9 +20,6 @@ import org.w3c.dom.Element;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-import static java.util.Collections.sort;
-import static java.util.Comparator.comparing;
-
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -34,10 +31,10 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
 
     private static final Logger LOG = Logger.getInstance(CleanupFileTask.class);
 
-    public static final Map<Class<? extends ObjectType>, List<ItemPath>> CLEANUP_PATHS;
+    public static final Map<Class<? extends ObjectType>, Set<ItemPath>> CLEANUP_PATHS;
 
     static {
-        Map<Class<? extends ObjectType>, List<ItemPath>> map = createCleanupPaths();
+        Map<Class<? extends ObjectType>, Set<ItemPath>> map = createCleanupPaths();
         CLEANUP_PATHS = Collections.unmodifiableMap(map);
     }
 
@@ -47,8 +44,8 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
         setEvent(event);
     }
 
-    private static Map<Class<? extends ObjectType>, List<ItemPath>> createCleanupPaths() {
-        Map<Class<? extends ObjectType>, List<ItemPath>> result = new HashMap<>();
+    private static Map<Class<? extends ObjectType>, Set<ItemPath>> createCleanupPaths() {
+        Map<Class<? extends ObjectType>, Set<ItemPath>> result = new HashMap<>();
 
         Arrays.stream(ObjectTypes.values())
                 .map(ot -> ot.getClassDefinition())
@@ -57,9 +54,8 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
                     Definition definition = MidPointUtils.DEFAULT_PRISM_CONTEXT.getSchemaRegistry()
                             .findObjectDefinitionByCompileTimeClass(clazz);
 
-                    List<ItemPath> paths = createCleanupPaths(
-                            definition, ItemPath.EMPTY_PATH, new ArrayList<>(), new IdentityHashMap<>());
-                    sort(paths, comparing(ItemPath::toString));
+                    Set<ItemPath> paths = createCleanupPaths(
+                            definition, ItemPath.EMPTY_PATH, new HashSet<>(), new IdentityHashMap<>());
 
                     result.put(clazz, paths);
                 });
@@ -67,36 +63,47 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
         return result;
     }
 
-    private static List<ItemPath> createCleanupPaths(
-            Definition definition, ItemPath parentPath, List<ItemPath> paths, IdentityHashMap<Definition, Boolean> visited) {
+    private static Set<ItemPath> createCleanupPaths(
+            Definition definition, ItemPath parentPath, Set<ItemPath> paths, IdentityHashMap<Definition, Set<ItemPath>> visited) {
 
         if (visited.containsKey(definition)) {
+            for (ItemPath path : visited.get(definition)) {
+                paths.add(parentPath.append(path));
+            }
+
             return paths;
         }
 
-        visited.put(definition, true);
+        Set<ItemPath> definitionPaths = new HashSet<>();
+        visited.put(definition, definitionPaths);
 
         if (!(definition instanceof ItemDefinition<?> itemDef)) {
             return paths;
         }
 
         if (itemDef.isOperational()) {
-            paths.add(parentPath.append(itemDef.getItemName()));
+            definitionPaths.add(parentPath.append(itemDef.getItemName()));
+
+            paths.addAll(definitionPaths);
             return paths;
         }
 
         if (itemDef instanceof PrismContainerDefinition<?> containerDef) {
+            ItemPath newParentPath = parentPath;
 
-            ItemPath newParentPath = itemDef instanceof PrismObjectDefinition ?
-                    parentPath : parentPath.append(itemDef.getItemName());
+            if (!(itemDef instanceof PrismObjectDefinition)) {
+                newParentPath = parentPath.append(itemDef.getItemName());
+            }
 
             for (ItemDefinition<?> def : containerDef.getDefinitions()) {
-                createCleanupPaths(def, newParentPath, paths, visited);
+                createCleanupPaths(def, newParentPath, definitionPaths, visited);
             }
         }
 
+        paths.addAll(definitionPaths);
         return paths;
     }
+
 
     @Override
     public ProcessObjectResult processObject(MidPointObject object) throws Exception {
@@ -134,7 +141,7 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
         }
 
         boolean cleaned = false;
-        List<ItemPath> paths = CLEANUP_PATHS.get(type.getClassDefinition());
+        Set<ItemPath> paths = CLEANUP_PATHS.get(type.getClassDefinition());
         for (ItemPath path : paths) {
             cleaned = cleaned | cleanupObject(root, path);
         }

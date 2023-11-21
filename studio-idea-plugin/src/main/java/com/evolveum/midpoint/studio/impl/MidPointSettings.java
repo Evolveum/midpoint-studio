@@ -58,6 +58,8 @@ public class MidPointSettings implements Serializable {
 
     private String midpointVersion;
 
+    private boolean updateOnUpload = true;
+
     public MidPointSettings() {
     }
 
@@ -179,6 +181,14 @@ public class MidPointSettings implements Serializable {
         this.midpointVersion = midpointVersion;
     }
 
+    public boolean isUpdateOnUpload() {
+        return updateOnUpload;
+    }
+
+    public void setUpdateOnUpload(boolean updateOnUpload) {
+        this.updateOnUpload = updateOnUpload;
+    }
+
     public MidPointSettings copy() {
         MidPointSettings other = new MidPointSettings();
         other.projectId = projectId;
@@ -194,6 +204,7 @@ public class MidPointSettings implements Serializable {
         other.ignoreMissingKeys = ignoreMissingKeys;
         other.downloadFilePattern = downloadFilePattern;
         other.midpointVersion = midpointVersion;
+        other.updateOnUpload=updateOnUpload;
         // todo copy doc generator options
 
         return other;
@@ -217,7 +228,8 @@ public class MidPointSettings implements Serializable {
                 && Objects.equals(downloadTypesInclude, that.downloadTypesInclude)
                 && Objects.equals(downloadTypesExclude, that.downloadTypesExclude)
                 && Objects.equals(downloadFilePattern, that.downloadFilePattern)
-                && Objects.equals(midpointVersion, that.midpointVersion);
+                && Objects.equals(midpointVersion, that.midpointVersion)
+                && Objects.equals(updateOnUpload, that.updateOnUpload);
     }
 
     @Override
@@ -225,7 +237,8 @@ public class MidPointSettings implements Serializable {
         return Objects.hash(
                 projectId, dowloadFilePattern, generatedFilePattern, printRestCommunicationToConsole, docGeneratorOptions,
                 askToAddMidpointFacet, askToValidateEnvironmentCredentials, ignoreMissingKeys, downloadTypesInclude,
-                downloadTypesExclude, typesToDownloadLimit, restResponseTimeout, downloadFilePattern, midpointVersion);
+                downloadTypesExclude, typesToDownloadLimit, restResponseTimeout, downloadFilePattern, midpointVersion,
+                updateOnUpload);
     }
 
     @Override
@@ -242,6 +255,7 @@ public class MidPointSettings implements Serializable {
 
         settings.setDownloadTypesExclude(new ArrayList<>(DEFAULT_DOWNLOAD_EXCLUDE));
         settings.setTypesToDownloadLimit(100);
+        settings.updateOnUpload=true;
 
         return settings;
     }

@@ -4,12 +4,10 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismSerializer;
+import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
-import com.evolveum.midpoint.schema.GetOperationOptions;
-import com.evolveum.midpoint.schema.RetrieveOption;
-import com.evolveum.midpoint.schema.SearchResultList;
-import com.evolveum.midpoint.schema.SelectorOptions;
+import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.*;
@@ -17,10 +15,8 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaFileType;
+import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -231,6 +227,11 @@ public class MidPointClient {
                 options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
             }
 
+            if (UserType.class.equals(type)) {
+                options.add(SelectorOptions.create(UniformItemPath.create(UserType.F_JPEG_PHOTO),
+                        GetOperationOptions.createRetrieve(RetrieveOption.INCLUDE)));
+            }
+
             if (LookupTableType.class.equals(type)) {
                 options.add(SelectorOptions.create(UniformItemPath.create(LookupTableType.F_ROW),
                         GetOperationOptions.createRetrieve(RetrieveOption.INCLUDE)));
@@ -275,14 +276,57 @@ public class MidPointClient {
         return new Expander(environment, cm, project, ignoreMissingKeys);
     }
 
+    public UploadResponse modify(MidPointObject obj, List<String> options, boolean expand, VirtualFile file)
+            throws ObjectNotFoundException, IOException, AuthenticationException, SchemaException {
+
+        if (expand) {
+            obj = expand(obj, file);
+        }
+
+        UploadResponse response = new UploadResponse();
+
+        if (obj.isDelta()) {
+            client.modify(obj, options);
+        } else {
+            // todo just nasty options handling. This definitely calls for cleanup (whole midpoint client api attempt mess)
+            SearchOptions opts = new SearchOptions();
+            opts.raw(options.contains("raw"));
+
+            MidPointObject existingObject = get(obj.getType().getClassDefinition(), obj.getOid(), opts);
+            if (existingObject == null) {
+                throw new ObjectNotFoundException("Object with oid '" + obj.getOid() + "' was not found");
+            }
+            PrismObject existing = parseObject(existingObject.getContent());
+            PrismObject current = parseObject(obj.getContent());
+
+            ObjectDelta<?> delta = existing.diff(current);
+            ObjectModificationType deltaType = DeltaConvertor.toObjectModificationType(delta);
+            String deltaXml = serialize(deltaType);
+
+            MidPointObject deltaObj = MidPointObject.copy(obj);
+            deltaObj.setDelta(true);
+            deltaObj.setContent(deltaXml);
+
+            client.modify(deltaObj, options);
+        }
+
+        return response;
+    }
+
+    private MidPointObject expand(MidPointObject obj, VirtualFile file) {
+        Expander expander = createExpander();
+
+        String expanded = expander.expand(obj.getContent(), file);
+
+        MidPointObject result = MidPointObject.copy(obj);
+        result.setContent(expanded);
+
+        return result;
+    }
+
     public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand, VirtualFile file) throws IOException, AuthenticationException {
         if (expand) {
-            Expander expander = createExpander();
-
-            String expanded = expander.expand(obj.getContent(), file);
-
-            obj = MidPointObject.copy(obj);
-            obj.setContent(expanded);
+            obj = expand(obj, file);
         }
 
         UploadResponse response = new UploadResponse();
@@ -328,7 +372,7 @@ public class MidPointClient {
         return parseObject(xml, null);
     }
 
-    public PrismObject<?> parseObject(String xml, ExpanderOptions opts) throws IOException, SchemaException{
+    public PrismObject<?> parseObject(String xml, ExpanderOptions opts) throws IOException, SchemaException {
         return parseObject(xml, null, opts);
     }
 

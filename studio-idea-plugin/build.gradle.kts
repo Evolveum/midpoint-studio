@@ -59,13 +59,14 @@ dependencies {
         exclude("ch.qos.logback")
         exclude("xerces")
     }
-    implementation(libs.security.api) {
+    implementation(libs.midpoint.security.api) {
         isTransitive = false
     }
     implementation(libs.notifications.api) {
         isTransitive = false
     }
     implementation(libs.midpoint.localization)
+//    implementation(libs.midpoint.client)
 
     implementation(libs.asciidoctorj.tabbed.code)
     implementation(libs.velocity) {
