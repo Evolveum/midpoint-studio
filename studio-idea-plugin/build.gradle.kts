@@ -44,31 +44,8 @@ dependencies {
         exclude("xerces")
     }
 
-    implementation(libs.midpoint.model.common) {
-        isTransitive = false
-    }
-    implementation(libs.midpoint.model.api) {
-        isTransitive = false
-    }
-    implementation(libs.midpoint.model.impl) {
-        isTransitive = false
-    }
-    implementation(libs.midpoint.common) {
-        exclude("org.springframework")
-        exclude("net.sf.jasperreports")
-        exclude("org.apache.cxf")
-        exclude("org.slf4j")
-        exclude("ch.qos.logback")
-        exclude("xerces")
-    }
-    implementation(libs.midpoint.security.api) {
-        isTransitive = false
-    }
-    implementation(libs.notifications.api) {
-        isTransitive = false
-    }
-    implementation(libs.midpoint.localization)
-//    implementation(libs.midpoint.client)
+    implementation(projects.midpointSdkApi)
+    runtimeOnly(projects.midpointSdkImpl)
 
     implementation(libs.asciidoctorj.tabbed.code)
     implementation(libs.velocity) {

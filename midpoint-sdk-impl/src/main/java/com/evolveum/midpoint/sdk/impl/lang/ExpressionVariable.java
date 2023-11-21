@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.lang;
+package com.evolveum.midpoint.sdk.impl.lang;
 
 import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.model.api.expr.MidpointFunctions;
@@ -12,7 +12,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public enum MidPointExpressionVariables {
+public enum ExpressionVariable {
 
     INPUT("input", null, null),
 
@@ -62,7 +62,7 @@ public enum MidPointExpressionVariables {
 
     TRANSPORT_NAME("transportName", String.class),
 
-    LOCALIZATION_SERVICE("localizationService",LocalizationService.class);
+    LOCALIZATION_SERVICE("localizationService", LocalizationService.class);
 
     private final String variable;
 
@@ -70,11 +70,11 @@ public enum MidPointExpressionVariables {
 
     private final Class instanceType;
 
-    MidPointExpressionVariables(String variable, Class type) {
+    ExpressionVariable(String variable, Class type) {
         this(variable, type, type);
     }
 
-    MidPointExpressionVariables(String variable, Class type, Class instanceType) {
+    ExpressionVariable(String variable, Class type, Class instanceType) {
         this.variable = variable;
         this.type = type;
         this.instanceType = instanceType;
