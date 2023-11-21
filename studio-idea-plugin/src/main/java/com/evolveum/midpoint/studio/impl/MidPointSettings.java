@@ -45,6 +45,8 @@ public class MidPointSettings implements Serializable {
 
     private boolean ignoreMissingKeys;
 
+    private boolean updateOnUpload = true;
+
     @OptionTag(converter = ObjectTypesConverter.class)
     private List<ObjectTypes> downloadTypesInclude;
 
@@ -158,6 +160,14 @@ public class MidPointSettings implements Serializable {
 
     public void setIgnoreMissingKeys(boolean ignoreMissingKeys) {
         this.ignoreMissingKeys = ignoreMissingKeys;
+    }
+
+    public boolean isUpdateOnUpload() {
+        return updateOnUpload;
+    }
+
+    public void setUpdateOnUpload(boolean updateOnUpload) {
+        this.updateOnUpload = updateOnUpload;
     }
 
     public MidPointSettings copy() {

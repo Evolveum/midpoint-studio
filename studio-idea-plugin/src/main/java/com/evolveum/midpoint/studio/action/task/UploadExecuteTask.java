@@ -5,9 +5,8 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.UploadResponse;
+import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
@@ -60,13 +59,23 @@ public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
             }
         } else {
             File file = obj.getFile();
-            VirtualFile vFile = file != null ?  VcsUtil.getVirtualFile(file) : null;
+            VirtualFile vFile = file != null ? VcsUtil.getVirtualFile(file) : null;
 
-            UploadResponse resp = client.uploadRaw(obj, buildUploadOptions(obj), true, vFile);
-            result = resp.getResult();
+            MidPointSettings settings = MidPointService.getInstance(client.getProject()).getSettings();
+            UploadResponse response;
+            if (obj.getOid() != null && settings.isUpdateOnUpload()) {
+                try {
+                    response = client.modify(obj, buildUploadOptions(obj), true, vFile);
+                } catch (ObjectNotFoundException ex) {
+                    response = client.uploadRaw(obj, buildUploadOptions(obj), true, vFile);
+                }
+            } else {
+                response = client.uploadRaw(obj, buildUploadOptions(obj), true, vFile);
+            }
+            result = response.getResult();
 
-            if (obj.getOid() == null && resp.getOid() != null) {
-                obj.setOid(resp.getOid());
+            if (obj.getOid() == null && response.getOid() != null) {
+                obj.setOid(response.getOid());
             }
         }
 
