@@ -21,6 +21,7 @@ dependencyResolutionManagement {
             version("okhttp", "4.10.0")
             version("openkeepass", "0.8.1")
             version("spring", "5.3.8")
+            version("spring-boot", "3.1.5")
             version("stax", "1.2.0")
             version("testng", "6.14.3")
             version("slf4j", "1.7.32")
@@ -58,6 +59,7 @@ dependencyResolutionManagement {
             library("openkeepass", "de.slackspace", "openkeepass").versionRef("openkeepass")
 
             library("spring-core", "org.springframework", "spring-core").versionRef("spring")
+            library("spring-boot-loader", "org.springframework.boot", "spring-boot-loader").versionRef("spring-boot")
             library("stax", "stax", "stax").versionRef("stax")
             library("slf4j-api", "org.slf4j", "slf4j-api").versionRef("slf4j")
             library("velocity", "org.apache.velocity", "velocity-engine-core").versionRef("velocity")

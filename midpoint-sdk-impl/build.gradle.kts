@@ -1,7 +1,10 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
     id("java-library")
+    id("org.springframework.boot") version "3.1.5"
 }
 
 group = "com.evolveum.midpoint.sdk"
@@ -12,10 +15,9 @@ dependencies {
 
     implementation(libs.prism.utils)
 
+    implementation(libs.midpoint.schema)
+
     implementation(libs.midpoint.common) {
-        isTransitive = false
-    }
-    implementation(libs.midpoint.schema) {
         isTransitive = false
     }
     implementation(libs.midpoint.model.common) {
@@ -35,8 +37,20 @@ dependencies {
     }
 
     implementation(libs.commons.lang)
+
+    testImplementation(testLibs.jupiter.api)
+    testRuntimeOnly(testLibs.jupiter.engine)
 }
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks.getByName<BootJar>("bootJar") {
+    archiveClassifier.set("all")
+    mainClass.set("NonExistingClass")
+}
+
+tasks.getByName<Jar>("jar") {
+    archiveClassifier.set("")
 }
