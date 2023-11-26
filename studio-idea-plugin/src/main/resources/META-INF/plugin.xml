@@ -185,6 +185,8 @@
         <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.AxiomQueryMultiHostInjector"/>
         <completion.contributor language="Axiom Query"
                                 implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCompletionContributor"/>
+        <externalAnnotator language="Axiom Query"
+                           implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.AxiomQueryValidationExternalAnnotator"/>
         <!--<lang.foldingBuilder language="Axiom Query"
                              implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryFoldingBuilder" />-->
 
