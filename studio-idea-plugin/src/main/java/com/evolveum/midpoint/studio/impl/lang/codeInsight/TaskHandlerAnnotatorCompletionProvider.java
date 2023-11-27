@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
-import com.evolveum.midpoint.model.api.ModelPublicConstants;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.sdk.api.lang.TaskHandlerProvider;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TaskType;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -21,12 +21,7 @@ import com.intellij.util.ProcessingContext;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -36,35 +31,14 @@ public class TaskHandlerAnnotatorCompletionProvider extends CompletionProvider<C
     public static final List<LookupElement> HANDLERS;
 
     static {
-        List<String> handlers = new ArrayList<>();
+        TaskHandlerProvider provider = null;    // todo inject provider(s) here
 
-        Field[] fields = ModelPublicConstants.class.getDeclaredFields();
-
-        for (Field field : fields) {
-            if (!Modifier.isPublic(field.getModifiers()) || !Modifier.isStatic(field.getModifiers()) || !Modifier.isFinal(field.getModifiers())) {
-                // not public static final
-                continue;
-            }
-
-            if (String.class != field.getType()) {
-                continue;
-            }
-
-            try {
-                String value = (String) field.get(ModelPublicConstants.class);
-                if (value == null || !value.startsWith(SchemaConstants.NS_MODEL)) {
-                    continue;
-                }
-
-                handlers.add(value);
-            } catch (IllegalAccessException | IllegalArgumentException ex) {
-            }
-        }
-
-        Collections.sort(handlers);
+        Set<String> handlers = provider != null ? provider.getTaskHandlerUris() : Collections.emptySet();
+        List<String> sorted = new ArrayList<>(handlers);
+        sorted.sort(String.CASE_INSENSITIVE_ORDER);
 
         List<LookupElement> list = new ArrayList<>();
-        for (String s : handlers) {
+        for (String s : sorted) {
             String label = s.replace(SchemaConstants.NS_MODEL, "");
 
             LookupElementBuilder builder = LookupElementBuilder.create(s)

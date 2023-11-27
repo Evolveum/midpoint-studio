@@ -14,9 +14,9 @@ import org.jetbrains.annotations.NotNull;
 public abstract class SetModuleLoggingGroupAction extends DefaultActionGroup implements DumbAware {
 
     public SetModuleLoggingGroupAction(ModuleLogger logger) {
-        add(new SetBasicLoggerAction(logger, LoggingLevelType.INFO));
-        add(new SetBasicLoggerAction(logger, LoggingLevelType.DEBUG));
-        add(new SetBasicLoggerAction(logger, LoggingLevelType.TRACE));
+//        add(new SetBasicLoggerAction(logger, LoggingLevelType.INFO));
+//        add(new SetBasicLoggerAction(logger, LoggingLevelType.DEBUG));
+//        add(new SetBasicLoggerAction(logger, LoggingLevelType.TRACE));
     }
 
     @Override

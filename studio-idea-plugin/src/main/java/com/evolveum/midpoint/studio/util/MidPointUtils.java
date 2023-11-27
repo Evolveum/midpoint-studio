@@ -858,7 +858,7 @@ public class MidPointUtils {
             File ioFile = file != null ? VfsUtil.virtualToIoFile(file) : null;
             return ClientUtils.parseText(text, ioFile);
         } catch (RuntimeException ex) {
-            String msg = "Couldn't parse text '" + org.apache.commons.lang.StringUtils.abbreviate(text, 10) + "'";
+            String msg = "Couldn't parse text '" + org.apache.commons.lang3.StringUtils.abbreviate(text, 10) + "'";
 
             if (notificationKey != null) {
                 MidPointUtils.publishExceptionNotification(project, null, MidPointUtils.class, notificationKey, msg, ex);
