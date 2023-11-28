@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class DisplayUtil {
@@ -8,7 +8,7 @@ public class DisplayUtil {
     @NotNull
     public static String makeDisabled(Object value) {
         if (value != null) {
-            return "<html><font color=\"" + Colors.DISABLED_COLOR + "\">" + StringEscapeUtils.escapeHtml(String.valueOf(value))
+            return "<html><font color=\"" + Colors.DISABLED_COLOR + "\">" + StringEscapeUtils.escapeHtml4(String.valueOf(value))
                     + "</font></html>";
         } else {
             return "";
