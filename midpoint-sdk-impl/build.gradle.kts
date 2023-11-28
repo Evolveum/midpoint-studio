@@ -13,7 +13,10 @@ version = "4.9.0"
 dependencies {
     api(projects.midpointSdkApi)
 
-    implementation(libs.midpoint.schema)
+    implementation(libs.midpoint.schema) {
+        exclude("com.evolveum.prism", "prism-api")
+        exclude("com.evolveum.prism", "prism-impl")
+    }
     implementation(libs.midpoint.localization)
 
     implementation(libs.midpoint.model.common) {
