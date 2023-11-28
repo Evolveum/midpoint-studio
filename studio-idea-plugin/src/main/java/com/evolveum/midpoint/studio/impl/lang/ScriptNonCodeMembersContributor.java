@@ -10,9 +10,14 @@ import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.sdk.api.SdkContext;
+import com.evolveum.midpoint.sdk.api.lang.ExpressionVariablesProvider;
+import com.evolveum.midpoint.sdk.api.lang.Variable;
+import com.evolveum.midpoint.studio.impl.sdk.SdkService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.scope.PsiScopeProcessor;
 import com.intellij.psi.xml.XmlTag;
@@ -55,9 +60,19 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             return;
         }
 
-        PsiManager psiManager = PsiManager.getInstance(aClass.getProject());
+        Project project = aClass.getProject();
+        PsiManager psiManager = PsiManager.getInstance(project);
 
-        for (MidPointExpressionVariables v : MidPointExpressionVariables.values()) {
+        SdkService sdkService = SdkService.getInstance(project);
+        SdkContext ctx = sdkService.getContext();
+
+        ExpressionVariablesProvider variablesProvider = ctx.expressionVariablesProvider();
+        if (variablesProvider == null) {
+            return;
+        }
+
+
+        for (Variable<?, ?> v : variablesProvider.getVariables().values()) {
             Class type = getVariableType(v);
 
             if (aClass.getQualifiedName() == null) {
@@ -65,7 +80,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
                 continue;
             }
 
-            PsiVariable variable = new GrDynamicImplicitProperty(psiManager, v.getVariable(),
+            PsiVariable variable = new GrDynamicImplicitProperty(psiManager, v.name(),
                     type.getName(), aClass.getQualifiedName());
 
             if (!ResolveUtil.processElement(processor, variable, state)) {
@@ -77,9 +92,9 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         addFunctionParameters(qualifierType, aClass, processor, place, state);
     }
 
-    private Class getVariableType(MidPointExpressionVariables var) {
-        if (var.getType() != null) {
-            return var.getType();
+    private Class getVariableType(Variable<?, ?> var) {
+        if (var.type() != null) {
+            return var.type();
         }
 
         return Object.class;    // todo improve for "input" variable and/or variables that can contain subtypes

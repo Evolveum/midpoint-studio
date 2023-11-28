@@ -25,66 +25,47 @@ version = properties("pluginVersion")
 
 val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 
-// Configure project's dependencies
 dependencies {
+    implementation(projects.midpointSdkApi)
+
+    implementation(projects.midpointClient) {
+//         temporarily until sdk api/impl dependencies are cleaned up
+        isTransitive = false;
+    }
+    implementation(projects.midscribe) {
+//         temporarily until sdk api/impl dependencies are cleaned up
+        isTransitive = false;
+
+//        exclude("org.springframework")
+//        exclude("org.slf4j")
+//        exclude("ch.qos.logback")
+//        exclude("xerces")
+    }
+
+    implementation(libs.midpoint.schema) {
+        because("Just for now, until we remove all schema generated classes from plugin")
+        isTransitive = false
+    }
+
     antlr("org.antlr:antlr4:4.10.1") {
         exclude("com.ibm.icu")
-//        exclude("org.antlr")
     }
+
     implementation("org.antlr:antlr4-runtime:4.10.1")
     implementation("org.antlr:antlr4-intellij-adaptor:0.1")
-
-    implementation(projects.midpointClient)
-    implementation(projects.midscribe) {
-        exclude("org.springframework")
-        exclude("net.sf.jasperreports")
-        exclude("org.apache.cxf")
-        exclude("org.slf4j")
-        exclude("ch.qos.logback")
-        exclude("xerces")
-    }
-
-    implementation(libs.midpoint.model.common) {
-        isTransitive = false
-    }
-    implementation(libs.midpoint.model.api) {
-        isTransitive = false
-    }
-    implementation(libs.midpoint.model.impl) {
-        isTransitive = false
-    }
-    implementation(libs.midpoint.common) {
-        exclude("org.springframework")
-        exclude("net.sf.jasperreports")
-        exclude("org.apache.cxf")
-        exclude("org.slf4j")
-        exclude("ch.qos.logback")
-        exclude("xerces")
-    }
-    implementation(libs.security.api) {
-        isTransitive = false
-    }
-    implementation(libs.notifications.api) {
-        isTransitive = false
-    }
-    implementation(libs.midpoint.localization)
-
-    implementation(libs.asciidoctorj.tabbed.code)
-    implementation(libs.velocity) {
-        exclude("org.slf4j")
-    }
 
     implementation(libs.openkeepass) {
         exclude("stax", "stax-api")
     }
     implementation(libs.commons.lang)
+    implementation(libs.commons.beanutils)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {
-        // spring-core needed because of DebugDumpable impl uses spring ReflectionUtils class
         isTransitive = false
+        because("spring-core needed because of DebugDumpable impl uses spring ReflectionUtils class")
     }
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))

@@ -11,7 +11,9 @@
     <resource-bundle>messages.MidPointStudio</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.sdk.SdkService"/>
+
+        <projectService
                 serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>

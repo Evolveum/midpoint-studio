@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class AxiomQueryValidationExternalAnnotator extends ExternalAnnotator<PsiFile, List<AxiomQueryError>> {
 
-    AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(ServiceFactory.DEFAULT_PRISM_CONTEXT);
+//    AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(ServiceFactory.DEFAULT_PRISM_CONTEXT);
 
     @Override
     @Nullable
@@ -30,7 +30,8 @@ public class AxiomQueryValidationExternalAnnotator extends ExternalAnnotator<Psi
     @Nullable
     @Override
     public List<AxiomQueryError> doAnnotate(final PsiFile file) {
-        return axiomQueryLangService.validate(file.getText());
+//        return axiomQueryLangService.validate(file.getText());
+        return null;
     }
 
     @Override
@@ -38,11 +39,11 @@ public class AxiomQueryValidationExternalAnnotator extends ExternalAnnotator<Psi
                       List<AxiomQueryError> errors,
                       @NotNull AnnotationHolder holder)
     {
-        for (AxiomQueryError error : errors) {
-            TextRange range = new TextRange(error.getCharPositionInLineStart(), error.getCharPositionInLineStop() + 1);
-            holder.newAnnotation(HighlightSeverity.ERROR, error.getMessage())
-                    .range(range)
-                    .create();
-        }
+//        for (AxiomQueryError error : errors) {
+//            TextRange range = new TextRange(error.getCharPositionInLineStart(), error.getCharPositionInLineStop() + 1);
+//            holder.newAnnotation(HighlightSeverity.ERROR, error.getMessage())
+//                    .range(range)
+//                    .create();
+//        }
     }
 }
