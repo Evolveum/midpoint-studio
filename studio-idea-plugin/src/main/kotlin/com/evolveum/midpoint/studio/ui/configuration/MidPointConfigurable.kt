@@ -112,16 +112,6 @@ open class MidPointConfigurable(
 
     }
 
-    private fun validateNotBlank(builder: ValidationInfoBuilder, textField: JTextField): ValidationInfo? {
-        return builder.run {
-            val value = textField.text
-            when {
-                value.isNullOrBlank() -> error("Please fill in value")
-                else -> null
-            }
-        }
-    }
-
     private fun translateTypesToString(list: List<ObjectTypes>): String {
         if (list.isEmpty()) {
             return ""

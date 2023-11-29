@@ -26,6 +26,8 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PanelTypeCacheService"/>
 
+        <!--<projectService serviceImplementation="com.evolveum.midpoint.studio.impl.configuration.CleanupService"/>-->
+
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
@@ -68,6 +70,14 @@
         <projectConfigurable
                 parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
                 groupWeight="40"
+                instance="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
+                key="CleanupConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="10"
                 instance="com.evolveum.midpoint.studio.ui.configuration.OtherConfigurable"
                 id="com.evolveum.midpoint.studio.ui.configuration.OtherConfigurable"
                 key="OtherConfigurable.title"
