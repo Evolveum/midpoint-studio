@@ -73,14 +73,6 @@
                 instance="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
                 id="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
                 key="CleanupConfigurable.title"
-                bundle="messages.MidPointStudio"/>
-
-        <projectConfigurable
-                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
-                groupWeight="10"
-                instance="com.evolveum.midpoint.studio.ui.configuration.OtherConfigurable"
-                id="com.evolveum.midpoint.studio.ui.configuration.OtherConfigurable"
-                key="OtherConfigurable.title"
                 bundle="messages.MidPointStudio"/>-->
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>

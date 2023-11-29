@@ -295,4 +295,8 @@ public class Environment implements Serializable, Comparable<Environment> {
         sb.append('}');
         return sb.toString();
     }
+
+    public Environment copy() {
+        return new Environment(this);
+    }
 }
