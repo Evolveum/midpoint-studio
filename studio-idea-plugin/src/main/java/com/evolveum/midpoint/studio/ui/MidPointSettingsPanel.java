@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.MidPointSettings;
-import com.evolveum.midpoint.studio.util.ObjectTypesConverter;
+import com.evolveum.midpoint.studio.util.ObjectTypesListConverter;
 import com.intellij.openapi.options.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,7 +43,7 @@ public class MidPointSettingsPanel extends JPanel {
         logRestCommunication.setSelected(settings.isPrintRestCommunicationToConsole());
         restClientTimeout.setText(Integer.toString(settings.getRestResponseTimeout()));
 
-        ObjectTypesConverter converter = new ObjectTypesConverter();
+        ObjectTypesListConverter converter = new ObjectTypesListConverter();
         typesIncluded.setText(converter.toString(settings.getDownloadTypesInclude()));
         typesExcluded.setText(converter.toString(settings.getDownloadTypesExclude()));
 
@@ -70,7 +70,7 @@ public class MidPointSettingsPanel extends JPanel {
             settings.setRestResponseTimeout(Integer.parseInt(restClientTimeout.getText()));
         }
 
-        ObjectTypesConverter converter = new ObjectTypesConverter();
+        ObjectTypesListConverter converter = new ObjectTypesListConverter();
         settings.setDownloadTypesInclude(converter.fromString(typesIncluded.getText()));
         settings.setDownloadTypesExclude(converter.fromString(typesExcluded.getText()));
 
@@ -104,7 +104,7 @@ public class MidPointSettingsPanel extends JPanel {
 
     private void validateTypes(String types, String message) throws ConfigurationException {
         try {
-            ObjectTypesConverter.fromString(types, false);
+            ObjectTypesListConverter.fromString(types, false);
         } catch (RuntimeException ex) {
             throw new ConfigurationException(message + ex.getMessage());
         }

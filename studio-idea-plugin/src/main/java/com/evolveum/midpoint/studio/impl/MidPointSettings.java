@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.util.ObjectTypesConverter;
+import com.evolveum.midpoint.studio.util.ObjectTypesListConverter;
 import com.intellij.util.xmlb.annotations.OptionTag;
 
 import java.io.Serializable;
@@ -45,10 +45,10 @@ public class MidPointSettings implements Serializable {
 
     private boolean ignoreMissingKeys;
 
-    @OptionTag(converter = ObjectTypesConverter.class)
+    @OptionTag(converter = ObjectTypesListConverter.class)
     private List<ObjectTypes> downloadTypesInclude;
 
-    @OptionTag(converter = ObjectTypesConverter.class)
+    @OptionTag(converter = ObjectTypesListConverter.class)
     private List<ObjectTypes> downloadTypesExclude;
 
     private int typesToDownloadLimit;

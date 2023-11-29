@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
+import java.util.Arrays;
+
 public enum CleanupPathAction {
 
     REMOVE("remove"),
@@ -16,5 +18,16 @@ public enum CleanupPathAction {
 
     public String value() {
         return value;
+    }
+
+    public static CleanupPathAction getState(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        return Arrays.stream(values())
+                .filter(s -> value.equals(s.value()))
+                .findFirst()
+                .orElse(null);
     }
 }

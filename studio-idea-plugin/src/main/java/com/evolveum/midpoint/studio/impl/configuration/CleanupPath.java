@@ -1,6 +1,9 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.util.CleanupPathActionConverter;
+import com.evolveum.midpoint.studio.util.ObjectTypesConverter;
+import com.intellij.util.xmlb.annotations.OptionTag;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
@@ -9,10 +12,13 @@ import java.util.Objects;
 
 public class CleanupPath implements Serializable, Comparable<CleanupPath> {
 
+    @OptionTag(converter = ObjectTypesConverter.class)
     private ObjectTypes type;
 
     private String path;
 
+
+    @OptionTag(converter = CleanupPathActionConverter.class)
     private CleanupPathAction action;
 
     @SuppressWarnings("unused")

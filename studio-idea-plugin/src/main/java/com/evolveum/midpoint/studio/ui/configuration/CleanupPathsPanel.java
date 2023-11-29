@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui.configuration;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupPath;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AddEditRemovePanel;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPath> {
 
     private final Project project;
 
-    public CleanupPathsPanel(Project project) {
+    public CleanupPathsPanel(@NotNull Project project) {
         super(new CleanupPathsModel(), new ArrayList<>(), null);
 
         this.project = project;
