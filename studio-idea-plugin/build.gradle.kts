@@ -9,7 +9,7 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.8.20"
+    id("org.jetbrains.kotlin.jvm") version "1.9.21"
     // ANTLR4 plugin
     id("antlr")
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
