@@ -16,6 +16,8 @@ public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPath> {
         super(new CleanupPathsModel(), new ArrayList<>(), null);
 
         this.project = project;
+
+        getTable().setShowColumns(true);
     }
 
     @Override
