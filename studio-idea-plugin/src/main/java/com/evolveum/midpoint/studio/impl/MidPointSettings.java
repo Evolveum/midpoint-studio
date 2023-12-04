@@ -41,9 +41,9 @@ public class MidPointSettings implements Serializable {
 
     private DocGeneratorOptions docGeneratorOptions;
 
-    private boolean askToAddMidpointFacet = true;
+    private boolean askToAddMidpointFacet;
 
-    private boolean askToValidateEnvironmentCredentials = true;
+    private boolean askToValidateEnvironmentCredentials;
 
     private boolean ignoreMissingKeys;
 
@@ -55,11 +55,11 @@ public class MidPointSettings implements Serializable {
 
     private int typesToDownloadLimit;
 
-    private int restResponseTimeout = 60;
+    private int restResponseTimeout;
 
     private String midpointVersion;
 
-    private boolean updateOnUpload = true;
+    private boolean updateOnUpload;
 
     public MidPointSettings() {
     }
@@ -258,6 +258,10 @@ public class MidPointSettings implements Serializable {
         settings.setTypesToDownloadLimit(100);
         settings.updateOnUpload = true;
         settings.setMidpointVersion(MidPointConstants.DEFAULT_MIDPOINT_VERSION);
+
+        settings.askToAddMidpointFacet = true;
+        settings.askToValidateEnvironmentCredentials = true;
+        settings.restResponseTimeout = 60;
 
         return settings;
     }

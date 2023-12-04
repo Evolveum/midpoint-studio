@@ -30,23 +30,23 @@ class CleanupEditorPanel(val project: Project, val input: CleanupPath?) {
             row(StudioBundle.message("CleanupEditorPanel.type")) {
                 type = comboBox(
                     sortTypes(),
-                    SimpleListCellRenderer.create("") { translateType(it) }
+                    SimpleListCellRenderer.create("") { translateEnum(it) }
                 )
-                    .bindItem({ realInput.type ?: ObjectTypes.OBJECT }, { it })
-                    .validationOnApply(::validateNotEmpty)
+                    .bindItem({ realInput.type ?: ObjectTypes.OBJECT }, { })
+                    .validationOnApply(::validateNotNull)
             }
             row(StudioBundle.message("CleanupEditorPanel.path")) {
                 path = textField()
-                    .bindText({ realInput.path ?: "" }, { it })
+                    .bindText({ realInput.path ?: "" }, { })
                     .validationOnInput(::validateNotBlank)
                     .validationOnApply(::validateNotBlank)
             }
             row(StudioBundle.message("CleanupEditorPanel.action")) {
                 action = comboBox(
                     CleanupPathAction.values().toList(),
-                    SimpleListCellRenderer.create("") { it?.value() }
+                    SimpleListCellRenderer.create("") { translateEnum(it) }
                 )
-                    .bindItem({ realInput.action ?: CleanupPathAction.IGNORE }, { it })
+                    .bindItem({ realInput.action ?: CleanupPathAction.IGNORE }, { })
             }
         }
     }
@@ -59,14 +59,14 @@ class CleanupEditorPanel(val project: Project, val input: CleanupPath?) {
         )
     }
 
-    fun translateType(type: ObjectTypes?): String? {
+    private fun <X, T : Enum<X>> translateEnum(type: T?): String? {
         if (type == null) {
             return null
         }
-        return localizationService.translate("ObjectTypes." + type?.name)
+        return localizationService.translateEnum(type)
     }
 
-    fun sortTypes(): List<ObjectTypes> {
-        return ObjectTypes.values().toList().sortedBy { translateType(it) }
+    private fun sortTypes(): List<ObjectTypes> {
+        return ObjectTypes.values().toList().sortedBy { translateEnum(it) }
     }
 }

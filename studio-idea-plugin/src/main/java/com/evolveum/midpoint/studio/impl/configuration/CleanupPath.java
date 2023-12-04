@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 
-public class CleanupPath implements Serializable, Comparable<CleanupPath> {
+public class  CleanupPath implements Serializable, Comparable<CleanupPath> {
 
     @OptionTag(converter = ObjectTypesConverter.class)
     private ObjectTypes type;

@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.impl.service;
 
 import com.evolveum.midpoint.studio.impl.MidPointException;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +22,7 @@ public class MidPointLocalizationService {
 
     private static final Logger LOG = Logger.getInstance(MidPointLocalizationService.class);
 
-    private List<Properties> properties = new ArrayList<>();
+    private final List<Properties> properties = new ArrayList<>();
 
     public MidPointLocalizationService() {
         LOG.info("Initializing " + getClass().getSimpleName());
@@ -53,6 +53,23 @@ public class MidPointLocalizationService {
         }
 
         this.properties.add(properties);
+    }
+
+    public String translateEnum(Enum<?> e) {
+        return translateEnum(e, null);
+    }
+
+    public String translateEnum(Enum<?> e, String nullKey) {
+        if (e == null) {
+            return nullKey != null ? translate(nullKey) : null;
+        }
+
+        String key = createKeyForEnum(e);
+        return translate(key);
+    }
+
+    private <E extends Enum<?>> String createKeyForEnum(@NotNull E value) {
+        return value.getClass().getSimpleName() + "." + value.name();
     }
 
     public String translate(String key) {

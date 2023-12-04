@@ -20,20 +20,32 @@ open class MidPointConfigurable(val project: Project) :
 
     private var downloadFilePattern: Cell<JBTextField>? = null
 
-    private var configuration: MidPointSettings = MidPointSettings.createDefaultSettings()
+    private var configuration: MidPointSettings
+
+    init {
+        configuration = loadConfiguration()
+    }
 
     override fun apply() {
         super.apply()
 
         val service = MidPointService.getInstance(project)
-        service.settings = configuration!!
+        service.settings = configuration
+    }
+
+    override fun isModified(): Boolean {
+        return super.isModified()
     }
 
     override fun reset() {
-        super.reset()
+        configuration = loadConfiguration()
 
+        super.reset()
+    }
+
+    private fun loadConfiguration(): MidPointSettings {
         val service = MidPointService.getInstance(project)
-        configuration = service.settings.copy()
+        return service.settings.copy()
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
@@ -48,14 +60,26 @@ open class MidPointConfigurable(val project: Project) :
                         MidPointConstants.SUPPORTED_VERSIONS,
                         SimpleListCellRenderer.create("") { it }
                     )
-                        .bindItem(configuration::getMidpointVersion, configuration::setMidpointVersion)
+                        .bindItem(
+                            { configuration.midpointVersion },
+                            { configuration.midpointVersion = it })
+                        .validationOnApply(::validateNotNull)
+                }
+                row {
+                    checkBox(message("MidPointConfigurable.updateOnUpload"))
+                        .bindSelected(
+                            { configuration.isUpdateOnUpload },
+                            { configuration.isUpdateOnUpload = it }
+                        )
                 }
             }
             groupRowsRange(message("MidPointConfigurable.restClient.title")) {
                 row(message("MidPointConfigurable.restClient.downloadFilePattern")) {
                     downloadFilePattern = textField()
                         .columns(COLUMNS_LARGE)
-                        .bindText(configuration::getDowloadFilePattern, configuration::setDowloadFilePattern)
+                        .bindText(
+                            { configuration.dowloadFilePattern },
+                            { configuration.dowloadFilePattern = it })
                         .validationOnInput(::validateNotBlank)
                         .validationOnApply(::validateNotBlank)
                         .focused()
@@ -63,19 +87,25 @@ open class MidPointConfigurable(val project: Project) :
                 row(message("MidPointConfigurable.restClient.generatedFilePattern")) {
                     textField()
                         .columns(COLUMNS_LARGE)
-                        .bindText(configuration::getGeneratedFilePattern, configuration::setGeneratedFilePattern)
+                        .bindText(
+                            { configuration.generatedFilePattern },
+                            { configuration.generatedFilePattern = it }
+                        )
                         .validationOnInput(::validateNotBlank)
                         .validationOnApply(::validateNotBlank)
                 }
                 row(message("MidPointConfigurable.restClient.timeout")) {
                     intTextField(IntRange(1, 3600), 1)
-                        .bindIntText(configuration::getRestResponseTimeout, configuration::setRestResponseTimeout)
+                        .bindIntText(
+                            { configuration.restResponseTimeout },
+                            { configuration.restResponseTimeout = it }
+                        )
                 }.comment(message("MidPointConfigurable.restClient.timeout.comment"))
                 row {
                     checkBox(message("MidPointConfigurable.restClient.logCommunication"))
                         .bindSelected(
-                            configuration::isPrintRestCommunicationToConsole,
-                            configuration::setPrintRestCommunicationToConsole
+                            { configuration.isPrintRestCommunicationToConsole },
+                            { configuration.isPrintRestCommunicationToConsole = it }
                         )
                 }
             }
@@ -85,8 +115,8 @@ open class MidPointConfigurable(val project: Project) :
                         .validationOnInput(::validateTypes)
                         .validationOnApply(::validateTypes)
                         .bindText(
-                            { translateTypesToString(configuration.getDownloadTypesInclude()) },
-                            { translateStringToTypes(it) })
+                            { convertObjectTypesListToString(configuration.downloadTypesInclude) },
+                            { configuration.downloadTypesInclude = convertStringToObjectTypesList(it) })
                         .align(AlignX.FILL)
                 }
                 row(message("MidPointConfigurable.download.exclude")) {
@@ -94,13 +124,15 @@ open class MidPointConfigurable(val project: Project) :
                         .validationOnInput(::validateTypes)
                         .validationOnApply(::validateTypes)
                         .bindText(
-                            { translateTypesToString(configuration.getDownloadTypesExclude()) },
-                            { translateStringToTypes(it) })
+                            { convertObjectTypesListToString(configuration.downloadTypesExclude) },
+                            { configuration.downloadTypesExclude = convertStringToObjectTypesList(it) })
                         .align(AlignX.FILL)
                 }
                 row(message("MidPointConfigurable.download.limit")) {
                     intTextField(IntRange(1, 500), 1)
-                        .bindIntText(configuration::getTypesToDownloadLimit, configuration::setTypesToDownloadLimit)
+                        .bindIntText(
+                            { configuration.typesToDownloadLimit },
+                            { configuration.typesToDownloadLimit = it })
                 }
             }
         }

@@ -6,7 +6,7 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.layout.ValidationInfoBuilder
 import javax.swing.JTextField
 
-fun <E> validateNotEmpty(builder: ValidationInfoBuilder, comp: ComboBox<E>): ValidationInfo? {
+fun <E> validateNotNull(builder: ValidationInfoBuilder, comp: ComboBox<E>): ValidationInfo? {
     return builder.run {
         val value = comp.selectedItem
         when {
@@ -26,7 +26,7 @@ fun validateNotBlank(builder: ValidationInfoBuilder, textField: JTextField): Val
     }
 }
 
-fun translateTypesToString(list: List<ObjectTypes>): String {
+fun convertObjectTypesListToString(list: List<ObjectTypes>): String {
     if (list.isEmpty()) {
         return ""
     }
@@ -34,12 +34,14 @@ fun translateTypesToString(list: List<ObjectTypes>): String {
     return list.joinToString { it.value }
 }
 
-fun translateStringToTypes(value: String): List<ObjectTypes> {
+fun convertStringToObjectTypesList(value: String): List<ObjectTypes> {
     if (value.isEmpty()) {
         return emptyList()
     }
 
-    return value.split("[,\\s]").mapNotNull { translateToObjectType(it) }
+    return value
+        .split("[,\\s")
+        .mapNotNull { convertToObjectTypes(it) }
         .toList() as List<ObjectTypes>
 }
 
@@ -50,13 +52,13 @@ fun validateTypes(builder: ValidationInfoBuilder, textField: JTextField): Valida
         val array = value?.split("[,\\s]") ?: emptyList()
         when {
             value.isNullOrBlank() -> null
-            array.map { translateToObjectType(it) }.none { it == null } -> null
-            else -> error("Unknown types: " + array.filter { translateToObjectType(it) != null }.toList())
+            array.map { convertToObjectTypes(it) }.none { it == null } -> null
+            else -> error("Unknown types: " + array.filter { convertToObjectTypes(it) != null }.toList())
         }
     }
 }
 
-fun translateToObjectType(item: String): ObjectTypes? {
+fun convertToObjectTypes(item: String): ObjectTypes? {
     if (item.isBlank()) {
         return null
     }
