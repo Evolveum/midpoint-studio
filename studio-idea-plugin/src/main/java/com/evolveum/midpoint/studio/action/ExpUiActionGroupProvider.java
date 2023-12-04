@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.intellij.ide.ui.customization.CustomizableActionGroupProvider;
-import com.intellij.ui.ExperimentalUI;
+import com.intellij.ui.NewUI;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -14,7 +14,7 @@ public class ExpUiActionGroupProvider extends CustomizableActionGroupProvider {
             return;
         }
 
-        if (!ExperimentalUI.isNewUI()) {
+        if (!NewUI.isEnabled()) {
             return;
         }
 

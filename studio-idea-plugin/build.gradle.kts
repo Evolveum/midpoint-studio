@@ -25,11 +25,9 @@ version = properties("pluginVersion")
 
 val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 
-// Configure project's dependencies
 dependencies {
     antlr("org.antlr:antlr4:4.10.1") {
         exclude("com.ibm.icu")
-//        exclude("org.antlr")
     }
     implementation("org.antlr:antlr4-runtime:4.10.1")
     implementation("org.antlr:antlr4-intellij-adaptor:0.1")
@@ -83,8 +81,8 @@ dependencies {
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {
-        // spring-core needed because of DebugDumpable impl uses spring ReflectionUtils class
         isTransitive = false
+        because("spring-core needed because of DebugDumpable impl uses spring ReflectionUtils class")
     }
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))

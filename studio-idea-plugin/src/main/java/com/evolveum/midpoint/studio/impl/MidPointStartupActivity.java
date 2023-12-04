@@ -26,7 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.profile.codeInspection.ProjectInspectionProfileManager;
 import com.intellij.project.ProjectKt;
-import com.intellij.ui.ExperimentalUI;
+import com.intellij.ui.NewUI;
 import com.intellij.util.ModalityUiUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -100,7 +100,7 @@ public class MidPointStartupActivity implements StartupActivity {
     }
 
     private void initializeUI() {
-        if (!ExperimentalUI.isNewUI()) {
+        if (!NewUI.isEnabled()) {
             return;
         }
 
