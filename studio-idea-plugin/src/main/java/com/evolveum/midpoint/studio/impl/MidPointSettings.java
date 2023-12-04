@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.util.ObjectTypesListConverter;
 import com.intellij.util.xmlb.annotations.OptionTag;
 
@@ -204,7 +205,7 @@ public class MidPointSettings implements Serializable {
         other.ignoreMissingKeys = ignoreMissingKeys;
         other.downloadFilePattern = downloadFilePattern;
         other.midpointVersion = midpointVersion;
-        other.updateOnUpload=updateOnUpload;
+        other.updateOnUpload = updateOnUpload;
         // todo copy doc generator options
 
         return other;
@@ -255,7 +256,8 @@ public class MidPointSettings implements Serializable {
 
         settings.setDownloadTypesExclude(new ArrayList<>(DEFAULT_DOWNLOAD_EXCLUDE));
         settings.setTypesToDownloadLimit(100);
-        settings.updateOnUpload=true;
+        settings.updateOnUpload = true;
+        settings.setMidpointVersion(MidPointConstants.DEFAULT_MIDPOINT_VERSION);
 
         return settings;
     }

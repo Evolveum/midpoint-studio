@@ -1,6 +1,8 @@
 package com.evolveum.midpoint.studio.impl.service;
 
 import com.evolveum.midpoint.studio.impl.MidPointException;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 
 import java.io.IOException;
@@ -26,6 +28,10 @@ public class MidPointLocalizationService {
         LOG.info("Initializing " + getClass().getSimpleName());
 
         init();
+    }
+
+    public static MidPointLocalizationService getInstance() {
+        return ApplicationManager.getApplication().getService(MidPointLocalizationService.class);
     }
 
     private void init() {

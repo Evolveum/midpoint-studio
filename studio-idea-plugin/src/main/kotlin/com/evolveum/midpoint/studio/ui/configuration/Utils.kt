@@ -1,9 +1,20 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.layout.ValidationInfoBuilder
 import javax.swing.JTextField
+
+fun <E> validateNotEmpty(builder: ValidationInfoBuilder, comp: ComboBox<E>): ValidationInfo? {
+    return builder.run {
+        val value = comp.selectedItem
+        when {
+            value == null -> error("Please fill in value")
+            else -> null
+        }
+    }
+}
 
 fun validateNotBlank(builder: ValidationInfoBuilder, textField: JTextField): ValidationInfo? {
     return builder.run {
