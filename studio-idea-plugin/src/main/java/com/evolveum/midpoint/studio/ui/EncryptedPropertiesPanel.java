@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.EncryptedPropertiesParser;
 import com.evolveum.midpoint.studio.util.EncryptedPropertiesSerializer;
 import com.evolveum.midpoint.studio.util.RunnableUtils;

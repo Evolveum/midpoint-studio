@@ -6,7 +6,7 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.action.transfer.RefreshAction;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;

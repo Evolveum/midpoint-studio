@@ -1,8 +1,7 @@
 package com.evolveum.midpoint.studio.ui.configuration;
 
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointService;
-import com.evolveum.midpoint.studio.impl.configuration.CleanupPath;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.EnvironmentEditorDialog;
 import com.evolveum.midpoint.studio.util.Selectable;
 import com.intellij.openapi.project.Project;
@@ -20,6 +19,8 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
         super(new EnvironmentsModel(), new ArrayList<>(), null);
 
         this.project = project;
+
+        getTable().setShowColumns(true);
     }
 
     @Override

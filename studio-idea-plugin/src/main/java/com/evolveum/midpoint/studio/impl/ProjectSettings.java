@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -7,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ProjectSettings {
 
-    private MidPointSettings midPointSettings = MidPointSettings.createDefaultSettings();
+    private MidPointConfiguration midPointSettings = MidPointConfiguration.createDefaultSettings();
 
     private EnvironmentSettings environmentSettings = EnvironmentSettings.createDefaultSettings();
 
@@ -25,11 +26,11 @@ public class ProjectSettings {
         setMasterPassword(settings.getMasterPassword());
     }
 
-    public MidPointSettings getMidPointSettings() {
+    public MidPointConfiguration getMidPointSettings() {
         return midPointSettings;
     }
 
-    public void setMidPointSettings(MidPointSettings midPointSettings) {
+    public void setMidPointSettings(MidPointConfiguration midPointSettings) {
         this.midPointSettings = midPointSettings;
     }
 

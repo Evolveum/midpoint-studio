@@ -28,7 +28,7 @@
 
         <!--<projectService serviceImplementation="com.evolveum.midpoint.studio.impl.configuration.CleanupService"/>-->
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.configuration.MidPointService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
                         serviceInterface="com.evolveum.midpoint.studio.impl.EncryptionService"/>

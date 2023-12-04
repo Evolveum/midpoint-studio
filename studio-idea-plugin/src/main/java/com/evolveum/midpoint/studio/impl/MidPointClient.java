@@ -11,6 +11,8 @@ import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.*;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -54,7 +56,7 @@ public class MidPointClient {
         this(project, environment, null);
     }
 
-    public MidPointClient(Project project, @NotNull Environment environment, MidPointSettings settings) {
+    public MidPointClient(Project project, @NotNull Environment environment, MidPointConfiguration settings) {
         this(project, environment, settings, false, false);
     }
 
@@ -62,7 +64,7 @@ public class MidPointClient {
         this(project, environment, null, suppressNotifications, suppressConsole);
     }
 
-    public MidPointClient(Project project, @NotNull Environment environment, MidPointSettings settings, boolean suppressNotifications, boolean suppressConsole) {
+    public MidPointClient(Project project, @NotNull Environment environment, MidPointConfiguration settings, boolean suppressNotifications, boolean suppressConsole) {
         this.project = project;
         this.environment = environment;
         this.suppressNotifications = suppressNotifications;
@@ -73,7 +75,7 @@ public class MidPointClient {
                 MidPointService ms = MidPointService.getInstance(project);
                 settings = ms.getSettings();
             } else {
-                settings = MidPointSettings.createDefaultSettings();
+                settings = MidPointConfiguration.createDefaultSettings();
             }
         }
 
@@ -86,7 +88,7 @@ public class MidPointClient {
         init(settings);
     }
 
-    private void init(MidPointSettings settings) {
+    private void init(MidPointConfiguration settings) {
         LOG.debug("Initialization of rest client for environment " + environment.getName());
         long time = System.currentTimeMillis();
 

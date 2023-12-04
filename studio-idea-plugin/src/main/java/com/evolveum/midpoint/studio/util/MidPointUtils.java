@@ -11,6 +11,8 @@ import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -241,7 +243,7 @@ public class MidPointUtils {
 
     private static CredentialAttributes createCredentialAttributes(String key) {
         return new CredentialAttributes(CredentialAttributesKt
-                .generateServiceName(MidPointSettings.class.getSimpleName(), key));
+                .generateServiceName(MidPointConfiguration.class.getSimpleName(), key));
     }
 
     public static void publishException(Project project, Environment env, Class clazz, String notificationKey, String msg, Exception ex) {

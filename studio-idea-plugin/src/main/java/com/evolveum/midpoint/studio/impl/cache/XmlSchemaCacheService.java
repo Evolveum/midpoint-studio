@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl.cache;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.intellij.javaee.ExternalResourceManagerEx;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;

@@ -4,7 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.OpNodeTreeBuilder;
 import com.evolveum.midpoint.schema.traces.TraceParser;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.StudioNameResolver;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.OpTreePanel;

@@ -3,8 +3,8 @@ package com.evolveum.midpoint.studio.action;
 import com.evolveum.midpoint.studio.action.task.DocumentationTask;
 import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointService;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.ui.DocumentationDialog;
 import com.evolveum.midscribe.generator.GenerateOptions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -22,7 +22,7 @@ public class DocumentationAction extends AsyncAction<DocumentationTask> {
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
         MidPointService mm = MidPointService.getInstance(evt.getProject());
-        MidPointSettings settings = mm.getSettings();
+        MidPointConfiguration settings = mm.getSettings();
 
         DocGeneratorOptions opts = settings.getDocGeneratorOptions();
 

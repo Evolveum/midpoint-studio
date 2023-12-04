@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;

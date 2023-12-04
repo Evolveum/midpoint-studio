@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
@@ -45,7 +47,7 @@ public class EncryptionServiceImpl implements EncryptionService {
             return;
         }
 
-        MidPointSettings settings = MidPointService.getInstance(project).getSettings();
+        MidPointConfiguration settings = MidPointService.getInstance(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             return;
         }
@@ -59,7 +61,7 @@ public class EncryptionServiceImpl implements EncryptionService {
     public void changeMasterPassword(String oldPassword, String newPassword) {
         LOG.info("Changing master password");
 
-        MidPointSettings settings = MidPointService.getInstance(project).getSettings();
+        MidPointConfiguration settings = MidPointService.getInstance(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             throw new IllegalStateException("Midpoint setting unavailable");
         }
@@ -273,7 +275,7 @@ public class EncryptionServiceImpl implements EncryptionService {
     }
 
     private String getMasterPassword() {
-        MidPointSettings settings = MidPointService.getInstance(project).getSettings();
+        MidPointConfiguration settings = MidPointService.getInstance(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             LOG.debug("MidPoint settings not available.");
             return null;

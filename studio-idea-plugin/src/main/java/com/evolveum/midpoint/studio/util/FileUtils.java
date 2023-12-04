@@ -2,8 +2,8 @@ package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointService;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -31,7 +31,7 @@ public class FileUtils {
         params.put("e", env.getName());    // environment name
 
         MidPointService mm = MidPointService.getInstance(project);
-        MidPointSettings settings = mm.getSettings();
+        MidPointConfiguration settings = mm.getSettings();
 
         return createFile(project, params, null, null, null, settings.getGeneratedFilePattern(), fileNamePrefix, false);
     }
@@ -43,7 +43,7 @@ public class FileUtils {
         params.put("e", env.getName());    // environment name
 
         MidPointService mm = MidPointService.getInstance(project);
-        MidPointSettings settings = mm.getSettings();
+        MidPointConfiguration settings = mm.getSettings();
 
         return createFile(project, params, objectType, oid, objectName, settings.getDowloadFilePattern(), null, overwrite);
     }

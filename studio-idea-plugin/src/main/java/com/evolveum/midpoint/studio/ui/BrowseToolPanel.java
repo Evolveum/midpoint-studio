@@ -17,7 +17,7 @@ import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryLanguage;

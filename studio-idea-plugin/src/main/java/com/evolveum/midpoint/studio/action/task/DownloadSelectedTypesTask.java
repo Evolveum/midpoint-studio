@@ -8,7 +8,7 @@ import com.evolveum.midpoint.prism.query.QueryFactory;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
@@ -42,11 +42,11 @@ public class DownloadSelectedTypesTask extends SimpleBackgroundableTask {
     protected void doRun(ProgressIndicator indicator) {
         super.doRun(indicator);
 
-        MidPointSettings settings = midPointService.getSettings();
+        MidPointConfiguration settings = midPointService.getSettings();
 
         if (settings.getTypesToDownloadLimit() == 0 && settings.getDownloadTypesInclude().isEmpty() && settings.getDownloadTypesExclude().isEmpty()) {
             // probably
-            MidPointSettings defaults = MidPointSettings.createDefaultSettings();
+            MidPointConfiguration defaults = MidPointConfiguration.createDefaultSettings();
             settings.setDownloadTypesInclude(defaults.getDownloadTypesInclude());
             settings.setDownloadTypesExclude(defaults.getDownloadTypesExclude());
             settings.setTypesToDownloadLimit(defaults.getTypesToDownloadLimit());
@@ -77,7 +77,7 @@ public class DownloadSelectedTypesTask extends SimpleBackgroundableTask {
         }
     }
 
-    private List<ObjectTypes> determineTypesToDownload(MidPointSettings settings) {
+    private List<ObjectTypes> determineTypesToDownload(MidPointConfiguration settings) {
         List<ObjectTypes> rv = new ArrayList<>();
         List<ObjectTypes> include = settings.getDownloadTypesInclude();
         List<ObjectTypes> exclude = settings.getDownloadTypesExclude();

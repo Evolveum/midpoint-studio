@@ -3,7 +3,7 @@ package com.evolveum.midpoint.studio.impl.ide;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.impl.EncryptionService;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ProjectSettings;
 import com.evolveum.midpoint.studio.ui.MidPointWizardStep;
 import com.evolveum.midpoint.studio.util.MidPointUtils;

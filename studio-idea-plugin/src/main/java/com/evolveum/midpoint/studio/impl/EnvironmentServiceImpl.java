@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.impl.configuration.ServiceBase;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;

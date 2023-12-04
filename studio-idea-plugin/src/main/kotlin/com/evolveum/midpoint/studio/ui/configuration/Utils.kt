@@ -40,21 +40,28 @@ fun convertStringToObjectTypesList(value: String): List<ObjectTypes> {
     }
 
     return value
-        .split("[,\\s")
+        .split(",")
+        .filter { it.isNotBlank() }
+        .map(String::trim)
         .mapNotNull { convertToObjectTypes(it) }
-        .toList() as List<ObjectTypes>
+        .toList()
 }
 
 fun validateTypes(builder: ValidationInfoBuilder, textField: JTextField): ValidationInfo? {
     return builder.run {
         val value = textField.text
 
-        val array = value?.split("[,\\s]") ?: emptyList()
-        when {
-            value.isNullOrBlank() -> null
-            array.map { convertToObjectTypes(it) }.none { it == null } -> null
-            else -> error("Unknown types: " + array.filter { convertToObjectTypes(it) != null }.toList())
+        val array = value?.split(",") ?: emptyList()
+        val result = array.stream()
+            .map { it.trim() }
+            .filter { convertToObjectTypes(it) == null }
+            .toList()
+
+        if (result.isEmpty()) {
+            return null
         }
+
+        error("Unknown types: " + result.joinToString { it })
     }
 }
 

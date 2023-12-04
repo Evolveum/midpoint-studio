@@ -4,7 +4,7 @@ import com.evolveum.midpoint.studio.client.ProxyType;
 import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.studio.util.Selectable;
@@ -63,11 +63,11 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
     private Project project;
 
-    private MidPointSettings settings;
+    private MidPointConfiguration settings;
 
     private Selectable<Environment> selectable;
 
-    public EnvironmentEditorDialog(Project project, MidPointSettings settings, @Nullable Selectable<Environment> environment) {
+    public EnvironmentEditorDialog(Project project, MidPointConfiguration settings, @Nullable Selectable<Environment> environment) {
         super(false);
 
         this.project = project;

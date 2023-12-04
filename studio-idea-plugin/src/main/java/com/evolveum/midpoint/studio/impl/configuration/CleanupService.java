@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
-import com.evolveum.midpoint.studio.impl.ServiceBase;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;

@@ -1,5 +1,6 @@
-package com.evolveum.midpoint.studio.impl;
+package com.evolveum.midpoint.studio.impl.configuration;
 
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.ui.MidPointConsolePanel;
 import com.evolveum.midpoint.studio.ui.MidPointConsoleView;
 import com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory;
@@ -30,7 +31,7 @@ import java.util.Date;
 @State(
         name = "MidPointManager", storages = @Storage(value = "midpoint.xml")
 )
-public class MidPointService extends ServiceBase<MidPointSettings> {
+public class MidPointService extends ServiceBase<MidPointConfiguration> {
 
     private static final Logger LOG = Logger.getInstance(MidPointService.class);
 
@@ -39,12 +40,12 @@ public class MidPointService extends ServiceBase<MidPointSettings> {
     private MidPointConsoleView console;
 
     public MidPointService(@NotNull Project project) {
-        super(project, MidPointSettings.class);
+        super(project, MidPointConfiguration.class);
     }
 
     @Override
-    protected MidPointSettings createDefaultSettings() {
-        return MidPointSettings.createDefaultSettings();
+    protected MidPointConfiguration createDefaultSettings() {
+        return MidPointConfiguration.createDefaultSettings();
     }
 
     public static MidPointService getInstance(@NotNull Project project) {

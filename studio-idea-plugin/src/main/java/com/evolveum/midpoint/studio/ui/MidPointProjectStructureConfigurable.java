@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ide.MidPointModuleBuilder;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.facet.FacetManager;

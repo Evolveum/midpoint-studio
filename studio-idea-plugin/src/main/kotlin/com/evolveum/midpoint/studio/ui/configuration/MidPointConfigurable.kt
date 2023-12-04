@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.studio.MidPointConstants
-import com.evolveum.midpoint.studio.impl.MidPointService
-import com.evolveum.midpoint.studio.impl.MidPointSettings
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration
 import com.evolveum.midpoint.studio.util.StudioBundle.message
 import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
@@ -20,7 +20,7 @@ open class MidPointConfigurable(val project: Project) :
 
     private var downloadFilePattern: Cell<JBTextField>? = null
 
-    private var configuration: MidPointSettings
+    private var configuration: MidPointConfiguration
 
     init {
         configuration = loadConfiguration()
@@ -43,7 +43,7 @@ open class MidPointConfigurable(val project: Project) :
         super.reset()
     }
 
-    private fun loadConfiguration(): MidPointSettings {
+    private fun loadConfiguration(): MidPointConfiguration {
         val service = MidPointService.getInstance(project)
         return service.settings.copy()
     }

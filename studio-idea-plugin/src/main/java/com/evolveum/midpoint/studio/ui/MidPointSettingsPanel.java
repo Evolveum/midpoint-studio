@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.ObjectTypesListConverter;
 import com.intellij.openapi.options.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
@@ -25,9 +25,9 @@ public class MidPointSettingsPanel extends JPanel {
     private JTextField restClientTimeout;
     private JCheckBox ignoreUknownProperties;
 
-    private MidPointSettings settings;
+    private MidPointConfiguration settings;
 
-    public MidPointSettingsPanel(MidPointSettings settings) {
+    public MidPointSettingsPanel(MidPointConfiguration settings) {
         super(new BorderLayout());
 
         this.settings = settings;
@@ -60,8 +60,8 @@ public class MidPointSettingsPanel extends JPanel {
         }
     }
 
-    public MidPointSettings getSettings() {
-        MidPointSettings settings = MidPointSettings.createDefaultSettings();
+    public MidPointConfiguration getSettings() {
+        MidPointConfiguration settings = MidPointConfiguration.createDefaultSettings();
         settings.setProjectId(this.settings.getProjectId());    // we don't want to replace projectId with random id
         settings.setDowloadFilePattern(downloadPattern.getText());
         settings.setGeneratedFilePattern(generatedPattern.getText());

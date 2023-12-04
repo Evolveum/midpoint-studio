@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midscribe.generator.LogListener;
 import com.intellij.openapi.diagnostic.Logger;
 

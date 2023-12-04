@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl;
+package com.evolveum.midpoint.studio.impl.configuration;
 
 import java.io.Serializable;
 

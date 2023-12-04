@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.action.ShowEnvironmentConfigurationAction;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ide.MavenManagerListener;
 import com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider;
 import com.evolveum.midpoint.studio.util.MidPointUtils;

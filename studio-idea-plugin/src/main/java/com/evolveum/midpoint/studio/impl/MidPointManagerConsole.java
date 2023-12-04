@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 

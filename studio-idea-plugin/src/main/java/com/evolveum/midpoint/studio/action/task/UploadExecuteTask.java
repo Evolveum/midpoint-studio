@@ -6,6 +6,8 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -61,7 +63,7 @@ public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
             File file = obj.getFile();
             VirtualFile vFile = file != null ? VcsUtil.getVirtualFile(file) : null;
 
-            MidPointSettings settings = MidPointService.getInstance(client.getProject()).getSettings();
+            MidPointConfiguration settings = MidPointService.getInstance(client.getProject()).getSettings();
             UploadResponse response;
             if (obj.getOid() != null && settings.isUpdateOnUpload()) {
                 try {

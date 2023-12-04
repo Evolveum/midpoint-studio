@@ -1,7 +1,8 @@
-package com.evolveum.midpoint.studio.impl;
+package com.evolveum.midpoint.studio.impl.configuration;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.MidPointConstants;
+import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
 import com.evolveum.midpoint.studio.util.ObjectTypesListConverter;
 import com.intellij.util.xmlb.annotations.OptionTag;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MidPointSettings implements Serializable {
+public class MidPointConfiguration implements Serializable {
 
     private static final List<ObjectTypes> DEFAULT_DOWNLOAD_EXCLUDE;
 
@@ -61,7 +62,7 @@ public class MidPointSettings implements Serializable {
 
     private boolean updateOnUpload;
 
-    public MidPointSettings() {
+    public MidPointConfiguration() {
     }
 
     public boolean isAskToAddMidpointFacet() {
@@ -190,8 +191,8 @@ public class MidPointSettings implements Serializable {
         this.updateOnUpload = updateOnUpload;
     }
 
-    public MidPointSettings copy() {
-        MidPointSettings other = new MidPointSettings();
+    public MidPointConfiguration copy() {
+        MidPointConfiguration other = new MidPointConfiguration();
         other.projectId = projectId;
         other.dowloadFilePattern = dowloadFilePattern;
         other.generatedFilePattern = generatedFilePattern;
@@ -215,7 +216,7 @@ public class MidPointSettings implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MidPointSettings that = (MidPointSettings) o;
+        MidPointConfiguration that = (MidPointConfiguration) o;
         return printRestCommunicationToConsole == that.printRestCommunicationToConsole
                 && askToAddMidpointFacet == that.askToAddMidpointFacet
                 && askToValidateEnvironmentCredentials == that.askToValidateEnvironmentCredentials
@@ -247,8 +248,8 @@ public class MidPointSettings implements Serializable {
         return "MidPointSettings{projectId='" + projectId + "'}";
     }
 
-    public static MidPointSettings createDefaultSettings() {
-        MidPointSettings settings = new MidPointSettings();
+    public static MidPointConfiguration createDefaultSettings() {
+        MidPointConfiguration settings = new MidPointConfiguration();
         settings.setProjectId(UUID.randomUUID().toString());
 
         settings.setDowloadFilePattern("objects/$T/$n.xml");

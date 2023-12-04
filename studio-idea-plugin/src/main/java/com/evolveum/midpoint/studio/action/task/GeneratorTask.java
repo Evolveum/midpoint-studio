@@ -4,7 +4,7 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.impl.browse.Generator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
