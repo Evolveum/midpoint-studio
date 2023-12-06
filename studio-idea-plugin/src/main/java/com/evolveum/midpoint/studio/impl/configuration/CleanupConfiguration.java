@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,16 +9,16 @@ import java.util.Objects;
 
 public class CleanupConfiguration implements Serializable {
 
-    private List<CleanupPath> cleanupPaths;
+    private List<CleanupPathConfiguration> cleanupPaths;
 
-    public List<CleanupPath> getCleanupPaths() {
+    public @NotNull List<CleanupPathConfiguration> getCleanupPaths() {
         if (cleanupPaths == null) {
             cleanupPaths = new ArrayList<>();
         }
         return cleanupPaths;
     }
 
-    public void setCleanupPaths(List<CleanupPath> cleanupPaths) {
+    public void setCleanupPaths(List<CleanupPathConfiguration> cleanupPaths) {
         this.cleanupPaths = cleanupPaths;
     }
 

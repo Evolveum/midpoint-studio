@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui.configuration;
 
-import com.evolveum.midpoint.studio.impl.configuration.CleanupPath;
+import com.evolveum.midpoint.studio.impl.configuration.CleanupPathConfiguration;
 import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AddEditRemovePanel;
@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
-public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPath> {
+public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPathConfiguration> {
 
     private final Project project;
 
@@ -22,22 +22,22 @@ public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPath> {
     }
 
     @Override
-    protected @Nullable CleanupPath addItem() {
+    protected @Nullable CleanupPathConfiguration addItem() {
         return doAddOrEdit(null);
     }
 
     @Override
-    protected boolean removeItem(CleanupPath item) {
+    protected boolean removeItem(CleanupPathConfiguration item) {
         return true;
     }
 
     @Override
-    protected @Nullable CleanupPath editItem(CleanupPath o) {
+    protected @Nullable CleanupPathConfiguration editItem(CleanupPathConfiguration o) {
         return doAddOrEdit(o);
     }
 
     @Nullable
-    private CleanupPath doAddOrEdit(@Nullable CleanupPath data) {
+    private CleanupPathConfiguration doAddOrEdit(@Nullable CleanupPathConfiguration data) {
         CleanupPathDialog dialog = new CleanupPathDialog(project, data);
         if (!dialog.showAndGet()) {
             return null;
@@ -46,7 +46,7 @@ public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPath> {
         return dialog.getData();
     }
 
-    private static class CleanupPathsModel extends AddEditRemovePanel.TableModel<CleanupPath> {
+    private static class CleanupPathsModel extends AddEditRemovePanel.TableModel<CleanupPathConfiguration> {
 
         private static final String[] COLUMN_NAMES = new String[]{"Type", "Path", "Action"};
 
@@ -67,11 +67,11 @@ public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPath> {
         }
 
         @Override
-        public Object getField(CleanupPath item, int column) {
+        public Object getField(CleanupPathConfiguration item, int column) {
             return switch (column) {
-                case 0 -> localizationService.translateEnum(item.getType());
-                case 1 -> item.getPath();
-                case 2 -> item.getAction();
+                case 0 -> item.getType() != null ? item.getType().getLocalPart() : null;
+                case 1 -> item.getPath() != null ? item.getPath().toString() : null;
+                case 2 -> localizationService.translateEnum(item.getAction());
                 default -> null;
             };
         }

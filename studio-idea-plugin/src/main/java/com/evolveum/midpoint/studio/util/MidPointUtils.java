@@ -1095,4 +1095,12 @@ public class MidPointUtils {
 
         return new ColorIcon(24, 14, 24, 14, color, true);
     }
+
+    public static <T extends Enum> String createKeyForEnum(T value) {
+        if (value == null) {
+            return null;
+        }
+
+        return value.getClass().getSimpleName() + "." + value.name();
+    }
 }

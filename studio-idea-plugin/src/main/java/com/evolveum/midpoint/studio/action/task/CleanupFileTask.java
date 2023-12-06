@@ -1,22 +1,20 @@
 package com.evolveum.midpoint.studio.action.task;
 
-import com.evolveum.midpoint.prism.Definition;
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismContainerDefinition;
-import com.evolveum.midpoint.prism.PrismObjectDefinition;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.util.cleanup.CleanupActionProcessor;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
+import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -48,7 +46,7 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
         Map<Class<? extends ObjectType>, Set<ItemPath>> result = new HashMap<>();
 
         Arrays.stream(ObjectTypes.values())
-                .map(ot -> ot.getClassDefinition())
+                .map(ObjectTypes::getClassDefinition)
                 .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
                 .forEach(clazz -> {
                     Definition definition = MidPointUtils.DEFAULT_PRISM_CONTEXT.getSchemaRegistry()
@@ -104,10 +102,15 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
         return paths;
     }
 
-
     @Override
-    public ProcessObjectResult processObject(MidPointObject object) throws Exception {
+    public ProcessObjectResult processObject(MidPointObject object) {
+        String oldContent = object.getContent();
         String newContent = cleanupObject(object);
+
+        if (Objects.equals(oldContent, newContent)) {
+            return new ProcessObjectResult(null)
+                    .object(object);
+        }
 
         MidPointObject newObject = MidPointObject.copy(object);
         newObject.setContent(newContent);
@@ -122,7 +125,7 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
     }
 
     @Override
-    public ProcessObjectResult processObjectOid(ObjectTypes type, String oid) throws Exception {
+    public ProcessObjectResult processObjectOid(ObjectTypes type, String oid) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -132,40 +135,35 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
             return null;
         }
 
-        Document doc = DOMUtil.parseDocument(content);
-        Element root = doc.getDocumentElement();
+        try {
+            PrismParser parser = ClientUtils.createParser(MidPointUtils.DEFAULT_PRISM_CONTEXT, content);
+            List<PrismObject<? extends ObjectType>> objects = (List) parser.parseObjects();
+            if (objects.isEmpty()) {
+                return content;
+            }
 
-        ObjectTypes type = object.getType();
-        if (type == null) {
-            return content;
+            List<PrismObject<? extends ObjectType>> result = (List) objects.stream().map(o -> o.clone()).toList();
+
+            CleanupActionProcessor processor = new CleanupActionProcessor();
+            for (PrismObject<? extends ObjectType> obj : result) {
+                processor.process(obj);
+            }
+
+            if (objects.equals(result)) {
+                return content;
+            }
+
+            PrismSerializer<String> serializer = ClientUtils.getSerializer(MidPointUtils.DEFAULT_PRISM_CONTEXT);
+            if (result.size() == 1) {
+                return serializer.serialize(result.get(0));
+            }
+
+            return serializer.serializeObjects((List) result);
+        } catch (SchemaException | IOException ex) {
+            // todo handle properly
+            ex.printStackTrace();
         }
 
-        boolean cleaned = false;
-        Set<ItemPath> paths = CLEANUP_PATHS.get(type.getClassDefinition());
-        for (ItemPath path : paths) {
-            cleaned = cleaned | cleanupObject(root, path);
-        }
-
-        if (!cleaned) {
-            return content;
-        }
-
-        DOMUtil.normalize(root, false);
-        return DOMUtil.serializeDOMToString(doc);
-    }
-
-    private static boolean cleanupObject(Element obj, ItemPath path) {
-        if (path.isEmpty()) {
-            obj.getParentNode().removeChild(obj);
-            return true;
-        }
-
-        boolean cleaned = false;
-        List<Element> elements = DOMUtil.getChildElements(obj, path.firstToName());
-        for (Element e : elements) {
-            cleaned = cleaned | cleanupObject(e, path.rest());
-        }
-
-        return cleaned;
+        return content;
     }
 }

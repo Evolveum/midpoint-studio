@@ -1,9 +1,8 @@
 package com.evolveum.midpoint.studio.impl.service;
 
 import com.evolveum.midpoint.studio.impl.MidPointException;
-import com.intellij.openapi.application.ApplicationManager;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,11 +15,18 @@ import java.util.Properties;
 /**
  * Service that simplifies localization of MidPoint related keys.
  * <p>
- * Created by Viliam Repan (lazyman).
+ * todo put together with {@link com.evolveum.midpoint.studio.util.StudioBundle}, create singleton from this instead of service!
+ * todo this should probably also implement {@link com.evolveum.midpoint.common.LocalizationService}
  */
 public class MidPointLocalizationService {
 
     private static final Logger LOG = Logger.getInstance(MidPointLocalizationService.class);
+
+    private static final MidPointLocalizationService INSTANCE = new MidPointLocalizationService();
+
+    public static MidPointLocalizationService get() {
+        return INSTANCE;
+    }
 
     private final List<Properties> properties = new ArrayList<>();
 
@@ -31,12 +37,13 @@ public class MidPointLocalizationService {
     }
 
     public static MidPointLocalizationService getInstance() {
-        return ApplicationManager.getApplication().getService(MidPointLocalizationService.class);
+        return get();
     }
 
     private void init() {
         loadProperties("/localization/MidPoint.properties");
         loadProperties("/localization/schema.properties");
+        loadProperties("/messages/MidPointStudio.properties");
     }
 
     private void loadProperties(String resource) {
@@ -64,12 +71,8 @@ public class MidPointLocalizationService {
             return nullKey != null ? translate(nullKey) : null;
         }
 
-        String key = createKeyForEnum(e);
+        String key = MidPointUtils.createKeyForEnum(e);
         return translate(key);
-    }
-
-    private <E extends Enum<?>> String createKeyForEnum(@NotNull E value) {
-        return value.getClass().getSimpleName() + "." + value.name();
     }
 
     public String translate(String key) {

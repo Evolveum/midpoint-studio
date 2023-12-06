@@ -15,7 +15,7 @@ import com.intellij.ui.dsl.builder.*
 import javax.swing.JComponent
 import javax.swing.JLabel
 
-class EnvironmentEditorPanel(val project: Project, val input: Selectable<Environment>?) {
+class EnvironmentEditor(val project: Project, val input: Selectable<Environment>?) {
 
     private val localizationService = MidPointLocalizationService.getInstance()
 

@@ -37,7 +37,7 @@ class CleanupConfigurable(val project: Project) :
 
     override fun createPanel(): DialogPanel {
         return panel {
-            row() {
+            row {
                 cell(cleanupPathsPanel)
                     .align(Align.FILL)
             }

@@ -26,7 +26,7 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PanelTypeCacheService"/>
 
-        <!--<projectService serviceImplementation="com.evolveum.midpoint.studio.impl.configuration.CleanupService"/>-->
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.configuration.CleanupService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.configuration.MidPointService"/>
 
@@ -44,7 +44,7 @@
                              displayName="MidPoint"
                              nonDefaultProject="true"/>
 
-        <!--<projectConfigurable
+        <projectConfigurable
                 parentId="language"
                 instance="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
                 id="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
@@ -73,7 +73,7 @@
                 instance="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
                 id="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
                 key="CleanupConfigurable.title"
-                bundle="messages.MidPointStudio"/>-->
+                bundle="messages.MidPointStudio"/>
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
