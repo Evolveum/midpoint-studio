@@ -19,7 +19,7 @@ import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.browse.*;
-import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryLanguage;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -191,7 +191,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                     ObjectTypes type = (ObjectTypes) userObject;
                     String text = type.getTypeQName().getLocalPart();
 
-                    value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+                    value = StudioLocalization.get().translate("ObjectType." + text, text);
                 } else if (userObject instanceof ObjectType) {
                     ObjectType ot = (ObjectType) userObject;
                     value = MidPointUtils.getOrigFromPolyString(ot.getName());

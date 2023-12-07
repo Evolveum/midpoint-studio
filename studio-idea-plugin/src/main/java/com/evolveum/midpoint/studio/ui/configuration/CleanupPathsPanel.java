@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.configuration;
 
 import com.evolveum.midpoint.studio.impl.configuration.CleanupPathConfiguration;
-import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AddEditRemovePanel;
 import org.jetbrains.annotations.NotNull;
@@ -50,12 +50,6 @@ public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPathConfigurati
 
         private static final String[] COLUMN_NAMES = new String[]{"Type", "Path", "Action"};
 
-        private MidPointLocalizationService localizationService;
-
-        public CleanupPathsModel() {
-            this.localizationService = MidPointLocalizationService.getInstance();
-        }
-
         @Override
         public int getColumnCount() {
             return COLUMN_NAMES.length;
@@ -71,7 +65,7 @@ public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPathConfigurati
             return switch (column) {
                 case 0 -> item.getType() != null ? item.getType().getLocalPart() : null;
                 case 1 -> item.getPath() != null ? item.getPath().toString() : null;
-                case 2 -> localizationService.translateEnum(item.getAction());
+                case 2 -> StudioLocalization.get().translateEnum(item.getAction());
                 default -> null;
             };
         }

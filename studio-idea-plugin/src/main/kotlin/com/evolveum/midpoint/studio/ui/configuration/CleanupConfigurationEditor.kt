@@ -3,10 +3,9 @@ package com.evolveum.midpoint.studio.ui.configuration
 import com.evolveum.midpoint.prism.path.ItemPath
 import com.evolveum.midpoint.studio.impl.configuration.CleanupPathActionConfiguration
 import com.evolveum.midpoint.studio.impl.configuration.CleanupPathConfiguration
-import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService
+import com.evolveum.midpoint.studio.util.StudioLocalization
 import com.evolveum.midpoint.studio.util.MidPointUtils
 import com.evolveum.midpoint.studio.util.SchemaTypesProvider
-import com.evolveum.midpoint.studio.util.StudioBundle
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.ValidationInfo
@@ -28,7 +27,7 @@ class CleanupConfigurationEditor(val project: Project, val input: CleanupPathCon
         val autoCompletion = TextFieldWithAutoCompletion(project, provider, false, null)
 
         return panel {
-            row(StudioBundle.message("CleanupEditorPanel.type")) {
+            row(StudioLocalization.message("CleanupEditorPanel.type")) {
                 cell(autoCompletion)
                     .bind(
                         { it.text },
@@ -54,7 +53,7 @@ class CleanupConfigurationEditor(val project: Project, val input: CleanupPathCon
                     }
                     .align(AlignX.FILL)
             }
-            row(StudioBundle.message("CleanupEditorPanel.path")) {
+            row(StudioLocalization.message("CleanupEditorPanel.path")) {
                 textField()
                     .columns(COLUMNS_LARGE)
                     .bindText(
@@ -64,10 +63,10 @@ class CleanupConfigurationEditor(val project: Project, val input: CleanupPathCon
                     .validationOnInput(::validateItemPath)
                     .validationOnApply(::validateItemPath)
             }
-            row(StudioBundle.message("CleanupEditorPanel.action")) {
+            row(StudioLocalization.message("CleanupEditorPanel.action")) {
                 comboBox(
                     CleanupPathActionConfiguration.values().toList(),
-                    SimpleListCellRenderer.create("") { MidPointLocalizationService.get().translateEnum(it) }
+                    SimpleListCellRenderer.create("") { StudioLocalization.get().translateEnum(it) }
                 )
                     .bindItem(
                         { data.action ?: CleanupPathActionConfiguration.IGNORE },

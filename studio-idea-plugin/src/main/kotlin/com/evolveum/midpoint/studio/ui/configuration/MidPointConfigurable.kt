@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.studio.MidPointConstants
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration
-import com.evolveum.midpoint.studio.util.StudioBundle.message
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService
+import com.evolveum.midpoint.studio.util.StudioLocalization.message
 import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel

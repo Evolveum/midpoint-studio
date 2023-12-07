@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService
-import com.evolveum.midpoint.studio.util.StudioBundle
+import com.evolveum.midpoint.studio.util.StudioLocalization
 import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
@@ -11,7 +11,7 @@ import java.util.*
 import java.util.stream.Collectors
 
 class CleanupConfigurable(val project: Project) :
-    BoundSearchableConfigurable(StudioBundle.message("CleanupConfigurable.title"), "") {
+    BoundSearchableConfigurable(StudioLocalization.message("CleanupConfigurable.title"), "") {
 
     private val cleanupPathsPanel = CleanupPathsPanel(project)
 
@@ -44,7 +44,7 @@ class CleanupConfigurable(val project: Project) :
                     .align(Align.FILL)
             }
                 .resizableRow()
-                .rowComment(StudioBundle.message("CleanupConfigurable.cleanupPaths.comment"))
+                .rowComment(StudioLocalization.message("CleanupConfigurable.cleanupPaths.comment"))
         }
     }
 }

@@ -3,11 +3,11 @@ package com.evolveum.midpoint.studio.impl.ide;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.impl.EncryptionService;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ProjectSettings;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.evolveum.midpoint.studio.ui.MidPointWizardStep;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.studio.util.StudioBundle;
 import com.intellij.codeInsight.template.TemplateManager;
 import com.intellij.codeInsight.template.impl.TemplateImpl;
 import com.intellij.ide.fileTemplates.FileTemplate;
@@ -134,7 +134,7 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
         try {
             // create pom.xml
             WriteCommandAction.writeCommandAction(project)
-                    .withName(StudioBundle.message("midpoint.new.project")).compute(() -> {
+                    .withName(StudioLocalization.message("midpoint.new.project")).compute(() -> {
                         Properties properties = new Properties();
 
                         String escaped = rootFile.getName().replaceAll("[^a-zA-Z0-9_-]", "");

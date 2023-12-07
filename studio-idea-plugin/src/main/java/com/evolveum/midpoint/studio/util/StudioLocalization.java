@@ -1,8 +1,9 @@
-package com.evolveum.midpoint.studio.impl.service;
+package com.evolveum.midpoint.studio.util;
 
 import com.evolveum.midpoint.studio.impl.MidPointException;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.diagnostic.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.PropertyKey;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,41 +16,37 @@ import java.util.Properties;
 /**
  * Service that simplifies localization of MidPoint related keys.
  * <p>
- * todo put together with {@link com.evolveum.midpoint.studio.util.StudioBundle}, create singleton from this instead of service!
+ * todo create singleton from this instead of service!
  * todo this should probably also implement {@link com.evolveum.midpoint.common.LocalizationService}
  */
-public class MidPointLocalizationService {
+public class StudioLocalization {
 
-    private static final Logger LOG = Logger.getInstance(MidPointLocalizationService.class);
+    private static final Logger LOG = Logger.getInstance(StudioLocalization.class);
 
-    private static final MidPointLocalizationService INSTANCE = new MidPointLocalizationService();
+    private static final StudioLocalization INSTANCE = new StudioLocalization();
 
-    public static MidPointLocalizationService get() {
+    public static StudioLocalization get() {
         return INSTANCE;
     }
 
     private final List<Properties> properties = new ArrayList<>();
 
-    public MidPointLocalizationService() {
+    public StudioLocalization() {
         LOG.info("Initializing " + getClass().getSimpleName());
 
         init();
     }
 
-    public static MidPointLocalizationService getInstance() {
-        return get();
-    }
-
     private void init() {
+        loadProperties("/messages/MidPointStudio.properties");
         loadProperties("/localization/MidPoint.properties");
         loadProperties("/localization/schema.properties");
-        loadProperties("/messages/MidPointStudio.properties");
     }
 
     private void loadProperties(String resource) {
         Properties properties = new Properties();
 
-        try (InputStream is = MidPointLocalizationService.class.getResourceAsStream(resource)) {
+        try (InputStream is = StudioLocalization.class.getResourceAsStream(resource)) {
             if (is == null) {
                 return;
             }
@@ -89,4 +86,12 @@ public class MidPointLocalizationService {
 
         return defaultValue;
     }
+
+    @NotNull
+    public static String message(@NotNull
+                                 @PropertyKey(resourceBundle = "messages.MidPointStudio")
+                                 String key, Object... params) {
+        return get().translate(key);
+    }
+
 }

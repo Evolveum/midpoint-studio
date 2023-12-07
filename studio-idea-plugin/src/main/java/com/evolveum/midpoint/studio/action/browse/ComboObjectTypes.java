@@ -1,20 +1,17 @@
 package com.evolveum.midpoint.studio.action.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,7 +27,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
         String text = selected.getTypeQName().getLocalPart();
 
-        String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+        String value = StudioLocalization.get().translate("ObjectType." + text, text);
         getTemplatePresentation().setText(value);
         e.getPresentation().setText(value);
     }
@@ -48,13 +45,13 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
     }
 
     @NotNull
+    @Deprecated
     @Override
     protected DefaultActionGroup createPopupActionGroup(JComponent button) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        List<ObjectTypes> types = new ArrayList<>();
-        types.addAll(Arrays.asList(ObjectTypes.values()));
-        Collections.sort(types, MidPointUtils.OBJECT_TYPES_COMPARATOR);
+        List<ObjectTypes> types = Arrays.asList(ObjectTypes.values());
+        types.sort(MidPointUtils.OBJECT_TYPES_COMPARATOR);
 
         for (ObjectTypes type : types) {
             group.add(new TypeAction(type, this));
@@ -65,19 +62,15 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
     private static class TypeAction extends AnAction implements DumbAware {
 
-        private ObjectTypes type;
+        private final ObjectTypes type;
 
-        private ComboObjectTypes combo;
+        private final ComboObjectTypes combo;
 
         public TypeAction(ObjectTypes type, ComboObjectTypes combo) {
             super(type.getTypeQName().getLocalPart());
 
             this.type = type;
             this.combo = combo;
-        }
-
-        public ObjectTypes getType() {
-            return type;
         }
 
         @Override
@@ -92,7 +85,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
             String text = type.getTypeQName().getLocalPart();
 
-            String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+            String value = StudioLocalization.get().translate("ObjectType." + text, text);
             getTemplatePresentation().setText(value);
             e.getPresentation().setText(value);
         }

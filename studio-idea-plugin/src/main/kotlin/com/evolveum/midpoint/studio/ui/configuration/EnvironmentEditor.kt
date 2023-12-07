@@ -2,10 +2,9 @@ package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.studio.client.ProxyType
 import com.evolveum.midpoint.studio.impl.Environment
-import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService
 import com.evolveum.midpoint.studio.util.MidPointUtils
 import com.evolveum.midpoint.studio.util.Selectable
-import com.evolveum.midpoint.studio.util.StudioBundle
+import com.evolveum.midpoint.studio.util.StudioLocalization
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
@@ -16,8 +15,6 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 
 class EnvironmentEditor(val project: Project, val input: Selectable<Environment>?) {
-
-    private val localizationService = MidPointLocalizationService.getInstance()
 
     private val selectable: Selectable<Environment>
 
@@ -40,8 +37,8 @@ class EnvironmentEditor(val project: Project, val input: Selectable<Environment>
 
     fun createComponent(): DialogPanel {
         return panel {
-            groupRowsRange(StudioBundle.message("EnvironmentEditorPanel.general")) {
-                row(StudioBundle.message("EnvironmentEditorPanel.name")) {
+            groupRowsRange(StudioLocalization.message("EnvironmentEditorPanel.general")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.name")) {
                     name = textField()
                         .columns(COLUMNS_LARGE)
                         .bindText(selectable.`object`::getName, selectable.`object`::setName)
@@ -50,76 +47,76 @@ class EnvironmentEditor(val project: Project, val input: Selectable<Environment>
                         .focused()
                 }
                 row {
-                    checkBox(StudioBundle.message("EnvironmentEditorPanel.selected"))
+                    checkBox(StudioLocalization.message("EnvironmentEditorPanel.selected"))
                         .bindSelected(selectable::isSelected, selectable::setSelected)
                 }
             }
-            groupRowsRange(StudioBundle.message("EnvironmentEditorPanel.server")) {
-                row(StudioBundle.message("EnvironmentEditorPanel.server.url")) {
+            groupRowsRange(StudioLocalization.message("EnvironmentEditorPanel.server")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.server.url")) {
                     textField()
                         .columns(COLUMNS_LARGE)
                         .bindText(selectable.`object`::getUrl, selectable.`object`::setUrl)
                         .validationOnInput(::validateNotBlank)
                         .validationOnApply(::validateNotBlank)
                 }
-                row(StudioBundle.message("EnvironmentEditorPanel.server.username")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.server.username")) {
                     textField()
                         .columns(COLUMNS_LARGE)
                         .bindText(selectable.`object`::getUsername, selectable.`object`::setUsername)
                 }
-                row(StudioBundle.message("EnvironmentEditorPanel.server.password")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.server.password")) {
                     passwordField()
                         .columns(COLUMNS_LARGE)
                         .bindText(selectable.`object`::getPassword, selectable.`object`::setPassword)
                 }
                 row {
-                    checkBox(StudioBundle.message("EnvironmentEditorPanel.server.ignoreSslErrors"))
+                    checkBox(StudioLocalization.message("EnvironmentEditorPanel.server.ignoreSslErrors"))
                         .bindSelected(selectable::isSelected, selectable::setSelected)
                 }
             }
-            groupRowsRange(StudioBundle.message("EnvironmentEditorPanel.proxy")) {
-                row(StudioBundle.message("EnvironmentEditorPanel.proxy.host")) {
+            groupRowsRange(StudioLocalization.message("EnvironmentEditorPanel.proxy")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.proxy.host")) {
                     textField()
                         .columns(COLUMNS_LARGE)
                         .bindText(selectable.`object`::getProxyServerHost, selectable.`object`::setProxyServerHost)
                 }
-                row(StudioBundle.message("EnvironmentEditorPanel.proxy.port")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.proxy.port")) {
                     intTextField(IntRange(0, 65535), 1)
 //                        .bindIntText(selectable.`object`::getProxyServerPort , selectable.`object`::setProxyServerPort)
                 }
-                row(StudioBundle.message("EnvironmentEditorPanel.proxy.type")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.proxy.type")) {
                     // todo missing combo with proxy type
                     comboBox(
                         ProxyType.values().toList(),
-                        SimpleListCellRenderer.create("") { localizationService.translateEnum(it) }
+                        SimpleListCellRenderer.create("") { StudioLocalization.get().translateEnum(it) }
                     )
                 }
-                row(StudioBundle.message("EnvironmentEditorPanel.proxy.username")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.proxy.username")) {
                     textField()
                         .columns(COLUMNS_LARGE)
                         .bindText(selectable.`object`::getProxyUsername, selectable.`object`::setProxyUsername)
                 }
-                row(StudioBundle.message("EnvironmentEditorPanel.proxy.password")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.proxy.password")) {
                     passwordField()
                         .columns(COLUMNS_LARGE)
                         .bindText(selectable.`object`::getProxyPassword, selectable.`object`::setProxyPassword)
                 }
             }
-            groupRowsRange(StudioBundle.message("EnvironmentEditorPanel.other")) {
+            groupRowsRange(StudioLocalization.message("EnvironmentEditorPanel.other")) {
                 row {
-                    checkBox(StudioBundle.message("EnvironmentEditorPanel.other.http2"))
+                    checkBox(StudioLocalization.message("EnvironmentEditorPanel.other.http2"))
                         .bindSelected(selectable.`object`::isUseHttp2, selectable.`object`::setUseHttp2)
                 }
-                row(StudioBundle.message("EnvironmentEditorPanel.other.properties")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.other.properties")) {
                     textFieldWithBrowseButton(
-                        StudioBundle.message("EnvironmentEditorPanel.other.properties.title"),
+                        StudioLocalization.message("EnvironmentEditorPanel.other.properties.title"),
                         project,
                         FileChooserDescriptorFactory.createSingleFileDescriptor("properties")
                     )
                         .columns(COLUMNS_LARGE)
 
                 }
-                row(StudioBundle.message("EnvironmentEditorPanel.other.color")) {
+                row(StudioLocalization.message("EnvironmentEditorPanel.other.color")) {
                     // todo color
                     color = label("")
                 }

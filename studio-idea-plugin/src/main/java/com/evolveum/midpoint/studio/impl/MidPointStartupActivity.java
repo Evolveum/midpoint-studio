@@ -5,9 +5,9 @@ import com.evolveum.midpoint.studio.action.ShowEnvironmentConfigurationAction;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ide.MavenManagerListener;
 import com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.studio.util.StudioBundle;
 import com.intellij.codeInspection.ex.InspectionProfileImpl;
 import com.intellij.codeInspection.ex.ToolsImpl;
 import com.intellij.facet.FacetManager;
@@ -160,11 +160,11 @@ public class MidPointStartupActivity implements StartupActivity {
         Module module = modules[0];
 
         MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
-                StudioBundle.message("MidPointStartupActivity.checkFacet.title"),
-                StudioBundle.message("MidPointStartupActivity.checkFacet.msg", module.getName()),
+                StudioLocalization.message("MidPointStartupActivity.checkFacet.title"),
+                StudioLocalization.message("MidPointStartupActivity.checkFacet.msg", module.getName()),
                 NotificationType.INFORMATION,
-                NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> addFacetPerformed(module)),
-                NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAboutMidpointConfigurationAgainPerformed(project)));
+                NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> addFacetPerformed(module)),
+                NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAboutMidpointConfigurationAgainPerformed(project)));
     }
 
     private void addFacetPerformed(Module module) {
@@ -220,11 +220,11 @@ public class MidPointStartupActivity implements StartupActivity {
         }
 
         MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
-                StudioBundle.message("MidPointStartupActivity.checkCredentials.title"),
-                StudioBundle.message("MidPointStartupActivity.checkCredentials.msg", module.getName()),
+                StudioLocalization.message("MidPointStartupActivity.checkCredentials.title"),
+                StudioLocalization.message("MidPointStartupActivity.checkCredentials.msg", module.getName()),
                 NotificationType.INFORMATION,
-                NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkCredentials.openConfiguration"), (evt, notification) -> openEnvironmentsConfiguration(evt)),
-                NotificationAction.createExpiring(StudioBundle.message("MidPointStartupActivity.checkCredentials.dontAsk"), (evt, notification) -> dontAskAboutCredentialsAgainPerformed(project)));
+                NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkCredentials.openConfiguration"), (evt, notification) -> openEnvironmentsConfiguration(evt)),
+                NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkCredentials.dontAsk"), (evt, notification) -> dontAskAboutCredentialsAgainPerformed(project)));
     }
 
     private void openEnvironmentsConfiguration(AnActionEvent evt) {
