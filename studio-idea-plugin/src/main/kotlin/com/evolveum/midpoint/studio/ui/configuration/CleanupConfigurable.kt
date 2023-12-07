@@ -18,7 +18,9 @@ class CleanupConfigurable(val project: Project) :
     override fun apply() {
         val list = cleanupPathsPanel.data
 
-        CleanupService.getInstance(project).settings.cleanupPaths = list
+        val service = CleanupService.getInstance(project)
+        service.settings.cleanupPaths = list
+        service.settingsUpdated()
     }
 
     override fun reset() {
