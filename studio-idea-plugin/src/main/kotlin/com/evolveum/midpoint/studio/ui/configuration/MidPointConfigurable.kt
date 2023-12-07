@@ -33,10 +33,6 @@ open class MidPointConfigurable(val project: Project) :
         service.settings = configuration
     }
 
-    override fun isModified(): Boolean {
-        return super.isModified()
-    }
-
     override fun reset() {
         configuration = loadConfiguration()
 

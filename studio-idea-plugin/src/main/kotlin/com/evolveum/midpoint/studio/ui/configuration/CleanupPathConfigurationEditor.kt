@@ -14,7 +14,7 @@ import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.layout.ValidationInfoBuilder
 
-class CleanupConfigurationEditor(val project: Project, val input: CleanupPathConfiguration?) {
+class CleanupPathConfigurationEditor(val project: Project, val input: CleanupPathConfiguration?) {
 
     val data: CleanupPathConfiguration =
         if (input != null)

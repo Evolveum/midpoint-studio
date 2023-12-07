@@ -1,12 +1,14 @@
 package com.evolveum.midpoint.studio.action.task;
 
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.PrismParser;
+import com.evolveum.midpoint.prism.PrismSerializer;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.util.cleanup.CleanupActionProcessor;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -15,8 +17,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -29,77 +31,10 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
 
     private static final Logger LOG = Logger.getInstance(CleanupFileTask.class);
 
-    public static final Map<Class<? extends ObjectType>, Set<ItemPath>> CLEANUP_PATHS;
-
-    static {
-        Map<Class<? extends ObjectType>, Set<ItemPath>> map = createCleanupPaths();
-        CLEANUP_PATHS = Collections.unmodifiableMap(map);
-    }
-
     public CleanupFileTask(@NotNull AnActionEvent event) {
         super(event.getProject(), TITLE, NOTIFICATION_KEY);
 
         setEvent(event);
-    }
-
-    private static Map<Class<? extends ObjectType>, Set<ItemPath>> createCleanupPaths() {
-        Map<Class<? extends ObjectType>, Set<ItemPath>> result = new HashMap<>();
-
-        Arrays.stream(ObjectTypes.values())
-                .map(ObjectTypes::getClassDefinition)
-                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
-                .forEach(clazz -> {
-                    Definition definition = MidPointUtils.DEFAULT_PRISM_CONTEXT.getSchemaRegistry()
-                            .findObjectDefinitionByCompileTimeClass(clazz);
-
-                    Set<ItemPath> paths = createCleanupPaths(
-                            definition, ItemPath.EMPTY_PATH, new HashSet<>(), new IdentityHashMap<>());
-
-                    result.put(clazz, paths);
-                });
-
-        return result;
-    }
-
-    private static Set<ItemPath> createCleanupPaths(
-            Definition definition, ItemPath parentPath, Set<ItemPath> paths, IdentityHashMap<Definition, Set<ItemPath>> visited) {
-
-        if (visited.containsKey(definition)) {
-            for (ItemPath path : visited.get(definition)) {
-                paths.add(parentPath.append(path));
-            }
-
-            return paths;
-        }
-
-        Set<ItemPath> definitionPaths = new HashSet<>();
-        visited.put(definition, definitionPaths);
-
-        if (!(definition instanceof ItemDefinition<?> itemDef)) {
-            return paths;
-        }
-
-        if (itemDef.isOperational()) {
-            definitionPaths.add(parentPath.append(itemDef.getItemName()));
-
-            paths.addAll(definitionPaths);
-            return paths;
-        }
-
-        if (itemDef instanceof PrismContainerDefinition<?> containerDef) {
-            ItemPath newParentPath = parentPath;
-
-            if (!(itemDef instanceof PrismObjectDefinition)) {
-                newParentPath = parentPath.append(itemDef.getItemName());
-            }
-
-            for (ItemDefinition<?> def : containerDef.getDefinitions()) {
-                createCleanupPaths(def, newParentPath, definitionPaths, visited);
-            }
-        }
-
-        paths.addAll(definitionPaths);
-        return paths;
     }
 
     @Override
@@ -144,7 +79,9 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
 
             List<PrismObject<? extends ObjectType>> result = (List) objects.stream().map(o -> o.clone()).toList();
 
-            CleanupActionProcessor processor = new CleanupActionProcessor();
+            CleanupService cleanupService = CleanupService.getInstance(getProject());
+
+            CleanupActionProcessor processor = cleanupService.createCleanupProcessor();
             for (PrismObject<? extends ObjectType> obj : result) {
                 processor.process(obj);
             }

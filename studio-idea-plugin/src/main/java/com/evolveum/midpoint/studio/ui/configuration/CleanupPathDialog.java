@@ -11,14 +11,14 @@ import javax.swing.*;
 
 public class CleanupPathDialog extends DialogWrapper {
 
-    private final CleanupConfigurationEditor editor;
+    private final CleanupPathConfigurationEditor editor;
 
     private final DialogPanel panel;
 
     public CleanupPathDialog(@NotNull Project project, @Nullable CleanupPathConfiguration data) {
         super(project);
 
-        editor = new CleanupConfigurationEditor(project, data);
+        editor = new CleanupPathConfigurationEditor(project, data);
         panel = editor.createComponent();
 
         init();

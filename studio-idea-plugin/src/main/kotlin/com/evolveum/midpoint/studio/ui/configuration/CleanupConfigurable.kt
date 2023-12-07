@@ -1,40 +1,51 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
+import com.evolveum.midpoint.studio.impl.configuration.CleanupPathActionConfiguration
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService
 import com.evolveum.midpoint.studio.util.StudioLocalization
+import com.evolveum.midpoint.studio.util.StudioLocalization.message
 import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.panel
-import java.util.*
 import java.util.stream.Collectors
 
 class CleanupConfigurable(val project: Project) :
-    BoundSearchableConfigurable(StudioLocalization.message("CleanupConfigurable.title"), "") {
+    BoundSearchableConfigurable(message("CleanupConfigurable.title"), "") {
 
     private val cleanupPathsPanel = CleanupPathsPanel(project)
 
+    private var askActionOverride: CleanupPathActionConfiguration? = null
+
     override fun apply() {
+        super.apply()
+
         val list = cleanupPathsPanel.data
 
         val service = CleanupService.getInstance(project)
-        service.settings.cleanupPaths = list
+        val settings = service.settings
+
+        settings.cleanupPaths = list
+        settings.askActionOverride = askActionOverride
+
         service.settingsUpdated()
     }
 
     override fun reset() {
-        val list = CleanupService.getInstance(project).settings.cleanupPaths.stream().map { p -> p.copy() }.collect(
-            Collectors.toList()
-        )
+        val service = CleanupService.getInstance(project)
+        val settings = service.settings
+
+        val list = settings.cleanupPaths.stream()
+            .map { p -> p.copy() }
+            .collect(Collectors.toList())
 
         cleanupPathsPanel.data = list
-    }
+        askActionOverride = settings.askActionOverride
 
-    override fun isModified(): Boolean {
-        val list = cleanupPathsPanel.data
-
-        return !Objects.equals(CleanupService.getInstance(project).settings.cleanupPaths, list)
+        super.reset()
     }
 
     override fun createPanel(): DialogPanel {
@@ -44,7 +55,20 @@ class CleanupConfigurable(val project: Project) :
                     .align(Align.FILL)
             }
                 .resizableRow()
-                .rowComment(StudioLocalization.message("CleanupConfigurable.cleanupPaths.comment"))
+                .rowComment(message("CleanupConfigurable.cleanupPaths.comment"))
+            row(message("CleanupConfigurable.askActionOverride")) {
+                comboBox(
+                    listOf(
+                        CleanupPathActionConfiguration.IGNORE,
+                        CleanupPathActionConfiguration.REMOVE
+                    ),
+                    SimpleListCellRenderer.create("") { StudioLocalization.get().translateEnum(it) }
+                )
+                    .bindItem(
+                        { askActionOverride },
+                        { askActionOverride = it }
+                    )
+            }
         }
     }
 }
