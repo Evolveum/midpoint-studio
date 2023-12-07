@@ -13,11 +13,11 @@ plugins {
     // ANTLR4 plugin
     id("antlr")
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.16.0"
+    id("org.jetbrains.intellij") version "1.16.1"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-    id("org.jetbrains.changelog") version "2.1.0"
+    id("org.jetbrains.changelog") version "2.2.0"
     // git plugin - read more: https://github.com/palantir/gradle-git-version
-    id("com.palantir.git-version") version "0.12.2"
+    id("com.palantir.git-version") version "3.0.0"
 }
 
 group = properties("pluginGroup")
