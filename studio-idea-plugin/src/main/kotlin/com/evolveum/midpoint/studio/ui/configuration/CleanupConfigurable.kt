@@ -11,6 +11,7 @@ import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.panel
+import java.util.*
 import java.util.stream.Collectors
 
 class CleanupConfigurable(val project: Project) :
@@ -32,6 +33,13 @@ class CleanupConfigurable(val project: Project) :
         settings.askActionOverride = askActionOverride
 
         service.settingsUpdated()
+    }
+
+    override fun isModified(): Boolean {
+        val service = CleanupService.getInstance(project)
+        val original = service.settings.cleanupPaths
+
+        return super.isModified() || !Objects.equals(original, cleanupPathsPanel.data)
     }
 
     override fun reset() {

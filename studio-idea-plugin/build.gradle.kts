@@ -179,6 +179,9 @@ tasks {
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = properties("javaVersion")
     }
+    withType<Jar> {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
 
     patchPluginXml {
         version.set(pluginVersion)

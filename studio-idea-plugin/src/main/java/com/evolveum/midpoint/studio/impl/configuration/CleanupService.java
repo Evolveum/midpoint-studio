@@ -47,6 +47,7 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
 
     public CleanupActionProcessor createCleanupProcessor() {
         CleanupActionProcessor processor = new CleanupActionProcessor();
+        processor.setIgnoreNamespaces(true);
         processor.setPaths(getCleanupPaths());
         processor.setListener(evt -> handleCleanupEvent(evt));
 

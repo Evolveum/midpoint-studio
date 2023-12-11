@@ -18,32 +18,6 @@ class CredentialsConfigurable : BoundSearchableConfigurable(message("Credentials
     override fun createPanel(): DialogPanel {
         return panel {
             group("Environment credentials") {
-                row("Path to credentials file:") {
-                    textFieldWithBrowseButton()
-                        .align(AlignX.FILL)
-                }
-                row("Old password:") {
-                    cell(JBPasswordField())
-                        .columns(COLUMNS_SHORT)
-                }
-                row("New password:") {
-                    cell(JBPasswordField())
-                        .columns(COLUMNS_SHORT)
-                }
-                row("Repeat new password:") {
-                    cell(JBPasswordField())
-                        .columns(COLUMNS_SHORT)
-                }
-            }
-            row {
-                checkBox("Separate encrypted properties")
-//                    .bindSelected(model::restLogCommunication)
-            }
-            group("Encrypted properties") {
-                row("Path to credentials file:") {
-                    textFieldWithBrowseButton()
-                        .align(AlignX.FILL)
-                }
                 row("Old password:") {
                     cell(JBPasswordField())
                         .columns(COLUMNS_SHORT)

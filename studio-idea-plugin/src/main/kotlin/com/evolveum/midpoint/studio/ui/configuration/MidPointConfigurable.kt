@@ -67,6 +67,7 @@ open class MidPointConfigurable(val project: Project) :
                             { configuration.isUpdateOnUpload },
                             { configuration.isUpdateOnUpload = it }
                         )
+                        .comment(message("MidPointConfigurable.updateOnUpload.comment"))
                 }
             }
             groupRowsRange(message("MidPointConfigurable.restClient.title")) {

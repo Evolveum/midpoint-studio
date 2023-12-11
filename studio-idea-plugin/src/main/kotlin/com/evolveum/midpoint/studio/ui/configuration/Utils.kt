@@ -1,29 +1,10 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
-import com.evolveum.midpoint.prism.path.ItemPath
 import com.evolveum.midpoint.schema.constants.ObjectTypes
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.layout.ValidationInfoBuilder
 import javax.swing.JTextField
-
-fun validateItemPath(builder: ValidationInfoBuilder, textField: JTextField): ValidationInfo? {
-    return builder.run {
-        val value = textField.text
-
-        if (value.isNullOrBlank()) {
-            return null
-        }
-
-        try {
-            ItemPath.fromString(value)
-        } catch (ex: Exception) {
-            return error("Invalid item path: " + ex.message)
-        }
-
-        return null
-    }
-}
 
 fun <E> validateNotNull(builder: ValidationInfoBuilder, comp: ComboBox<E>): ValidationInfo? {
     return builder.run {
