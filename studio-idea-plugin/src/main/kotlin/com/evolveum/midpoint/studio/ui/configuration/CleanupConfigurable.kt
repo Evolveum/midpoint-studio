@@ -67,10 +67,11 @@ class CleanupConfigurable(val project: Project) :
             row(message("CleanupConfigurable.askActionOverride")) {
                 comboBox(
                     listOf(
+                        null,
                         CleanupPathActionConfiguration.IGNORE,
                         CleanupPathActionConfiguration.REMOVE
                     ),
-                    SimpleListCellRenderer.create("") { StudioLocalization.get().translateEnum(it) }
+                    SimpleListCellRenderer.create(StudioLocalization.get().translate("CleanupConfigurable.nullGlobalAction")) { StudioLocalization.get().translateEnum(it) }
                 )
                     .bindItem(
                         { askActionOverride },

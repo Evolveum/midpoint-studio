@@ -15,7 +15,7 @@ public class CleanupConfiguration implements Serializable {
      * Default action to be used when user should be asked what to do with path - correct values are:
      * {@link CleanupPathActionConfiguration#IGNORE} or {@link CleanupPathActionConfiguration#REMOVE}
      */
-    private CleanupPathActionConfiguration askActionOverride = CleanupPathActionConfiguration.REMOVE;
+    private CleanupPathActionConfiguration askActionOverride;
 
     public @NotNull List<CleanupPathConfiguration> getCleanupPaths() {
         if (cleanupPaths == null) {

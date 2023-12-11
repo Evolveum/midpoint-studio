@@ -4,9 +4,11 @@ import com.evolveum.midpoint.schema.util.cleanup.CleanupActionProcessor;
 import com.evolveum.midpoint.schema.util.cleanup.CleanupEvent;
 import com.evolveum.midpoint.schema.util.cleanup.CleanupPath;
 import com.evolveum.midpoint.schema.util.cleanup.CleanupPathAction;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.messages.MessageDialog;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -49,7 +51,7 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
         CleanupActionProcessor processor = new CleanupActionProcessor();
         processor.setIgnoreNamespaces(true);
         processor.setPaths(getCleanupPaths());
-        processor.setListener(evt -> handleCleanupEvent(evt));
+        processor.setListener(this::handleCleanupEvent);
 
         processor.setRemoveAskActionItemsByDefault(getAskActionOverride() == CleanupPathAction.REMOVE);
 
@@ -57,7 +59,10 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
     }
 
     private boolean handleCleanupEvent(CleanupEvent event) {
-        // todo implement
-        return false;
+        int result = MidPointUtils.showConfirmationDialog(
+                getProject(), null, "Do you really want to remove item " + event.getPath() + "?",
+                "Confirm remove", "Remove", "Skip");
+
+        return result == MessageDialog.OK_EXIT_CODE;
     }
 }

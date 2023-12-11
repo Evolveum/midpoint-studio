@@ -11,8 +11,8 @@ import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -48,10 +48,12 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManagerEx;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
@@ -94,6 +96,7 @@ import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1102,5 +1105,36 @@ public class MidPointUtils {
         }
 
         return value.getClass().getSimpleName() + "." + value.name();
+    }
+
+    public static int showConfirmationDialog(
+            Project project, AnActionEvent event, String message, String title, String yesText, String noText) {
+
+        AtomicInteger result = new AtomicInteger(0);
+
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            Component comp = event != null ? event.getInputEvent().getComponent() : null;
+
+            if (comp == null) {
+                comp = WindowManager.getInstance().suggestParentWindow(project);
+            }
+
+            JComponent source;
+            if (comp instanceof JComponent) {
+                source = (JComponent) comp;
+            } else if (comp instanceof JWindow) {
+                source = ((JWindow) comp).getRootPane();
+            } else if (comp instanceof JFrame) {
+                source = ((JFrame) comp).getRootPane();
+            } else {
+                throw new IllegalStateException("Couldn't find parent component for dialog");
+            }
+
+            int r = Messages.showConfirmationDialog(source, message, title, yesText, noText);
+
+            result.set(r);
+        });
+
+        return result.get();
     }
 }
