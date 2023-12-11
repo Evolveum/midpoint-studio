@@ -6,8 +6,8 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.action.transfer.RefreshAction;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -27,15 +27,11 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.LineSeparator;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -122,35 +118,9 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
     }
 
     private int showConfirmationDialog(int filesCount, ConfirmationUnit unit) {
-        AtomicInteger result = new AtomicInteger(0);
-
-        ApplicationManager.getApplication().invokeAndWait(() -> {
-            Component comp = null;
-            if (event != null) {
-                InputEvent inputEvent = event.getInputEvent();
-                comp = inputEvent != null ? inputEvent.getComponent() : null;
-            }
-
-            JComponent source;
-            if (comp instanceof JComponent) {
-                source = (JComponent) comp;
-            } else {
-                if (comp instanceof JWindow) {
-                    JWindow w = (JWindow) comp;
-                    source = w.getRootPane();
-                } else {
-                    JFrame f = (JFrame) WindowManager.getInstance().suggestParentWindow(getProject());
-                    source = f.getRootPane();
-                }
-            }
-
-            int r = Messages.showConfirmationDialog(source, getConfirmationMessage(filesCount, unit), "Confirm action",
-                    getConfirmationYesActionText(), "Cancel");
-
-            result.set(r);
-        });
-
-        return result.get();
+        return MidPointUtils.showConfirmationDialog(
+                getProject(), event, getConfirmationMessage(filesCount, unit), "Confirm action",
+                getConfirmationYesActionText(), "Cancel");
     }
 
     private boolean confirmedOperation(int count, ConfirmationUnit unit) {
