@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
+import com.evolveum.midpoint.common.cleanup.CleanupPath;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.schema.util.cleanup.CleanupPath;
 import com.evolveum.midpoint.studio.util.ItemPathConverter;
 import com.evolveum.midpoint.studio.util.QNameConverter;
 import com.evolveum.midpoint.util.QNameUtil;

@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
-import com.evolveum.midpoint.schema.util.cleanup.CleanupPathAction;
+import com.evolveum.midpoint.common.cleanup.CleanupPathAction;
 
 public enum CleanupPathActionConfiguration {
 
