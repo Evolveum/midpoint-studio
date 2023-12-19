@@ -1,17 +1,15 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.studio.action.task.CleanupFileTask;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class CleanupFileAction extends AnAction {
+public class CleanupFileAction extends AsyncAction<CleanupFileTask> {
 
     public static final String ACTION_NAME = "Cleanup File";
 
@@ -28,8 +26,7 @@ public class CleanupFileAction extends AnAction {
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-        Task task = new CleanupFileTask(e);
-        ProgressManager.getInstance().run(task);
+    public CleanupFileTask createTask(@NotNull AnActionEvent event, Environment environment) {
+        return new CleanupFileTask(event, environment);
     }
 }

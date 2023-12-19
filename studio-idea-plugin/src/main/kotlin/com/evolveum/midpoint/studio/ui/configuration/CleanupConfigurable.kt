@@ -71,12 +71,28 @@ class CleanupConfigurable(val project: Project) :
                         CleanupPathActionConfiguration.IGNORE,
                         CleanupPathActionConfiguration.REMOVE
                     ),
-                    SimpleListCellRenderer.create(StudioLocalization.get().translate("CleanupConfigurable.nullGlobalAction")) { StudioLocalization.get().translateEnum(it) }
+                    SimpleListCellRenderer.create(
+                        StudioLocalization.get().translate("CleanupConfigurable.nullGlobalAction")
+                    ) { StudioLocalization.get().translateEnum(it) }
                 )
                     .bindItem(
                         { askActionOverride },
                         { askActionOverride = it }
                     )
+            }
+            groupRowsRange(message("CleanupConfigurable.references")) {
+                row() {
+                    checkBox(message("CleanupConfigurable.cleanupConnectorReferences"))
+                        .comment(message("CleanupConfigurable.cleanupConnectorReferences.comment"))
+                }
+                row() {
+                    checkBox(message("CleanupConfigurable.replaceConnectorReferences"))
+                        .comment(message("CleanupConfigurable.replaceConnectorReferences.comment"))
+                }
+                row() {
+                    checkBox(message("CleanupConfigurable.warnAboutMissingOid"))
+                        .comment(message("CleanupConfigurable.warnAboutMissingOid.comment"))
+                }
             }
         }
     }

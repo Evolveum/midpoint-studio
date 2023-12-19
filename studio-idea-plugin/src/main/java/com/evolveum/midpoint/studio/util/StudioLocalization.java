@@ -91,7 +91,7 @@ public class StudioLocalization {
     public static String message(@NotNull
                                  @PropertyKey(resourceBundle = "messages.MidPointStudio")
                                  String key, Object... params) {
-        return get().translate(key);
+        String value = get().translate(key);
+        return value != null ? value : key;
     }
-
 }

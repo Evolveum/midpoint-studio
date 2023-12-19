@@ -1,12 +1,11 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
-import com.evolveum.midpoint.common.cleanup.*;
-import com.evolveum.midpoint.prism.Item;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.common.cleanup.CleanupActionProcessor;
+import com.evolveum.midpoint.common.cleanup.CleanupPath;
+import com.evolveum.midpoint.common.cleanup.CleanupPathAction;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.messages.MessageDialog;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -49,24 +48,8 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
         CleanupActionProcessor processor = new CleanupActionProcessor();
         processor.setIgnoreNamespaces(true);
         processor.setPaths(getCleanupPaths());
-        processor.setListener(new CleanupListener() {
-
-            @Override
-            public boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
-                return CleanupService.this.onConfirmOptionalCleanup(event);
-            }
-        });
-
         processor.setRemoveAskActionItemsByDefault(getAskActionOverride() == CleanupPathAction.REMOVE);
 
         return processor;
-    }
-
-    private boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
-        int result = MidPointUtils.showConfirmationDialog(
-                getProject(), null, "Do you really want to remove item " + event.getPath() + "?",
-                "Confirm remove", "Remove", "Skip");
-
-        return result == MessageDialog.OK_EXIT_CODE;
     }
 }
