@@ -3,11 +3,11 @@ package com.evolveum.midpoint.studio.lang.axiomquery;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
-import com.evolveum.midpoint.studio.lang.axiomquery.psi.AQFilter;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.patterns.PlatformPatterns;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,31 +15,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.intellij.patterns.PlatformPatterns.psiElement;
-
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class AxiomQueryCompletionContributor extends CompletionContributor {
-    AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(PrismContext.get());
-    List<LookupElement> elements = new ArrayList<>();
+    final AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(PrismContext.get());
+    final List<LookupElement> suggestions = new ArrayList<>();
 
     public AxiomQueryCompletionContributor() {
-        extend(null, psiElement().inside(psiElement(AQFilter.class)),
+        extend(null,
+                PlatformPatterns.psiElement(),
                 new CompletionProvider<>() {
                     public void addCompletions(@NotNull CompletionParameters parameters,
                                                @NotNull ProcessingContext context,
                                                @NotNull CompletionResultSet resultSet) {
+                        suggestions.clear();
 
-                        elements.clear();
-
-                        axiomQueryLangService.queryCompletion(parameters.getOriginalFile().getText()).forEach((filterName, alias) -> {
-                            elements.add(build(filterName, alias));
+                        axiomQueryLangService.queryCompletion(
+                                parameters.getOriginalFile().getText().substring(0, parameters.getPosition().getTextOffset())
+                        ).forEach((filterName, alias) -> {
+                            suggestions.add(build(filterName, alias));
                         });
 
-                        if (!elements.isEmpty()) {
-                            resultSet.addAllElements(elements);
+                        if (!suggestions.isEmpty()) {
+                            resultSet.addAllElements(suggestions);
                         }
                     }
                 }
@@ -61,5 +61,4 @@ public class AxiomQueryCompletionContributor extends CompletionContributor {
 
         return PrioritizedLookupElement.withPriority(element, 90);
     }
-
 }
