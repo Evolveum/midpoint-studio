@@ -10,7 +10,6 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -138,7 +137,7 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
 
     @Override
     public FileBasedIndex.@NotNull InputFilter getInputFilter() {
-        return new DefaultFileTypeSpecificInputFilter(new FileType[]{XmlFileType.INSTANCE}) {
+        return new DefaultFileTypeSpecificInputFilter(XmlFileType.INSTANCE) {
 
             public boolean acceptInput(@NotNull VirtualFile file) {
                 if (!"xml".equals(file.getExtension())) {
@@ -223,33 +222,15 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
         };
     }
 
-    public static VirtualFile getVirtualFile(String oid, Project project) {
-        List<VirtualFile> files = new ArrayList<>();
-        if (files == null || files.isEmpty()) {
-            return null;
-        }
-
-        return files.get(0);
-    }
-
-    public static List<VirtualFile> getVirtualFiles(String oid, Project project) {
-        return getVirtualFiles(oid, project, false);
-    }
-
     public static List<VirtualFile> getVirtualFiles(String oid, Project project, boolean downloadFolderOnly) {
         if (oid == null) {
             return Collections.emptyList();
         }
 
-        Collection<VirtualFile> files = FileBasedIndex.getInstance().getContainingFiles(NAME, oid, createFilter(project, downloadFolderOnly));
-        if (files == null || files.isEmpty()) {
-            return Collections.emptyList();
-        }
+        Collection<VirtualFile> files = FileBasedIndex.getInstance()
+                .getContainingFiles(NAME, oid, createFilter(project, downloadFolderOnly));
 
-        List<VirtualFile> result = new ArrayList<>();
-        result.addAll(files);
-
-        return result;
+        return new ArrayList<>(files);
     }
 
     public static List<OidNameValue> getOidNamesByOid(String oid, Project project) {
@@ -261,24 +242,16 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
             return Collections.emptyList();
         }
 
-        Collection<OidNameValue> collection = FileBasedIndex.getInstance().getValues(NAME, oid, createFilter(project, downloadFolderOnly));
+        Collection<OidNameValue> collection = FileBasedIndex.getInstance()
+                .getValues(NAME, oid, createFilter(project, downloadFolderOnly));
 
-        List<OidNameValue> result = new ArrayList<>();
-        if (collection != null) {
-            result.addAll(collection);
-        }
-
-        return result;
+        return new ArrayList<>(collection);
     }
 
     public static List<OidNameValue> getAllOidNames(Project project) {
         Collection<String> keys = FileBasedIndex.getInstance().getAllKeys(NAME, project);
 
         List<OidNameValue> values = new ArrayList<>();
-        if (keys == null) {
-            return values;
-        }
-
         keys.forEach(k -> values.addAll(getOidNamesByOid(k, project)));
 
         return values;

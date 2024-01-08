@@ -15,6 +15,22 @@ import com.intellij.ui.dsl.builder.panel
  */
 class CredentialsConfigurable : BoundSearchableConfigurable(message("CredentialsConfigurable.title"), "") {
 
+    private var oldVisible = true
+
+    private var newVisible = true
+
+    override fun apply() {
+        super.apply()
+    }
+
+    override fun isModified(): Boolean {
+        return super.isModified()
+    }
+
+    override fun reset() {
+
+    }
+
     override fun createPanel(): DialogPanel {
         return panel {
             group("Environment credentials") {
