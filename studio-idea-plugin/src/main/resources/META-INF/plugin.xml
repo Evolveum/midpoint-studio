@@ -37,6 +37,12 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.trace.TraceService"/>
 
+        <projectConfigurable parentId="language"
+                             instance="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
+                             id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
+                             displayName="MidPoint"
+                             nonDefaultProject="true"/>
+
         <projectConfigurable
                 parentId="language"
                 instance="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
