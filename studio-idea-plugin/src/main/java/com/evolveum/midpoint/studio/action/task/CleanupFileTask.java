@@ -89,7 +89,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
             List<PrismObject<? extends ObjectType>> result = (List) objects.stream().map(PrismObject::clone).toList();
 
-            CleanupService cleanupService = CleanupService.getInstance(getProject());
+            CleanupService cleanupService = CleanupService.get(getProject());
 
             CleanupActionProcessor processor = cleanupService.createCleanupProcessor();
             processor.setListener(new CleanupListener() {

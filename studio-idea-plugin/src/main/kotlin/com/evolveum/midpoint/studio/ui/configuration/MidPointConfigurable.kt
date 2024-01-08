@@ -3,13 +3,17 @@ package com.evolveum.midpoint.studio.ui.configuration
 import com.evolveum.midpoint.studio.MidPointConstants
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService
+import com.evolveum.midpoint.studio.util.MavenUtils
 import com.evolveum.midpoint.studio.util.StudioLocalization.message
 import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.layout.ValidationInfoBuilder
 import javax.swing.JComponent
 
 /**
@@ -60,6 +64,7 @@ open class MidPointConfigurable(val project: Project) :
                             { configuration.midpointVersion },
                             { configuration.midpointVersion = it })
                         .validationOnApply(::validateNotNull)
+                        .validationOnInput(::validateMidpointVersion)
                 }
                 row {
                     checkBox(message("MidPointConfigurable.updateOnUpload"))
@@ -133,5 +138,36 @@ open class MidPointConfigurable(val project: Project) :
                 }
             }
         }
+    }
+
+    private fun validateMidpointVersion(builder: ValidationInfoBuilder, combo: ComboBox<String>): ValidationInfo? {
+        val version = combo.item
+
+        val dependencies = MavenUtils.getMidpointDependencies(project)
+        if (dependencies.isEmpty()) {
+            return builder.warning("No midpoint dependencies found in maven project.")
+        }
+
+        val versions = dependencies.stream()
+            .map { it.version }
+            .distinct()
+            .sorted()
+            .toList()
+
+        if (versions.size > 1) {
+            return builder.warning(
+                "Midpoint dependencies fount in maven project have different versions (" + versions.joinToString(
+                    ", "
+                ) + ")."
+            )
+        }
+
+        val mvnVersion = versions[0]
+
+        if (!mvnVersion.startsWith(version)) {
+            return builder.warning("Midpoint dependencies fount in maven project have different version (" + mvnVersion + ") than selected.")
+        }
+
+        return null
     }
 }

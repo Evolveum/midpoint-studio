@@ -15,5 +15,5 @@ public interface MidPointConstants {
 
     String DEFAULT_MIDPOINT_VERSION = "4.8";
 
-    List<String> SUPPORTED_VERSIONS = List.of("4.4", "4.7", "4.8", "4.9");
+    List<String> SUPPORTED_VERSIONS = List.of("4.4", "4.5", "4.6", "4.7", "4.8", "4.9");
 }

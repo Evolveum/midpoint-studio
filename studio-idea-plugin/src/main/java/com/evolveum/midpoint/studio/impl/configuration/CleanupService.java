@@ -20,7 +20,7 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
         super(project, CleanupConfiguration.class);
     }
 
-    public static CleanupService getInstance(@NotNull Project project) {
+    public static CleanupService get(@NotNull Project project) {
         return project.getService(CleanupService.class);
     }
 
