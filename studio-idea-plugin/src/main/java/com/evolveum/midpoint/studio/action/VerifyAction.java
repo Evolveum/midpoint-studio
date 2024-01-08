@@ -63,7 +63,7 @@ public class VerifyAction extends AnAction {
             return;
         }
 
-        MidPointService mm = MidPointService.getInstance(project);
+        MidPointService mm = MidPointService.get(project);
 
         EnvironmentService em = EnvironmentService.getInstance(project);
         Environment env = em.getSelected();

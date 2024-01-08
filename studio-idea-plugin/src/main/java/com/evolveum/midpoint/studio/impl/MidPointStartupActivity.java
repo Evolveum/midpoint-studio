@@ -151,7 +151,7 @@ public class MidPointStartupActivity implements StartupActivity {
 
         // we would like to add midpoint studio facet
 
-        MidPointService ms = MidPointService.getInstance(project);
+        MidPointService ms = MidPointService.get(project);
         boolean ask = ms.getSettings().isAskToAddMidpointFacet();
         if (!ask) {
             return;
@@ -183,7 +183,7 @@ public class MidPointStartupActivity implements StartupActivity {
     }
 
     private void dontAskAboutMidpointConfigurationAgainPerformed(Project project) {
-        MidPointService ms = MidPointService.getInstance(project);
+        MidPointService ms = MidPointService.get(project);
         ms.getSettings().setAskToAddMidpointFacet(false);
         ms.settingsUpdated();
     }
@@ -191,7 +191,7 @@ public class MidPointStartupActivity implements StartupActivity {
     private void validateCredentialsConfiguration(Module module) {
         Project project = module.getProject();
 
-        MidPointService ms = MidPointService.getInstance(project);
+        MidPointService ms = MidPointService.get(project);
         boolean ask = ms.getSettings().isAskToValidateEnvironmentCredentials();
         if (!ask) {
             return;
@@ -232,7 +232,7 @@ public class MidPointStartupActivity implements StartupActivity {
     }
 
     private void dontAskAboutCredentialsAgainPerformed(Project project) {
-        MidPointService ms = MidPointService.getInstance(project);
+        MidPointService ms = MidPointService.get(project);
         ms.getSettings().setAskToValidateEnvironmentCredentials(false);
         ms.settingsUpdated();
     }

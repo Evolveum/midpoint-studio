@@ -47,7 +47,7 @@ public class EncryptionServiceImpl implements EncryptionService {
             return;
         }
 
-        MidPointConfiguration settings = MidPointService.getInstance(project).getSettings();
+        MidPointConfiguration settings = MidPointService.get(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             return;
         }
@@ -61,7 +61,7 @@ public class EncryptionServiceImpl implements EncryptionService {
     public void changeMasterPassword(String oldPassword, String newPassword) {
         LOG.info("Changing master password");
 
-        MidPointConfiguration settings = MidPointService.getInstance(project).getSettings();
+        MidPointConfiguration settings = MidPointService.get(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             throw new IllegalStateException("Midpoint setting unavailable");
         }
@@ -275,7 +275,7 @@ public class EncryptionServiceImpl implements EncryptionService {
     }
 
     private String getMasterPassword() {
-        MidPointConfiguration settings = MidPointService.getInstance(project).getSettings();
+        MidPointConfiguration settings = MidPointService.get(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             LOG.debug("MidPoint settings not available.");
             return null;

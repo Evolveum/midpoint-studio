@@ -30,7 +30,7 @@ public class FileUtils {
         params.put("s", env.getShortName());    // environment short name
         params.put("e", env.getName());    // environment name
 
-        MidPointService mm = MidPointService.getInstance(project);
+        MidPointService mm = MidPointService.get(project);
         MidPointConfiguration settings = mm.getSettings();
 
         return createFile(project, params, null, null, null, settings.getGeneratedFilePattern(), fileNamePrefix, false);
@@ -42,7 +42,7 @@ public class FileUtils {
         params.put("s", env.getShortName());    // environment short name
         params.put("e", env.getName());    // environment name
 
-        MidPointService mm = MidPointService.getInstance(project);
+        MidPointService mm = MidPointService.get(project);
         MidPointConfiguration settings = mm.getSettings();
 
         return createFile(project, params, objectType, oid, objectName, settings.getDowloadFilePattern(), null, overwrite);

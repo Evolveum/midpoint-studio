@@ -85,7 +85,7 @@ public class TraceViewEditor implements FileEditor, UserDataHolder, PossiblyDumb
             LOG.info("Initializing TraceViewEditor - built op node tree: " + (System.currentTimeMillis() - start) + " ms");
 
         } catch (Exception ex) {
-            MidPointService mm = MidPointService.getInstance(project);
+            MidPointService mm = MidPointService.get(project);
             mm.printToConsole(null, TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
             MidPointUtils.publishExceptionNotification(project, null, TraceViewEditor.class, NOTIFICATION_KEY, "Couldn't load file", ex);
 

@@ -21,7 +21,7 @@ public class DocumentationAction extends AsyncAction<DocumentationTask> {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
-        MidPointService mm = MidPointService.getInstance(evt.getProject());
+        MidPointService mm = MidPointService.get(evt.getProject());
         MidPointConfiguration settings = mm.getSettings();
 
         DocGeneratorOptions opts = settings.getDocGeneratorOptions();

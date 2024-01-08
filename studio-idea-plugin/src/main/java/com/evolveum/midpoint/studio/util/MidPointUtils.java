@@ -250,7 +250,7 @@ public class MidPointUtils {
     }
 
     public static void publishException(Project project, Environment env, Class clazz, String notificationKey, String msg, Exception ex) {
-        MidPointService mm = MidPointService.getInstance(project);
+        MidPointService mm = MidPointService.get(project);
         mm.printToConsole(env, clazz, msg + ". Reason: " + ex.getMessage());
 
         publishExceptionNotification(project, env, clazz, notificationKey, msg, ex);
@@ -315,7 +315,7 @@ public class MidPointUtils {
         }
 
         if (project != null) {
-            MidPointService manager = MidPointService.getInstance(project);
+            MidPointService manager = MidPointService.get(project);
             manager.printToConsole(env, clazz, message, ex);
         }
     }

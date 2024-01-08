@@ -270,7 +270,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
     }
 
     private String getMidpointVersion() {
-        MidPointService ms = MidPointService.getInstance(getProject());
+        MidPointService ms = MidPointService.get(getProject());
         String current = ms.getSettings().getMidpointVersion();
 
         return current != null ? current : MidPointConstants.DEFAULT_MIDPOINT_VERSION;

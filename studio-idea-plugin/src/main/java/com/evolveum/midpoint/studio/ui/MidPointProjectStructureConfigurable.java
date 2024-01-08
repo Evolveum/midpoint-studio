@@ -64,7 +64,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
 
         ProjectSettings pSettings = new ProjectSettings();
 
-        MidPointService mm = MidPointService.getInstance(project);
+        MidPointService mm = MidPointService.get(project);
         pSettings.setMidPointSettings(mm.getSettings());
 
         EnvironmentService em = EnvironmentService.getInstance(project);
@@ -115,7 +115,7 @@ public class MidPointProjectStructureConfigurable implements SearchableConfigura
             }
         }
 
-        MidPointService.getInstance(project).setSettings(pSettings.getMidPointSettings());
+        MidPointService.get(project).setSettings(pSettings.getMidPointSettings());
         EnvironmentService.getInstance(project).setSettings(pSettings.getEnvironmentSettings());
 
         settings.clearPasswords();

@@ -40,7 +40,7 @@ public class ShowExceptionNotificationAction extends NotificationAction {
 
         Logger.getInstance(clazz).error(message, exception);
 
-        MidPointService mm = MidPointService.getInstance(evt.getProject());
+        MidPointService mm = MidPointService.get(evt.getProject());
         mm.printToConsole(environment, clazz, sb.toString());
         mm.focusConsole();
     }

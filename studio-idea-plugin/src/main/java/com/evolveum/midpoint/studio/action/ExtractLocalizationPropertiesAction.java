@@ -201,7 +201,7 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
     }
 
     private void dumpToConsole(Project project, Map<String, String> properties, Map<String, String> existing) {
-        MidPointService ms = MidPointService.getInstance(project);
+        MidPointService ms = MidPointService.get(project);
 
         StringBuilder sb = new StringBuilder();
         sb.append("Generated localization:\n");

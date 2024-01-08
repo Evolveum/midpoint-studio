@@ -72,7 +72,7 @@ public class MidPointClient {
 
         if (settings == null) {
             if (project != null) {
-                MidPointService ms = MidPointService.getInstance(project);
+                MidPointService ms = MidPointService.get(project);
                 settings = ms.getSettings();
             } else {
                 settings = MidPointConfiguration.createDefaultSettings();
@@ -271,7 +271,7 @@ public class MidPointClient {
 
     private Expander createExpander() {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        MidPointService ms = project != null ? MidPointService.getInstance(project) : null;
+        MidPointService ms = project != null ? MidPointService.get(project) : null;
 
         boolean ignoreMissingKeys = ms != null ? ms.getSettings().isIgnoreMissingKeys() : false;
 

@@ -60,7 +60,7 @@ public class ExpanderTest extends StudioActionTest {
     private void testMid7781Variants(String keyToExpand) throws IOException {
         Project project = getProject();
         EnvironmentService es = EnvironmentService.getInstance(project);
-        MidPointService ms = MidPointService.getInstance(project);
+        MidPointService ms = MidPointService.get(project);
         Expander expander = new Expander(es.getSelected(), null, project, ms.getSettings().isIgnoreMissingKeys());
 
         PsiFile psiFile = myFixture.configureByFile("mid-7781/functionalLibraries/lib.xml");

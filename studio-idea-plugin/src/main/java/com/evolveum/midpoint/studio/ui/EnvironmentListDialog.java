@@ -23,7 +23,7 @@ public class EnvironmentListDialog extends DialogWrapper {
 
         this.project = project;
 
-        MidPointService ms = MidPointService.getInstance(project);
+        MidPointService ms = MidPointService.get(project);
         EnvironmentService manager = EnvironmentService.getInstance(project);
 
         panel = new EnvironmentsPanel(project, ms.getSettings(), manager.getFullSettings());

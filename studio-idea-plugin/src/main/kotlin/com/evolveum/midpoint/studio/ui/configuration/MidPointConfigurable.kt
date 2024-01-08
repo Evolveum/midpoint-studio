@@ -33,7 +33,7 @@ open class MidPointConfigurable(val project: Project) :
     override fun apply() {
         super.apply()
 
-        val service = MidPointService.getInstance(project)
+        val service = MidPointService.get(project)
         service.settings = configuration
     }
 
@@ -44,7 +44,7 @@ open class MidPointConfigurable(val project: Project) :
     }
 
     private fun loadConfiguration(): MidPointConfiguration {
-        val service = MidPointService.getInstance(project)
+        val service = MidPointService.get(project)
         return service.settings.copy()
     }
 

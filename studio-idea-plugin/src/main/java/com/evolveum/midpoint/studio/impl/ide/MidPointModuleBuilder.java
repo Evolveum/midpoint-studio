@@ -235,7 +235,7 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
     @Nullable
     @Override
     public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
-        MidPointService.getInstance(project).setSettings(settings.getMidPointSettings());
+        MidPointService.get(project).setSettings(settings.getMidPointSettings());
 
         EncryptionService.getInstance(project).init(settings.getMasterPassword());
 

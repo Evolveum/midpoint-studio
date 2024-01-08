@@ -36,7 +36,7 @@ public abstract class BackgroundableTask extends Task.Backgroundable {
     public BackgroundableTask(@NotNull Project project, @NotNull String title, @NotNull String notificationKey) {
         super(project, title, true);
 
-        this.midPointService = MidPointService.getInstance(project);
+        this.midPointService = MidPointService.get(project);
 
         this.notificationKey = notificationKey;
     }

@@ -219,7 +219,7 @@ public class OperationResultDialog extends DialogWrapper {
     }
 
     private void saveResult(final Project project, ProgressIndicator indicator, final VirtualFileWrapper fileWrapper, OperationResult result) {
-        MidPointService mm = MidPointService.getInstance(project);
+        MidPointService mm = MidPointService.get(project);
 
         EnvironmentService em = EnvironmentService.getInstance(project);
         Environment environment = em.getSelected();

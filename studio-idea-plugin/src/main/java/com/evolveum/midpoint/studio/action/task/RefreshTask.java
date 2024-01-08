@@ -93,7 +93,7 @@ public class RefreshTask extends Task.Backgroundable {
     }
 
     private void processFiles(ProgressIndicator indicator, Environment env, List<VirtualFile> files) {
-        MidPointService mm = MidPointService.getInstance(getProject());
+        MidPointService mm = MidPointService.get(getProject());
 
         MidPointClient client = new MidPointClient(getProject(), env);
 

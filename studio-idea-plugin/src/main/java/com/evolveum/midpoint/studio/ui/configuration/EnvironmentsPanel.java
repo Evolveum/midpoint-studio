@@ -40,7 +40,7 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     @Nullable
     private Selectable<Environment> doAddOrEdit(@Nullable Selectable<Environment> data) {
-        EnvironmentEditorDialog dialog = new EnvironmentEditorDialog(project, MidPointService.getInstance(project).getSettings(), data);
+        EnvironmentEditorDialog dialog = new EnvironmentEditorDialog(project, MidPointService.get(project).getSettings(), data);
         if (!dialog.showAndGet()) {
             return null;
         }

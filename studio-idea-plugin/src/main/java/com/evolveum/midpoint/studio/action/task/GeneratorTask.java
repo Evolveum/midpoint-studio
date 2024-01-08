@@ -93,7 +93,7 @@ public class GeneratorTask extends SimpleBackgroundableTask {
 
         updateIndicator(indicator, "Content created, uploading to " + env.getName());
 
-        MidPointService mm = MidPointService.getInstance(project);
+        MidPointService mm = MidPointService.get(project);
 
         MidPointClient client = new MidPointClient(project, env);
 

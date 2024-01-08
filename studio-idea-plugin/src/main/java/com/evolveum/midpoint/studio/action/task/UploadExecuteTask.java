@@ -63,7 +63,7 @@ public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
             File file = obj.getFile();
             VirtualFile vFile = file != null ? VcsUtil.getVirtualFile(file) : null;
 
-            MidPointConfiguration settings = MidPointService.getInstance(client.getProject()).getSettings();
+            MidPointConfiguration settings = MidPointService.get(client.getProject()).getSettings();
             UploadResponse response;
             if (obj.getOid() != null && settings.isUpdateOnUpload()) {
                 try {

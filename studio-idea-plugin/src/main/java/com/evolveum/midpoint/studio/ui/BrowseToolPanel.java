@@ -738,7 +738,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                         .filter(s -> MidPointUtils.UUID_PATTERN.matcher(s).matches()).collect(Collectors.toList());
 
                 if (filteredOids.size() != filtered.size()) {
-                    MidPointService ms = MidPointService.getInstance(project);
+                    MidPointService ms = MidPointService.get(project);
 
                     EnvironmentService em = EnvironmentService.getInstance(project);
                     Environment env = em.getSelected();

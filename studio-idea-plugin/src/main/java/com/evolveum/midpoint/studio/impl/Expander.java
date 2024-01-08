@@ -45,7 +45,7 @@ public class Expander {
     public Expander(Environment environment, Project project) {
         this(environment,
                 project != null ? EncryptionService.getInstance(project) : null, project,
-                project != null ? MidPointService.getInstance(project).getSettings().isIgnoreMissingKeys() : false);
+                project != null ? MidPointService.get(project).getSettings().isIgnoreMissingKeys() : false);
     }
 
     public Expander(Environment environment, EncryptionService encryptionService, Project project, boolean ignoreMissingKeys) {

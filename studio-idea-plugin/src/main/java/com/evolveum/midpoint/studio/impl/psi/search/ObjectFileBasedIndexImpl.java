@@ -191,7 +191,7 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
 
             @Override
             public boolean contains(@NotNull VirtualFile file) {
-                String downloadFilePattern = MidPointService.getInstance(project).getSettings().getDowloadFilePattern();
+                String downloadFilePattern = MidPointService.get(project).getSettings().getDowloadFilePattern();
                 Path path = Paths.get(downloadFilePattern);
                 Path base = Paths.get(project.getBasePath());
 
