@@ -30,7 +30,7 @@
 
         <connid.version>1.5.1.10</connid.version>
         <scripted.sql.version>2.3</scripted.sql.version>
-        <midpoint.version>4.8</midpoint.version>
+        <midpoint.version>${MIDPOINT_VERSION}</midpoint.version>
         <groovy.version>4.0.11</groovy.version>
         <testng.version>7.8.0</testng.version>
     </properties>

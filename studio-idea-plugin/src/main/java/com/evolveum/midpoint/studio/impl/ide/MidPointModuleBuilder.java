@@ -1,13 +1,14 @@
 package com.evolveum.midpoint.studio.impl.ide;
 
+import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.impl.EncryptionService;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.ProjectSettings;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
-import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.evolveum.midpoint.studio.ui.MidPointWizardStep;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.codeInsight.template.TemplateManager;
 import com.intellij.codeInsight.template.impl.TemplateImpl;
 import com.intellij.ide.fileTemplates.FileTemplate;
@@ -145,6 +146,7 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
 
                         properties.setProperty("PROJECT_NAME", escaped);
 
+                        properties.setProperty("MIDPOINT_VERSION", MidPointConstants.DEFAULT_MIDPOINT_VERSION);
 
                         return createPomFile(project, rootFile, properties);
                     });
