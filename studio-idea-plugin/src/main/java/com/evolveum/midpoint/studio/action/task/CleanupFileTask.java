@@ -7,7 +7,8 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
 import com.evolveum.midpoint.prism.query.builder.S_MatchingRuleEntry;
-import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.prism.xnode.MapXNode;
+import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
@@ -116,7 +117,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
                 @Override
                 public void onReferenceCleanup(CleanupEvent<PrismReference> event) {
-                    CleanupFileTask.this.onReferenceCleanup(event);
+                    CleanupFileTask.this.onReferenceCleanup(event, object);
                 }
             });
 
@@ -149,30 +150,35 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         return result == MessageDialog.OK_EXIT_CODE;
     }
 
-    private void onReferenceCleanup(CleanupEvent<PrismReference> event) {
+    private void onReferenceCleanup(CleanupEvent<PrismReference> event, MidPointObject objectSource) {
         PrismObject<?> object = event.getObject();
         if (ResourceType.class.equals(object.getCompileTimeClass())
                 && ResourceType.F_CONNECTOR_REF.equivalent(event.getPath())) {
-            processConnectorRef(event);
+            processConnectorRef(event, objectSource);
             return;
         }
 
-        processOtherRef(event);
+        PrismReference ref = event.getValue();
+        if (ref.isEmpty()) {
+            return;
+        }
+
+        ref.getValues().forEach(refValue -> processOtherRef(event, refValue));
     }
 
-    private void processOtherRef(CleanupEvent<PrismReference> event) {
-        PrismReference ref = event.getValue();
-        if (ref.isEmpty() || ref.getOid() == null) {
-            return;
-        }
-
-        String oid = event.getValue().getOid();
+    private void processOtherRef(CleanupEvent<PrismReference> event, PrismReferenceValue refValue) {
+        String oid = refValue.getOid();
         List<VirtualFile> files = ObjectFileBasedIndexImpl.getVirtualFiles(oid, getProject(), true);
         if (!files.isEmpty()) {
             return;
         }
 
-        QName type = ref.getValue().getTargetType();
+        CleanupService cs = CleanupService.get(getProject());
+        if (!cs.getSettings().isWarnAboutMissingReferences()) {
+            return;
+        }
+
+        QName type = refValue.getTargetType();
         if (type == null) {
             type = ObjectType.COMPLEX_TYPE;
         }
@@ -186,7 +192,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
                 .append("' ('")
                 .append(object.getOid())
                 .append("') contains reference ")
-                .append(ref.getOid())
+                .append(refValue.getOid())
                 .append(" (")
                 .append(type.getLocalPart())
                 .append(") that couldn't be resolved from downloaded files. Make sure this is not a problem.");
@@ -196,7 +202,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         //todo implement, validate reference (whether it's available locally)
     }
 
-    private void processConnectorRef(CleanupEvent<PrismReference> event) {
+    private void processConnectorRef(CleanupEvent<PrismReference> event, MidPointObject objectSource) {
         PrismReference ref = event.getValue();
         if (ref.isEmpty()) {
             return;
@@ -226,7 +232,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             PrismObject<ConnectorType> connector = (PrismObject<ConnectorType>) client.parseObject(xml);
             ConnectorType connectorType = connector.asObjectable();
 
-            SearchFilterType searchFilter = createSearchFilterType(connectorType);
+            SearchFilterType searchFilter = createSearchFilterType(objectSource.getContent(), connectorType);
             if (searchFilter != null) {
                 val.setFilter(searchFilter);
                 clearOidFromReference(val);
@@ -236,7 +242,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         }
     }
 
-    private SearchFilterType createSearchFilterType(ConnectorType connectorType) throws PrismQuerySerialization.NotSupportedException, SchemaException {
+    private SearchFilterType createSearchFilterType(String resourceXml, ConnectorType connectorType) throws PrismQuerySerialization.NotSupportedException, SchemaException {
         PrismContext prismContext = client.getPrismContext();
 
         S_MatchingRuleEntry filterBuilder = prismContext.queryFor(ConnectorType.class)
@@ -255,18 +261,22 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             return prismContext.getQueryConverter().createSearchFilterType(filter);
         }
 
-        //            prismContext.parserFor(xml).parseToXNode().namespaceContext();
-        // todo this created filter with wrong namespaces...
-
-        PrismNamespaceContext.Builder builder = PrismNamespaceContext.EMPTY.childBuilder();
-//            builder.defaultNamespace(SchemaConstantsGenerated.NS_COMMON);
-        builder.addPrefix("", SchemaConstantsGenerated.NS_COMMON);
-
-        String filterText = prismContext.querySerializer().serialize(filter, builder.build()).filterText();
+        PrismNamespaceContext nsCtx = getPrismNamespaceContextForConnectorRef(resourceXml);
+        String filterText = prismContext.querySerializer().serialize(filter, nsCtx).filterText();
         SearchFilterType searchFilter = new SearchFilterType();
         searchFilter.setText(filterText);
 
         return searchFilter;
+    }
+
+    private PrismNamespaceContext getPrismNamespaceContextForConnectorRef(String resourceXml) throws SchemaException {
+        PrismContext ctx = client.getPrismContext();
+        XNode node = ctx.parserFor(resourceXml).parseToXNode().getSubnode();
+        if (!(node instanceof MapXNode mapNode)) {
+            return node.namespaceContext();
+        }
+
+        return mapNode.get(ResourceType.F_CONNECTOR_REF).namespaceContext();
     }
 
     private String getMidpointVersion() {
