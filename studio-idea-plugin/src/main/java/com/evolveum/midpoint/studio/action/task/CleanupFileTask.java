@@ -12,8 +12,10 @@ import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.DownloadMissingNotificationAction;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
+import com.evolveum.midpoint.studio.impl.SeeObjectNotificationAction;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
@@ -30,6 +32,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.messages.MessageDialog;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -131,7 +134,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             for (PrismObject<? extends ObjectType> obj : result) {
                 CleanupResult cleanupResult = processor.process(obj);
 
-                publishCleanupNotifications(cleanupResult);
+                publishCleanupNotifications(object, cleanupResult);
             }
 
             if (objects.equals(result)) {
@@ -151,13 +154,13 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         return content;
     }
 
-    private void publishCleanupNotifications(CleanupResult result) {
+    private void publishCleanupNotifications(MidPointObject object, CleanupResult result) {
         for (CleanupMessage.Status status : CleanupMessage.Status.values()) {
-            publishNotification(status, result.getMessages(status));
+            publishNotification(object, status, result.getMessages(status));
         }
     }
 
-    private void publishNotification(CleanupMessage.Status status, List<CleanupMessage> messages) {
+    private void publishNotification(MidPointObject object, CleanupMessage.Status status, List<CleanupMessage> messages) {
         if (messages.isEmpty()) {
             return;
         }
@@ -168,10 +171,14 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             case INFO -> NotificationType.INFORMATION;
         };
 
-        List<String> msg = messages.stream().map(cm -> cm.message().getFallbackMessage()).collect(Collectors.toList());
+        List<String> msgs = messages.stream().map(cm -> cm.message().getFallbackMessage()).collect(Collectors.toList());
+        String msg = "Cleanup warnings for object '" + object.getName() + "':<br/><br/>" + StringUtils.join(msgs, "<br/>");
+
+        VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(object.getFile().toPath());
 
         MidPointUtils.publishNotification(
-                getProject(), notificationKey, "Cleanup warning", StringUtils.join(msg, "<br/>"), type);
+                getProject(), notificationKey, "Cleanup warning", msg, type,
+                new SeeObjectNotificationAction(file), new DownloadMissingNotificationAction());
     }
 
     private void onProtectedStringCleanup(CleanupEvent<PrismProperty<ProtectedStringType>> event) {
