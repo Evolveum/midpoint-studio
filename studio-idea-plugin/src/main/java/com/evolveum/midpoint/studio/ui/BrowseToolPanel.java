@@ -189,9 +189,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 Object userObject = treeNode.getUserObject();
                 if (userObject instanceof ObjectTypes) {
                     ObjectTypes type = (ObjectTypes) userObject;
-                    String text = type.getTypeQName().getLocalPart();
 
-                    value = StudioLocalization.get().translate("ObjectType." + text, text);
+                    value = StudioLocalization.get().translateEnum(type);
                 } else if (userObject instanceof ObjectType) {
                     ObjectType ot = (ObjectType) userObject;
                     value = MidPointUtils.getOrigFromPolyString(ot.getName());
