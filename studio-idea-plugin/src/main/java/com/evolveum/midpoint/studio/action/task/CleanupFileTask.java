@@ -1,8 +1,6 @@
 package com.evolveum.midpoint.studio.action.task;
 
-import com.evolveum.midpoint.common.cleanup.CleanupActionProcessor;
-import com.evolveum.midpoint.common.cleanup.CleanupEvent;
-import com.evolveum.midpoint.common.cleanup.CleanupListener;
+import com.evolveum.midpoint.common.cleanup.*;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
@@ -20,11 +18,13 @@ import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.SingleLocalizableMessage;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
+import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -36,8 +36,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.lang.module.ModuleDescriptor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -119,10 +121,17 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
                 public void onReferenceCleanup(CleanupEvent<PrismReference> event) {
                     CleanupFileTask.this.onReferenceCleanup(event, object);
                 }
+
+                @Override
+                public void onProtectedStringCleanup(CleanupEvent<PrismProperty<ProtectedStringType>> event) {
+                    CleanupFileTask.this.onProtectedStringCleanup(event);
+                }
             });
 
             for (PrismObject<? extends ObjectType> obj : result) {
-                processor.process(obj);
+                CleanupResult cleanupResult = processor.process(obj);
+
+                publishCleanupNotifications(cleanupResult);
             }
 
             if (objects.equals(result)) {
@@ -142,23 +151,79 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         return content;
     }
 
+    private void publishCleanupNotifications(CleanupResult result) {
+        for (CleanupMessage.Status status : CleanupMessage.Status.values()) {
+            publishNotification(status, result.getMessages(status));
+        }
+    }
+
+    private void publishNotification(CleanupMessage.Status status, List<CleanupMessage> messages) {
+        if (messages.isEmpty()) {
+            return;
+        }
+
+        NotificationType type = switch (status) {
+            case ERROR -> NotificationType.ERROR;
+            case WARNING -> NotificationType.WARNING;
+            case INFO -> NotificationType.INFORMATION;
+        };
+
+        List<String> msg = messages.stream().map(cm -> cm.message().getFallbackMessage()).collect(Collectors.toList());
+
+        MidPointUtils.publishNotification(
+                getProject(), notificationKey, "Cleanup warning", StringUtils.join(msg, "<br/>"), type);
+    }
+
+    private void onProtectedStringCleanup(CleanupEvent<PrismProperty<ProtectedStringType>> event) {
+        PrismProperty<ProtectedStringType> property = event.value();
+        if (property.isEmpty()) {
+            return;
+        }
+
+        List<String> messages = new ArrayList<>();
+        for (PrismPropertyValue<ProtectedStringType> value : property.getValues()) {
+            ProtectedStringType ps = value.getValue();
+            if (ps == null) {
+                continue;
+            }
+
+            if (ps.getEncryptedDataType() != null) {
+                messages.add("encrypted data in " + property.getPath());
+            }
+
+            if (ps.getClearValue() != null) {
+                messages.add("clear value in " + property.getPath());
+            }
+        }
+
+        if (messages.isEmpty()) {
+            return;
+        }
+
+        event.result().getMessages().add(
+                new CleanupMessage(
+                        CleanupMessage.Status.WARNING,
+                        new SingleLocalizableMessage(
+                                "Protected string: " + StringUtils.join(messages, ", "))));
+    }
+
     private boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
         int result = MidPointUtils.showConfirmationDialog(
-                getProject(), null, "Do you really want to remove item " + event.getPath() + "?",
+                getProject(), null, "Do you really want to remove item " + event.path() + "?",
                 "Confirm remove", "Remove", "Skip");
 
         return result == MessageDialog.OK_EXIT_CODE;
     }
 
     private void onReferenceCleanup(CleanupEvent<PrismReference> event, MidPointObject objectSource) {
-        PrismObject<?> object = event.getObject();
+        PrismObject<?> object = event.object();
         if (ResourceType.class.equals(object.getCompileTimeClass())
-                && ResourceType.F_CONNECTOR_REF.equivalent(event.getPath())) {
+                && ResourceType.F_CONNECTOR_REF.equivalent(event.path())) {
             processConnectorRef(event, objectSource);
             return;
         }
 
-        PrismReference ref = event.getValue();
+        PrismReference ref = event.value();
         if (ref.isEmpty()) {
             return;
         }
@@ -183,27 +248,17 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             type = ObjectType.COMPLEX_TYPE;
         }
 
-        PrismObject<?> object = event.getObject();
-
-        StringBuilder sb = new StringBuilder();
-        sb
-                .append("Object '")
-                .append(MidPointUtils.getName(object))
-                .append("' ('")
-                .append(object.getOid())
-                .append("') contains reference ")
-                .append(refValue.getOid())
-                .append(" (")
-                .append(type.getLocalPart())
-                .append(") that couldn't be resolved from downloaded files. Make sure this is not a problem.");
-
-        MidPointUtils.publishNotification(getProject(), notificationKey, "Unresolved reference", sb.toString(), NotificationType.WARNING);
+        event.result().getMessages().add(
+                new CleanupMessage(
+                        CleanupMessage.Status.WARNING,
+                        new SingleLocalizableMessage(
+                                "Unresolved reference (in project): " + refValue.getOid() + "(" + type.getLocalPart() + ").")));
 
         //todo implement, validate reference (whether it's available locally)
     }
 
     private void processConnectorRef(CleanupEvent<PrismReference> event, MidPointObject objectSource) {
-        PrismReference ref = event.getValue();
+        PrismReference ref = event.value();
         if (ref.isEmpty()) {
             return;
         }
@@ -222,9 +277,12 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         try {
             MidPointObject object = client.get(ConnectorType.class, oid, new SearchOptions().raw(true));
             if (object == null) {
-                MidPointUtils.publishNotification(
-                        getProject(), notificationKey, "Unresolved connector reference",
-                        "Couldn't find connector with oid " + oid + " in selected environment", NotificationType.WARNING);
+                event.result().getMessages().add(
+                        new CleanupMessage(
+                                CleanupMessage.Status.WARNING,
+                                new SingleLocalizableMessage(
+                                        "Unresolved connector reference: Couldn't find connector with oid "
+                                                + oid + " in selected environment.")));
                 return;
             }
 
