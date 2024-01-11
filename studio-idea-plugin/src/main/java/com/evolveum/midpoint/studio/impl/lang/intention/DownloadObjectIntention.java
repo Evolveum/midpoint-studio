@@ -16,6 +16,7 @@ import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Optional;
 
 public class DownloadObjectIntention extends PsiElementBaseIntentionAction {
 
@@ -34,8 +35,13 @@ public class DownloadObjectIntention extends PsiElementBaseIntentionAction {
     }
 
     @Override
+    public boolean startInWriteAction() {
+        return false;
+    }
+
+    @Override
     public @NotNull @IntentionFamilyName String getFamilyName() {
-        return NAME;
+        return getText();
     }
 
     @Override
@@ -46,15 +52,14 @@ public class DownloadObjectIntention extends PsiElementBaseIntentionAction {
         }
 
         String oid = attrValue.getValue();
-        ObjectTypes type = MidPointUtils.getTypeFromReference(reference);
-        if (type == null) {
-            type = ObjectTypes.OBJECT;
-        }
+        ObjectTypes type = Optional
+                .ofNullable(MidPointUtils.getTypeFromReference(reference))
+                .orElse(ObjectTypes.OBJECT);
 
         ActionUtils.runDownloadTask(project, List.of(
                 new ObjectReferenceType()
-                        .oid(oid).
-                        type(type.getTypeQName())), showOnly);
+                        .oid(oid)
+                        .type(type.getTypeQName())), showOnly);
     }
 
     @Override
@@ -65,12 +70,8 @@ public class DownloadObjectIntention extends PsiElementBaseIntentionAction {
 
 
         PsiElement parent = element.getParent();
-        if (!(parent instanceof XmlAttributeValue)
-                || !(parent.getParent() instanceof XmlAttribute attribute)
-                || !"oid".equals(attribute.getLocalName())) {
-            return false;
-        }
-
-        return true;
+        return parent instanceof XmlAttributeValue
+                && parent.getParent() instanceof XmlAttribute attribute
+                && "oid".equals(attribute.getLocalName());
     }
 }
