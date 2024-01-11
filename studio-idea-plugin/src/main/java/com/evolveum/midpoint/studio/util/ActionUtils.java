@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ActionUtils {
 
-    public static void runDownloadTask(@NotNull Project project, List<ObjectReferenceType> refs) {
+    public static void runDownloadTask(@NotNull Project project, List<ObjectReferenceType> refs, boolean showOnly) {
         EnvironmentService es = EnvironmentService.getInstance(project);
         Environment env = es.getSelected();
 
@@ -30,7 +30,7 @@ public class ActionUtils {
                         ObjectTypes.getObjectTypeFromTypeQName(ref.getType())))
                 .toList();
 
-        DownloadTask task = new DownloadTask(project, objectRefs, null, null, false, true, false);
+        DownloadTask task = new DownloadTask(project, objectRefs, null, null, showOnly, true, false);
         task.setEnvironment(env);
         task.setOpenAfterDownload(false);
 

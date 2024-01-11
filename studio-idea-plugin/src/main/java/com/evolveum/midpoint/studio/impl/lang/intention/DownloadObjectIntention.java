@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.lang;
+package com.evolveum.midpoint.studio.impl.lang.intention;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.ActionUtils;
@@ -21,8 +21,16 @@ public class DownloadObjectIntention extends PsiElementBaseIntentionAction {
 
     private static final String NAME = "Download object";
 
+    private final boolean showOnly;
+
     public DownloadObjectIntention() {
-        setText(NAME);
+        this(NAME, false);
+    }
+
+    protected DownloadObjectIntention(String text, boolean showOnly) {
+        setText(text);
+
+        this.showOnly = showOnly;
     }
 
     @Override
@@ -46,7 +54,7 @@ public class DownloadObjectIntention extends PsiElementBaseIntentionAction {
         ActionUtils.runDownloadTask(project, List.of(
                 new ObjectReferenceType()
                         .oid(oid).
-                        type(type.getTypeQName())));
+                        type(type.getTypeQName())), showOnly);
     }
 
     @Override

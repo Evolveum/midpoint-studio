@@ -248,11 +248,19 @@
         <customizableActionGroupProvider implementation="com.evolveum.midpoint.studio.action.ExpUiActionGroupProvider"/>
 
         <intentionAction>
-            <className>com.evolveum.midpoint.studio.impl.lang.DownloadObjectIntention</className>
+            <className>com.evolveum.midpoint.studio.impl.lang.intention.DownloadObjectIntention</className>
             <language>XML</language>
             <bundleName>messages.MidPointStudio</bundleName>
             <categoryKey>MidpointIntentionActionGroup.title</categoryKey>
             <descriptionDirectoryName>DownloadObjectIntention</descriptionDirectoryName>
+            <skipBeforeAfter>true</skipBeforeAfter>
+        </intentionAction>
+        <intentionAction>
+            <className>com.evolveum.midpoint.studio.impl.lang.intention.ShowObjectIntention</className>
+            <language>XML</language>
+            <bundleName>messages.MidPointStudio</bundleName>
+            <categoryKey>MidpointIntentionActionGroup.title</categoryKey>
+            <descriptionDirectoryName>ShowObjectIntention</descriptionDirectoryName>
             <skipBeforeAfter>true</skipBeforeAfter>
         </intentionAction>
     </extensions>

@@ -23,7 +23,7 @@ public class DownloadMissingNotificationAction extends NotificationAction {
         List<ObjectReferenceType> objectRefs = new ArrayList<>();
         // todo implement...
 
-        ActionUtils.runDownloadTask(project, objectRefs);
+        ActionUtils.runDownloadTask(project, objectRefs, false);
     }
 
     @Override
