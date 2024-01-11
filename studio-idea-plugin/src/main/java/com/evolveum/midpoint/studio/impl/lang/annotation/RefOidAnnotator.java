@@ -5,7 +5,6 @@ import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
-import com.evolveum.midpoint.util.QNameUtil;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
@@ -21,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
-import java.util.Arrays;
 import java.util.List;
 
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
@@ -47,37 +45,27 @@ public class RefOidAnnotator implements Annotator {
 
         XmlTag tag = getTag(value);
 
-        String oid = value.getValue();
-        checkOidFormat(oid, value, holder);
+        checkOidFormat(value, holder);
 
         if (MidPointUtils.isObjectTypeElement(tag)) {
-            checkObjectOidValidity(oid, value, holder);
+            checkObjectOidValidity(value, holder);
         } else if (isObjectReference(tag)) {
-            checkObjectReferencePresence(oid, value, holder);
+            checkObjectReferencePresence(value, holder);
         }
     }
 
     private String getTypeFromReference(XmlTag tag) {
-        String xmlType = tag.getAttributeValue("type");
-        String type = "object";
-        if (xmlType != null) {
-            String localPart = QNameUtil.parsePrefixedName(xmlType).localName();
-            ObjectTypes ot = Arrays.stream(ObjectTypes.values())
-                    .filter(t -> t.getTypeQName().getLocalPart().equals(localPart))
-                    .findFirst()
-                    .orElse(null);
-            if (ot != null) {
-                type = StudioLocalization.get().translateEnum(ot);
-                if (type != null) {
-                    type = type.toLowerCase();
-                }
-            }
+        ObjectTypes type = MidPointUtils.getTypeFromReference(tag);
+        if (type == null) {
+            type = ObjectTypes.OBJECT;
         }
 
-        return type;
+        String value = StudioLocalization.get().translateEnum(type);
+        return value != null ? value.toLowerCase() : "object";
     }
 
-    private void checkObjectReferencePresence(String oid, XmlAttributeValue value, AnnotationHolder holder) {
+    private void checkObjectReferencePresence(XmlAttributeValue value, AnnotationHolder holder) {
+        String oid = value.getValue();
         XmlTag tag = getTag(value);
         String type = getTypeFromReference(tag);
 
@@ -90,7 +78,7 @@ public class RefOidAnnotator implements Annotator {
         }
     }
 
-    private void checkObjectOidValidity(String oid, XmlAttributeValue value, AnnotationHolder holder) {
+    private void checkObjectOidValidity(XmlAttributeValue value, AnnotationHolder holder) {
         List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), value.getProject(), true);
         if (result.size() > 1) {
             holder.newAnnotation(HighlightSeverity.ERROR, "Oid must be unique, found " + result.size() + " objects in total.")
@@ -99,7 +87,8 @@ public class RefOidAnnotator implements Annotator {
         }
     }
 
-    private void checkOidFormat(String oid, XmlAttributeValue value, AnnotationHolder holder) {
+    private void checkOidFormat(XmlAttributeValue value, AnnotationHolder holder) {
+        String oid = value.getValue();
         if (StringUtils.isEmpty(oid)) {
             holder.newAnnotation(HighlightSeverity.ERROR, "Oid not defined")
                     .range(value)
@@ -119,12 +108,6 @@ public class RefOidAnnotator implements Annotator {
                     .range(value)
                     .create();
         }
-    }
-
-    private boolean isReferenceValid() {
-        // todo implement
-
-        return true;
     }
 
     private boolean isObjectReference(XmlTag tag) {
@@ -153,12 +136,8 @@ public class RefOidAnnotator implements Annotator {
         }
 
         String typeValue = type.getValue();
-        if (typeValue != null && typeValue.endsWith(":ObjectReferenceType")) {
-            // we probably doesn't have to resolve this reference further
-            return true;
-        }
-
-        return false;
+        // we probably don't have to resolve this reference further
+        return typeValue != null && typeValue.endsWith(":ObjectReferenceType");
     }
 
     private XmlTag getTag(XmlAttributeValue value) {

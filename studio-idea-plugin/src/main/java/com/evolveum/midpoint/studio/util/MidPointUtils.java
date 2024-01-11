@@ -15,6 +15,7 @@ import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -1136,5 +1137,22 @@ public class MidPointUtils {
         });
 
         return result.get();
+    }
+
+
+    /**
+     * Returns type of object from ObjectReferenceType xml tag PSI element (from type attribute).
+     */
+    public static ObjectTypes getTypeFromReference(XmlTag tag) {
+        String xmlType = tag.getAttributeValue("type");
+        if (xmlType == null) {
+            return null;
+        }
+
+        String localPart = QNameUtil.parsePrefixedName(xmlType).localName();
+        return Arrays.stream(ObjectTypes.values())
+                .filter(t -> t.getTypeQName().getLocalPart().equals(localPart))
+                .findFirst()
+                .orElse(null);
     }
 }

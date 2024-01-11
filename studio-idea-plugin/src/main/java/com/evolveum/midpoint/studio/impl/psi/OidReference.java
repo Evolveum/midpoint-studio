@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class OidReference extends PsiReferenceBase<XmlAttributeValue> {
 
-    private VirtualFile file;
+    private final VirtualFile file;
 
     public OidReference(XmlAttributeValue element, VirtualFile file) {
         super(element, true);

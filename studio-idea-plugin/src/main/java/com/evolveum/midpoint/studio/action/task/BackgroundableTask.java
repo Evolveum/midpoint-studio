@@ -27,6 +27,8 @@ public abstract class BackgroundableTask extends Task.Backgroundable {
 
     protected MidPointService midPointService;
 
+    // TODO remove this, tasks should't be aware of UI directly probably - not on this level (maybe some concrete ones)
+    @Deprecated
     protected AnActionEvent event;
 
     protected String notificationKey;

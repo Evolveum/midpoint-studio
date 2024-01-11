@@ -11,7 +11,6 @@ import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -23,18 +22,17 @@ public class OidReferenceProvider extends PsiReferenceProvider {
     @NotNull
     @Override
     public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
-        if (!(element instanceof XmlAttributeValue)) {
-            return new PsiReference[0];
+        if (!(element instanceof XmlAttributeValue attrValue)) {
+            return PsiReference.EMPTY_ARRAY;
         }
 
         boolean isObjectOid = MidPointUtils.isItObjectTypeOidAttribute(element);
 
-        XmlAttributeValue attrValue = (XmlAttributeValue) element;
         String oid = attrValue.getValue();
 
         List<VirtualFile> files = ObjectFileBasedIndexImpl.getVirtualFiles(oid, element.getProject(), isObjectOid);
         if (files == null) {
-            return new PsiReference[0];
+            return PsiReference.EMPTY_ARRAY;
         }
 
         Stream<VirtualFile> stream = files.stream();
@@ -42,8 +40,9 @@ public class OidReferenceProvider extends PsiReferenceProvider {
             stream = stream.filter(f -> !f.equals(element.getContainingFile().getVirtualFile()));
         }
 
-        List<OidReference> references = stream.map(f -> new OidReference(attrValue, f)).collect(Collectors.toList());
-
-        return references.toArray(new PsiReference[references.size()]);
+        return stream
+                .map(f -> new OidReference(attrValue, f))
+                .toList()
+                .toArray(new PsiReference[0]);
     }
 }

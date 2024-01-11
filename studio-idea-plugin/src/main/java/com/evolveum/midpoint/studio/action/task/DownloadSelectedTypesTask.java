@@ -69,7 +69,7 @@ public class DownloadSelectedTypesTask extends SimpleBackgroundableTask {
 
         List<ObjectTypes> typesToDownload = determineTypesToDownload(settings);
         for (ObjectTypes type : typesToDownload) {
-            DownloadTask dt = new DownloadTask(event, null, type, query, false, false, true);
+            DownloadTask dt = new DownloadTask(getProject(), null, type, query, false, false, true);
             dt.setEnvironment(environment);
             dt.setOpenAfterDownload(false);
 

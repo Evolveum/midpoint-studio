@@ -60,7 +60,7 @@ public class DownloadAction extends AsyncAction<DownloadTask> {
 
     @Override
     protected DownloadTask createTask(AnActionEvent e, Environment env) {
-        DownloadTask task = new DownloadTask(e, oids, type, query, showOnly, raw, overwrite);
+        DownloadTask task = new DownloadTask(e.getProject(), oids, type, query, showOnly, raw, overwrite);
         task.setEnvironment(env);
         task.setOpenAfterDownload(openAfterDownload);
 

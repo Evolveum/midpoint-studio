@@ -11,7 +11,6 @@ import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -52,10 +51,17 @@ public class DownloadTask extends SimpleBackgroundableTask {
 
     private boolean openAfterDownload = true;
 
-    public DownloadTask(@NotNull AnActionEvent event, List<Pair<String, ObjectTypes>> oids, ObjectTypes type, ObjectQuery query, boolean showOnly, boolean raw, boolean overwrite) {
-        super(event.getProject(), TITLE, NOTIFICATION_KEY);
+    public DownloadTask(
+            @NotNull Project project, List<Pair<String, ObjectTypes>> oids, boolean showOnly, boolean raw,
+            boolean overwrite) {
+        this(project, oids, null, null, showOnly, raw, overwrite);
+    }
 
-        setEvent(event);
+    public DownloadTask(
+            @NotNull Project project, List<Pair<String, ObjectTypes>> oids, ObjectTypes type, ObjectQuery query,
+            boolean showOnly, boolean raw, boolean overwrite) {
+        
+        super(project, TITLE, NOTIFICATION_KEY);
 
         this.oids = oids;
         this.type = type;
