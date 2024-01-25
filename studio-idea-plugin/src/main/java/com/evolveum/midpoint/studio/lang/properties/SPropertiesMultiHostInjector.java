@@ -30,19 +30,22 @@ public class SPropertiesMultiHostInjector implements MultiHostInjector {
             return;
         }
 
-        if (!(context instanceof PsiLanguageInjectionHost)) {
+        if (!(context instanceof PsiLanguageInjectionHost psiLangInjectionHost)) {
+            return;
+        }
+
+        if (!MidPointUtils.isMidpointFile(psiLangInjectionHost.getContainingFile())) {
             return;
         }
 
         String str = context.getText();
 
         Matcher matcher = CODE_PATTERN.matcher(str);
-        matcher.results().forEach(mr -> {
-            registrar
-                    .startInjecting(SPropertiesLanguage.INSTANCE)
-                    .addPlace(null, null, (PsiLanguageInjectionHost) context, new TextRange(mr.start(), mr.end()))
-                    .doneInjecting();
-        });
+        matcher.results().forEach(mr ->
+                registrar
+                        .startInjecting(SPropertiesLanguage.INSTANCE)
+                        .addPlace(null, null, (PsiLanguageInjectionHost) context, new TextRange(mr.start(), mr.end()))
+                        .doneInjecting());
     }
 
     @NotNull
