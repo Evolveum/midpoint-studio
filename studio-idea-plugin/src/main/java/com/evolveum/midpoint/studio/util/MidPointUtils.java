@@ -58,7 +58,9 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
@@ -125,17 +127,24 @@ public class MidPointUtils {
 
     private static final String[] NAMES;
 
+    public static final Set<String> NAMESPACES;
+
     static {
+        NAMESPACES = Set.of(
+                SchemaConstantsGenerated.NS_COMMON,
+                SchemaConstantsGenerated.NS_QUERY,
+                SchemaConstantsGenerated.NS_SCRIPTING);
+
         List<String> names = new ArrayList<>();
         for (ObjectTypes t : ObjectTypes.values()) {
-            if (t.getClassDefinition() == null || Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
+            if (Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
                 continue;
             }
 
             names.add(t.getElementName().getLocalPart());
         }
 
-        NAMES = names.toArray(new String[names.size()]);
+        NAMES = names.toArray(new String[0]);
     }
 
     public static Color generateAwtColor() {
@@ -792,6 +801,23 @@ public class MidPointUtils {
         }
 
         return isEnvironmentAndFileSelected(evt);
+    }
+
+    public static boolean isMidpointFile(PsiFile file) {
+        if (file == null) {
+            return false;
+        }
+
+        if (!(file instanceof XmlFile xmlFile)) {
+            return false;
+        }
+
+        if (xmlFile.getRootTag() == null) {
+            return false;
+        }
+
+        String namespace = xmlFile.getRootTag().getNamespace();
+        return NAMESPACES.contains(namespace);
     }
 
     public static boolean isMidpointObjectFileSelected(AnActionEvent evt) {
