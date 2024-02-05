@@ -22,9 +22,9 @@ public class ComboQueryType extends ComboBoxAction implements DumbAware {
 
         OID("Oid"),
 
-        AXIOM("Axiom"),
+        AXIOM("MidPoint Query"),
 
-        QUERY_XML("Query XML");
+        QUERY_XML("XML Query");
 
         private final String label;
 
