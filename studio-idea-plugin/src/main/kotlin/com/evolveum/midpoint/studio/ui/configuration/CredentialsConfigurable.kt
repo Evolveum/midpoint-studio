@@ -3,9 +3,10 @@ package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.studio.impl.EncryptionService
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService
+import com.evolveum.midpoint.studio.ui.util.BooleanPropertyPredicate
 import com.evolveum.midpoint.studio.util.MidPointUtils
 import com.evolveum.midpoint.studio.util.StudioLocalization.message
-import com.intellij.openapi.observable.properties.AtomicBooleanProperty
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
@@ -14,10 +15,11 @@ import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.dsl.builder.COLUMNS_SHORT
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.layout.ComponentPredicate
 import com.intellij.ui.layout.ValidationInfoBuilder
 import org.apache.commons.lang3.StringUtils
 import javax.swing.JLabel
+
+const val NOTIFICATION_KEY = "Credentials change"
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -39,18 +41,43 @@ class CredentialsConfigurable(val project: Project) :
 
     override fun apply() {
         super.apply()
-        println(">>>> apply")
-//        val oldPwd = oldPassword.password
-//        val newPwd = newPassword.password
-//
-//        if (oldPwd != null && oldPwd.isNotEmpty() && newPwd != null && newPwd.isNotEmpty()) {
-//            try {
-//                EncryptionService.getInstance(project)
-//                    .changeMasterPassword(oldPwd.concatToString(), newPwd.concatToString())
-//            } catch (ex: Exception) {
-//                error("Couldn't change master password: ${ex.message}")
-//            }
-//        }
+
+        val oldPwd = oldPassword.password
+        val newPwd = newPassword.password
+        val repeatNewPwd = repeatNewPassword.password
+
+        if (newPwd.isNotEmpty() && !newPwd.contentEquals(repeatNewPwd)) {
+            MidPointUtils.publishNotification(
+                project, NOTIFICATION_KEY, "Change master password",
+                "New password and repeat password fields don't match.", NotificationType.ERROR
+            )
+            return
+        }
+
+        val status = EncryptionService.getInstance(project).status
+
+        if (oldPwd.isEmpty() && (status.status == EncryptionService.Status.OK
+                    || status.status == EncryptionService.Status.PASSWORD_NOT_SET)
+        ) {
+            MidPointUtils.publishNotification(
+                project, NOTIFICATION_KEY, "Change master password",
+                "Can't change credentials password old password is empty.", NotificationType.ERROR
+            )
+            return
+        }
+
+        try {
+            EncryptionService.getInstance(project)
+                .changeMasterPassword(oldPwd.concatToString(), newPwd.concatToString())
+
+            resetPanel()
+        } catch (ex: Exception) {
+            MidPointUtils.publishNotification(
+                project, NOTIFICATION_KEY, "Change master password",
+                "Can't change credentials password, reason: " + ex.message, NotificationType.ERROR
+            )
+            return
+        }
     }
 
     override fun isModified(): Boolean {
@@ -67,10 +94,18 @@ class CredentialsConfigurable(val project: Project) :
     override fun reset() {
         super.reset()
 
+        resetPanel()
+    }
+
+    private fun resetPanel() {
         oldPassword.text = null
         newPassword.text = null
         repeatNewPassword.text = null
 
+        updateVisibilityAndStatus()
+    }
+
+    private fun updateVisibilityAndStatus() {
         val status = EncryptionService.getInstance(project).status
 
         this.status.text = status.message
@@ -86,25 +121,28 @@ class CredentialsConfigurable(val project: Project) :
     }
 
     override fun createPanel(): DialogPanel {
+        updateVisibilityAndStatus()
+
         return panel {
             group(message("CredentialsConfigurable.credentials")) {
                 row("Old password:") {
                     cell(oldPassword)
                         .columns(COLUMNS_SHORT)
-                        .visibleIf(oldVisible)
-                        .validationOnApply { validateOldPassword(it) }
+                        .validationOnApply { validateOldPassword() }
                 }
+                    .visibleIf(oldVisible)
                 row("New password:") {
                     cell(newPassword)
                         .columns(COLUMNS_SHORT)
-                        .visibleIf(newVisible)
+                        .validationOnInput { validatePasswords() }
                 }
+                    .visibleIf(newVisible)
                 row("Repeat new password:") {
                     cell(repeatNewPassword)
                         .columns(COLUMNS_SHORT)
-                        .visibleIf(newVisible)
-                        .validationOnApply(::validatePasswords)
+                        .validationOnInput { validatePasswords() }
                 }
+                    .visibleIf(newVisible)
             }
             row {
                 cell(status)
@@ -112,20 +150,20 @@ class CredentialsConfigurable(val project: Project) :
         }
     }
 
-    private fun validateOldPassword(component: JBPasswordField): ValidationInfo? {
-        val password = component.password
+    private fun validateOldPassword(): ValidationInfo? {
+        val password = oldPassword.password
 
         if (password.isNotEmpty()) {
             val projectId = MidPointService.get(project).settings.projectId
             val currentPwd = MidPointUtils.getPassword(projectId)
 
             if (StringUtils.isEmpty(currentPwd)) {
-                return ValidationInfoBuilder(component)
+                return ValidationInfoBuilder(oldPassword)
                     .error("There is no master password stored in keychain with id '$projectId'. Please set only the new password.")
             }
 
             if (password.concatToString() != currentPwd) {
-                return ValidationInfoBuilder(component)
+                return ValidationInfoBuilder(oldPassword)
                     .error("Old password doesn't match one that is stored in keychain with id '$projectId'.")
             }
         }
@@ -133,38 +171,15 @@ class CredentialsConfigurable(val project: Project) :
         return null
     }
 
-    private fun validatePasswords(
-        builder: ValidationInfoBuilder, password: JBPasswordField
-    ): ValidationInfo? {
-        return builder.run {
-            val pwd = newPassword.password
-            val repeatPwd = repeatNewPassword.password
+    private fun validatePasswords(): ValidationInfo? {
+        val pwd = newPassword.password
+        val repeatPwd = repeatNewPassword.password
 
-            if (!pwd.contentEquals(repeatPwd)) {
-                return builder.error("New password and repeat password fields don't match.")
-            }
-
-            return null
-        }
-    }
-
-    class BooleanPropertyPredicate(value: Boolean) : ComponentPredicate() {
-
-        private val property: AtomicBooleanProperty = AtomicBooleanProperty(value)
-
-        override fun addListener(listener: (Boolean) -> Unit) {
+        if (!pwd.contentEquals(repeatPwd)) {
+            return ValidationInfoBuilder(repeatNewPassword)
+                .error("New password and repeat password fields don't match.")
         }
 
-        override fun invoke(): Boolean {
-            return get()
-        }
-
-        fun set(value: Boolean) {
-            property.set(value)
-        }
-
-        fun get(): Boolean {
-            return property.get()
-        }
+        return null
     }
 }
