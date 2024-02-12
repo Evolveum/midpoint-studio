@@ -255,8 +255,10 @@ public class MidPointUtils {
     }
 
     private static CredentialAttributes createCredentialAttributes(String key) {
+        // previously was "MidPointSettings" (simple class name for MidPointConfiguration)
+        // we left it as is, because we don't want to change the key that is used to search keychain for existing credentials
         return new CredentialAttributes(CredentialAttributesKt
-                .generateServiceName(MidPointConfiguration.class.getSimpleName(), key));
+                .generateServiceName("MidPointSettings", key));
     }
 
     public static void publishException(Project project, Environment env, Class clazz, String notificationKey, String msg, Exception ex) {
