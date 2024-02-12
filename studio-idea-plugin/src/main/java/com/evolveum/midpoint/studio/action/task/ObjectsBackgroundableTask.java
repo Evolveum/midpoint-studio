@@ -241,6 +241,12 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
             List<MidPointObject> objects = MidPointUtils.parseText(getProject(), text, sourceFile, getNotificationKey());
             objects = ClientUtils.filterObjectTypeOnly(objects, isProcessingOnlyObjectTypes());
 
+            if (objects.isEmpty()) {
+                MidPointUtils.publishNotification(getProject(), notificationKey, getTitle(),
+                        "No objects found in text", NotificationType.WARNING);
+                return false;
+            }
+
             if (!confirmedOperation(objects.size(), ConfirmationUnit.OBJECT)) {
                 return false;
             }

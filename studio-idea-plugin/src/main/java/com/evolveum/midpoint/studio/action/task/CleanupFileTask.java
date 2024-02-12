@@ -198,6 +198,10 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
                 messages.add("encrypted data in " + property.getPath());
             }
 
+            if (ps.getHashedDataType() != null) {
+                messages.add("hashed data in " + property.getPath());
+            }
+
             if (ps.getClearValue() != null) {
                 messages.add("clear value in " + property.getPath());
             }
