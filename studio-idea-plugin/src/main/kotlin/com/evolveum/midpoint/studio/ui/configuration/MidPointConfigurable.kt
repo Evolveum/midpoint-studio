@@ -55,17 +55,17 @@ open class MidPointConfigurable(val project: Project) :
     override fun createPanel(): DialogPanel {
         return panel {
             groupRowsRange(message("MidPointConfigurable.general")) {
-                row(message("MidPointConfigurable.midpointVersion")) {
-                    comboBox(
-                        MidPointConstants.SUPPORTED_VERSIONS,
-                        SimpleListCellRenderer.create("") { it }
-                    )
-                        .bindItem(
-                            { configuration.midpointVersion },
-                            { configuration.midpointVersion = it })
-                        .validationOnApply(::validateNotNull)
-                        .validationOnInput(::validateMidpointVersion)
-                }
+//                row(message("MidPointConfigurable.midpointVersion")) {
+//                    comboBox(
+//                        MidPointConstants.SUPPORTED_VERSIONS,
+//                        SimpleListCellRenderer.create("") { it }
+//                    )
+//                        .bindItem(
+//                            { configuration.midpointVersion },
+//                            { configuration.midpointVersion = it })
+//                        .validationOnApply(::validateNotNull)
+//                        .validationOnInput(::validateMidpointVersion)
+//                }
                 row {
                     checkBox(message("MidPointConfigurable.updateOnUpload"))
                         .bindSelected(
@@ -156,7 +156,7 @@ open class MidPointConfigurable(val project: Project) :
 
         if (versions.size > 1) {
             return builder.warning(
-                "Midpoint dependencies fount in maven project have different versions (" + versions.joinToString(
+                "MidPoint dependencies fount in maven project have different versions (" + versions.joinToString(
                     ", "
                 ) + ")."
             )
@@ -165,7 +165,7 @@ open class MidPointConfigurable(val project: Project) :
         val mvnVersion = versions[0]
 
         if (!mvnVersion.startsWith(version)) {
-            return builder.warning("Midpoint dependencies fount in maven project have different version (" + mvnVersion + ") than selected.")
+            return builder.warning("MidPoint dependencies found in maven project have different version (" + mvnVersion + ") than selected.")
         }
 
         return null

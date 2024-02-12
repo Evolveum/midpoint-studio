@@ -17,4 +17,18 @@ public class MavenUtils {
                 .filter(ma -> ma.getGroupId().startsWith("com.evolveum.midpoint") || ma.getGroupId().startsWith("com.evolveum.prism"))
                 .collect(Collectors.toSet());
     }
+
+    public static String getMidpointVersion(Project project) {
+        List<String> versions = getMidpointDependencies(project).stream()
+                .map(MavenArtifact::getVersion)
+                .distinct()
+                .sorted()
+                .toList();
+
+        if (versions.isEmpty() || versions.size() > 1) {
+            return null;
+        }
+
+        return versions.get(0);
+    }
 }

@@ -19,6 +19,7 @@ import com.evolveum.midpoint.studio.impl.SeeObjectNotificationAction;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
+import com.evolveum.midpoint.studio.util.MavenUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.SingleLocalizableMessage;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -349,9 +350,10 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
     }
 
     private String getMidpointVersion() {
-        MidPointService ms = MidPointService.get(getProject());
-        String current = ms.getSettings().getMidpointVersion();
+//        MidPointService ms = MidPointService.get(getProject());
+//        String current = ms.getSettings().getMidpointVersion();
 
+        String current = MavenUtils.getMidpointVersion(getProject());
         return current != null ? current : MidPointConstants.DEFAULT_MIDPOINT_VERSION;
     }
 
