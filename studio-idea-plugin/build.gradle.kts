@@ -4,6 +4,7 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
+fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
     // Java support
@@ -16,14 +17,33 @@ plugins {
     id("org.jetbrains.intellij") version "1.17.1"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
     id("org.jetbrains.changelog") version "2.2.0"
-    // git plugin - read more: https://github.com/palantir/gradle-git-version
-    id("com.palantir.git-version") version "3.0.0"
 }
 
 group = properties("pluginGroup")
 version = properties("pluginVersion")
 
-val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+var publishChannel = properties("publishChannel")
+var buildNumber = properties("buildNumber")
+
+if (publishChannel == null || publishChannel.isBlank() || publishChannel == "null") {
+    publishChannel = "undefined"
+}
+
+if (publishChannel == "stable") {
+    publishChannel = "default"
+}
+
+var pluginVersionSuffix = if (publishChannel != "default") "-$publishChannel-$buildNumber" else ""
+
+var pluginVersion = "$version$pluginVersionSuffix"
+
+println("Plugin version: $pluginVersion")
+println("Publish channel: $publishChannel")
+
+var customSandboxDir = System.getProperty("customSandboxDir")
+if (customSandboxDir == null || customSandboxDir.isBlank()) {
+    customSandboxDir = "${project.buildDir}/idea-sandbox"
+}
 
 dependencies {
     antlr("org.antlr:antlr4:4.10.1") {
@@ -98,38 +118,6 @@ dependencies {
     testImplementation(testLibs.xmlunit.core)
 
     testImplementation(testLibs.xalan)
-}
-
-var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
-
-var gitLocalBranch = properties("gitLocalBranch")
-var publishChannel = properties("publishChannel")
-var buildNumber = properties("buildNumber")
-
-if (publishChannel.isBlank() || publishChannel == "null") {
-    if (gitLocalBranch.isEmpty() || gitLocalBranch == "null") {
-        gitLocalBranch = versionDetails().branchName
-    }
-
-    publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
-}
-
-var channelSuffix = ""
-if (publishChannel.isNotBlank() && publishChannel.lowercase() != "default") {
-    channelSuffix = "-$publishChannel-$buildNumber"
-}
-
-var pluginVersion = "$version$channelSuffix"
-channel = publishChannel
-
-// end of version/channel override
-
-println("Plugin version: $pluginVersion")
-println("Publish channel: $channel")
-
-var customSandboxDir = System.getProperty("customSandboxDir")
-if (customSandboxDir == null || customSandboxDir.isBlank()) {
-    customSandboxDir = "${project.buildDir}/idea-sandbox"
 }
 
 kotlin {
@@ -225,11 +213,11 @@ tasks {
 
     publishPlugin {
         dependsOn("patchChangelog")
-        token.set(System.getenv("studio_intellijPublishToken"))
+        token.set(environment("PUBLISH_TOKEN"))
         // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels.set(listOf(channel))
+        channels.set(listOf(publishChannel))
     }
 
     test {
