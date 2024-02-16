@@ -9,13 +9,11 @@ def publishChannel = params.PUBLISH_CHANNEL ?: ""
 
 def buildNumber = env.BUILD_NUMBER ?: "0"
 
-if (publishChannel == "") {
-    if (gitRef == "stable") {
-        publishChannel = "default"
-    } else if (gitRef.startsWith("snapshot") || gitRef.startsWith("support-")) {
-        publishChannel = gitRef
-    } else {
-        publishChannel = "unknown"
+if (publish && publishChannel == "") {
+    if (gitRef == "master") {
+        publishChannel = "snapshot"
+    } else if (gitRef.startsWith("support-")) {
+        publishChannel = "support"
     }
 }
 
