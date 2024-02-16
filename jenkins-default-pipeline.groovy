@@ -52,7 +52,7 @@ podTemplate(
 ) {
     node(POD_LABEL) {
         try {
-            timetout(time: 30, unit: 'MINUTES') {
+            timeout(time: 30, unit: 'MINUTES') {
                 lock("midpoint-studio-pvc-lock") {
                     stage("clean-gradle-repository") {
                         if (cleanGradleRepository) {
