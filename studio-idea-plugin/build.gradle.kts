@@ -33,7 +33,7 @@ if (gradle.startParameter.taskNames.contains("publishPlugin")
 }
 
 var pluginVersionSuffix =
-    if (publishChannel != null && publishChannel != "" && publishChannel != "default")
+    if (publishChannel != "" && publishChannel != "default")
         "-$publishChannel-$buildNumber"
     else
         ""
