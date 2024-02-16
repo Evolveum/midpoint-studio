@@ -9,27 +9,54 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.8.20"
+    id("org.jetbrains.kotlin.jvm") version "1.9.22"
     // ANTLR4 plugin
     id("antlr")
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.14.1"
+    id("org.jetbrains.intellij") version "1.17.1"
     // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-    id("org.jetbrains.changelog") version "2.1.0"
-    // git plugin - read more: https://github.com/palantir/gradle-git-version
-    id("com.palantir.git-version") version "0.12.2"
+    id("org.jetbrains.changelog") version "2.2.0"
 }
 
 group = properties("pluginGroup")
 version = properties("pluginVersion")
 
-val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+var publishChannel = properties("publishChannel")
+var buildNumber = properties("buildNumber")
 
-// Configure project's dependencies
+if (publishChannel == null || publishChannel.isBlank() || publishChannel == "null") {
+    publishChannel = "undefined"
+}
+
+if (publishChannel == "stable") {
+    publishChannel = "default"
+}
+
+var pluginVersionSuffix =
+    if (publishChannel == "default") {
+        // "stable" channel
+        ""
+    } else if (publishChannel.startsWith("support-")) {
+        // "support-X.X" channels
+        "-support-$buildNumber"
+    } else {
+        // "snapshot" channel
+        "-$publishChannel-$buildNumber"
+    }
+
+var pluginVersion = "$version$pluginVersionSuffix"
+
+println("Plugin version: $pluginVersion")
+println("Publish channel: $publishChannel")
+
+var customSandboxDir = System.getProperty("customSandboxDir")
+if (customSandboxDir == null || customSandboxDir.isBlank()) {
+    customSandboxDir = "${project.buildDir}/idea-sandbox"
+}
+
 dependencies {
     antlr("org.antlr:antlr4:4.10.1") {
         exclude("com.ibm.icu")
-//        exclude("org.antlr")
     }
     implementation("org.antlr:antlr4-runtime:4.10.1")
     implementation("org.antlr:antlr4-intellij-adaptor:0.1")
@@ -83,8 +110,8 @@ dependencies {
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {
-        // spring-core needed because of DebugDumpable impl uses spring ReflectionUtils class
         isTransitive = false
+        because("spring-core needed because of DebugDumpable impl uses spring ReflectionUtils class")
     }
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
@@ -99,38 +126,6 @@ dependencies {
     testImplementation(testLibs.xmlunit.core)
 
     testImplementation(testLibs.xalan)
-}
-
-var channel = properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()
-
-var gitLocalBranch = properties("gitLocalBranch")
-var publishChannel = properties("publishChannel")
-var buildNumber = properties("buildNumber")
-
-if (publishChannel.isBlank() || publishChannel == "null") {
-    if (gitLocalBranch.isEmpty() || gitLocalBranch == "null") {
-        gitLocalBranch = versionDetails().branchName
-    }
-
-    publishChannel = if (gitLocalBranch == "stable") "default" else gitLocalBranch
-}
-
-var channelSuffix = ""
-if (publishChannel.isNotBlank() && publishChannel.lowercase() != "default") {
-    channelSuffix = "-$publishChannel-$buildNumber"
-}
-
-var pluginVersion = "$version$channelSuffix"
-channel = publishChannel
-
-// end of version/channel override
-
-println("Plugin version: $pluginVersion")
-println("Publish channel: $channel")
-
-var customSandboxDir = System.getProperty("customSandboxDir")
-if (customSandboxDir == null || customSandboxDir.isBlank()) {
-    customSandboxDir = "${project.buildDir}/idea-sandbox"
 }
 
 kotlin {
@@ -176,6 +171,9 @@ tasks {
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = properties("javaVersion")
     }
+    withType<Jar> {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
 
     patchPluginXml {
         version.set(pluginVersion)
@@ -219,11 +217,11 @@ tasks {
 
     publishPlugin {
         dependsOn("patchChangelog")
-        token.set(System.getenv("studio_intellijPublishToken"))
+        token.set(System.getenv("PUBLISH_TOKEN"))
         // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels.set(listOf(channel))
+        channels.set(listOf(publishChannel))
     }
 
     test {
