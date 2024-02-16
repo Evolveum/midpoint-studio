@@ -7,7 +7,7 @@ def gitRef = params.GIT_REF ?: "master"
 def publish = params.PUBLISH ?: false
 def publishChannel = params.PUBLISH_CHANNEL ?: ""
 
-def buildNumber = params.BUILD_NUMBER ?: "0"
+def buildNumber = env.BUILD_NUMBER ?: "0"
 
 if (publishChannel == "") {
     if (gitRef == "stable") {
