@@ -52,29 +52,30 @@ podTemplate(
 ) {
     node(POD_LABEL) {
         try {
-            stage("clean-gradle-repository") {
-                if (cleanGradleRepository) {
-                    sh """#!/bin/bash -ex       
+            lock("midpoint-studio-pvc-lock") {
+                stage("clean-gradle-repository") {
+                    if (cleanGradleRepository) {
+                        sh """#!/bin/bash -ex       
                             rm -rf /root/.pluginVerifier/ides
                             ls -la /root/.gradle/
                             du -hs /root/.gradle/caches
                             rm -rf /root/.gradle/caches      
                         """
+                    }
                 }
-            }
-            stage("checkout") {
-                def ref = gitRefType == "branch" ? gitRef : "refs/tags/${gitRef}"
+                stage("checkout") {
+                    def ref = gitRefType == "branch" ? gitRef : "refs/tags/${gitRef}"
 
-                checkout scmGit(
-                        branches: [[name: "${ref}"]],
-                        userRemoteConfigs: [[
-                                                    url          : 'https://github.com/Evolveum/midpoint-studio.git'
-                                            ]]
-                )
-            }
-            stage("build") {
-                container('jdk') {
-                    sh """#!/bin/bash -ex
+                    checkout scmGit(
+                            branches: [[name: "${ref}"]],
+                            userRemoteConfigs: [[
+                                                        url: 'https://github.com/Evolveum/midpoint-studio.git'
+                                                ]]
+                    )
+                }
+                stage("build") {
+                    container('jdk') {
+                        sh """#!/bin/bash -ex
                         if [ "${verbose}" = "true" ]
                         then
                             id
@@ -82,31 +83,32 @@ podTemplate(
                             ./gradlew --version
                         fi
     
+                        ./gradlew --stop
                         ./gradlew clean buildPlugin verifyPlugin runPluginVerifier $gradleOptions
                     """
+                    }
                 }
-            }
-            stage("publish") {
-                container('jdk') {
-                    withCredentials([string(credentialsId: 'jetbrains-permanent-token', variable: 'PUBLISH_TOKEN')]) {
-                        sh """#!/bin/bash -ex
+                stage("publish") {
+                    container('jdk') {
+                        withCredentials([string(credentialsId: 'jetbrains-permanent-token', variable: 'PUBLISH_TOKEN')]) {
+                            sh """#!/bin/bash -ex
                             if [ "${publish}" = "true" ]
                             then
                                 ./gradlew publishPlugin $gradleOptions
                             fi
                         """
+                        }
                     }
                 }
-            }
-            stage("post-build") {
-                archiveArtifacts artifacts: 'studio-idea-plugin/build/reports/pluginVerifier/**', followSymlinks: false
-            }
-            stage("cleanup") {
-                sh """#!/bin/bash -ex
+                stage("post-build") {
+                    archiveArtifacts artifacts: 'studio-idea-plugin/build/reports/pluginVerifier/**', followSymlinks: false
+                }
+                stage("cleanup") {
+                    sh """#!/bin/bash -ex
                         git clean -f -d
                     """
 
-                sh """#!/bin/bash -ex
+                    sh """#!/bin/bash -ex
                         # Removes any jetbrains dep older than 30 days, mainly to remove old IDEA snapshots.
                         # Sometimes removes other stuff, but it should be refetched from remote repositories.
                         find /root/.gradle/caches/modules-2/files-2.1/com.jetbrains* -mindepth 2 -maxdepth 2 -mtime +30 -type d -exec rm -rf {} \\;
@@ -114,9 +116,19 @@ podTemplate(
                         PLUGIN_VERIFIER_DIR=/root/.pluginVerifier/ides
     
                         if [ -d "\$PLUGIN_VERIFIER_DIR" ]; then
+                          du -hs \$PLUGIN_VERIFIER_DIR\\..  
+                        
                           find \$PLUGIN_VERIFIER_DIR -mindepth 1 -maxdepth 1 -mtime +30 -type d -exec rm -rf {} \\;
                         fi
+                        
+                        PLUGIN_CACHE_DIR=/root/.cache/pluginVerifier
+                        if [ -d "\$PLUGIN_CACHE_DIR" ]; then
+                          du -hs \$PLUGIN_CACHE_DIR\\  
+                        
+                          find \$PLUGIN_CACHE_DIR -mindepth 1 -maxdepth 2 -mtime +30 -type d -exec rm -rf {} \\\\;
+                        fi
                     """
+                }
             }
         } catch (Exception e) {
             currentBuild.result = 'FAILURE' // error below will not set result for mailer!
