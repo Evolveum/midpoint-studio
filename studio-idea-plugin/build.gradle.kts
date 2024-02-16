@@ -24,25 +24,19 @@ version = properties("pluginVersion")
 var publishChannel = properties("publishChannel")
 var buildNumber = properties("buildNumber")
 
-if (publishChannel == null || publishChannel.isBlank() || publishChannel == "null") {
-    publishChannel = "undefined"
-}
+if (gradle.startParameter.taskNames.contains("publishPlugin")
+    && publishChannel != "default"
+    && publishChannel != "snapshot"
+    && publishChannel != "support") {
 
-if (publishChannel == "stable") {
-    publishChannel = "default"
+    throw GradleException("Invalid publish channel: $publishChannel")
 }
 
 var pluginVersionSuffix =
-    if (publishChannel == "default") {
-        // "stable" channel
-        ""
-    } else if (publishChannel.startsWith("support-")) {
-        // "support-X.X" channels
-        "-support-$buildNumber"
-    } else {
-        // "snapshot" channel
+    if (publishChannel != null && publishChannel != "" && publishChannel != "default")
         "-$publishChannel-$buildNumber"
-    }
+    else
+        ""
 
 var pluginVersion = "$version$pluginVersionSuffix"
 
