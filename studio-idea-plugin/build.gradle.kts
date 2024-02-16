@@ -4,13 +4,12 @@ import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
-fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.9.21"
+    id("org.jetbrains.kotlin.jvm") version "1.9.22"
     // ANTLR4 plugin
     id("antlr")
     // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
@@ -33,7 +32,17 @@ if (publishChannel == "stable") {
     publishChannel = "default"
 }
 
-var pluginVersionSuffix = if (publishChannel != "default") "-$publishChannel-$buildNumber" else ""
+var pluginVersionSuffix =
+    if (publishChannel == "default") {
+        // "stable" channel
+        ""
+    } else if (publishChannel.startsWith("support-")) {
+        // "support-X.X" channels
+        "-support-$buildNumber"
+    } else {
+        // "snapshot" channel
+        "-$publishChannel-$buildNumber"
+    }
 
 var pluginVersion = "$version$pluginVersionSuffix"
 
@@ -213,7 +222,7 @@ tasks {
 
     publishPlugin {
         dependsOn("patchChangelog")
-        token.set(environment("PUBLISH_TOKEN"))
+        token.set(System.getenv("PUBLISH_TOKEN"))
         // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
