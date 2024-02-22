@@ -17,7 +17,6 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.impl.SeeObjectNotificationAction;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.util.MavenUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -30,8 +29,10 @@ import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.messages.MessageDialog;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import org.apache.commons.lang3.StringUtils;
@@ -245,7 +246,11 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
     private void processOtherRef(CleanupEvent<PrismReference> event, PrismReferenceValue refValue) {
         String oid = refValue.getOid();
-        List<VirtualFile> files = ObjectFileBasedIndexImpl.getVirtualFiles(oid, getProject(), true);
+
+        List<VirtualFile> files = ApplicationManager.getApplication().runReadAction(
+                (Computable<List<VirtualFile>>) () ->
+                        ObjectFileBasedIndexImpl.getVirtualFiles(oid, getProject(), true));
+
         if (!files.isEmpty()) {
             return;
         }
