@@ -24,6 +24,10 @@ version = properties("pluginVersion")
 var publishChannel = properties("publishChannel")
 var buildNumber = properties("buildNumber")
 
+if (publishChannel == "stable") {
+    publishChannel = "default"
+}
+
 if (gradle.startParameter.taskNames.contains("publishPlugin")
     && publishChannel != "default"
     && publishChannel != "snapshot"
