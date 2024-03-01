@@ -30,7 +30,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
         String text = selected.getTypeQName().getLocalPart();
 
-        String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+        String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectTypes." + selected.name(), text);
         getTemplatePresentation().setText(value);
         e.getPresentation().setText(value);
     }
@@ -92,7 +92,7 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
             String text = type.getTypeQName().getLocalPart();
 
-            String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+            String value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectTypes." + type.name(), text);
             getTemplatePresentation().setText(value);
             e.getPresentation().setText(value);
         }

@@ -191,7 +191,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                     ObjectTypes type = (ObjectTypes) userObject;
                     String text = type.getTypeQName().getLocalPart();
 
-                    value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+                    value = ApplicationManager.getApplication().getService(MidPointLocalizationService.class).translate("ObjectTypes." + type.name(), text);
                 } else if (userObject instanceof ObjectType) {
                     ObjectType ot = (ObjectType) userObject;
                     value = MidPointUtils.getOrigFromPolyString(ot.getName());
