@@ -19,11 +19,8 @@ import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.browse.*;
-import com.evolveum.midpoint.studio.util.StudioLocalization;
+import com.evolveum.midpoint.studio.util.*;
 import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryLanguage;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.studio.util.Pair;
-import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -121,6 +118,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         super(false, true);
 
         this.project = project;
+        boolean useActivities = MavenUtils.isMidpointVersionGreaterThan(project, "4.4");
+        this.processResultsOptions.getOptions().setUseActivities(useActivities);
 
         initLayout();
     }
