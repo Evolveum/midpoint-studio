@@ -222,7 +222,13 @@ public class BulkActionGenerator extends Generator {
 
                 try {
                     Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
-                    DOMUtil.listChildElements(originalQuery).forEach(e -> objectQuery.appendChild(objectQuery.getOwnerDocument().adoptNode(e)));
+                    DOMUtil.listChildElements(originalQuery)
+                            .forEach(e -> objectQuery.appendChild(objectQuery.getOwnerDocument().adoptNode(e)));
+
+                    DOMUtil.getAllVisibleNamespaceDeclarations(originalQuery).forEach((k, v) -> {
+                        DOMUtil.lookupOrCreateNamespaceDeclaration(
+                                objectQuery, v, k, objectQuery.getOwnerDocument().getDocumentElement(), false);
+                    });
                 } catch (RuntimeException e) {
                     MidPointUtils.publishExceptionNotification(project, null, BulkActionGenerator.class,
                             GeneratorTask.NOTIFICATION_KEY, "Couldn't parse XML query", e);
