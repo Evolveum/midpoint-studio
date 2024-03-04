@@ -263,6 +263,14 @@
             <descriptionDirectoryName>ShowObjectIntention</descriptionDirectoryName>
             <skipBeforeAfter>true</skipBeforeAfter>
         </intentionAction>
+        <intentionAction>
+            <className>com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefIntention</className>
+            <language>XML</language>
+            <bundleName>messages.MidPointStudio</bundleName>
+            <categoryKey>MidpointIntentionActionGroup.title</categoryKey>
+            <descriptionDirectoryName>ReplaceShadowRefIntention</descriptionDirectoryName>
+            <skipBeforeAfter>false</skipBeforeAfter>
+        </intentionAction>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
