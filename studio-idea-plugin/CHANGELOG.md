@@ -4,9 +4,11 @@
 ### Added
 
 ### Changed
+- Improved references inlay, annotators
 
 ### Fixed
-
+- MID-5901 missing prefix "t" in bulk action
+- MID-9481 fixed translation for role cluster/session types
 
 ## [4.8.1]
 ### Added
