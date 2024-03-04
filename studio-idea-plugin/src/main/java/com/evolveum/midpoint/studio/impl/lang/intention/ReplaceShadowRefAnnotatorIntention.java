@@ -10,6 +10,7 @@ import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectSearchStrategyType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SearchObjectExpressionEvaluatorType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ShadowType;
@@ -33,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -73,7 +73,8 @@ public class ReplaceShadowRefAnnotatorIntention extends PsiElementBaseIntentionA
                 return;
             }
 
-            String shadowOid = getShadowOid(getShadowRefTag(element));
+            XmlTag shadowRef = getShadowRefTag(element);
+            String shadowOid = PsiUtils.getOidFromReferenceTag(shadowRef);
             String shadowName = getShadowName(project, shadowOid);
 
             XmlTag associationTargetSearch = createTag(expression, SchemaConstantsGenerated.C_ASSOCIATION_TARGET_SEARCH);
@@ -147,20 +148,6 @@ public class ReplaceShadowRefAnnotatorIntention extends PsiElementBaseIntentionA
         }
 
         return object.getName();
-    }
-
-    private String getShadowOid(XmlTag shadowRef) {
-        String oid = shadowRef.getAttributeValue("oid");
-        if (oid != null) {
-            return oid;
-        }
-
-        return Arrays.stream(shadowRef.getSubTags())
-                .filter(tag -> Objects.equals(tag.getLocalName(), "oid"))
-                .map(t -> t.getValue().getText())
-                .filter(StringUtils::isNotBlank)
-                .findFirst()
-                .orElse(null);
     }
 
     private XmlTag getShadowRefTag(PsiElement element) {

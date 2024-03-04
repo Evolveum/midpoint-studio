@@ -1,22 +1,21 @@
 package com.evolveum.midpoint.studio.impl.lang.intention;
 
-import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.ActionUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.codeInspection.util.IntentionFamilyName;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 
+import javax.xml.namespace.QName;
 import java.util.List;
-import java.util.Optional;
 
 public class DownloadObjectIntention extends PsiElementBaseIntentionAction {
 
@@ -46,20 +45,22 @@ public class DownloadObjectIntention extends PsiElementBaseIntentionAction {
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
-        PsiElement parent = element.getParent();
-        if (!(parent instanceof XmlAttributeValue attrValue) || !(attrValue.getParent().getParent() instanceof XmlTag reference)) {
+        if (!MidPointUtils.hasMidPointFacet(project)) {
             return;
         }
 
-        String oid = attrValue.getValue();
-        ObjectTypes type = Optional
-                .ofNullable(MidPointUtils.getTypeFromReference(reference))
-                .orElse(ObjectTypes.OBJECT);
+        XmlTag ref = PsiUtils.findObjectReferenceTag(element);
+        if (ref == null) {
+            return;
+        }
+
+        String oid = PsiUtils.getOidFromReferenceTag(ref);
+        QName type = PsiUtils.getTypeFromReferenceTag(ref, ObjectType.COMPLEX_TYPE);
 
         ActionUtils.runDownloadTask(project, List.of(
                 new ObjectReferenceType()
                         .oid(oid)
-                        .type(type.getTypeQName())), showOnly);
+                        .type(type)), showOnly);
     }
 
     @Override
@@ -68,10 +69,13 @@ public class DownloadObjectIntention extends PsiElementBaseIntentionAction {
             return false;
         }
 
+        XmlTag ref = PsiUtils.findObjectReferenceTag(element);
+        if (ref == null) {
+            return false;
+        }
 
-        PsiElement parent = element.getParent();
-        return parent instanceof XmlAttributeValue
-                && parent.getParent() instanceof XmlAttribute attribute
-                && "oid".equals(attribute.getLocalName());
+        String oid = PsiUtils.getOidFromReferenceTag(ref);
+
+        return oid != null;
     }
 }
