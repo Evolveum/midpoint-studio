@@ -1,12 +1,12 @@
 package com.evolveum.midpoint.studio.impl.lang.intention;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
-import com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotator;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -16,6 +16,9 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ShadowType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.codeInspection.util.IntentionFamilyName;
+import com.intellij.lang.annotation.AnnotationHolder;
+import com.intellij.lang.annotation.Annotator;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
@@ -34,13 +37,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class ReplaceShadowRefIntention extends PsiElementBaseIntentionAction {
+public class ReplaceShadowRefAnnotatorIntention extends PsiElementBaseIntentionAction implements Annotator {
 
     private static final String NAME = "Replace shadowRef";
 
+    public static final QName SHADOW_REF = new QName(SchemaConstants.NS_C, "shadowRef");
+
     private static final String UNKNOWN_SHADOW_NAME = "Unknown";
 
-    public ReplaceShadowRefIntention() {
+
+    public ReplaceShadowRefAnnotatorIntention() {
         setText(NAME);
     }
 
@@ -166,7 +172,7 @@ public class ReplaceShadowRefIntention extends PsiElementBaseIntentionAction {
             return null;
         }
 
-        if (!Objects.equals(ShadowRefAnnotator.SHADOW_REF, MidPointUtils.createQName(tag))) {
+        if (!Objects.equals(SHADOW_REF, MidPointUtils.createQName(tag))) {
             return null;
         }
 
@@ -182,5 +188,26 @@ public class ReplaceShadowRefIntention extends PsiElementBaseIntentionAction {
         XmlTag parent = shadowRef.getParentTag();
 
         return Objects.equals(SchemaConstantsGenerated.C_VALUE, MidPointUtils.createQName(parent)) ? parent : null;
+    }
+
+    @Override
+    public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+        XmlTag shadowRef = getShadowRefTag(element);
+        if (shadowRef == null) {
+            return;
+        }
+
+        if (getValueExpressionTag(element) == null) {
+            return;
+        }
+
+        String msg = "shadowRef element could represent possible problem when moving this midPoint " +
+                "object to another environment. Reason is reference to specific oid which would " +
+                "be different in another environment.";
+
+        holder.newAnnotation(HighlightSeverity.WARNING, msg)
+                .range(element.getTextRange())
+                .tooltip(msg)
+                .create();
     }
 }
