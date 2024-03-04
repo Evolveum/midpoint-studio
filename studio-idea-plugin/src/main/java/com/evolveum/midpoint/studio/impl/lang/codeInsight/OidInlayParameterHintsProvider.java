@@ -2,8 +2,7 @@ package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.intellij.codeInsight.hints.HintInfo;
+import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.intellij.codeInsight.hints.InlayInfo;
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider;
 import com.intellij.psi.PsiElement;
@@ -13,9 +12,11 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -25,23 +26,22 @@ public class OidInlayParameterHintsProvider implements InlayParameterHintsProvid
     @NotNull
     @Override
     public List<InlayInfo> getParameterHints(PsiElement element) {
-        PsiElement parent = element.getParent();
-        if (!(element instanceof XmlAttributeValue)
-                || !(parent instanceof XmlAttribute)
-                || !"oid".equals(((XmlAttribute) parent).getLocalName())) {
+        if (!isReferenceOidAttribute(element) && !PsiUtils.isReferenceOidTag(element)) {
             return Collections.emptyList();
         }
 
-        XmlAttributeValue value = (XmlAttributeValue) element;
+        XmlTag ref = PsiUtils.findObjectReferenceTag(element);
+        if (ref == null) {
+            return Collections.emptyList();
+        }
+
+        String oid = PsiUtils.getOidFromReferenceTag(ref);
+        if (oid == null) {
+            return Collections.emptyList();
+        }
+
         int offset = inlayOffset(element, false);
-
-        XmlAttribute attr = (XmlAttribute) parent;
-        XmlTag tag = attr.getParent();
-        if (MidPointUtils.isObjectTypeElement(tag, false)) {    // check even without namespaces MID-7468
-            return Collections.emptyList();
-        }
-
-        List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), element.getProject());
+        List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(oid, element.getProject());
         if (result == null || result.isEmpty()) {
             return Collections.emptyList();
         }
@@ -68,10 +68,21 @@ public class OidInlayParameterHintsProvider implements InlayParameterHintsProvid
             } else {
                 label = label + " (multiple objects)";
             }
-
         }
 
-        return Arrays.asList(new InlayInfo(label, offset, false, true, false));
+        return List.of(new InlayInfo(label, offset, false, true, false));
+    }
+
+    private boolean isReferenceOidAttribute(PsiElement element) {
+        if (!(element instanceof XmlAttributeValue value)) {
+            return false;
+        }
+
+        if (!(value.getParent() instanceof XmlAttribute attribute)) {
+            return false;
+        }
+
+        return "oid".equals(attribute.getLocalName());
     }
 
     private int inlayOffset(PsiElement expr, boolean atEnd) {
@@ -89,11 +100,6 @@ public class OidInlayParameterHintsProvider implements InlayParameterHintsProvid
         return expr.getTextRange().getStartOffset();
     }
 
-    @Nullable
-    @Override
-    public HintInfo getHintInfo(@NotNull PsiElement element) {
-        return null;
-    }
 
     @NotNull
     @Override

@@ -1,18 +1,13 @@
 package com.evolveum.midpoint.studio.impl.lang.annotation;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.impl.source.xml.TagNameReference;
 import com.intellij.psi.xml.XmlElement;
-import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTagValue;
 import org.jetbrains.annotations.NotNull;
@@ -24,40 +19,15 @@ public class DeprecatedElementAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
-        Project project = element.getProject();
-        if (!MidPointUtils.hasMidPointFacet(project)) {
-            return;
-        }
-
-        if (element == null || !element.isValid()) {
-            return;
-        }
-
-        PsiFile file = element.getContainingFile();
-        if (!(file instanceof XmlFile)) {
-            return;
-        }
-
-        if (!(element instanceof XmlElement)) {
+        if (!PsiUtils.isXmlElement(element)) {
             return;
         }
 
         XmlElement xmlElement = (XmlElement) element;
-
-        PsiReference psiReference = xmlElement.getReference();
-        if (!(psiReference instanceof TagNameReference)) {
+        XmlTag xsd = PsiUtils.getXsdReference(xmlElement);
+        if (xsd == null) {
             return;
         }
-
-        TagNameReference ref = (TagNameReference) psiReference;
-        PsiElement reference = ref.resolve();
-
-        if (!(reference instanceof XmlTag)) {
-            return;
-        }
-
-        XmlTag xsd = (XmlTag) reference;
-
 
         XmlTag annotation = getFirstSubTag(xsd, "annotation", SchemaConstantsGenerated.NS_XSD);
         if (annotation == null) {
