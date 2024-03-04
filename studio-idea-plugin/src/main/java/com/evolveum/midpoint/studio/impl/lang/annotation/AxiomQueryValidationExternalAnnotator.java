@@ -12,6 +12,7 @@ import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,14 +31,18 @@ public class AxiomQueryValidationExternalAnnotator extends ExternalAnnotator<Psi
     @Nullable
     @Override
     public List<AxiomQueryError> doAnnotate(final PsiFile file) {
+        String content = file.getText();
+        if (content.isBlank()) {
+            return Collections.emptyList();
+        }
+
         return axiomQueryLangService.validate(file.getText());
     }
 
     @Override
     public void apply(@NotNull PsiFile file,
                       List<AxiomQueryError> errors,
-                      @NotNull AnnotationHolder holder)
-    {
+                      @NotNull AnnotationHolder holder) {
         for (AxiomQueryError error : errors) {
             TextRange range = new TextRange(error.getCharPositionInLineStart(), error.getCharPositionInLineStop() + 1);
             holder.newAnnotation(HighlightSeverity.ERROR, error.getMessage())
