@@ -36,7 +36,7 @@ public class AxiomQueryValidationExternalAnnotator extends ExternalAnnotator<Psi
             return Collections.emptyList();
         }
 
-        return axiomQueryLangService.validate(file.getText());
+        return axiomQueryLangService.validate(content);
     }
 
     @Override

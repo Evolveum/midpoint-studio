@@ -26,7 +26,7 @@ public class OidInlayParameterHintsProvider implements InlayParameterHintsProvid
     @NotNull
     @Override
     public List<InlayInfo> getParameterHints(PsiElement element) {
-        if (!isReferenceOidAttribute(element) && !PsiUtils.isReferenceOidTag(element)) {
+        if (!PsiUtils.isReferenceOidAttributeValue(element) && !PsiUtils.isReferenceOidTag(element)) {
             return Collections.emptyList();
         }
 
@@ -71,18 +71,6 @@ public class OidInlayParameterHintsProvider implements InlayParameterHintsProvid
         }
 
         return List.of(new InlayInfo(label, offset, false, true, false));
-    }
-
-    private boolean isReferenceOidAttribute(PsiElement element) {
-        if (!(element instanceof XmlAttributeValue value)) {
-            return false;
-        }
-
-        if (!(value.getParent() instanceof XmlAttribute attribute)) {
-            return false;
-        }
-
-        return "oid".equals(attribute.getLocalName());
     }
 
     private int inlayOffset(PsiElement expr, boolean atEnd) {

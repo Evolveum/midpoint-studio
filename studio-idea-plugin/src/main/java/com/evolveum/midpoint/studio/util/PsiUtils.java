@@ -7,9 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.impl.source.xml.TagNameReference;
-import com.intellij.psi.xml.XmlElement;
-import com.intellij.psi.xml.XmlFile;
-import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.namespace.QName;
@@ -175,5 +173,17 @@ public class PsiUtils {
                 .filter(StringUtils::isNotBlank)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public static boolean isReferenceOidAttributeValue(PsiElement element) {
+        if (!(element instanceof XmlAttributeValue value)) {
+            return false;
+        }
+
+        if (!(value.getParent() instanceof XmlAttribute attribute)) {
+            return false;
+        }
+
+        return "oid".equals(attribute.getLocalName());
     }
 }
