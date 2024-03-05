@@ -17,16 +17,18 @@ import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.browse.*;
-import com.evolveum.midpoint.studio.util.*;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryLanguage;
+import com.evolveum.midpoint.studio.ui.browse.ObjectsTreeTable;
+import com.evolveum.midpoint.studio.ui.browse.ObjectsTreeTableModel;
+import com.evolveum.midpoint.studio.util.MavenUtils;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.lang.Language;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.actionSystem.*;
@@ -45,18 +47,12 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.UIAction;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.xml.namespace.QName;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +84,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private Project project;
 
     private EditorTextField query;
-    private JXTreeTable results;
+    private ObjectsTreeTable results;
 
     private ComboObjectTypes objectType;
     private ComboQueryType queryType;
@@ -103,8 +99,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private AnAction processAction;
 
     private TextAction pagingText;
-    private AnAction previous;
-    private AnAction next;
 
     private boolean rawSearch = true;
     private boolean rawDownload = true;
@@ -163,100 +157,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         resultsActionsToolbar.setTargetComponent(this);
         results.add(resultsActionsToolbar.getComponent(), BorderLayout.NORTH);
 
-        List<TreeTableColumnDefinition<ObjectType, ?>> columns = new ArrayList<>();
-        columns.add(new TreeTableColumnDefinition<>("Name", 500, null));
-        columns.add(new TreeTableColumnDefinition<>("Display name", 500, o -> {
-
-            if (!(o instanceof AbstractRoleType)) {
-                return null;
-            }
-
-            return MidPointUtils.getOrigFromPolyString(((AbstractRoleType) o).getDisplayName());
-        }));
-        columns.add(new TreeTableColumnDefinition<>("Subtype", 100, o -> StringUtils.join(o.getSubtype(), ", ")));
-        columns.add(new TreeTableColumnDefinition<>("Oid", 100, o -> o.getOid()));
-
-        this.results = MidPointUtils.createTable(new BrowseTableModel(columns), (List) columns);
-        this.results.setTreeCellRenderer(new NodeRenderer() {
-
-            @Override
-            public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected, boolean expanded,
-                                              boolean leaf, int row, boolean hasFocus) {
-                Object node = TreeUtil.getUserObject(value);
-                DefaultMutableTreeTableNode treeNode = (DefaultMutableTreeTableNode) node;
-
-                Object userObject = treeNode.getUserObject();
-                if (userObject instanceof ObjectTypes) {
-                    ObjectTypes type = (ObjectTypes) userObject;
-
-                    value = StudioLocalization.get().translateEnum(type);
-                } else if (userObject instanceof ObjectType) {
-                    ObjectType ot = (ObjectType) userObject;
-                    value = MidPointUtils.getOrigFromPolyString(ot.getName());
-                }
-
-                super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
-            }
-        });
-        this.results.setOpaque(false);
-        this.results.getActionMap().put("copy", new UIAction("copy") {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                copySelectedObjectOids();
-            }
-        });
-
-        JPopupMenu popup = new JPopupMenu();
-        JMenuItem item = new JMenuItem("Copy oids");
-        item.addActionListener(e -> copySelectedObjectOids());
-        popup.add(item);
-
-        item = new JMenuItem("Copy names");
-        item.addActionListener(e -> copySelectedObjectNames());
-        popup.add(item);
-
-        this.results.setComponentPopupMenu(popup);
-
-        this.results.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        this.results = new ObjectsTreeTable();
         results.add(new JBScrollPane(this.results), BorderLayout.CENTER);
 
         return results;
-    }
-
-    private void copySelectedObjectNames() {
-        List<ObjectType> objects = getResultsModel().getSelectedObjects(results);
-        if (objects.isEmpty()) {
-            return;
-        }
-
-        List<String> names = objects.stream().map(o -> MidPointUtils.getName(o.asPrismObject())).collect(Collectors.toList());
-        String text = StringUtils.join(names, '\n');
-
-        putStringToClipboard(text);
-    }
-
-    private void copySelectedObjectOids() {
-        List<Pair<String, ObjectTypes>> oidTypes = getResultsModel().getSelectedOids(results);
-
-        if (oidTypes.isEmpty()) {
-            return;
-        }
-
-        List<String> oids = oidTypes.stream().map(p -> p.getFirst()).collect(Collectors.toList());
-        String text = StringUtils.join(oids, '\n');
-
-        putStringToClipboard(text);
-    }
-
-    private void putStringToClipboard(String str) {
-        if (str == null) {
-            str = "";
-        }
-
-        StringSelection selection = new StringSelection(str);
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(selection, selection);
     }
 
     private EditorTextField createQueryTextField(ComboQueryType.Type type) {
@@ -385,10 +289,16 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private DefaultActionGroup createResultsActionGroup() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> results.expandAll());
+        AnAction expandAll = MidPointUtils.createAnAction(
+                "Expand All",
+                AllIcons.Actions.Expandall,
+                e -> TreeUtil.expandAll(this.results.getTree()));
         group.add(expandAll);
 
-        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> results.collapseAll());
+        AnAction collapseAll = MidPointUtils.createAnAction(
+                "Collapse All",
+                AllIcons.Actions.Collapseall,
+                e -> TreeUtil.collapseAll(this.results.getTree(), -1));
         group.add(collapseAll);
 
         group.add(new Separator());
@@ -459,12 +369,12 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private String createPagingText(AnActionEvent evt) {
-        BrowseTableModel model = getResultsModel();
+        ObjectsTreeTableModel model = getResultsModel();
         int selected = 0;
         int count = 0;
 
-        if (model != null && results != null) {
-            selected = model.getSelectedObjects(results).size();
+        if (model != null) {
+            selected = model.getSelectedObjects().size();
             count = model.getObjects().size();
         }
 
@@ -479,7 +389,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         String query = this.query.getText();
         ComboQueryType.Type queryType = this.queryType.getSelected();
         ObjectTypes type = this.objectType.getSelected();
-        List<ObjectType> selected = getResultsModel().getSelectedObjects(results);
+        List<ObjectType> selected = getResultsModel().getSelectedObjects();
 
         if (ComboQueryType.Type.QUERY_XML != queryType && StringUtils.isNotEmpty(query)) {
             // translate query
@@ -562,22 +472,13 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         MidPointUtils.handleGenericException(project, env, BrowseToolPanel.class, NOTIFICATION_KEY, message, ex);
     }
 
-    private List<Pair<String, ObjectTypes>> getSelectedOids() {
-        List<Pair<String, ObjectTypes>> selected = new ArrayList<>();
-
-        List<ObjectType> objects = getResultsModel().getSelectedObjects(results);
-        objects.forEach(o -> selected.add(new Pair<>(o.getOid(), ObjectTypes.getObjectType(o.getClass()))));
-
-        return selected;
-    }
-
     private boolean isResultSelected() {
         ListSelectionModel model = results.getSelectionModel();
         return model.getSelectedItemsCount() != 0;
     }
 
     private void downloadPerformed(AnActionEvent evt, boolean showOnly, boolean rawDownload) {
-        DownloadAction da = new DownloadAction(getResultsModel().getSelectedOids(results), showOnly, rawDownload);
+        DownloadAction da = new DownloadAction(getResultsModel().getSelectedOids(), showOnly, rawDownload);
         da.setOpenAfterDownload(true);
 
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
@@ -586,7 +487,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     private void deletePerformed(AnActionEvent evt, boolean rawDownload) {
         DeleteAction da = new DeleteAction();
         da.setRaw(rawDownload);
-        da.setOids(getResultsModel().getSelectedOids(results));
+        da.setOids(getResultsModel().getSelectedOids());
 
         ActionManager.getInstance().tryToExecute(da, evt.getInputEvent(), this, ActionPlaces.UNKNOWN, false);
     }
@@ -599,25 +500,21 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         });
     }
 
-    private BrowseTableModel getResultsModel() {
+    private ObjectsTreeTableModel getResultsModel() {
         if (results == null) {
             return null;
         }
 
-        return (BrowseTableModel) results.getTreeTableModel();
+        return results.getTableModel();
     }
 
     private void updateTableModel(SearchResultList result) {
-        BrowseTableModel tableModel = getResultsModel();
+        ObjectsTreeTableModel tableModel = getResultsModel();
         tableModel.setData(result != null ? result.getList() : null);
 
         ApplicationManager.getApplication().invokeLater(() -> {
-
-            tableModel.fireTableDataChanged();
-            results.expandAll();
+            TreeUtil.expandAll(this.results.getTree());
         });
-
-//        printSuccessMessage("");    // todo add paging/count info to message
     }
 
     private void pagingSettingsPerformed(AnActionEvent evt) {
