@@ -95,6 +95,25 @@ public class PsiUtils {
         return possibleReference;
     }
 
+    /**
+     * @param tag
+     * @return Returns XSD type for given tag. Only if tag has reference to XSD element.
+     * Reads type {@link QName} from attribute "type".
+     */
+    public static QName getTagXsdType(XmlElement tag) {
+        XmlTag reference = getXsdReference(tag);
+        if (reference == null) {
+            return null;
+        }
+
+        String value = reference.getAttributeValue("type", reference.getNamespace());
+        if (value == null) {
+            return null;
+        }
+
+        return convertTextToQName(value, reference);
+    }
+
     public static XmlTag getXsdReference(XmlElement tag) {
         PsiReference ref = tag.getReference();
         if (!(ref instanceof TagNameReference tagNameReference)) {
@@ -120,19 +139,19 @@ public class PsiUtils {
 
         String type = reference.getAttributeValue("type");
         if (type != null) {
-            return getTextToQName(type, reference);
+            return convertTextToQName(type, reference);
         }
 
         return Arrays.stream(reference.getSubTags())
                 .filter(tag -> Objects.equals(tag.getLocalName(), "type"))
                 .map(t -> t.getValue().getText())
-                .map(v -> getTextToQName(v, reference))
+                .map(v -> convertTextToQName(v, reference))
                 .filter(q -> q != null)
                 .findFirst()
                 .orElse(null);
     }
 
-    private static QName getTextToQName(String value, XmlTag tag) {
+    private static QName convertTextToQName(String value, XmlTag tag) {
         QNameUtil.PrefixedName prefixed = QNameUtil.parsePrefixedName(value);
         String ns = tag.getNamespaceByPrefix(prefixed.prefix());
         return new QName(ns, prefixed.localName());

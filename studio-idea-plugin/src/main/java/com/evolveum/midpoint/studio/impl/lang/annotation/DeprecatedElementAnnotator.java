@@ -10,12 +10,13 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlElement;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTagValue;
+import com.intellij.xml.util.XmlTagUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class DeprecatedElementAnnotator implements Annotator {
+public class DeprecatedElementAnnotator implements Annotator, MidPointAnnotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
@@ -49,9 +50,21 @@ public class DeprecatedElementAnnotator implements Annotator {
             return;
         }
 
-        holder.newAnnotation(HighlightSeverity.WARNING, "Element marked as deprecated (since " + deprecatedSince + ")")
+        String msg = "Element marked as deprecated (since " + deprecatedSince + ")";
+        String tooltip = "Element marked as deprecated (since <b>" + deprecatedSince + "</b>)";
+
+        if (xmlElement instanceof XmlTag tag) {
+            createNewAnnotation(XmlTagUtil.getStartTagNameElement(tag), holder, msg, tooltip);
+            createNewAnnotation(XmlTagUtil.getEndTagNameElement(tag), holder, msg, tooltip);
+        } else {
+            createNewAnnotation(xmlElement, holder, msg, tooltip);
+        }
+    }
+
+    private void createNewAnnotation(XmlElement element, AnnotationHolder holder, String msg, String tooltip) {
+        holder.newAnnotation(HighlightSeverity.WARNING, msg)
                 .range(element.getTextRange())
-                .tooltip("Element marked as deprecated (since <b>" + deprecatedSince + "</b>)")
+                .tooltip(tooltip)
                 .highlightType(ProblemHighlightType.LIKE_DEPRECATED)
                 .create();
     }

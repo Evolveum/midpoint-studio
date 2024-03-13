@@ -222,7 +222,11 @@
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.TaskHandlerAnnotatorCompletionProvider"/>
         <annotator language="XML"
-                     implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention"/>
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotation"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
@@ -271,6 +275,14 @@
             <bundleName>messages.MidPointStudio</bundleName>
             <categoryKey>MidpointIntentionActionGroup.title</categoryKey>
             <descriptionDirectoryName>ReplaceShadowRefAnnotatorIntention</descriptionDirectoryName>
+            <skipBeforeAfter>false</skipBeforeAfter>
+        </intentionAction>
+        <intentionAction>
+            <className>com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention</className>
+            <language>XML</language>
+            <bundleName>messages.MidPointStudio</bundleName>
+            <categoryKey>MidpointIntentionActionGroup.title</categoryKey>
+            <descriptionDirectoryName>ProtectedStringAnnotatorIntention</descriptionDirectoryName>
             <skipBeforeAfter>false</skipBeforeAfter>
         </intentionAction>
     </extensions>
