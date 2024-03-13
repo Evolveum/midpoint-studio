@@ -257,7 +257,7 @@ public class MidPointConfiguration implements Serializable {
 
         settings.setDownloadTypesExclude(new ArrayList<>(DEFAULT_DOWNLOAD_EXCLUDE));
         settings.setTypesToDownloadLimit(100);
-        settings.updateOnUpload = true;
+        settings.updateOnUpload = false;
         settings.setMidpointVersion(MidPointConstants.DEFAULT_MIDPOINT_VERSION);
 
         settings.askToAddMidpointFacet = true;

@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.action;
 
-import com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable;
+import com.evolveum.midpoint.studio.ui.configuration.EnvironmentsConfigurable;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.ShowSettingsUtil;
@@ -19,7 +19,7 @@ public class ShowEnvironmentConfigurationAction extends AnAction {
             return;
         }
 
-        ShowSettingsUtil.getInstance().showSettingsDialog(project, MidPointProjectStructureConfigurable.class);
+        ShowSettingsUtil.getInstance().showSettingsDialog(project, EnvironmentsConfigurable.class);
     }
 }
 
