@@ -4,7 +4,8 @@
 ### Added
 - Support for Intellij 2024.1
 - Improvements and configuration options for cleanup task
-- Replace shadowRef intention
+- Replace association shadowRef annotation/intention
+- Added annotation/intention support for protected strings that aren't using secret providers
 ### Changed
 - Renamed occurrences Axiom query to MidPoint query
 - Improved references handling (inlays, download/show intent, etc.)
@@ -12,6 +13,7 @@
 - MID-9282 Properties host injector
 - MID-9383 Fixed groovy-all dependency in pom.xml in project template
 - MID-9501 Missing "t" prefix in bulk actions fixed
+- Fixed browser panel UI issues
 
 ## [4.8.0]
 ### Added
