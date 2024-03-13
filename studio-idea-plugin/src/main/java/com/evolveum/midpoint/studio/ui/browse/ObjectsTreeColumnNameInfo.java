@@ -3,14 +3,16 @@ package com.evolveum.midpoint.studio.ui.browse;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
+import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
 
-public class ObjectsTreeColumnInfo extends ObjectColumnInfo<Object, String> {
+public class ObjectsTreeColumnNameInfo extends ObjectColumnInfo<Object, String> {
 
-    public ObjectsTreeColumnInfo() {
+    public ObjectsTreeColumnNameInfo() {
         super("Name");
     }
 
@@ -27,11 +29,25 @@ public class ObjectsTreeColumnInfo extends ObjectColumnInfo<Object, String> {
             ObjectTypes type = (ObjectTypes) userObject;
 
             return StudioLocalization.get().translateEnum(type);
-        } else if (userObject instanceof ObjectType) {
-            ObjectType ot = (ObjectType) userObject;
-            return MidPointUtils.getOrigFromPolyString(ot.getName());
         }
 
-        return "<<Unknown>>";
+        if (!(userObject instanceof ObjectType ot)) {
+            return "<<Unknown>>";
+        }
+
+        String name = MidPointUtils.getOrigFromPolyString(ot.getName());
+
+        String displayName = null;
+        if (ot instanceof AbstractRoleType role) {
+            displayName = MidPointUtils.getOrigFromPolyString(role.getDisplayName());
+        }
+
+        if (displayName != null) {
+            displayName = "(" + displayName + ")";
+        } else {
+            displayName = "";
+        }
+
+        return StringUtils.joinWith(" ", name, displayName);
     }
 }

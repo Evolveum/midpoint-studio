@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.ui.browse;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
@@ -22,14 +21,7 @@ public class ObjectsTreeTableModel extends DefaultTreeModel implements TreeTable
     private List<ObjectType> objects;
 
     private static final List<ColumnInfo> COLUMNS = List.of(
-            new ObjectsTreeColumnInfo(),
-            new ObjectColumnInfo<>("Display name", o -> {
-                if (o instanceof AbstractRoleType role) {
-                    return MidPointUtils.getOrigFromPolyString(role.getDisplayName());
-                }
-
-                return null;
-            }),
+            new ObjectsTreeColumnNameInfo(),
             new ObjectColumnInfo<>("Oid", o -> {
                 if (o instanceof ObjectType object) {
                     return object.getOid();

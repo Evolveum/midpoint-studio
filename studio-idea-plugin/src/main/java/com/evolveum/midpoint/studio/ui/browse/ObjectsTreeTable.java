@@ -61,17 +61,12 @@ public class ObjectsTreeTable extends TreeTable {
 
         this.tableHeader.setReorderingAllowed(false);
 
-        this.columnModel.getColumn(0).setPreferredWidth(200);
+        this.columnModel.getColumn(0).setPreferredWidth(350);
         this.columnModel.getColumn(0).setMinWidth(50);
-        this.columnModel.getColumn(0).setMaxWidth(500);
 
-        this.columnModel.getColumn(1).setPreferredWidth(150);
-        this.columnModel.getColumn(1).setMinWidth(50);
-        this.columnModel.getColumn(1).setMaxWidth(500);
-
-        this.columnModel.getColumn(2).setPreferredWidth(100);
-        this.columnModel.getColumn(2).setMinWidth(100);
-        this.columnModel.getColumn(2).setMaxWidth(350);
+        this.columnModel.getColumn(1).setPreferredWidth(300);
+        this.columnModel.getColumn(1).setMinWidth(100);
+        this.columnModel.getColumn(1).setMaxWidth(350);
 
         setupSpeedSearch();
 
