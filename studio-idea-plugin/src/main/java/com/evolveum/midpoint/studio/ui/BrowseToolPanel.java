@@ -519,10 +519,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     private void updateTableModel(SearchResultList result) {
-        ObjectsTreeTableModel tableModel = getResultsModel();
-        tableModel.setData(result != null ? result.getList() : null);
-
         ApplicationManager.getApplication().invokeLater(() -> {
+            ObjectsTreeTableModel tableModel = getResultsModel();
+            tableModel.setData(result != null ? result.getList() : null);
+
             TreeUtil.expandAll(this.results.getTree());
         });
     }
