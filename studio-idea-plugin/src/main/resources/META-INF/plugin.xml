@@ -230,6 +230,9 @@
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"
                                 order="before xmlLocation"/>
 
+        <completion.contributor language="XML"
+                                implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>
+
         <xml.tagNameProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
 

@@ -16,6 +16,10 @@ import static com.evolveum.midpoint.studio.util.MidPointUtils.*;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
+ * todo this should be split into separate contributors probably
+ * Use {@link com.evolveum.midpoint.studio.impl.lang.MidPointCompletionContributor}.
+ * See example {@link com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor}
+ *
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointCompletionContributor extends DefaultCompletionContributor {
@@ -90,7 +94,7 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
 
     @Override
     public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
-        if (parameters.getEditor() == null || parameters.getEditor().getProject() == null) {
+        if (parameters.getEditor().getProject() == null) {
             return;
         }
 

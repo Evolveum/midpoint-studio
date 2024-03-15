@@ -1104,6 +1104,10 @@ public class MidPointUtils {
         }
     }
 
+    public static XmlTagPattern.Capture typesTag(String localName) {
+        return qualifiedTag(localName, SchemaConstantsGenerated.NS_TYPES);
+    }
+
     public static XmlTagPattern.Capture commonTag(String localName) {
         return qualifiedTag(localName, SchemaConstantsGenerated.NS_COMMON);
     }
