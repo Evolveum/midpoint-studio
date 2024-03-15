@@ -1,6 +1,7 @@
-package com.evolveum.midpoint.studio.impl.lang.annotation;
+package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.axiom.lang.antlr.AxiomQueryError;
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
 import com.evolveum.midpoint.studio.client.ServiceFactory;
@@ -18,7 +19,9 @@ import java.util.List;
 /**
  * Created by Dominik.
  */
-public class AxiomQueryValidationExternalAnnotator extends ExternalAnnotator<PsiFile, List<AxiomQueryError>> {
+public class AxiomQueryValidationExternalAnnotator
+        extends ExternalAnnotator<PsiFile, List<AxiomQueryError>>
+        implements AxiomQueryHints {
 
     AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(ServiceFactory.DEFAULT_PRISM_CONTEXT);
 
@@ -36,7 +39,9 @@ public class AxiomQueryValidationExternalAnnotator extends ExternalAnnotator<Psi
             return Collections.emptyList();
         }
 
-        return axiomQueryLangService.validate(content);
+        ItemDefinition<?> def = getItemDefinitionFromHint(file);
+
+        return axiomQueryLangService.validate(def, content);
     }
 
     @Override

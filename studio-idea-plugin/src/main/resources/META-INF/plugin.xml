@@ -182,7 +182,7 @@
         <completion.contributor language="Axiom Query"
                                 implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCompletionContributor"/>
         <externalAnnotator language="Axiom Query"
-                           implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.AxiomQueryValidationExternalAnnotator"/>
+                           implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryValidationExternalAnnotator"/>
         <!--<lang.foldingBuilder language="Axiom Query"
                              implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryFoldingBuilder" />-->
 

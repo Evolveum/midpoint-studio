@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
@@ -19,7 +20,7 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class AxiomQueryCompletionContributor extends CompletionContributor {
+public class AxiomQueryCompletionContributor extends CompletionContributor implements AxiomQueryHints {
     final AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(PrismContext.get());
     final List<LookupElement> suggestions = new ArrayList<>();
 
@@ -32,7 +33,9 @@ public class AxiomQueryCompletionContributor extends CompletionContributor {
                                                @NotNull CompletionResultSet resultSet) {
                         suggestions.clear();
 
-                        axiomQueryLangService.queryCompletion(
+                        ItemDefinition<?> def = getObjectDefinitionFromHint(parameters.getEditor());
+
+                        axiomQueryLangService.queryCompletion(def,
                                 parameters.getOriginalFile().getText().substring(0, parameters.getPosition().getTextOffset())
                         ).forEach((filterName, alias) -> {
                             suggestions.add(build(filterName, alias));

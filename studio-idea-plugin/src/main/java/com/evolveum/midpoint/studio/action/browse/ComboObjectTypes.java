@@ -19,7 +19,17 @@ import java.util.List;
  */
 public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
+    private List<SelectionListener<ObjectTypes>> selectionListeners = new java.util.ArrayList<>();
+
     private ObjectTypes selected = ObjectTypes.OBJECT;
+
+    public void addSelectionListener(SelectionListener<ObjectTypes> listener) {
+        selectionListeners.add(listener);
+    }
+
+    public void removeSelectionListener(SelectionListener<ObjectTypes> listener) {
+        selectionListeners.remove(listener);
+    }
 
     @Override
     public void update(@NotNull AnActionEvent e) {
@@ -36,6 +46,10 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
         }
 
         this.selected = selected;
+
+        for (SelectionListener<ObjectTypes> listener : selectionListeners) {
+            listener.onSelectionChanged(selected);
+        }
     }
 
     public ObjectTypes getSelected() {

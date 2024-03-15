@@ -19,6 +19,7 @@ import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryHints;
 import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryLanguage;
 import com.evolveum.midpoint.studio.ui.browse.ObjectsTreeTable;
 import com.evolveum.midpoint.studio.ui.browse.ObjectsTreeTableModel;
@@ -182,12 +183,23 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         EditorTextField editor = EditorTextFieldProvider.getInstance().getEditorField(lang, project, new ArrayList<>());
         editor.setOneLineMode(false);
 
+        if (objectType != null && editor.getDocument() != null) {
+            QName typeHint = objectType.getSelected() != null ? objectType.getSelected().getTypeQName() : null;
+            editor.getDocument().putUserData(AxiomQueryHints.ITEM_TYPE_HINT, typeHint);
+        }
+
         return editor;
     }
 
     private DefaultActionGroup createQueryActionGroup() {
         DefaultActionGroup group = new DefaultActionGroup();
         objectType = new ComboObjectTypes();
+        objectType.addSelectionListener(selected -> {
+            if (query != null && query.getDocument() != null) {
+                QName typeHint = objectType.getSelected() != null ? objectType.getSelected().getTypeQName() : null;
+                query.getDocument().putUserData(AxiomQueryHints.ITEM_TYPE_HINT, typeHint);
+            }
+        });
         group.add(objectType);
 
         queryType = new ComboQueryType() {
@@ -226,8 +238,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                         }
                         break;
                 }
-
-
             }
         };
         group.add(queryType);
