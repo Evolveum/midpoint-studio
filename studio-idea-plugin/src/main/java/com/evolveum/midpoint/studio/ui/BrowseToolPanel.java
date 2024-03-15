@@ -43,6 +43,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.EditorTextFieldProvider;
+import com.intellij.ui.MonospaceEditorCustomization;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
@@ -141,7 +142,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         toolbar.setTargetComponent(this);
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
-        query = createQueryTextField(ComboQueryType.Type.NAME);
+        query = createQueryTextField(ComboQueryType.Type.NAME_OR_OID);
         JBScrollPane pane = new JBScrollPane(query);
         root.add(pane, BorderLayout.CENTER);
 
@@ -180,9 +181,10 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
                 lang = PlainTextLanguage.INSTANCE;
         }
 
-        EditorTextField editor = EditorTextFieldProvider.getInstance().getEditorField(lang, project, new ArrayList<>());
+        EditorTextField editor = EditorTextFieldProvider.getInstance()
+                .getEditorField(lang, project, List.of(MonospaceEditorCustomization.getInstance()));
         editor.setOneLineMode(false);
-
+        
         if (objectType != null && editor.getDocument() != null) {
             QName typeHint = objectType.getSelected() != null ? objectType.getSelected().getTypeQName() : null;
             editor.getDocument().putUserData(AxiomQueryHints.ITEM_TYPE_HINT, typeHint);

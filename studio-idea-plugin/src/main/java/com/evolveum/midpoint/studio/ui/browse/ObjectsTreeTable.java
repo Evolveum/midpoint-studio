@@ -64,9 +64,9 @@ public class ObjectsTreeTable extends TreeTable {
         this.columnModel.getColumn(0).setPreferredWidth(350);
         this.columnModel.getColumn(0).setMinWidth(50);
 
-        this.columnModel.getColumn(1).setPreferredWidth(300);
-        this.columnModel.getColumn(1).setMinWidth(100);
-        this.columnModel.getColumn(1).setMaxWidth(350);
+        this.columnModel.getColumn(1).setPreferredWidth(320);
+        this.columnModel.getColumn(1).setMinWidth(50);
+        this.columnModel.getColumn(1).setMaxWidth(500);
 
         setupSpeedSearch();
 

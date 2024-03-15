@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.impl.xml.LocationType;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -45,8 +44,6 @@ public class DiffRemoteTask extends DiffTask {
         super.doRun(indicator);
 
         indicator.setIndeterminate(false);
-
-        EnvironmentService em = EnvironmentService.getInstance(getProject());
 
         VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
 
