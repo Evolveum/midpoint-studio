@@ -44,11 +44,16 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
         return action.value();
     }
 
+    private boolean isRemoveContainerIds() {
+        return getSettings().isRemoveContainerIds();
+    }
+
     public CleanupActionProcessor createCleanupProcessor() {
         CleanupActionProcessor processor = new CleanupActionProcessor();
         processor.setIgnoreNamespaces(true);
         processor.setPaths(getCleanupPaths());
         processor.setRemoveAskActionItemsByDefault(getAskActionOverride() == CleanupPathAction.REMOVE);
+        processor.setRemoveContainerIds(isRemoveContainerIds());
 
         return processor;
     }

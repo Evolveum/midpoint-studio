@@ -95,6 +95,14 @@ class CleanupConfigurable(val project: Project) :
                             { configuration.isWarnAboutMissingReferences = it }
                         )
                 }
+                row {
+                    checkBox(message("CleanupConfigurable.removeContainerIds"))
+                        .comment(message("CleanupConfigurable.removeContainerIds.comment"))
+                        .bindSelected(
+                            { configuration.isRemoveContainerIds },
+                            { configuration.isRemoveContainerIds = it }
+                        )
+                }
             }
         }
     }

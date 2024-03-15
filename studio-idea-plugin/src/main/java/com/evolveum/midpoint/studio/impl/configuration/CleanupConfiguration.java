@@ -24,6 +24,8 @@ public class CleanupConfiguration implements Serializable {
 
     private boolean warnAboutMissingReferences;
 
+    private boolean removeContainerIds;
+
     public @NotNull List<CleanupPathConfiguration> getCleanupPaths() {
         if (cleanupPaths == null) {
             cleanupPaths = new ArrayList<>();
@@ -67,17 +69,32 @@ public class CleanupConfiguration implements Serializable {
         this.warnAboutMissingReferences = warnAboutMissingReferences;
     }
 
+    public boolean isRemoveContainerIds() {
+        return removeContainerIds;
+    }
+
+    public void setRemoveContainerIds(boolean removeContainerIds) {
+        this.removeContainerIds = removeContainerIds;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CleanupConfiguration that = (CleanupConfiguration) o;
-        return cleanupConnectorReferences == that.cleanupConnectorReferences && replaceConnectorOidsWithFilter == that.replaceConnectorOidsWithFilter && warnAboutMissingReferences == that.warnAboutMissingReferences && Objects.equals(cleanupPaths, that.cleanupPaths) && askActionOverride == that.askActionOverride;
+        return cleanupConnectorReferences == that.cleanupConnectorReferences
+                && replaceConnectorOidsWithFilter == that.replaceConnectorOidsWithFilter
+                && warnAboutMissingReferences == that.warnAboutMissingReferences
+                && Objects.equals(cleanupPaths, that.cleanupPaths)
+                && askActionOverride == that.askActionOverride
+                && removeContainerIds == that.removeContainerIds;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cleanupPaths, askActionOverride, cleanupConnectorReferences, replaceConnectorOidsWithFilter, warnAboutMissingReferences);
+        return Objects.hash(
+                cleanupPaths, askActionOverride, cleanupConnectorReferences, replaceConnectorOidsWithFilter,
+                warnAboutMissingReferences, removeContainerIds);
     }
 
     public void copyTo(@NotNull CleanupConfiguration configuration) {
@@ -89,6 +106,7 @@ public class CleanupConfiguration implements Serializable {
         configuration.setCleanupConnectorReferences(cleanupConnectorReferences);
         configuration.setReplaceConnectorOidsWithFilter(replaceConnectorOidsWithFilter);
         configuration.setWarnAboutMissingReferences(warnAboutMissingReferences);
+        configuration.setRemoveContainerIds(removeContainerIds);
     }
 
     public CleanupConfiguration copy() {
