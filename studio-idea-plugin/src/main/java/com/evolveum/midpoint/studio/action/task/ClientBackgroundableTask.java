@@ -35,7 +35,7 @@ public class ClientBackgroundableTask<S extends TaskState> extends ObjectsBackgr
         super.doRun(indicator);
     }
 
-    private MidPointClient setupMidpointClient() {
+    protected MidPointClient setupMidpointClient() {
         LOG.debug("Setting up MidPoint client");
 
         Environment env = getEnvironment();
