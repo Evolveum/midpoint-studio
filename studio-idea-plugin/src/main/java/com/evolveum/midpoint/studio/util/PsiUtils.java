@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.intellij.openapi.project.Project;
@@ -112,6 +113,20 @@ public class PsiUtils {
         }
 
         return convertTextToQName(value, reference);
+    }
+
+    public static XmlTag getAppinfoElement(XmlTag xsd, QName annotationName) {
+        XmlTag annotation = MidPointUtils.findSubTag(xsd, DOMUtil.XSD_ANNOTATION_ELEMENT);
+        if (annotation == null) {
+            return null;
+        }
+
+        XmlTag appinfo = MidPointUtils.findSubTag(annotation, DOMUtil.XSD_APPINFO_ELEMENT);
+        if (appinfo == null) {
+            return null;
+        }
+
+        return MidPointUtils.findSubTag(appinfo, annotationName);
     }
 
     public static XmlTag getXsdReference(XmlElement tag) {

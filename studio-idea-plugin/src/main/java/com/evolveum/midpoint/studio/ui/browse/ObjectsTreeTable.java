@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.ui.TreeTableSpeedSearch;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
@@ -78,16 +79,27 @@ public class ObjectsTreeTable extends TreeTable {
             }
         });
 
-        JPopupMenu popup = new JPopupMenu();
-        JMenuItem item = new JMenuItem("Copy oids");
-        item.addActionListener(e -> copySelectedObjectOids());
-        popup.add(item);
+        setupPopupMenu();
+    }
 
-        item = new JMenuItem("Copy names");
-        item.addActionListener(e -> copySelectedObjectNames());
-        popup.add(item);
+    private void setupPopupMenu() {
+        DefaultActionGroup group = new DefaultActionGroup();
+        group.add(new AnAction("Copy oids") {
 
-        setComponentPopupMenu(popup);
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                copySelectedObjectOids();
+            }
+        });
+        group.add(new AnAction("Copy names") {
+
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                copySelectedObjectNames();
+            }
+        });
+        ActionPopupMenu menu = ActionManager.getInstance().createActionPopupMenu("ObjectTreeTablePopupMenu", group);
+        setComponentPopupMenu(menu.getComponent());
     }
 
     private void setupSpeedSearch() {

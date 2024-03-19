@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class ShadowRefAnnotation implements Annotator, MidPointAnnotator {
+public class ShadowRefAnnotator implements Annotator, MidPointAnnotator {
 
     private static final String MESSAGE =
             "shadowRef element could represent possible problem when moving this midPoint " +

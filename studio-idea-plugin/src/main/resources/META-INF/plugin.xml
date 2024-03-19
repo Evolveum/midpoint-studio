@@ -219,7 +219,7 @@
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention"/>
         <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotation"/>
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotator"/>
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>
 
