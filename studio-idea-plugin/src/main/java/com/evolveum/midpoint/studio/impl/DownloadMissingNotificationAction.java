@@ -6,24 +6,33 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadMissingNotificationAction extends NotificationAction {
 
-    public DownloadMissingNotificationAction() {
+    private List<ObjectReferenceType> references;
+
+    public DownloadMissingNotificationAction(@NotNull List<ObjectReferenceType> references) {
         super("Download missing objects");
+
+        this.references = references;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+        super.update(e);
+
+        e.getPresentation().setVisible(!references.isEmpty());
     }
 
     @Override
     public void actionPerformed(AnActionEvent e, Notification notification) {
         Project project = e.getProject();
 
-        List<ObjectReferenceType> objectRefs = new ArrayList<>();
-        // todo implement...
-
-        ActionUtils.runDownloadTask(project, objectRefs, false);
+        ActionUtils.runDownloadTask(project, references, false);
     }
 
     @Override

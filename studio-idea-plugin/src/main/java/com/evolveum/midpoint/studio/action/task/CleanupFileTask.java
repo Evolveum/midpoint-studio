@@ -18,6 +18,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -173,6 +174,10 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
     }
 
     private <O extends ObjectType> boolean canResolveLocalObject(Class<O> type, String oid) {
+        if (oid == null) {
+            return false;
+        }
+
         List<VirtualFile> files = ApplicationManager.getApplication().runReadAction(
                 (Computable<List<VirtualFile>>) () ->
                         ObjectFileBasedIndexImpl.getVirtualFiles(oid, getProject(), true));
@@ -184,12 +189,13 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         for (CleanupMessage.Status status : CleanupMessage.Status.values()) {
             List<CleanupMessage> messages = result.getMessages(status);
 
-            publishNotification(object, status, messages);
+            publishNotification(object, status, messages, result.getMissingReferences());
         }
     }
 
     private void publishNotification(
-            MidPointObject object, CleanupMessage.Status status, List<CleanupMessage> messages) {
+            MidPointObject object, CleanupMessage.Status status, List<CleanupMessage> messages,
+            List<ObjectReferenceType> missingReferences) {
 
         if (messages.isEmpty()) {
             return;
@@ -224,7 +230,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
         MidPointUtils.publishNotification(
                 getProject(), notificationKey, "Cleanup warning", msg, type,
-                new SeeObjectNotificationAction(file), new DownloadMissingNotificationAction());
+                new SeeObjectNotificationAction(file), new DownloadMissingNotificationAction(missingReferences));
     }
 
     private boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
