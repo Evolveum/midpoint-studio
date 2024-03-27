@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.ui.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -22,7 +23,7 @@ public class ObjectsTreeTableModel extends DefaultTreeModel implements TreeTable
 
     private static final List<ColumnInfo> COLUMNS = List.of(
             new ObjectsTreeColumnNameInfo(),
-            new ObjectColumnInfo<>("Oid", o -> {
+            new DefaultColumnInfo<>("Oid", o -> {
                 if (o instanceof ObjectType object) {
                     return object.getOid();
                 }

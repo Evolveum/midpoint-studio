@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.ui.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -8,8 +9,6 @@ import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.ui.TreeTableSpeedSearch;
-import com.intellij.ui.treeStructure.treetable.TreeTable;
-import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.UIAction;
 import org.jetbrains.annotations.NotNull;
@@ -22,25 +21,12 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ObjectsTreeTable extends TreeTable {
+public class ObjectsTreeTable extends DefaultTreeTable<ObjectsTreeTableModel> {
 
     public ObjectsTreeTable() {
         super(new ObjectsTreeTableModel());
 
         setupComponent();
-    }
-
-    @Override
-    public ObjectsTreeTableModel getTableModel() {
-        return (ObjectsTreeTableModel) super.getTableModel();
-    }
-
-    @Override
-    public void setTableModel(TreeTableModel model) {
-        if (!(model instanceof ObjectsTreeTableModel)) {
-            throw new IllegalArgumentException("Model must be instance of ObjectsTreeTableModel");
-        }
-        super.setTableModel(model);
     }
 
     private void setupComponent() {

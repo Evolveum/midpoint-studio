@@ -25,7 +25,7 @@ public class DownloadMissingNotificationAction extends NotificationAction {
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
-        e.getPresentation().setVisible(!references.isEmpty());
+        e.getPresentation().setVisible(!references.isEmpty());  // todo fix, this doesn't work!
     }
 
     @Override

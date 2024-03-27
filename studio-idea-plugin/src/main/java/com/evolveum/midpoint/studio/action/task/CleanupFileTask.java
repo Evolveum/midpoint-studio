@@ -20,6 +20,7 @@ import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -239,5 +240,12 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
                 "Confirm remove", "Remove", "Skip");
 
         return result == MessageDialog.OK_EXIT_CODE;
+    }
+
+    @Override
+    protected NotificationAction[] getNotificationActionsAfterFinish() {
+        return new NotificationAction[]{
+                new DownloadMissingNotificationAction(List.of())    // todo fix
+        };
     }
 }

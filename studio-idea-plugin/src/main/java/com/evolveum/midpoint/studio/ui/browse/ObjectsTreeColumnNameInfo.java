@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.ui.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
@@ -10,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
 
-public class ObjectsTreeColumnNameInfo extends ObjectColumnInfo<Object, String> {
+public class ObjectsTreeColumnNameInfo extends DefaultColumnInfo<Object, String> {
 
     public ObjectsTreeColumnNameInfo() {
         super("Name");
