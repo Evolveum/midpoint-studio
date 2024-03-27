@@ -95,14 +95,15 @@ class CleanupConfigurable(val project: Project) :
                             { configuration.isWarnAboutMissingReferences = it }
                         )
                 }
-                row {
-                    checkBox(message("CleanupConfigurable.removeContainerIds"))
-                        .comment(message("CleanupConfigurable.removeContainerIds.comment"))
-                        .bindSelected(
-                            { configuration.isRemoveContainerIds },
-                            { configuration.isRemoveContainerIds = it }
-                        )
-                }
+                // todo disabled for now since we have to decide on approach to PCV IDs and cleanup/storing in vcs
+//                row {
+//                    checkBox(message("CleanupConfigurable.removeContainerIds"))
+//                        .comment(message("CleanupConfigurable.removeContainerIds.comment"))
+//                        .bindSelected(
+//                            { configuration.isRemoveContainerIds },
+//                            { configuration.isRemoveContainerIds = it }
+//                        )
+//                }
             }
         }
     }
