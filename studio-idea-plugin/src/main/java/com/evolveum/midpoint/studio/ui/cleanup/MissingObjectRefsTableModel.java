@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.configuration.ObjectReferencesConfiguration;
-import com.evolveum.midpoint.studio.impl.configuration.ReferenceDecisionConfiguration;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
@@ -20,8 +19,7 @@ public class MissingObjectRefsTableModel extends DefaultTreeTableModel<List<Obje
 
     public static final List<ColumnInfo> COLUMNS = List.of(
             new ReferenceColumn(),
-            new DecisionColumn("Download", ReferenceDecisionConfiguration.DOWNLOAD),
-            new DecisionColumn("Ignore", ReferenceDecisionConfiguration.IGNORE)
+            new DecisionColumn()
     );
 
     public MissingObjectRefsTableModel() {

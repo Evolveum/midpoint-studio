@@ -19,7 +19,7 @@ class MissingObjectRefsEditor(val project: Project, val objects: List<ObjectRefe
 
     fun createComponent(): DialogPanel {
         return panel {
-            // todo implement
+            // todo implement, probably action toolbar
             row {
                 cell(JBScrollPane(table))
                     .align(Align.FILL)

@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.configuration.ObjectReferencesConfiguration;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingObjectRefsDialog;
 import com.evolveum.midpoint.studio.util.ActionUtils;
@@ -12,22 +13,20 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class MissingReferencesAction extends NotificationAction {
+public class MissingReferencesNotificationAction extends NotificationAction {
 
-    private final List<ObjectReferenceType> data;
+    private static final String TEXT = "Configure missing ...";
 
-    public MissingReferencesAction(@NotNull List<ObjectReferenceType> data) {
-        super("Fix missing objects...");
+    private final List<ObjectReferenceType> data = null;
 
-        this.data = data;
+    public MissingReferencesNotificationAction() {
+        super(TEXT);
     }
 
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        super.update(e);
+    public MissingReferencesNotificationAction(@NotNull String oid, @NotNull ObjectTypes type, @NotNull List<ObjectReferenceType> data) {
+        super(TEXT);
 
-        // todo fix, this doesn't work! it's not even called. same for download missing notification action
-//        e.getPresentation().setVisible(!references.isEmpty());
+//        this.data = data;
     }
 
     @Override

@@ -79,6 +79,10 @@ public class CleanupConfiguration implements Serializable {
     }
 
     public MissingReferencesConfiguration getMissingReferences() {
+        if (missingReferences == null) {
+            missingReferences = new MissingReferencesConfiguration();
+            missingReferences.setDefaultDecision(ReferenceDecisionConfiguration.ALWAYS);
+        }
         return missingReferences;
     }
 

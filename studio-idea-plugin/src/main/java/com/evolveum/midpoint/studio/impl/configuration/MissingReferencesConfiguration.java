@@ -12,7 +12,7 @@ public class MissingReferencesConfiguration implements Serializable {
 
     private List<ObjectReferencesConfiguration> objects;
 
-    private DownloadActionConfiguration action;
+    private ReferenceDecisionConfiguration defaultDecision;
 
     public List<ObjectReferencesConfiguration> getObjects() {
         if (objects == null) {
@@ -25,12 +25,12 @@ public class MissingReferencesConfiguration implements Serializable {
         this.objects = objects;
     }
 
-    public DownloadActionConfiguration getAction() {
-        return action;
+    public ReferenceDecisionConfiguration getDefaultDecision() {
+        return defaultDecision;
     }
 
-    public void setAction(DownloadActionConfiguration action) {
-        this.action = action;
+    public void setDefaultDecision(ReferenceDecisionConfiguration defaultDecision) {
+        this.defaultDecision = defaultDecision;
     }
 
     @Override
@@ -39,12 +39,12 @@ public class MissingReferencesConfiguration implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         MissingReferencesConfiguration that = (MissingReferencesConfiguration) o;
         return Objects.equals(objects, that.objects)
-                && action == that.action;
+                && defaultDecision == that.defaultDecision;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(objects, action);
+        return Objects.hash(objects, defaultDecision);
     }
 
     public MissingReferencesConfiguration copy() {
@@ -52,7 +52,7 @@ public class MissingReferencesConfiguration implements Serializable {
         if (objects != null) {
             copy.setObjects(objects.stream().map(ObjectReferencesConfiguration::copy).toList());
         }
-        copy.setAction(action);
+        copy.setDefaultDecision(defaultDecision);
         return copy;
     }
 }

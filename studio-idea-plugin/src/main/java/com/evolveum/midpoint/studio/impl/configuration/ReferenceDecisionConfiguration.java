@@ -2,7 +2,9 @@ package com.evolveum.midpoint.studio.impl.configuration;
 
 public enum ReferenceDecisionConfiguration {
 
-    DOWNLOAD,
+    NEVER,
 
-    IGNORE
+    ALWAYS,
+
+    OBJECT_NOT_AVAILABLE,
 }

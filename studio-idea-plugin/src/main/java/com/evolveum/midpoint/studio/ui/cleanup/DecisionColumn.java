@@ -3,28 +3,24 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 import com.evolveum.midpoint.studio.impl.configuration.ReferenceDecisionConfiguration;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 
-public class DecisionColumn extends DefaultColumnInfo<Object, Boolean> {
+public class DecisionColumn extends DefaultColumnInfo<Object, ReferenceDecisionConfiguration> {
 
-    private final ReferenceDecisionConfiguration decision;
-
-    public DecisionColumn(String name, ReferenceDecisionConfiguration decision) {
-        super(name, o -> {
+    public DecisionColumn() {
+        super("Decision", o -> {
             if (o == null) {
                 // todo root
             }
 
-            return true; // todo fix
+            return ReferenceDecisionConfiguration.ALWAYS; // todo fix
         });
 
-        this.decision = decision;
-
-        setPreferredWidth(80);
-        setMinWidth(80);
-        setMaxWidth(80);
+        setPreferredWidth(150);
+        setMinWidth(150);
+        setMaxWidth(150);
     }
 
     @Override
     public Class<?> getColumnClass() {
-        return Boolean.class;
+        return ReferenceDecisionConfiguration.class;
     }
 }

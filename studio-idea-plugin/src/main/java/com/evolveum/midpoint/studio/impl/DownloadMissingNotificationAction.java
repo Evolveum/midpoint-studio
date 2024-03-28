@@ -15,7 +15,7 @@ public class DownloadMissingNotificationAction extends NotificationAction {
     private List<ObjectReferenceType> references;
 
     public DownloadMissingNotificationAction(@NotNull List<ObjectReferenceType> references) {
-        super("Download missing objects");
+        super("Download missing");
 
         this.references = references;
     }

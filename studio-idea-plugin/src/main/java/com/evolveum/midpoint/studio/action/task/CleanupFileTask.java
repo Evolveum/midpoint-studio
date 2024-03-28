@@ -11,7 +11,7 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
+import com.evolveum.midpoint.studio.impl.configuration.*;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.util.MavenUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -229,9 +230,61 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
         VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(object.getFile().toPath());
 
+        // filter ignored missing references based on project configuration (cleanup/missing settings)
+        List<ObjectReferenceType> downloadOnly = computeMissingOnly(object.getOid(), object.getType(), missingReferences);
+
         MidPointUtils.publishNotification(
                 getProject(), notificationKey, "Cleanup warning", msg, type,
-                new SeeObjectNotificationAction(file), new MissingReferencesAction(missingReferences));
+                createNotificationActions(file, object.getOid(), object.getType(), missingReferences, downloadOnly));
+    }
+
+    private List<ObjectReferenceType> computeMissingOnly(
+            String oid, ObjectTypes type, List<ObjectReferenceType> missingReferences) {
+
+        MissingReferencesConfiguration missingRefsConfig = CleanupService.get(getProject()).getSettings().getMissingReferences();
+        ObjectReferencesConfiguration objectRefsConfig = missingRefsConfig.getObjects().stream()
+                .filter(orc -> Objects.equals(oid, orc.getOid()))
+                .findFirst()
+                .orElse(null);
+
+        Map<String, ReferenceDecisionConfiguration> map = objectRefsConfig.getIgnoredReferences().stream()
+                .collect(Collectors.toMap(ReferenceConfiguration::getOid, o -> o.getDecision()));
+
+        // todo use this to filter existing files
+//        ObjectFileBasedIndexImpl.getVirtualFiles()
+
+        return missingReferences.stream()
+                .filter(o -> {
+                    if (objectRefsConfig == null
+                            || Objects.equals(missingRefsConfig.getDefaultDecision(), ReferenceDecisionConfiguration.ALWAYS)) {
+                        return true;
+                    }
+
+//                    map.get
+//                    return objectRefsConfig.getReferences().stream()
+//                            .noneMatch(orc -> Objects.equals(orc.getOid(), o.getOid()));
+
+                    // todo implement
+                    return true;
+                })
+                .toList();
+    }
+
+    private NotificationAction[] createNotificationActions(
+            VirtualFile file, String oid, ObjectTypes type, List<ObjectReferenceType> missingReferences, List<ObjectReferenceType> downloadOnly) {
+
+        List<NotificationAction> actions = new ArrayList<>();
+        if (file != null) {
+            actions.add(new SeeObjectNotificationAction(file));
+        }
+        if (!missingReferences.isEmpty()) {
+            actions.add(new MissingReferencesNotificationAction(oid, type, missingReferences));
+        }
+        if (!downloadOnly.isEmpty()) {
+            actions.add(new DownloadMissingNotificationAction(downloadOnly));
+        }
+
+        return actions.toArray(NotificationAction[]::new);
     }
 
     private boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
@@ -244,8 +297,9 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
     @Override
     protected NotificationAction[] getNotificationActionsAfterFinish() {
-        return new NotificationAction[]{
-                new DownloadMissingNotificationAction(List.of())    // todo fix
-        };
+        // todo fix this for whole cleanup - how to compute missing references and download only
+        //  ...and oid/type if this is for all
+
+        return createNotificationActions(null, null, null, List.of(), List.of());
     }
 }
