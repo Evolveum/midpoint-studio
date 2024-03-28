@@ -1,13 +1,14 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.configuration.ObjectReferencesConfiguration;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingObjectRefsDialog;
+import com.evolveum.midpoint.studio.ui.configuration.MissingReferencesConfigurable;
 import com.evolveum.midpoint.studio.util.ActionUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,24 +16,27 @@ import java.util.List;
 
 public class MissingReferencesNotificationAction extends NotificationAction {
 
-    private static final String TEXT = "Configure missing ...";
+    private static final String TEXT = "Configure missing...";
 
-    private final List<ObjectReferenceType> data = null;
+    private final List<ObjectReferencesConfiguration> data;
 
-    public MissingReferencesNotificationAction() {
-        super(TEXT);
-    }
+    private final boolean summary;
 
-    public MissingReferencesNotificationAction(@NotNull String oid, @NotNull ObjectTypes type, @NotNull List<ObjectReferenceType> data) {
+    public MissingReferencesNotificationAction(@NotNull List<ObjectReferencesConfiguration> data, boolean summary) {
         super(TEXT);
 
-//        this.data = data;
+        this.data = data;
+        this.summary = summary;
     }
 
     @Override
     public void actionPerformed(AnActionEvent e, Notification notification) {
         Project project = e.getProject();
 
+        if (summary) {
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, MissingReferencesConfigurable.class);
+            return;
+        }
 
         // todo get settings and pass proper configuration part to dialog
 

@@ -20,7 +20,7 @@ public class ObjectReferencesConfiguration implements Serializable, Comparable<O
     @OptionTag(tag = "type", nameAttribute = "", converter = QNameConverter.class)
     private QName type;
 
-    private List<ReferenceConfiguration> ignoredReferences;
+    private List<ReferenceConfiguration> references;
 
     public String getOid() {
         return oid;
@@ -38,15 +38,15 @@ public class ObjectReferencesConfiguration implements Serializable, Comparable<O
         this.type = type;
     }
 
-    public List<ReferenceConfiguration> getIgnoredReferences() {
-        if (ignoredReferences == null) {
-            ignoredReferences = new ArrayList<>();
+    public List<ReferenceConfiguration> getReferences() {
+        if (references == null) {
+            references = new ArrayList<>();
         }
-        return ignoredReferences;
+        return references;
     }
 
-    public void setIgnoredReferences(List<ReferenceConfiguration> ignoredReferences) {
-        this.ignoredReferences = ignoredReferences;
+    public void setReferences(List<ReferenceConfiguration> references) {
+        this.references = references;
     }
 
     @Override
@@ -56,12 +56,12 @@ public class ObjectReferencesConfiguration implements Serializable, Comparable<O
         ObjectReferencesConfiguration that = (ObjectReferencesConfiguration) o;
         return Objects.equals(oid, that.oid)
                 && Objects.equals(type, that.type)
-                && Objects.equals(ignoredReferences, that.ignoredReferences);
+                && Objects.equals(references, that.references);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(oid, type, ignoredReferences);
+        return Objects.hash(oid, type, references);
     }
 
     @Override
@@ -81,10 +81,10 @@ public class ObjectReferencesConfiguration implements Serializable, Comparable<O
         copy.setOid(oid);
         copy.setType(type);
 
-        List<ReferenceConfiguration> paths = getIgnoredReferences().stream()
+        List<ReferenceConfiguration> paths = getReferences().stream()
                 .map(ReferenceConfiguration::copy)
                 .toList();
-        copy.setIgnoredReferences(paths);
+        copy.setReferences(paths);
 
         return copy;
     }
