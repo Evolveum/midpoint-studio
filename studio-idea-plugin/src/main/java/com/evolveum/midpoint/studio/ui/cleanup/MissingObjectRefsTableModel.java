@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class MissingObjectTableModel extends DefaultTreeTableModel<List<ObjectReferencesConfiguration>> {
+public class MissingObjectRefsTableModel extends DefaultTreeTableModel<List<ObjectReferencesConfiguration>> {
 
     public static final List<ColumnInfo> COLUMNS = List.of(
             new ReferenceColumn(),
@@ -24,7 +24,7 @@ public class MissingObjectTableModel extends DefaultTreeTableModel<List<ObjectRe
             new DecisionColumn("Ignore", ReferenceDecisionConfiguration.IGNORE)
     );
 
-    public MissingObjectTableModel() {
+    public MissingObjectRefsTableModel() {
         super(COLUMNS);
     }
 

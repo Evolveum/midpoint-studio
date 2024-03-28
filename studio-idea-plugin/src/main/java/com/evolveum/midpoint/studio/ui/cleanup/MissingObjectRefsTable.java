@@ -2,10 +2,10 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 
-public class MissingObjectsTable extends DefaultTreeTable<MissingObjectTableModel> {
+public class MissingObjectRefsTable extends DefaultTreeTable<MissingObjectRefsTableModel> {
 
-    public MissingObjectsTable() {
-        super(new MissingObjectTableModel());
+    public MissingObjectRefsTable() {
+        super(new MissingObjectRefsTableModel());
 
         setupComponent();
     }

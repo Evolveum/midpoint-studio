@@ -1,7 +1,8 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.studio.impl.configuration.*
-import com.evolveum.midpoint.studio.ui.cleanup.MissingObjectsTable
+import com.evolveum.midpoint.studio.ui.MissingObjectRefsEditor
+import com.evolveum.midpoint.studio.ui.cleanup.MissingObjectRefsTable
 import com.evolveum.midpoint.studio.util.StudioLocalization
 import com.evolveum.midpoint.studio.util.StudioLocalization.message
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ShadowType
@@ -19,7 +20,7 @@ open class MissingReferencesConfigurable(val project: Project) :
 
     private val configuration: MissingReferencesConfiguration
 
-    private val table: MissingObjectsTable
+    private val editor: MissingObjectRefsEditor
 
     init {
         // todo remove, obtain it from cleanup service, implement apply/reset
@@ -37,25 +38,24 @@ open class MissingReferencesConfigurable(val project: Project) :
 
         configuration.objects.add(obj)
 
-        table = MissingObjectsTable()
-        table.tableModel.data = configuration.objects
+        editor = MissingObjectRefsEditor(project, configuration.objects)
     }
 
     override fun createPanel(): DialogPanel {
         return panel {
             groupRowsRange(message("MissingReferencesConfigurable.missingObjects")) {
                 row {
-                    cell(table)
+                    cell(editor.createComponent())
                         .align(Align.FILL)
                 }
                     .resizableRow()
                     .rowComment(message("MissingReferencesConfigurable.missingObjects.comment"))
-                row(message("MissingReferencesConfigurable.action")) {
+                row(message("MissingReferencesConfigurable.defaultAction")) {
                     comboBox(
                         listOf(
-                            null,
+                            DownloadActionConfiguration.NEVER,
                             DownloadActionConfiguration.ALWAYS,
-                            DownloadActionConfiguration.FILE_NOT_EXISTS
+                            DownloadActionConfiguration.OBJECT_NOT_AVAILABLE
                         ),
                         SimpleListCellRenderer.create(
                             StudioLocalization.get().translate("DownloadActionConfiguration.null")
@@ -66,6 +66,7 @@ open class MissingReferencesConfigurable(val project: Project) :
                             { configuration.action = it }
                         )
                 }
+                    .rowComment(message("MissingReferencesConfigurable.defaultAction.comment"))
             }
         }
     }

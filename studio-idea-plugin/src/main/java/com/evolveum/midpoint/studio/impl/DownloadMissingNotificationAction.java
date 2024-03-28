@@ -8,7 +8,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadMissingNotificationAction extends NotificationAction {
@@ -19,13 +18,6 @@ public class DownloadMissingNotificationAction extends NotificationAction {
         super("Download missing objects");
 
         this.references = references;
-    }
-
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        super.update(e);
-
-        e.getPresentation().setVisible(!references.isEmpty());  // todo fix, this doesn't work!
     }
 
     @Override

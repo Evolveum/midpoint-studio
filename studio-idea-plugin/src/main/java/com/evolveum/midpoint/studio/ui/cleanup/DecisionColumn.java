@@ -9,14 +9,18 @@ public class DecisionColumn extends DefaultColumnInfo<Object, Boolean> {
 
     public DecisionColumn(String name, ReferenceDecisionConfiguration decision) {
         super(name, o -> {
+            if (o == null) {
+                // todo root
+            }
+
             return true; // todo fix
         });
 
         this.decision = decision;
 
-        setPreferredWidth(40);
-        setMinWidth(40);
-        setMaxWidth(40);
+        setPreferredWidth(80);
+        setMinWidth(80);
+        setMaxWidth(80);
     }
 
     @Override

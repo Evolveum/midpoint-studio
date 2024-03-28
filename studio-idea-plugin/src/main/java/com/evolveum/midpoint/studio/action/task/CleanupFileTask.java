@@ -231,7 +231,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
         MidPointUtils.publishNotification(
                 getProject(), notificationKey, "Cleanup warning", msg, type,
-                new SeeObjectNotificationAction(file), new DownloadMissingNotificationAction(missingReferences));
+                new SeeObjectNotificationAction(file), new MissingReferencesAction(missingReferences));
     }
 
     private boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {

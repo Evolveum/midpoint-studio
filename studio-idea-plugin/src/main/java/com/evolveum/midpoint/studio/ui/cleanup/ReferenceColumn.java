@@ -17,7 +17,7 @@ public class ReferenceColumn extends DefaultColumnInfo {
                     }
 
                     if (o instanceof ObjectTypes type) {
-                        return StudioLocalization.get().translateEnum(type, "MissingObjectTableModel.unknown");
+                        return StudioLocalization.get().translateEnum(type);
                     }
 
                     if (o instanceof NamedItem ref) {
