@@ -1,83 +1,30 @@
 package com.evolveum.midpoint.studio.ui.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.ui.DefaultColumnInfo;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.openapi.util.NlsContexts;
-import com.intellij.ui.treeStructure.treetable.TreeTableModel;
-import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.ui.ColumnInfo;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultTreeModel;
 import java.util.*;
 
-public class ObjectsTreeTableModel extends DefaultTreeModel implements TreeTableModel {
-
-    private TreeTableTree tree;
+public class ObjectsTreeTableModel extends DefaultTreeTableModel<List<ObjectType>> {
 
     private List<ObjectType> objects;
 
     private static final List<ColumnInfo> COLUMNS = List.of(
-            new ObjectsTreeColumnNameInfo(),
-            new DefaultColumnInfo<>("Oid", o -> {
-                if (o instanceof ObjectType object) {
-                    return object.getOid();
-                }
-
-                return null;
-            })
+            new ObjectsTreeColumn(),
+            new OidColumn()
     );
 
     public ObjectsTreeTableModel() {
-        super(new DefaultMutableTreeTableNode());
-    }
-
-    public ColumnInfo getColumnInfo(int index) {
-        return COLUMNS.get(index);
+        super(COLUMNS);
     }
 
     @Override
-    public int getColumnCount() {
-        return COLUMNS.size();
-    }
-
-    @Override
-    public @NlsContexts.ColumnName String getColumnName(int column) {
-        return COLUMNS.get(column).getName();
-    }
-
-    @Override
-    public Class<?> getColumnClass(int column) {
-        return COLUMNS.get(column).getColumnClass();
-    }
-
-    @Override
-    public Object getValueAt(Object node, int column) {
-        return COLUMNS.get(column).valueOf(node);
-    }
-
-    @Override
-    public boolean isCellEditable(Object node, int column) {
-        return COLUMNS.get(column).isCellEditable(node);
-    }
-
-    @Override
-    public void setValueAt(Object aValue, Object node, int column) {
-        COLUMNS.get(column).setValue(node, aValue);
-    }
-
-    @Override
-    public void setTree(JTree tree) {
-        if (!(tree instanceof TreeTableTree)) {
-            throw new IllegalArgumentException("Tree must be instance of TreeTableTree");
-        }
-        this.tree = (TreeTableTree) tree;
-    }
-
     public void setData(List<ObjectType> data) {
         if (data == null) {
             data = new ArrayList<>();
@@ -124,11 +71,11 @@ public class ObjectsTreeTableModel extends DefaultTreeModel implements TreeTable
 
         List<ObjectType> data = getObjects();
 
-        ListSelectionModel selectionModel = tree.getTreeTable().getSelectionModel();
+        ListSelectionModel selectionModel = getTree().getTreeTable().getSelectionModel();
         int[] indices = selectionModel.getSelectedIndices();
         for (int i : indices) {
             DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode)
-                    tree.getPathForRow(i).getLastPathComponent();
+                    getTree().getPathForRow(i).getLastPathComponent();
             Object obj = node.getUserObject();
             if (obj instanceof ObjectTypes) {
                 ObjectTypes type = (ObjectTypes) obj;

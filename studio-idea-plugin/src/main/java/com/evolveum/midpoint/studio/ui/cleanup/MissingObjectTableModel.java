@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.ui.cleanup;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.impl.configuration.ReferenceDecisionConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.ObjectReferencesConfiguration;
-import com.evolveum.midpoint.studio.ui.DefaultTreeTableModel;
+import com.evolveum.midpoint.studio.impl.configuration.ReferenceDecisionConfiguration;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.ui.ColumnInfo;

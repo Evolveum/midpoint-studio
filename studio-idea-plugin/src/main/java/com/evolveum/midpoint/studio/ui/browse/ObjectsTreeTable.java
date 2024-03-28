@@ -1,13 +1,11 @@
 package com.evolveum.midpoint.studio.ui.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.ui.DefaultTreeTable;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.util.NlsSafe;
 import com.intellij.ui.TreeTableSpeedSearch;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.UIAction;
@@ -33,27 +31,8 @@ public class ObjectsTreeTable extends DefaultTreeTable<ObjectsTreeTableModel> {
         setRootVisible(false);
         setDragEnabled(false);
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        setTreeCellRenderer(new NodeRenderer() {
-
-            @Override
-            public void customizeCellRenderer(
-                    @NotNull JTree tree, @NlsSafe Object value, boolean selected, boolean expanded, boolean leaf,
-                    int row, boolean hasFocus) {
-
-                value = getTableModel().getColumnInfo(0).valueOf(value);
-
-                super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
-            }
-        });
 
         this.tableHeader.setReorderingAllowed(false);
-
-        this.columnModel.getColumn(0).setPreferredWidth(350);
-        this.columnModel.getColumn(0).setMinWidth(50);
-
-        this.columnModel.getColumn(1).setPreferredWidth(320);
-        this.columnModel.getColumn(1).setMinWidth(50);
-        this.columnModel.getColumn(1).setMaxWidth(500);
 
         setupSpeedSearch();
 

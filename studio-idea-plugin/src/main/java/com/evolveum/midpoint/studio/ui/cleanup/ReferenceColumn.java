@@ -2,11 +2,9 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.ui.NamedItem;
-import com.evolveum.midpoint.studio.ui.DefaultColumnInfo;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
-
-import javax.xml.namespace.QName;
 
 public class ReferenceColumn extends DefaultColumnInfo {
 
@@ -18,8 +16,7 @@ public class ReferenceColumn extends DefaultColumnInfo {
                         return StudioLocalization.message("MissingObjectTableModel.all");
                     }
 
-                    if (o instanceof QName qname) {
-                        ObjectTypes type = ObjectTypes.getObjectTypeFromTypeQNameIfKnown(qname);
+                    if (o instanceof ObjectTypes type) {
                         return StudioLocalization.get().translateEnum(type, "MissingObjectTableModel.unknown");
                     }
 
@@ -29,6 +26,9 @@ public class ReferenceColumn extends DefaultColumnInfo {
 
                     return o.toString();
                 });
+
+        setMinWidth(50);
+        setPreferredWidth(200);
     }
 
     @Override

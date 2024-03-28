@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.cleanup;
 
 import com.evolveum.midpoint.studio.impl.configuration.ReferenceDecisionConfiguration;
-import com.evolveum.midpoint.studio.ui.DefaultColumnInfo;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 
 public class DecisionColumn extends DefaultColumnInfo<Object, Boolean> {
 
@@ -13,6 +13,10 @@ public class DecisionColumn extends DefaultColumnInfo<Object, Boolean> {
         });
 
         this.decision = decision;
+
+        setPreferredWidth(40);
+        setMinWidth(40);
+        setMaxWidth(40);
     }
 
     @Override

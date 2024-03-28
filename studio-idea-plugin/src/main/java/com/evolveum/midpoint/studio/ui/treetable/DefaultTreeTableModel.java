@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui;
+package com.evolveum.midpoint.studio.ui.treetable;
 
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;

@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui.cleanup;
 
-import com.evolveum.midpoint.studio.ui.DefaultTreeTable;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 
 public class MissingObjectsTable extends DefaultTreeTable<MissingObjectTableModel> {
 
@@ -14,16 +14,5 @@ public class MissingObjectsTable extends DefaultTreeTable<MissingObjectTableMode
         setDragEnabled(false);
 
         this.tableHeader.setReorderingAllowed(false);
-
-        this.columnModel.getColumn(0).setPreferredWidth(200);
-        this.columnModel.getColumn(0).setMinWidth(50);
-
-        this.columnModel.getColumn(1).setPreferredWidth(40);
-        this.columnModel.getColumn(1).setMinWidth(40);
-        this.columnModel.getColumn(1).setMaxWidth(40);
-
-        this.columnModel.getColumn(1).setPreferredWidth(40);
-        this.columnModel.getColumn(1).setMinWidth(40);
-        this.columnModel.getColumn(1).setMaxWidth(40);
     }
 }
