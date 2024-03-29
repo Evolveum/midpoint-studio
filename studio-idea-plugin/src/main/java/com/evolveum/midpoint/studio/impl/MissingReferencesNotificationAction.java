@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.studio.impl.configuration.ObjectReferencesConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingObjectRefsDialog;
-import com.evolveum.midpoint.studio.ui.configuration.MissingReferencesConfigurable;
+import com.evolveum.midpoint.studio.ui.configuration.MissingRefObjectsConfigurable;
 import com.evolveum.midpoint.studio.util.ActionUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.intellij.notification.Notification;
@@ -18,11 +18,11 @@ public class MissingReferencesNotificationAction extends NotificationAction {
 
     private static final String TEXT = "Configure missing...";
 
-    private final List<ObjectReferencesConfiguration> data;
+    private final List<MissingRefObject> data;
 
     private final boolean summary;
 
-    public MissingReferencesNotificationAction(@NotNull List<ObjectReferencesConfiguration> data, boolean summary) {
+    public MissingReferencesNotificationAction(@NotNull List<MissingRefObject> data, boolean summary) {
         super(TEXT);
 
         this.data = data;
@@ -34,7 +34,7 @@ public class MissingReferencesNotificationAction extends NotificationAction {
         Project project = e.getProject();
 
         if (summary) {
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, MissingReferencesConfigurable.class);
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, MissingRefObjectsConfigurable.class);
             return;
         }
 
@@ -53,7 +53,7 @@ public class MissingReferencesNotificationAction extends NotificationAction {
         ActionUtils.runDownloadTask(project, references, false);
     }
 
-    private List<ObjectReferenceType> createRefsForDownload(List<ObjectReferencesConfiguration> objects) {
+    private List<ObjectReferenceType> createRefsForDownload(List<MissingRefObject> objects) {
         return List.of(); // todo implement
     }
 

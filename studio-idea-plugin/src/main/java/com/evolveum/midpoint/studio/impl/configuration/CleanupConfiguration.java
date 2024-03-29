@@ -25,7 +25,7 @@ public class CleanupConfiguration implements Serializable {
 
     private boolean removeContainerIds;
 
-    private MissingReferencesConfiguration missingReferences;
+    private MissingRefObjects missingReferences;
 
     public @NotNull List<CleanupPathConfiguration> getCleanupPaths() {
         if (cleanupPaths == null) {
@@ -78,15 +78,15 @@ public class CleanupConfiguration implements Serializable {
         this.removeContainerIds = removeContainerIds;
     }
 
-    public MissingReferencesConfiguration getMissingReferences() {
+    public MissingRefObjects getMissingReferences() {
         if (missingReferences == null) {
-            missingReferences = new MissingReferencesConfiguration();
-            missingReferences.setDefaultDecision(ReferenceDecisionConfiguration.ALWAYS);
+            missingReferences = new MissingRefObjects();
+            missingReferences.setDefaultAction(MissingRefAction.ALWAYS_DOWNLOAD);
         }
         return missingReferences;
     }
 
-    public void setMissingReferences(MissingReferencesConfiguration missingReferences) {
+    public void setMissingReferences(MissingRefObjects missingReferences) {
         this.missingReferences = missingReferences;
     }
 

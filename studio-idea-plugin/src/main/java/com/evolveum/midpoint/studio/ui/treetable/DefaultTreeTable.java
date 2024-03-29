@@ -8,6 +8,8 @@ import com.intellij.util.ui.ColumnInfo;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable {
@@ -27,13 +29,19 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
         Integer treeColumnIndex = null;
         for (int i = 0; i < getColumnModel().getColumnCount(); i++) {
             ColumnInfo ci = getTableModel().getColumnInfo(i);
+            TableColumn column = this.columnModel.getColumn(i);
 
             if (treeColumnIndex == null && TreeTableModel.class.equals(ci.getColumnClass())) {
                 treeColumnIndex = i;
             }
 
+            TableCellEditor editor = ci.getEditor(null);
+            if (editor != null) {
+                column.setCellEditor(editor);
+            }
+
             if (ci instanceof DefaultColumnInfo<?, ?> dci) {
-                TableColumn column = this.columnModel.getColumn(i);
+
                 if (dci.getMinWidth() != null) {
                     column.setMinWidth(dci.getMinWidth());
                 }

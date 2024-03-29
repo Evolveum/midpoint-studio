@@ -72,8 +72,8 @@
         <projectConfigurable
                 parentId="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
                 groupWeight="50"
-                instance="com.evolveum.midpoint.studio.ui.configuration.MissingReferencesConfigurable"
-                id="com.evolveum.midpoint.studio.ui.configuration.MissingReferencesConfigurable"
+                instance="com.evolveum.midpoint.studio.ui.configuration.MissingRefObjectsConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.MissingRefObjectsConfigurable"
                 key="MissingReferencesConfigurable.title"
                 bundle="messages.MidPointStudio"/>
 

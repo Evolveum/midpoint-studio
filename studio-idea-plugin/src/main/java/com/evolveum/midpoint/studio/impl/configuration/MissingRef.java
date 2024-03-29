@@ -10,8 +10,8 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 
-@Tag("reference")
-public class ReferenceConfiguration implements Serializable, Comparable<ReferenceConfiguration> {
+@Tag("missingReference")
+public class MissingRef implements Serializable, Comparable<MissingRef> {
 
     @Attribute
     private String oid;
@@ -20,7 +20,7 @@ public class ReferenceConfiguration implements Serializable, Comparable<Referenc
     private QName type;
 
     @Attribute
-    private ReferenceDecisionConfiguration decision;
+    private MissingRefAction action;
 
     public String getOid() {
         return oid;
@@ -38,43 +38,43 @@ public class ReferenceConfiguration implements Serializable, Comparable<Referenc
         this.type = type;
     }
 
-    public ReferenceDecisionConfiguration getDecision() {
-        return decision;
+    public MissingRefAction getAction() {
+        return action;
     }
 
-    public void setDecision(ReferenceDecisionConfiguration decision) {
-        this.decision = decision;
+    public void setAction(MissingRefAction action) {
+        this.action = action;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ReferenceConfiguration that = (ReferenceConfiguration) o;
+        MissingRef that = (MissingRef) o;
         return Objects.equals(oid, that.oid)
                 && Objects.equals(type, that.type)
-                && decision == that.decision;
+                && action == that.action;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(oid, type, decision);
+        return Objects.hash(oid, type, action);
     }
 
     @Override
-    public int compareTo(@NotNull ReferenceConfiguration o) {
+    public int compareTo(@NotNull MissingRef o) {
         return Comparator
-                .comparing(ReferenceConfiguration::getType, Comparator.nullsLast(Comparator.comparing(QName::toString)))
-                .thenComparing(ReferenceConfiguration::getOid, Comparator.nullsLast(Comparator.naturalOrder()))
+                .comparing(MissingRef::getType, Comparator.nullsLast(Comparator.comparing(QName::toString)))
+                .thenComparing(MissingRef::getOid, Comparator.nullsLast(Comparator.naturalOrder()))
                 .compare(this, o);
 
     }
 
-    public ReferenceConfiguration copy() {
-        ReferenceConfiguration copy = new ReferenceConfiguration();
+    public MissingRef copy() {
+        MissingRef copy = new MissingRef();
         copy.setOid(oid);
         copy.setType(type);
-        copy.setDecision(decision);
+        copy.setAction(action);
 
         return copy;
     }

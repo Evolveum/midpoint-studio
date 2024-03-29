@@ -2,17 +2,18 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 
-public class MissingObjectRefsTable extends DefaultTreeTable<MissingObjectRefsTableModel> {
+public class MissingRefObjectsTable extends DefaultTreeTable<MissingRefObjectsTableModel> {
 
-    public MissingObjectRefsTable() {
-        super(new MissingObjectRefsTableModel());
+    public MissingRefObjectsTable() {
+        super(new MissingRefObjectsTableModel());
 
         setupComponent();
     }
 
     private void setupComponent() {
         setDragEnabled(false);
-
+        setRootVisible(false);
+        
         this.tableHeader.setReorderingAllowed(false);
     }
 }

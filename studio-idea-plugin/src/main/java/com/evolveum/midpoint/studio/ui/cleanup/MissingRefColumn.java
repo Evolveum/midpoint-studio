@@ -6,13 +6,18 @@ import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 
-public class ReferenceColumn extends DefaultColumnInfo {
+public class MissingRefColumn extends DefaultColumnInfo {
 
-    public ReferenceColumn() {
+    public MissingRefColumn() {
         super(
                 "Reference",
                 o -> {
-                    if (o == null) {
+                    if (o == MissingRefObjectsTableModel.NODE_ROOT) {
+                        // shouldn't be visible at all
+                        return null;
+                    }
+
+                    if (o == MissingRefObjectsTableModel.NODE_ALL) {
                         return StudioLocalization.message("MissingObjectTableModel.all");
                     }
 

@@ -12,8 +12,8 @@ import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
-import com.evolveum.midpoint.studio.impl.configuration.ObjectReferencesConfiguration;
-import com.evolveum.midpoint.studio.impl.configuration.ReferenceConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
+import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.util.MavenUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -58,7 +58,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
      * <p>
      * Used for notification actions.
      */
-    private List<ObjectReferencesConfiguration> missingReferencesSummary;
+    private List<MissingRefObject> missingReferencesSummary;
 
     public CleanupFileTask(@NotNull AnActionEvent event, Environment environment) {
         super(event.getProject(), TITLE, NOTIFICATION_KEY);
@@ -271,15 +271,15 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         );
     }
 
-    private ObjectReferencesConfiguration buildObjectReferencesConfiguration(
+    private MissingRefObject buildObjectReferencesConfiguration(
             String oid, ObjectTypes type, List<ObjectReferenceType> missingReferences) {
 
-        ObjectReferencesConfiguration config = new ObjectReferencesConfiguration();
+        MissingRefObject config = new MissingRefObject();
         config.setOid(oid);
         config.setType(type.getTypeQName());
 
         for (ObjectReferenceType ref : missingReferences) {
-            ReferenceConfiguration rc = new ReferenceConfiguration();
+            MissingRef rc = new MissingRef();
             rc.setOid(ref.getOid());
             rc.setType(ref.getType());
 
@@ -291,7 +291,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
 
     private NotificationAction[] createNotificationActions(
-            VirtualFile file, List<ObjectReferencesConfiguration> missingReferences, boolean summary) {
+            VirtualFile file, List<MissingRefObject> missingReferences, boolean summary) {
 
         List<NotificationAction> actions = new ArrayList<>();
         if (file != null) {

@@ -20,10 +20,10 @@ public class DownloadMissingNotificationAction extends NotificationAction {
 
     private final Project project;
 
-    private final List<ObjectReferencesConfiguration> data;
+    private final List<MissingRefObject> data;
 
     public DownloadMissingNotificationAction(
-            @NotNull Project project, @NotNull List<ObjectReferencesConfiguration> data) {
+            @NotNull Project project, @NotNull List<MissingRefObject> data) {
         super(TEXT);
 
         this.project = project;
@@ -59,14 +59,14 @@ public class DownloadMissingNotificationAction extends NotificationAction {
     private List<ObjectReferenceType> computeDownloadOnly(
             String oid, ObjectTypes type, List<ObjectReferenceType> missingReferences) {
 
-        MissingReferencesConfiguration missingRefsConfig = CleanupService.get(project).getSettings().getMissingReferences();
-        ObjectReferencesConfiguration objectRefsConfig = missingRefsConfig.getObjects().stream()
+        MissingRefObjects missingRefsConfig = CleanupService.get(project).getSettings().getMissingReferences();
+        MissingRefObject objectRefsConfig = missingRefsConfig.getObjects().stream()
                 .filter(orc -> Objects.equals(oid, orc.getOid()))
                 .findFirst()
                 .orElse(null);
 
-        Map<String, ReferenceDecisionConfiguration> map = objectRefsConfig.getReferences().stream()
-                .collect(Collectors.toMap(ReferenceConfiguration::getOid, o -> o.getDecision()));
+        Map<String, MissingRefAction> map = objectRefsConfig.getReferences().stream()
+                .collect(Collectors.toMap(MissingRef::getOid, o -> o.getAction()));
 
         // todo use this to filter existing files
 //        ObjectFileBasedIndexImpl.getVirtualFiles()
@@ -74,7 +74,7 @@ public class DownloadMissingNotificationAction extends NotificationAction {
         return missingReferences.stream()
                 .filter(o -> {
                     if (objectRefsConfig == null
-                            || Objects.equals(missingRefsConfig.getDefaultDecision(), ReferenceDecisionConfiguration.ALWAYS)) {
+                            || Objects.equals(missingRefsConfig.getDefaultAction(), MissingRefAction.ALWAYS_DOWNLOAD)) {
                         return true;
                     }
 
