@@ -27,8 +27,12 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
             new MissingRefActionColumn()
     );
 
-    public MissingRefObjectsTableModel() {
+    private final boolean summary;
+
+    public MissingRefObjectsTableModel(boolean summary) {
         super(COLUMNS);
+
+        this.summary = summary;
     }
 
     @Override

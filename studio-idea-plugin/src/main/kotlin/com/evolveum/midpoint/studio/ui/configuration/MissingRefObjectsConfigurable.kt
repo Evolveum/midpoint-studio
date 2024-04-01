@@ -1,10 +1,6 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
-import com.evolveum.midpoint.studio.impl.configuration.CleanupService
-import com.evolveum.midpoint.studio.impl.configuration.MissingRef
-import com.evolveum.midpoint.studio.impl.configuration.MissingRefObjects
-import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction
-import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject
+import com.evolveum.midpoint.studio.impl.configuration.*
 import com.evolveum.midpoint.studio.ui.MissingRefObjectsEditor
 import com.evolveum.midpoint.studio.util.StudioLocalization
 import com.evolveum.midpoint.studio.util.StudioLocalization.message
@@ -30,7 +26,7 @@ open class MissingRefObjectsConfigurable(val project: Project) :
         configuration = loadConfiguration()
 
         configuration = MissingRefObjects()
-        configuration.defaultAction = MissingRefAction.ALWAYS_DOWNLOAD
+        configuration.defaultAction = MissingRefAction.DOWNLOAD
 
         val obj = MissingRefObject()
         obj.type = UserType.COMPLEX_TYPE
@@ -39,7 +35,7 @@ open class MissingRefObjectsConfigurable(val project: Project) :
         val ref = MissingRef()
         ref.oid = "456"
         ref.type = ShadowType.COMPLEX_TYPE
-        ref.action = MissingRefAction.ALWAYS_DOWNLOAD
+        ref.action = MissingRefAction.DOWNLOAD
         obj.references.add(ref)
 
         configuration.objects.add(obj)
@@ -84,8 +80,7 @@ open class MissingRefObjectsConfigurable(val project: Project) :
                     comboBox(
                         listOf(
                             MissingRefAction.IGNORE,
-                            MissingRefAction.ALWAYS_DOWNLOAD,
-                            MissingRefAction.DOWNLOAD_IF_MISSING
+                            MissingRefAction.DOWNLOAD
                         ),
                         SimpleListCellRenderer.create(
                             StudioLocalization.get().translate("ReferenceDecisionConfiguration.null")

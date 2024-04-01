@@ -6,9 +6,9 @@ import com.intellij.util.ui.ColumnInfo;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
 
-public class DefaultColumnInfo<UserObject, Object> extends ColumnInfo<DefaultMutableTreeTableNode, Object> {
+public class DefaultColumnInfo<UO, O> extends ColumnInfo<DefaultMutableTreeTableNode, O> {
 
-    private Function<UserObject, Object> valueOf;
+    private Function<UO, O> valueOf;
 
     private Integer minWidth;
     private Integer maxWidth;
@@ -18,15 +18,15 @@ public class DefaultColumnInfo<UserObject, Object> extends ColumnInfo<DefaultMut
         this(name, null);
     }
 
-    public DefaultColumnInfo(@NlsContexts.ColumnName String name, Function<UserObject, Object> valueOf) {
+    public DefaultColumnInfo(@NlsContexts.ColumnName String name, Function<UO, O> valueOf) {
         super(name);
 
         this.valueOf = valueOf;
     }
 
     @Override
-    public @Nullable Object valueOf(DefaultMutableTreeTableNode node) {
-        return valueOf != null ? valueOf.fun((UserObject) node.getUserObject()) : null;
+    public @Nullable O valueOf(DefaultMutableTreeTableNode node) {
+        return valueOf != null ? valueOf.fun((UO) node.getUserObject()) : null;
     }
 
     public Integer getMinWidth() {

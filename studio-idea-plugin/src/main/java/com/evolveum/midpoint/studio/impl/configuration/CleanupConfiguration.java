@@ -81,7 +81,7 @@ public class CleanupConfiguration implements Serializable {
     public MissingRefObjects getMissingReferences() {
         if (missingReferences == null) {
             missingReferences = new MissingRefObjects();
-            missingReferences.setDefaultAction(MissingRefAction.ALWAYS_DOWNLOAD);
+            missingReferences.setDefaultAction(MissingRefAction.DOWNLOAD);
         }
         return missingReferences;
     }

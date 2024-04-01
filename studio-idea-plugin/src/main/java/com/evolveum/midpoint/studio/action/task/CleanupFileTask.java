@@ -12,8 +12,8 @@ import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
-import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
+import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.util.MavenUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -265,8 +265,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
                         file,
                         List.of(
                                 buildObjectReferencesConfiguration(object.getOid(), object.getType(), missingReferences)
-                        ),
-                        false
+                        )
                 )
         );
     }
@@ -290,16 +289,14 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
     }
 
 
-    private NotificationAction[] createNotificationActions(
-            VirtualFile file, List<MissingRefObject> missingReferences, boolean summary) {
-
+    private NotificationAction[] createNotificationActions(VirtualFile file, List<MissingRefObject> missingReferences) {
         List<NotificationAction> actions = new ArrayList<>();
         if (file != null) {
             actions.add(new SeeObjectNotificationAction(file));
         }
 
         if (!missingReferences.isEmpty()) {
-            actions.add(new MissingReferencesNotificationAction(missingReferences, summary));
+            actions.add(new MissingReferencesNotificationAction(missingReferences));
         }
 
         DownloadMissingNotificationAction downloadAction =
@@ -324,6 +321,6 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         // todo fix this for whole cleanup - how to compute missing references and download only
         //  ...and oid/type if this is for all
 
-        return createNotificationActions(null, missingReferencesSummary, true);
+        return createNotificationActions(null, missingReferencesSummary);
     }
 }

@@ -4,7 +4,5 @@ public enum MissingRefAction {
 
     IGNORE,
 
-    ALWAYS_DOWNLOAD,
-
-    DOWNLOAD_IF_MISSING,
+    DOWNLOAD,
 }

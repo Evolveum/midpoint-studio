@@ -4,8 +4,8 @@ import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 
 public class MissingRefObjectsTable extends DefaultTreeTable<MissingRefObjectsTableModel> {
 
-    public MissingRefObjectsTable() {
-        super(new MissingRefObjectsTableModel());
+    public MissingRefObjectsTable(boolean summary) {
+        super(new MissingRefObjectsTableModel(summary));
 
         setupComponent();
     }
