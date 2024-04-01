@@ -25,6 +25,10 @@ public class MissingObjectRefsDialog extends DialogWrapper {
         editor = new MissingRefObjectsEditor(project, objects);
         panel = editor.createComponent();
 
+        setTitle("Missing references configuration");
+        setOKButtonText("Save");
+        setSize(800, 600);
+
         init();
     }
 

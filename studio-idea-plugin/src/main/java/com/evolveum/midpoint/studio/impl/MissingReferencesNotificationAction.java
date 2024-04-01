@@ -1,9 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.studio.impl.configuration.CleanupConfiguration;
-import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
-import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
-import com.evolveum.midpoint.studio.impl.configuration.MissingRefObjects;
+import com.evolveum.midpoint.studio.impl.configuration.*;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingObjectRefsDialog;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingRefMixin;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
@@ -13,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,9 +34,35 @@ public class MissingReferencesNotificationAction extends NotificationAction {
     public void actionPerformed(AnActionEvent e, Notification notification) {
         Project project = e.getProject();
 
-        // todo get settings and pass proper configuration part to dialog
+        List<MissingRefObject> cloned = data.stream()
+                .map(MissingRefObject::copy)
+                .collect(Collectors.toList());
 
-        MissingObjectRefsDialog dialog = new MissingObjectRefsDialog(project, List.of());
+        CleanupService cs = CleanupService.get(project);
+        MissingRefObjects settings = cs.getSettings().getMissingReferences();
+
+        Map<MissingRefMixin.Key, MissingRefObject> existing = settings.getObjects().stream()
+                .collect(Collectors.toMap(o -> new MissingRefMixin.Key(o.getOid(), o.getType()), o -> o));
+
+        for (MissingRefObject clonedObject : cloned) {
+            MissingRefMixin.Key key = new MissingRefMixin.Key(clonedObject.getOid(), clonedObject.getType());
+            MissingRefObject existingObject = existing.get(key);
+
+            Map<MissingRefMixin.Key, MissingRefAction> existingRefs = existingObject != null ?
+                    existingObject.getReferences().stream()
+                            .collect(Collectors.toMap(o -> new MissingRefMixin.Key(o.getOid(), o.getType()), o -> o.getAction())) :
+                    new HashMap<>();
+
+            clonedObject.getReferences().forEach(mr -> {
+                MissingRefMixin.Key refKey = new MissingRefMixin.Key(mr.getOid(), mr.getType());
+                MissingRefAction action = existingRefs.get(refKey);
+                if (action != null) {
+                    mr.setAction(action);
+                }
+            });
+        }
+
+        MissingObjectRefsDialog dialog = new MissingObjectRefsDialog(project, cloned);
         if (!dialog.showAndGet()) {
             return;
         }
