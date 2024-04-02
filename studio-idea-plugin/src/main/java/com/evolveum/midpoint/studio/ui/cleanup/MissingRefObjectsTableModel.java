@@ -8,11 +8,9 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.util.ui.ColumnInfo;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import javax.swing.tree.TreePath;
 import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<MissingRefObject>> {
@@ -70,5 +68,44 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
         setRoot(rootNode);
 
         super.setData(data);
+    }
+
+    public void removeNodes(int[] selected) {
+        for (int i = 0; i < selected.length; i++) {
+            TreePath path = getTree().getPathForRow(selected[i]);
+            DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) path.getLastPathComponent();
+
+            removeNodeFromParent(node);
+
+            Object userObject = node.getUserObject();
+            if (userObject instanceof MissingRefNode refNode) {
+                Object value = refNode.getValue();
+                if (value == NODE_ALL || value == NODE_ROOT) {
+                    getData().clear();
+                } else if (value instanceof ObjectTypes ot) {
+                    getData().removeIf(o -> o.getType() == ot.getTypeQName());
+                } else if (value instanceof MissingRefObject object) {
+                    getData().removeIf(o ->
+                            Objects.equals(o.getOid(), object.getOid()) && Objects.equals(o.getType(), object.getType()));
+                }
+            } else if (userObject instanceof MissingRef ref) {
+                getData().forEach(o -> o.getReferences().remove(ref));
+            }
+        }
+    }
+
+    public void removeNodeFromParent(DefaultMutableTreeTableNode node) {
+        DefaultMutableTreeTableNode parent = (DefaultMutableTreeTableNode) node.getParent();
+        if (parent == null) {
+            return;
+        }
+
+        int[] childIndex = new int[1];
+        Object[] removedArray = new Object[1];
+
+        childIndex[0] = parent.getIndex(node);
+        parent.remove(childIndex[0]);
+        removedArray[0] = node;
+        nodesWereRemoved(parent, childIndex, removedArray);
     }
 }

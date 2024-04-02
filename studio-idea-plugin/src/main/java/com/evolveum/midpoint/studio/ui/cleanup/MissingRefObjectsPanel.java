@@ -6,9 +6,12 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.util.ui.tree.TreeUtil;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
+import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MissingRefObjectsPanel extends JPanel {
@@ -55,6 +58,8 @@ public class MissingRefObjectsPanel extends JPanel {
     }
 
     private void removeItems(MissingRefObjectsTable table) {
-        // todo implement
+        int[] selected = table.getSelectedRows();
+
+        table.getTableModel().removeNodes(selected);
     }
 }

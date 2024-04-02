@@ -318,6 +318,6 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         // todo fix this for whole cleanup - how to compute missing references and download only
         //  ...and oid/type if this is for all
 
-        return createNotificationActions(null, Collections.unmodifiableList(missingReferencesSummary));
+        return createNotificationActions(null, new ArrayList<>(missingReferencesSummary));
     }
 }

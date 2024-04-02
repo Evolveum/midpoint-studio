@@ -1,11 +1,11 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
-import com.evolveum.midpoint.studio.impl.configuration.*
+import com.evolveum.midpoint.studio.impl.configuration.CleanupService
+import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction
+import com.evolveum.midpoint.studio.impl.configuration.MissingRefObjects
 import com.evolveum.midpoint.studio.ui.MissingRefObjectsEditor
 import com.evolveum.midpoint.studio.util.StudioLocalization
 import com.evolveum.midpoint.studio.util.StudioLocalization.message
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ShadowType
-import com.evolveum.midpoint.xml.ns._public.common.common_3.UserType
 import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
@@ -24,21 +24,6 @@ open class MissingRefObjectsConfigurable(val project: Project) :
 
     init {
         configuration = loadConfiguration()
-
-        configuration = MissingRefObjects()
-        configuration.defaultAction = MissingRefAction.DOWNLOAD
-
-        val obj = MissingRefObject()
-        obj.type = UserType.COMPLEX_TYPE
-        obj.oid = "123"
-
-        val ref = MissingRef()
-        ref.oid = "456"
-        ref.type = ShadowType.COMPLEX_TYPE
-        ref.action = MissingRefAction.DOWNLOAD
-        obj.references.add(ref)
-
-        configuration.objects.add(obj)
 
         editor = MissingRefObjectsEditor(project, configuration.objects)
     }
@@ -76,23 +61,23 @@ open class MissingRefObjectsConfigurable(val project: Project) :
                 }
                     .resizableRow()
                     .rowComment(message("MissingReferencesConfigurable.missingObjects.comment"))
-                row(message("MissingReferencesConfigurable.defaultDecision")) {
-                    comboBox(
-                        listOf(
-                            MissingRefAction.IGNORE,
-                            MissingRefAction.DOWNLOAD
-                        ),
-                        SimpleListCellRenderer.create(
-                            StudioLocalization.get().translate("ReferenceDecisionConfiguration.null")
-                        ) { StudioLocalization.get().translateEnum(it) }
-                    )
-                        .bindItem(
-                            { configuration.defaultAction },
-                            { configuration.defaultAction = it }
-                        )
-                }
-                    .rowComment(message("MissingReferencesConfigurable.defaultDecision.comment"))
             }
+            row(message("MissingReferencesConfigurable.defaultDecision")) {
+                comboBox(
+                    listOf(
+                        MissingRefAction.IGNORE,
+                        MissingRefAction.DOWNLOAD
+                    ),
+                    SimpleListCellRenderer.create(
+                        StudioLocalization.get().translate("ReferenceDecisionConfiguration.null")
+                    ) { StudioLocalization.get().translateEnum(it) }
+                )
+                    .bindItem(
+                        { configuration.defaultAction },
+                        { configuration.defaultAction = it }
+                    )
+            }
+                .rowComment(message("MissingReferencesConfigurable.defaultDecision.comment"))
         }
     }
 }
