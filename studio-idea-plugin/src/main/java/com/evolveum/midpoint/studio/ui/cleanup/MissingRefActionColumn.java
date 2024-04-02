@@ -16,20 +16,8 @@ import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRefAction> {
-
-    private static final MissingRefAction[] VALUES;
-
-    static {
-        List<MissingRefAction> actions = new ArrayList<>();
-//        actions.add(null);
-        actions.addAll(List.of(MissingRefAction.values()));
-
-        VALUES = actions.toArray(new MissingRefAction[0]);
-    }
 
     public MissingRefActionColumn() {
         super("Action");
@@ -65,14 +53,14 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
         Object object = node.getUserObject();
 
         if (object instanceof MissingRefNode refNode) {
-            return refNode.getAction();
+            return refNode.getAction() != null ? refNode.getAction() : MissingRefAction.UNDEFINED;
         }
 
         if (object instanceof MissingRef ref) {
-            return ref.getAction();
+            return ref.getAction() != null ? ref.getAction() : MissingRefAction.UNDEFINED;
         }
 
-        return null;
+        return MissingRefAction.UNDEFINED;
     }
 
     @Override
@@ -94,19 +82,11 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
     private static class Editor extends ComboBoxTableRenderer<MissingRefAction> {
 
         public Editor() {
-            this(VALUES);
-        }
-
-        public Editor(MissingRefAction[] values) {
-            super(values);
+            super(MissingRefAction.values());
         }
 
         @Override
         protected @NlsContexts.Label String getTextFor(@NotNull MissingRefAction value) {
-            if (value == null) {
-                return StudioLocalization.get().translate("MissingRefAction.null");
-            }
-
             return StudioLocalization.get().translateEnum(value);
         }
 

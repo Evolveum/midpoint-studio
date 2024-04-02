@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +79,8 @@ public class MissingReferencesNotificationAction extends NotificationAction {
                 .collect(Collectors.toList());
 
         for (MissingRefObject object : cloned) {
-            object.getReferences().removeIf(ref -> ref.getAction() == null);
+            object.getReferences()
+                    .removeIf(ref -> ref.getAction() == null || ref.getAction() == MissingRefAction.UNDEFINED);
         }
 
         CleanupService cs = CleanupService.get(project);

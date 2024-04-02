@@ -8,6 +8,10 @@ public class MissingRefNode<T> {
 
     private MissingRefAction action;
 
+    public MissingRefNode(T value) {
+        this(value, MissingRefAction.UNDEFINED);
+    }
+
     public MissingRefNode(T value, MissingRefAction action) {
         this.value = value;
         this.action = action;

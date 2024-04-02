@@ -36,9 +36,9 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
             data = new ArrayList<>();
         }
 
-        DefaultMutableTreeTableNode rootNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(NODE_ROOT, null));
+        DefaultMutableTreeTableNode rootNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(NODE_ROOT));
 
-        DefaultMutableTreeTableNode allNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(NODE_ALL, null));
+        DefaultMutableTreeTableNode allNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(NODE_ALL));
         rootNode.add(allNode);
 
         Map<QName, List<MissingRefObject>> map = data.stream()
@@ -53,15 +53,11 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
                 continue;
             }
 
-            DefaultMutableTreeTableNode typeNode =
-                    new DefaultMutableTreeTableNode(
-                            new MissingRefNode<>(type, null));
+            DefaultMutableTreeTableNode typeNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(type));
             allNode.add(typeNode);
 
             for (MissingRefObject object : list) {
-                DefaultMutableTreeTableNode objectNode =
-                        new DefaultMutableTreeTableNode(
-                                new MissingRefNode<>(object, null));
+                DefaultMutableTreeTableNode objectNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(object));
                 typeNode.add(objectNode);
 
                 for (MissingRef ref : object.getReferences()) {
