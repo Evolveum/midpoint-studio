@@ -5,4 +5,6 @@ public enum MissingRefAction {
     IGNORE,
 
     DOWNLOAD,
+
+    UNDEFINED
 }

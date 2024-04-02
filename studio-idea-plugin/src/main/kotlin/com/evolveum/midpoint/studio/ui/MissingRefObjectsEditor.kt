@@ -13,7 +13,7 @@ class MissingRefObjectsEditor(val project: Project, val objects: List<MissingRef
     private val table: MissingRefObjectsTable
 
     init {
-        table = MissingRefObjectsTable(true)
+        table = MissingRefObjectsTable()
         table.tableModel.data = objects
     }
 

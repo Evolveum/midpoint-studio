@@ -40,8 +40,12 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
                 column.setCellEditor(editor);
             }
 
-            if (ci instanceof DefaultColumnInfo<?, ?> dci) {
+            TableCellRenderer renderer = ci.getRenderer(null);
+            if (renderer != null) {
+                column.setCellRenderer(renderer);
+            }
 
+            if (ci instanceof DefaultColumnInfo<?, ?> dci) {
                 if (dci.getMinWidth() != null) {
                     column.setMinWidth(dci.getMinWidth());
                 }

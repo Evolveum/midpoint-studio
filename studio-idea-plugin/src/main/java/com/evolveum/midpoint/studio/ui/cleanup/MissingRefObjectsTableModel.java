@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
-import com.evolveum.midpoint.studio.ui.NamedItem;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.util.ui.ColumnInfo;
@@ -27,12 +26,8 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
             new MissingRefActionColumn()
     );
 
-    private final boolean summary;
-
-    public MissingRefObjectsTableModel(boolean summary) {
+    public MissingRefObjectsTableModel() {
         super(COLUMNS);
-
-        this.summary = summary;
     }
 
     @Override
@@ -41,9 +36,9 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
             data = new ArrayList<>();
         }
 
-        DefaultMutableTreeTableNode rootNode = new DefaultMutableTreeTableNode(NODE_ROOT);
+        DefaultMutableTreeTableNode rootNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(NODE_ROOT, null));
 
-        DefaultMutableTreeTableNode allNode = new DefaultMutableTreeTableNode(NODE_ALL);
+        DefaultMutableTreeTableNode allNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(NODE_ALL, null));
         rootNode.add(allNode);
 
         Map<QName, List<MissingRefObject>> map = data.stream()
@@ -52,26 +47,25 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
         List<ObjectTypes> types = Arrays.asList(ObjectTypes.values());
         types.sort(MidPointUtils.OBJECT_TYPES_COMPARATOR);
 
-        // todo how to get unknown type list from map?
         for (ObjectTypes type : types) {
             List<MissingRefObject> list = map.get(type.getTypeQName());
             if (list == null) {
                 continue;
             }
 
-            DefaultMutableTreeTableNode typeNode = new DefaultMutableTreeTableNode(type);
+            DefaultMutableTreeTableNode typeNode =
+                    new DefaultMutableTreeTableNode(
+                            new MissingRefNode<>(type, null));
             allNode.add(typeNode);
 
             for (MissingRefObject object : list) {
-                DefaultMutableTreeTableNode objectNode = new DefaultMutableTreeTableNode(
-                        new NamedItem<>(object, () -> object.getOid())  // todo improve loading of names
-                );
+                DefaultMutableTreeTableNode objectNode =
+                        new DefaultMutableTreeTableNode(
+                                new MissingRefNode<>(object, null));
                 typeNode.add(objectNode);
 
                 for (MissingRef ref : object.getReferences()) {
-                    DefaultMutableTreeTableNode refNode = new DefaultMutableTreeTableNode(
-                            new NamedItem<>(ref, () -> ref.getOid() + "(" + ref.getType() + ")")
-                    );
+                    DefaultMutableTreeTableNode refNode = new DefaultMutableTreeTableNode(ref);
                     objectNode.add(refNode);
                 }
             }
