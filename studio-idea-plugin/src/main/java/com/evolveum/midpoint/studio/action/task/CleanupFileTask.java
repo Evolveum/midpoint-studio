@@ -36,10 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -321,6 +318,6 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         // todo fix this for whole cleanup - how to compute missing references and download only
         //  ...and oid/type if this is for all
 
-        return createNotificationActions(null, missingReferencesSummary);
+        return createNotificationActions(null, Collections.unmodifiableList(missingReferencesSummary));
     }
 }

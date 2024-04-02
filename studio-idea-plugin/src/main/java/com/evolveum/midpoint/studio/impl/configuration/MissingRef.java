@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 
-@Tag("missingReference")
+@Tag("reference")
 public class MissingRef implements Serializable, Comparable<MissingRef> {
 
     @Attribute

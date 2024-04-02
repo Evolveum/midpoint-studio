@@ -1,8 +1,9 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
 import com.evolveum.midpoint.studio.util.QNameConverter;
-import com.intellij.util.xmlb.annotations.OptionTag;
+import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
+import com.intellij.util.xmlb.annotations.XCollection;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
@@ -11,15 +12,18 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Tag("object")
 public class MissingRefObject implements Serializable, Comparable<MissingRefObject> {
 
+    @Attribute
     private String oid;
 
-    @OptionTag(tag = "type", nameAttribute = "", converter = QNameConverter.class)
+    @Attribute(converter = QNameConverter.class)
     private QName type;
 
+    @XCollection(style = XCollection.Style.v2)
     private List<MissingRef> references;
 
     public String getOid() {
@@ -83,7 +87,7 @@ public class MissingRefObject implements Serializable, Comparable<MissingRefObje
 
         List<MissingRef> paths = getReferences().stream()
                 .map(MissingRef::copy)
-                .toList();
+                .collect(Collectors.toList());
         copy.setReferences(paths);
 
         return copy;
