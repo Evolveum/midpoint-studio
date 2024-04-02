@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.action;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,8 +24,8 @@ public class TestAction extends AnAction {
             return;
         }
 
-        boolean internal = ApplicationManager.getApplication().isInternal();
-        e.getPresentation().setVisible(internal);
+        boolean visible = MidPointUtils.isDevelopmentMode(true);
+        e.getPresentation().setVisible(visible);
     }
 
     @Override
