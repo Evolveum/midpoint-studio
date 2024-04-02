@@ -11,7 +11,6 @@ import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -1186,5 +1185,11 @@ public class MidPointUtils {
                 .filter(t -> t.getTypeQName().getLocalPart().equals(localPart))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public static boolean isDevelopmentMode(boolean enabled) {
+        boolean internal = ApplicationManager.getApplication().isInternal();
+
+        return enabled && internal;
     }
 }

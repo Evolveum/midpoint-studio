@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
+import com.evolveum.midpoint.prism.impl.query.PagingConvertor;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.query.builder.S_ConditionEntry;
 import com.evolveum.midpoint.schema.SearchResultList;
@@ -28,7 +29,9 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.prism.xml.ns._public.query_3.PagingType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
+import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.icons.AllIcons;
 import com.intellij.lang.Language;
 import com.intellij.lang.xml.XMLLanguage;
@@ -57,6 +60,7 @@ import javax.xml.namespace.QName;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -184,7 +188,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         EditorTextField editor = EditorTextFieldProvider.getInstance()
                 .getEditorField(lang, project, List.of(MonospaceEditorCustomization.getInstance()));
         editor.setOneLineMode(false);
-        
+
         if (objectType != null && editor.getDocument() != null) {
             QName typeHint = objectType.getSelected() != null ? objectType.getSelected().getTypeQName() : null;
             editor.getDocument().putUserData(AxiomQueryHints.ITEM_TYPE_HINT, typeHint);
@@ -397,49 +401,125 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         return "Returned " + count + " results. Selected " + selected + " objects";
     }
 
+    private String prepareQuery(ComboQueryType.Type queryType, String text) {
+        if (queryType == ComboQueryType.Type.QUERY_XML) {
+            return text;
+        }
+
+        String filterText = switch (queryType) {
+            case OID -> createMidpointQueryFilter(text, true, false);
+            case NAME -> createMidpointQueryFilter(text, false, true);
+            case NAME_OR_OID -> createMidpointQueryFilter(text, true, true);
+            case AXIOM -> text;
+            default -> throw new IllegalStateException("Unexpected value: " + queryType);
+        };
+
+        SearchFilterType filter = new SearchFilterType();
+        filter.setText(filterText);
+
+        QueryType query = new QueryType();
+        query.setFilter(filter);
+
+        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+        QueryFactory qf = ctx.queryFactory();
+        ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
+                ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);
+        PagingType pagingType = PagingConvertor.createPagingType(paging);
+        query.setPaging(pagingType);
+
+        try {
+            RunnableUtils.PluginClassCallable<String> callable = new RunnableUtils.PluginClassCallable<>() {
+
+                @Override
+                public String callWithPluginClassLoader() throws Exception {
+                    return ctx.serializerFor(PrismContext.LANG_XML).serializeRealValue(query);
+                }
+            };
+
+            return callable.call();
+        } catch (Exception ex) {
+            EnvironmentService em = EnvironmentService.getInstance(project);
+            Environment env = em.getSelected();
+
+            handleGenericException(env, "Couldn't serialize query", ex);
+        }
+
+        return null;
+    }
+
+    private String createMidpointQueryFilter(String text, boolean oid, boolean name) {
+        if (StringUtils.isBlank(text)) {
+            return null;
+        }
+
+        List<String> values = Arrays.stream(text.split("\n"))
+                .map(String::trim)
+                .filter(StringUtils::isNotEmpty)
+                .toList();
+
+        String oidFilter = "";
+        if (oid) {
+            List<String> oids = values.stream()
+                    .filter(s -> MidPointUtils.UUID_PATTERN.matcher(s).matches())
+                    .toList();
+
+            if (oids.size() != values.size()) {
+                List<String> incorrectOids = values.stream()
+                        .filter(s -> !MidPointUtils.UUID_PATTERN.matcher(s).matches())
+                        .toList();
+                printIncorrectOidsWarning(incorrectOids);
+            }
+
+            if (!oids.isEmpty()) {
+                List<String> quotedOids = oids.stream()
+                        .map(s -> "\"" + s + "\"")
+                        .toList();
+
+                // todo this should not be concatenation but via parameters
+                oidFilter = ". inOid (" + StringUtils.join(quotedOids, ", ") + ")";
+            }
+        }
+
+        String nameFilter = "";
+        if (name) {
+            // todo this should not be concatenation but via parameters
+            // name contains[polyStringNorm] "value" or ...
+            List<String> nameFilters = values.stream()
+                    .map(s -> "name contains[polyStringNorm] \"" + s + "\"")
+                    .toList();
+            nameFilter = StringUtils.join(nameFilters, " or ");
+        }
+
+        if (StringUtils.isNotEmpty(oidFilter) && StringUtils.isNotEmpty(nameFilter)) {
+            return nameFilter + " or " + oidFilter;
+        }
+
+        if (StringUtils.isNotEmpty(oidFilter)) {
+            return oidFilter;
+        }
+
+        return nameFilter;
+    }
+
+    private void printIncorrectOidsWarning(List<String> incorrect) {
+        MidPointService ms = MidPointService.get(project);
+
+        EnvironmentService em = EnvironmentService.getInstance(project);
+        Environment env = em.getSelected();
+        ms.printToConsole(
+                env, BrowseToolPanel.class, "Items in search filed that are not valid OIDs were filtered out ("
+                        + StringUtils.join(incorrect, ", ") + ").");
+    }
+
     private void processPerformed(AnActionEvent evt) {
         String query = this.query.getText();
         ComboQueryType.Type queryType = this.queryType.getSelected();
         ObjectTypes type = this.objectType.getSelected();
         List<ObjectType> selected = getResultsModel().getSelectedObjects();
 
-        if (ComboQueryType.Type.QUERY_XML != queryType && StringUtils.isNotEmpty(query)) {
-            // translate query
-            EnvironmentService em = EnvironmentService.getInstance(evt.getProject());
-            Environment env = em.getSelected();
+        String preparedQuery = prepareQuery(queryType, query);
 
-            try {
-                LOG.debug("Setting up midpoint client");
-                MidPointClient client = new MidPointClient(evt.getProject(), env);
-
-                LOG.debug("Translating object query");
-                ObjectQuery objectQuery = buildQuery(client);
-
-                ObjectPaging paging = objectQuery.getPaging();
-                if (paging != null) {
-                    // cleanup ordering, not necessary for bulk processing
-                    paging.setOrdering(new ObjectOrdering[0]);
-                }
-
-                PrismContext ctx = client.getPrismContext();
-                QueryConverter converter = ctx.getQueryConverter();
-                QueryType q = converter.createQueryType(objectQuery);
-
-                RunnableUtils.PluginClassCallable<String> callable = new RunnableUtils.PluginClassCallable<>() {
-
-                    @Override
-                    public String callWithPluginClassLoader() throws Exception {
-                        return ctx.serializerFor(PrismContext.LANG_XML).serializeRealValue(q);
-                    }
-                };
-
-                query = callable.call();
-            } catch (Exception ex) {
-                handleGenericException(env, "Couldn't serialize query", ex);
-            }
-        }
-
-        ProcessResultsDialog dialog = new ProcessResultsDialog(processResultsOptions, query, type, selected);
+        ProcessResultsDialog dialog = new ProcessResultsDialog(processResultsOptions, preparedQuery, type, selected);
         dialog.show();
 
         if (dialog.isOK() || dialog.isGenerate()) {
