@@ -92,4 +92,8 @@ public class MissingRefObject implements Serializable, Comparable<MissingRefObje
 
         return copy;
     }
+
+    public boolean isEmpty() {
+        return references == null || references.isEmpty();
+    }
 }

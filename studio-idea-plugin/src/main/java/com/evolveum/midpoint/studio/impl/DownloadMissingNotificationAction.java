@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
-import com.evolveum.midpoint.studio.ui.cleanup.MissingRefMixin;
+import com.evolveum.midpoint.studio.ui.cleanup.MissingRefUtils;
 import com.evolveum.midpoint.studio.util.ActionUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.intellij.notification.Notification;
@@ -16,7 +16,7 @@ import java.util.List;
  * Download missing references obtained via constructor.
  * They are filtered based on missing ref configuration before download.
  */
-public class DownloadMissingNotificationAction extends NotificationAction implements MissingRefMixin {
+public class DownloadMissingNotificationAction extends NotificationAction {
 
     private static final String TEXT = "Download missing";
 
@@ -34,7 +34,7 @@ public class DownloadMissingNotificationAction extends NotificationAction implem
 
         this.project = project;
 
-        this.references = computeDownloadOnly(project, data);
+        this.references = MissingRefUtils.computeDownloadOnly(project, data);
     }
 
     @Override

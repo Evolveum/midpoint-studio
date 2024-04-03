@@ -11,10 +11,10 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
-import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
-import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
+import com.evolveum.midpoint.studio.impl.configuration.*;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
+import com.evolveum.midpoint.studio.ui.cleanup.MissingRefKey;
+import com.evolveum.midpoint.studio.ui.cleanup.MissingRefUtils;
 import com.evolveum.midpoint.studio.util.MavenUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -36,7 +36,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +60,10 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
      */
     private List<MissingRefObject> missingReferencesSummary;
 
+    private Map<MissingRefKey, Map<MissingRefKey, MissingRefAction>> configActionMap;
+
+    private MissingRefAction defaultAction;
+
     public CleanupFileTask(@NotNull AnActionEvent event, Environment environment) {
         super(event.getProject(), TITLE, NOTIFICATION_KEY);
 
@@ -74,6 +81,15 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
     @Override
     protected void doRun(ProgressIndicator indicator) {
         missingReferencesSummary = new ArrayList<>();
+
+        CleanupService cs = CleanupService.get(getProject());
+
+        configActionMap = MissingRefUtils.buildActionMapFromConfiguration(getProject());
+
+        defaultAction = cs.getSettings().getMissingReferences().getDefaultAction();
+        if (defaultAction == null) {
+            defaultAction = MissingRefAction.UNDEFINED;
+        }
 
         super.doRun(indicator);
 
@@ -120,68 +136,81 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
                 return content;
             }
 
-            List<PrismObject<? extends ObjectType>> result = (List) objects.stream().map(PrismObject::clone).toList();
-
-            CleanupService cleanupService = CleanupService.get(getProject());
-
-            CleanupActionProcessor processor = cleanupService.createCleanupProcessor();
-
-            DefaultCleanupHandler handler = new DefaultCleanupHandler(MidPointUtils.DEFAULT_PRISM_CONTEXT) {
-
-                @Override
-                public boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
-                    return CleanupFileTask.this.onConfirmOptionalCleanup(event);
-                }
-
-                @Override
-                protected String getMidpointVersion() {
-                    String current = MavenUtils.getMidpointVersion(getProject());
-                    return current != null ? current : MidPointConstants.DEFAULT_MIDPOINT_VERSION;
-                }
-
-                @Override
-                protected <O extends ObjectType> boolean canResolveLocalObject(Class<O> type, String oid) {
-                    return CleanupFileTask.this.canResolveLocalObject(type, oid);
-                }
-
-                @Override
-                protected PrismObject<ConnectorType> resolveConnector(String oid) {
-                    return CleanupFileTask.this.resolveConnector(oid);
-                }
-            };
+            List<PrismObject<? extends ObjectType>> clonedObjects = (List) objects.stream()
+                    .map(PrismObject::clone)
+                    .toList();
 
             CleanupService cs = CleanupService.get(getProject());
-            handler.setWarnAboutMissingReferences(cs.getSettings().isWarnAboutMissingReferences());
 
+            CleanupActionProcessor processor = cs.createCleanupProcessor();
+
+            DefaultCleanupHandler handler = getHandler(cs);
             processor.setHandler(handler);
 
-            for (PrismObject<? extends ObjectType> obj : result) {
-                CleanupResult cleanupResult = processor.process(obj, Source.of(object.getFile(), object.getContent()));
+            for (PrismObject<? extends ObjectType> obj : clonedObjects) {
+                CleanupResult result = processor.process(obj, Source.of(object.getFile(), object.getContent()));
 
-                List<ObjectReferenceType> missingReferences = cleanupResult.getMissingReferences();
-                if (!missingReferences.isEmpty()) {
-                    missingReferencesSummary.add(
-                            buildObjectReferencesConfiguration(object.getOid(), object.getType(), missingReferences));
-                }
+                updateMissingReferencesSummary(object, result.getMessages());
 
-                publishCleanupNotifications(object, cleanupResult);
+                publishNotification(object, result.getMessages());
             }
 
-            if (objects.equals(result)) {
+            if (objects.equals(clonedObjects)) {
                 return content;
             }
 
             PrismSerializer<String> serializer = ClientUtils.getSerializer(MidPointUtils.DEFAULT_PRISM_CONTEXT);
-            if (result.size() == 1) {
-                return serializer.serialize(result.get(0));
+            if (clonedObjects.size() == 1) {
+                return serializer.serialize(clonedObjects.get(0));
             }
 
-            return serializer.serializeObjects((List) result);
+            return serializer.serializeObjects((List) clonedObjects);
         } catch (SchemaException | IOException ex) {
             LOG.error("Couldn't cleanup content for object " + object.getName(), ex);
         }
 
         return content;
+    }
+
+    private void updateMissingReferencesSummary(MidPointObject object, List<CleanupMessage<?>> messages) {
+        MissingRefObject missingRefObject =
+                buildObjectReferencesConfiguration(
+                        object.getOid(), object.getType(), messages);
+        if (!missingRefObject.isEmpty()) {
+            missingReferencesSummary.add(missingRefObject);
+        }
+    }
+
+    @NotNull
+    private DefaultCleanupHandler getHandler(CleanupService cs) {
+        DefaultCleanupHandler handler = new DefaultCleanupHandler(MidPointUtils.DEFAULT_PRISM_CONTEXT) {
+
+            @Override
+            public boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
+                return CleanupFileTask.this.onConfirmOptionalCleanup(event);
+            }
+
+            @Override
+            protected String getMidpointVersion() {
+                String current = MavenUtils.getMidpointVersion(getProject());
+                return current != null ? current : MidPointConstants.DEFAULT_MIDPOINT_VERSION;
+            }
+
+            @Override
+            protected <O extends ObjectType> boolean canResolveLocalObject(Class<O> type, String oid) {
+                return CleanupFileTask.this.canResolveLocalObject(type, oid);
+            }
+
+            @Override
+            protected PrismObject<ConnectorType> resolveConnector(String oid) {
+                return CleanupFileTask.this.resolveConnector(oid);
+            }
+        };
+
+        CleanupConfiguration configuration = cs.getSettings();
+        handler.setWarnAboutMissingReferences(configuration.isWarnAboutMissingReferences());
+
+        return handler;
     }
 
     private <O extends ObjectType> PrismObject<O> resolveConnector(String oid) {
@@ -209,31 +238,13 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         return !files.isEmpty();
     }
 
-    private void publishCleanupNotifications(MidPointObject object, CleanupResult result) {
-        for (CleanupMessage.Status status : CleanupMessage.Status.values()) {
-            List<CleanupMessage> messages = result.getMessages(status);
-
-            publishNotification(object, status, messages, result.getMissingReferences());
-        }
-    }
-
-    private void publishNotification(
-            MidPointObject object, CleanupMessage.Status status, List<CleanupMessage> messages,
-            List<ObjectReferenceType> missingReferences) {
-
+    private void publishNotification(MidPointObject object, List<CleanupMessage<?>> messages) {
         if (messages.isEmpty()) {
             return;
         }
 
-        NotificationType type = switch (status) {
-            case ERROR -> NotificationType.ERROR;
-            case WARNING -> NotificationType.WARNING;
-            case INFO -> NotificationType.INFORMATION;
-        };
-
         Map<String, Long> messagesCounted = messages.stream()
                 .collect(Collectors.groupingBy(cm -> cm.message().getFallbackMessage(), Collectors.counting()));
-
 
         List<String> msgs = messagesCounted.keySet().stream()
                 .map(m -> {
@@ -248,7 +259,8 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
                 .sorted()
                 .collect(Collectors.toList());
 
-        String msg = "Cleanup warnings for object '" + object.getName() + "':<br/><br/>" + StringUtils.join(msgs, "<br/>");
+        String msg = "Cleanup warnings for object '" + object.getName() + "':<br/><br/>"
+                + StringUtils.join(msgs, "<br/>");
 
         VirtualFile file = VirtualFileManager.getInstance().findFileByNioPath(object.getFile().toPath());
 
@@ -257,18 +269,29 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
                 notificationKey,
                 "Cleanup warning",
                 msg,
-                type,
+                NotificationType.WARNING,
                 createNotificationActions(
                         file,
                         List.of(
-                                buildObjectReferencesConfiguration(object.getOid(), object.getType(), missingReferences)
+                                buildObjectReferencesConfiguration(object.getOid(), object.getType(), messages)
                         )
                 )
         );
     }
 
     private MissingRefObject buildObjectReferencesConfiguration(
-            String oid, ObjectTypes type, List<ObjectReferenceType> missingReferences) {
+            String oid, ObjectTypes type, List<CleanupMessage<?>> cleanupMessages) {
+
+        List<ObjectReferenceType> missingReferences = cleanupMessages.stream()
+                .filter(m -> m.type() == CleanupMessage.Type.MISSING_REFERENCE)
+                .map(m -> (ObjectReferenceType) m.data())
+                .filter(ref -> {
+                    MissingRefAction action = configActionMap.getOrDefault(new MissingRefKey(oid, type.getTypeQName()), Map.of())
+                            .getOrDefault(new MissingRefKey(ref.getOid(), ref.getType()), defaultAction);
+
+                    return action == MissingRefAction.DOWNLOAD;
+                })
+                .toList();
 
         MissingRefObject config = new MissingRefObject();
         config.setOid(oid);
@@ -284,7 +307,6 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
         return config;
     }
-
 
     private NotificationAction[] createNotificationActions(VirtualFile file, List<MissingRefObject> missingReferences) {
         List<NotificationAction> actions = new ArrayList<>();
