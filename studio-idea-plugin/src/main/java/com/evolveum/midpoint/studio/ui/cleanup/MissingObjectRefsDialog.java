@@ -20,7 +20,8 @@ public class MissingObjectRefsDialog extends DialogWrapper {
     public MissingObjectRefsDialog(@Nullable Project project, @NotNull List<MissingRefObject> objects) {
         super(project);
 
-        editor = new MissingRefObjectsEditor(project, objects);
+        editor = new MissingRefObjectsEditor(project);
+        editor.setObjects(objects);
         panel = editor.createComponent();
 
         setTitle("Missing references configuration");

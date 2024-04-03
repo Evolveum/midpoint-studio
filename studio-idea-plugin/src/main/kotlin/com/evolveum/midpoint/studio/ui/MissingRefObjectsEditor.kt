@@ -7,15 +7,27 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 
-class MissingRefObjectsEditor(val project: Project, val objects: List<MissingRefObject>) {
+class MissingRefObjectsEditor(val project: Project) {
+
+    private val panel: MissingRefObjectsPanel
+
+    init {
+        panel = MissingRefObjectsPanel()
+    }
 
     fun createComponent(): DialogPanel {
         return panel {
             row {
-                cell(MissingRefObjectsPanel(objects))
+                cell(panel)
                     .align(Align.FILL)
             }
                 .resizableRow()
         }
+    }
+
+    fun getObjects(): List<MissingRefObject> = panel.data
+
+    fun setObjects(objects: List<MissingRefObject>) {
+        panel.data = objects
     }
 }

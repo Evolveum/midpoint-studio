@@ -20,29 +20,46 @@ open class MissingRefObjectsConfigurable(val project: Project) :
 
     private val editor: MissingRefObjectsEditor
 
-    private var configuration: MissingRefObjects
+    private var defaultAction: MissingRefAction? = null
 
     init {
-        configuration = loadConfiguration()
+        val configuration = loadConfiguration()
 
-        editor = MissingRefObjectsEditor(project, configuration.objects)
+        editor = MissingRefObjectsEditor(project)
+        editor.setObjects(configuration.objects)
     }
 
     override fun isModified(): Boolean {
         val service = CleanupService.get(project)
 
-        return super.isModified() || !Objects.equals(configuration, service.settings.missingReferences)
+        return super.isModified() || !Objects.equals(buildUpdatedSettings(), service.settings.missingReferences)
+    }
+
+    private fun buildUpdatedSettings(): MissingRefObjects {
+        val result = MissingRefObjects()
+        result.objects = editor.getObjects()
+        result.defaultAction = defaultAction
+
+        return result
     }
 
     override fun apply() {
         super.apply()
 
         val service = CleanupService.get(project)
-        service.settings.missingReferences = configuration
+
+        service.settings.missingReferences = buildUpdatedSettings()
+        service.settingsUpdated()
     }
 
     override fun reset() {
-        configuration = loadConfiguration()
+        val configuration = loadConfiguration()
+
+        editor.setObjects(configuration.objects)
+        defaultAction = configuration.defaultAction
+        if (defaultAction == null) {
+            defaultAction = MissingRefAction.UNDEFINED
+        }
 
         super.reset()
     }
@@ -64,17 +81,14 @@ open class MissingRefObjectsConfigurable(val project: Project) :
             }
             row(message("MissingReferencesConfigurable.defaultDecision")) {
                 comboBox(
-                    listOf(
-                        MissingRefAction.IGNORE,
-                        MissingRefAction.DOWNLOAD
-                    ),
+                    MissingRefAction.values().toList(),
                     SimpleListCellRenderer.create(
                         StudioLocalization.get().translate("ReferenceDecisionConfiguration.null")
                     ) { StudioLocalization.get().translateEnum(it) }
                 )
                     .bindItem(
-                        { configuration.defaultAction },
-                        { configuration.defaultAction = it }
+                        { defaultAction },
+                        { defaultAction = it }
                     )
             }
                 .rowComment(message("MissingReferencesConfigurable.defaultDecision.comment"))

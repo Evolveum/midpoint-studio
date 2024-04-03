@@ -6,26 +6,33 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.util.ui.tree.TreeUtil;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
-import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MissingRefObjectsPanel extends JPanel {
 
-    public MissingRefObjectsPanel(List<MissingRefObject> data) {
+    private MissingRefObjectsTable table;
+
+    public MissingRefObjectsPanel() {
         setLayout(new BorderLayout());
 
-        initLayout(data);
+        initLayout();
     }
 
-    private void initLayout(List<MissingRefObject> data) {
-        MissingRefObjectsTable table = new MissingRefObjectsTable();
+    public List<MissingRefObject> getData() {
+        return table.getTableModel().getData();
+    }
+
+    public void setData(List<MissingRefObject> data) {
         table.getTableModel().setData(data);
+
         TreeUtil.expandAll(table.getTree());
+    }
+
+    private void initLayout() {
+        table = new MissingRefObjectsTable();
 
         add(ScrollPaneFactory.createScrollPane(table), BorderLayout.CENTER);
 

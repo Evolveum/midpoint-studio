@@ -77,6 +77,8 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
         } else if (object instanceof MissingRef ref) {
             ref.setAction(value);
         }
+
+        System.out.println("asdf");
     }
 
     private static class Editor extends ComboBoxTableRenderer<MissingRefAction> {

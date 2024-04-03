@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
+import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -70,6 +71,40 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
         super.setData(data);
     }
 
+    public void markSelectedAction(MissingRefAction action) {
+        int[] selected = getTree().getSelectionRows();
+        if (selected == null || selected.length == 0) {
+            return;
+        }
+
+        for (int i = 0; i < selected.length; i++) {
+            TreePath path = getTree().getPathForRow(selected[i]);
+            DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) path.getLastPathComponent();
+
+            markSelectedAction(node, action);
+        }
+    }
+
+    private void markSelectedAction(DefaultMutableTreeTableNode node, MissingRefAction action) {
+        Object userObject = node.getUserObject();
+
+        if (userObject instanceof MissingRefNode refNode) {
+            refNode.setAction(action);
+
+            for (int i = 0; i < node.getChildCount(); i++) {
+                markSelectedAction((DefaultMutableTreeTableNode) node.getChildAt(i), action);
+            }
+        } else if (userObject instanceof MissingRef ref) {
+            ref.setAction(action);
+        }
+
+        Object[] path = {node.getParent(), node};
+        int[] childIndices = {node.getParent().getIndex(node)};
+        Object[] changedChildren = {node};
+
+        fireTreeNodesChanged(this, path, childIndices, changedChildren);
+    }
+
     public void removeNodes(int[] selected) {
         for (int i = 0; i < selected.length; i++) {
             TreePath path = getTree().getPathForRow(selected[i]);
@@ -83,7 +118,7 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
                 if (value == NODE_ALL || value == NODE_ROOT) {
                     getData().clear();
                 } else if (value instanceof ObjectTypes ot) {
-                    getData().removeIf(o -> o.getType() == ot.getTypeQName());
+                    getData().removeIf(o -> Objects.equals(o.getType(), ot.getTypeQName()));
                 } else if (value instanceof MissingRefObject object) {
                     getData().removeIf(o ->
                             Objects.equals(o.getOid(), object.getOid()) && Objects.equals(o.getType(), object.getType()));
