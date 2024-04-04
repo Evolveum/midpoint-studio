@@ -13,7 +13,7 @@ public interface MidPointConstants {
 
     String ACTION_ID_PREFIX = "MidPoint.Action.";
 
-    String DEFAULT_MIDPOINT_VERSION = "4.8";
+    String DEFAULT_MIDPOINT_VERSION = "4.9-SNAPSHOT";
 
     List<String> SUPPORTED_VERSIONS = List.of("4.0", "4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "4.8", "4.9");
 }

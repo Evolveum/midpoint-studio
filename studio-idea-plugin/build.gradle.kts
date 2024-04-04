@@ -1,7 +1,9 @@
+import org.apache.commons.io.IOUtils
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.nio.charset.StandardCharsets
 
 fun properties(key: String) = project.findProperty(key).toString()
 
@@ -28,12 +30,45 @@ if (publishChannel == "stable") {
     publishChannel = "default"
 }
 
-if (gradle.startParameter.taskNames.contains("publishPlugin")
-    && publishChannel != "default"
-    && publishChannel != "snapshot"
-    && publishChannel != "support") {
+val defaultMidpointVersion =
+    IOUtils.readLines(
+        project.file("src/main/java/com/evolveum/midpoint/studio/MidPointConstants.java").inputStream(),
+        StandardCharsets.UTF_8
+    ).stream()
+        .filter({ it.contains("DEFAULT_MIDPOINT_VERSION") })
+        .findFirst()
+        .orElse(null)
 
-    throw GradleException("Invalid publish channel: $publishChannel")
+println("Default midpoint version: $defaultMidpointVersion")
+
+if (gradle.startParameter.taskNames.contains("publishPlugin")) {
+    if (publishChannel != "default"
+        && publishChannel != "snapshot"
+        && publishChannel != "support"
+    ) {
+
+        throw GradleException("Invalid publish channel: $publishChannel")
+    }
+
+    val stream = project.file("src/main/java/com/evolveum/midpoint/studio/MidPointConstants.java").inputStream()
+    val defaultMidpointVersion = stream.use {
+        IOUtils.readLines(
+            stream,
+            StandardCharsets.UTF_8
+        ).stream()
+            .filter({ it.contains("DEFAULT_MIDPOINT_VERSION") })
+            .map { it.trim() }
+            .findFirst()
+            .orElse(null)
+    }
+
+    if (publishChannel == "default"
+        && (defaultMidpointVersion == null || defaultMidpointVersion.contains("SNAPSHOT"))) {
+
+        throw GradleException(
+            "Cannot publish to the default channel with '$defaultMidpointVersion' as default midPoint version in constants"
+        )
+    }
 }
 
 var pluginVersionSuffix =
