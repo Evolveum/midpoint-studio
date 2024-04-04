@@ -285,12 +285,12 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         List<ObjectReferenceType> missingReferences = cleanupMessages.stream()
                 .filter(m -> m.type() == CleanupMessage.Type.MISSING_REFERENCE)
                 .map(m -> (ObjectReferenceType) m.data())
-                .filter(ref -> {
-                    MissingRefAction action = configActionMap.getOrDefault(new MissingRefKey(oid, type.getTypeQName()), Map.of())
-                            .getOrDefault(new MissingRefKey(ref.getOid(), ref.getType()), defaultAction);
-
-                    return action == MissingRefAction.DOWNLOAD;
-                })
+//                .filter(ref -> {
+//                    MissingRefAction action = configActionMap.getOrDefault(new MissingRefKey(oid, type.getTypeQName()), Map.of())
+//                            .getOrDefault(new MissingRefKey(ref.getOid(), ref.getType()), defaultAction);
+//
+//                    return action == MissingRefAction.DOWNLOAD;
+//                })
                 .toList();
 
         MissingRefObject config = new MissingRefObject();

@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -13,6 +14,11 @@ public class TestAction extends AnAction {
 
     public TestAction() {
         super("MidPoint Test Action");
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
     }
 
     @Override
