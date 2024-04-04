@@ -50,7 +50,7 @@ public class MissingRefObjectsTable extends DefaultTreeTable<MissingRefObjectsTa
 
     private void setupSpeedSearch() {
         // todo fix lambda
-        TreeTableSpeedSearch search = TreeTableSpeedSearch.installOn(this, p -> p.toString());
+        TreeTableSpeedSearch search = new TreeTableSpeedSearch(this, p -> p.toString());
         search.setCanExpand(true);
     }
 }
