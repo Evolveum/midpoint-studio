@@ -97,6 +97,7 @@ class CleanupConfigurable(val project: Project) :
                         )
                 }
                 // todo disabled for now since we have to decide on approach to PCV IDs and cleanup/storing in vcs
+                //  also check CleanupService (development switch also there)
                 row {
                     checkBox(message("CleanupConfigurable.removeContainerIds"))
                         .comment(message("CleanupConfigurable.removeContainerIds.comment"))

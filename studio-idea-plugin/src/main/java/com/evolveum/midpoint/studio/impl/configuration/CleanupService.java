@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.configuration;
 import com.evolveum.midpoint.common.cleanup.CleanupActionProcessor;
 import com.evolveum.midpoint.common.cleanup.CleanupPath;
 import com.evolveum.midpoint.common.cleanup.CleanupPathAction;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
@@ -45,7 +46,8 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
     }
 
     private boolean isRemoveContainerIds() {
-        return getSettings().isRemoveContainerIds();
+        // todo enabled also option to remove container IDs in configurable
+        return MidPointUtils.isDevelopmentMode(true) && getSettings().isRemoveContainerIds();
     }
 
     public CleanupActionProcessor createCleanupProcessor() {
