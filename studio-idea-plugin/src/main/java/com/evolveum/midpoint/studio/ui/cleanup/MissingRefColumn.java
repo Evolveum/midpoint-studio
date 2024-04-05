@@ -38,25 +38,33 @@ public class MissingRefColumn extends DefaultColumnInfo {
             }
 
             if (value instanceof MissingRefObject refObject) {
-                // todo resolve
-                return refObject.getOid() + " (" + getType(refObject.getType()) + ")";
+                String type = getTypeSuffix(refObject.getType());
+                if (refObject.getName() != null) {
+                    return refObject.getName() + type;
+                }
+
+                return refObject.getOid() + getTypeSuffix(refObject.getType());
             }
 
             return null;
         }
 
         if (object instanceof MissingRef ref) {
-            // todo resolve
-            return ref.getOid() + " (" + getType(ref.getType()) + ")";
+            String type = getTypeSuffix(ref.getType());
+            if (ref.getName() != null) {
+                return ref.getName() + type;
+            }
+
+            return ref.getOid() + getTypeSuffix(ref.getType());
         }
 
         return null;
     }
 
-    private String getType(QName type) {
+    private String getTypeSuffix(QName type) {
         ObjectTypes t = ObjectTypes.getObjectTypeFromTypeQName(type);
 
-        return StudioLocalization.get().translateEnum(t);
+        return " (" + StudioLocalization.get().translateEnum(t) + ")";
     }
 
     @Override

@@ -4,5 +4,5 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 
-public record MissingRefKey(@NotNull String oid, @NotNull QName type) {
+public record MissingRefKey(@NotNull String oid, QName type) {
 }

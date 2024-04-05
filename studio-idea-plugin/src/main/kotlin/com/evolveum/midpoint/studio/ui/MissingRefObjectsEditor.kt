@@ -9,11 +9,7 @@ import com.intellij.ui.dsl.builder.panel
 
 class MissingRefObjectsEditor(val project: Project) {
 
-    private val panel: MissingRefObjectsPanel
-
-    init {
-        panel = MissingRefObjectsPanel()
-    }
+    private val panel: MissingRefObjectsPanel = MissingRefObjectsPanel(project)
 
     fun createComponent(): DialogPanel {
         return panel {
