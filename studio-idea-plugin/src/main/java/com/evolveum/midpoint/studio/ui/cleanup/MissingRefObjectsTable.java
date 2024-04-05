@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.ui.SpeedSearchComparator;
 import com.intellij.ui.TreeTableSpeedSearch;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,7 +51,8 @@ public class MissingRefObjectsTable extends DefaultTreeTable<MissingRefObjectsTa
 
     private void setupSpeedSearch() {
         // todo fix lambda
-        TreeTableSpeedSearch search = new TreeTableSpeedSearch(this, p -> p.toString());
+        TreeTableSpeedSearch search = TreeTableSpeedSearch.installOn(this, p -> p.toString());
+        search.setComparator(new SpeedSearchComparator(false));
         search.setCanExpand(true);
     }
 }

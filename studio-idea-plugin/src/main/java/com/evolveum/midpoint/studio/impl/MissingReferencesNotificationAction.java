@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl;
 import com.evolveum.midpoint.studio.impl.configuration.*;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingObjectRefsDialog;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingRefKey;
+import com.evolveum.midpoint.studio.ui.cleanup.MissingRefUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
@@ -69,18 +70,13 @@ public class MissingReferencesNotificationAction extends NotificationAction {
 
         List<MissingRefObject> result = dialog.getData();
 
-        saveSettings(project, result);
+        saveSettings(project, cloned, result);
     }
 
-    private void saveSettings(Project project, List<MissingRefObject> result) {
-        List<MissingRefObject> cloned = result.stream()
-                .map(MissingRefObject::copy)
-                .collect(Collectors.toList());
+    private void saveSettings(Project project, List<MissingRefObject> input, List<MissingRefObject> result) {
+        // todo remove those that are in input but were removed from result
 
-        for (MissingRefObject object : cloned) {
-            object.getReferences()
-                    .removeIf(ref -> ref.getAction() == null || ref.getAction() == MissingRefAction.UNDEFINED);
-        }
+        List<MissingRefObject> cloned = MissingRefUtils.cloneAndRemoveNonActionable(result);
 
         CleanupService cs = CleanupService.get(project);
 

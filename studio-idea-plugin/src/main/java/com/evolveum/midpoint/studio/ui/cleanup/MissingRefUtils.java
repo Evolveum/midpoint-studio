@@ -9,6 +9,19 @@ import java.util.stream.Collectors;
 
 public class MissingRefUtils {
 
+    private static MissingRefObject removeNonActionableRefs(MissingRefObject object) {
+        object.getReferences().removeIf(ref -> ref.getAction() == null || ref.getAction() == MissingRefAction.IGNORE);
+        return object.getReferences().isEmpty() ? null : object;
+    }
+
+    public static List<MissingRefObject> cloneAndRemoveNonActionable(List<MissingRefObject> objects) {
+        return objects.stream()
+                .map(MissingRefObject::copy)
+                .map(o -> removeNonActionableRefs(o))
+                .filter(o -> o != null)
+                .collect(Collectors.toList());
+    }
+
     public static Map<MissingRefKey, Map<MissingRefKey, MissingRefAction>> buildActionMapFromConfiguration(Project project) {
         MissingRefObjects config = CleanupService.get(project).getSettings().getMissingReferences();
 

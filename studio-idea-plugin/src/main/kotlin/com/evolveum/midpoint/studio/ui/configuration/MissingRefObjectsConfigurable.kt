@@ -4,6 +4,7 @@ import com.evolveum.midpoint.studio.impl.configuration.CleanupService
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefObjects
 import com.evolveum.midpoint.studio.ui.MissingRefObjectsEditor
+import com.evolveum.midpoint.studio.ui.cleanup.MissingRefUtils
 import com.evolveum.midpoint.studio.util.StudioLocalization
 import com.evolveum.midpoint.studio.util.StudioLocalization.message
 import com.intellij.openapi.options.BoundSearchableConfigurable
@@ -37,7 +38,10 @@ open class MissingRefObjectsConfigurable(val project: Project) :
 
     private fun buildUpdatedSettings(): MissingRefObjects {
         val result = MissingRefObjects()
-        result.objects = editor.getObjects()
+
+        val objects = MissingRefUtils.cloneAndRemoveNonActionable(editor.getObjects())
+
+        result.objects = objects
         result.defaultAction = defaultAction
 
         return result
