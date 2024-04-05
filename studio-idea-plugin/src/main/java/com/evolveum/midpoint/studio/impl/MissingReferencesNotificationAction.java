@@ -4,7 +4,6 @@ import com.evolveum.midpoint.studio.impl.configuration.*;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingObjectRefsDialog;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingRefKey;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingRefUtils;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -14,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MissingReferencesNotificationAction extends NotificationAction {
@@ -73,8 +73,16 @@ public class MissingReferencesNotificationAction extends NotificationAction {
         saveSettings(project, cloned, result);
     }
 
+    /**
+     * Save settings to project configuration file (midpoint.xml).
+     * <p>
+     * Replaces existing {@link MissingRefObject} object with the ones from result list.
+     * Removes {@link MissingRefObject} objects that were removed in the editor dialog by matching against input.
+     */
     private void saveSettings(Project project, List<MissingRefObject> input, List<MissingRefObject> result) {
-        // todo remove those that are in input but were removed from result
+        Set<MissingRefKey> resultKeys = result.stream()
+                .map(o -> new MissingRefKey(o.getOid(), o.getType()))
+                .collect(Collectors.toSet());
 
         List<MissingRefObject> cloned = MissingRefUtils.cloneAndRemoveNonActionable(result);
 
@@ -86,22 +94,31 @@ public class MissingReferencesNotificationAction extends NotificationAction {
         Map<MissingRefKey, MissingRefObject> existing = objects.getObjects().stream()
                 .collect(Collectors.toMap(o -> new MissingRefKey(o.getOid(), o.getType()), o -> o));
 
+        // replace objects in settings with the ones from the dialog
         for (MissingRefObject object : cloned) {
             MissingRefKey key = new MissingRefKey(object.getOid(), object.getType());
+
             MissingRefObject existingObject = existing.get(key);
             if (existingObject != null) {
-                existingObject.getReferences().clear();
-                existingObject.getReferences().addAll(object.getReferences());
-            } else {
-                objects.getObjects().add(object);
+                objects.getObjects().remove(existingObject);
+            }
+
+            objects.getObjects().add(object);
+        }
+
+        // remove objects from settings that were removed in the dialog
+        for (MissingRefObject object : input) {
+            MissingRefKey key = new MissingRefKey(object.getOid(), object.getType());
+
+            if (!resultKeys.contains(key)) {
+                MissingRefObject existingObject = existing.get(key);
+                if (existingObject != null) {
+                    objects.getObjects().remove(existingObject);
+                }
             }
         }
 
         cs.settingsUpdated();
-    }
-
-    private List<ObjectReferenceType> createRefsForDownload(List<MissingRefObject> objects) {
-        return List.of(); // todo implement
     }
 
     @Override

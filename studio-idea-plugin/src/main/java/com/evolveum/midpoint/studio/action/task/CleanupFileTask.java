@@ -243,7 +243,26 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             return;
         }
 
-        Map<String, Long> messagesCounted = messages.stream()
+        List<CleanupMessage<?>> filteredMessages = messages.stream()
+                .filter(m -> {
+                    if (m.type() != CleanupMessage.Type.MISSING_REFERENCE) {
+                        return true;
+                    }
+
+                    ObjectReferenceType ref = (ObjectReferenceType) m.data();
+
+                    MissingRefAction action = configActionMap
+                            .getOrDefault(new MissingRefKey(object.getOid(), object.getType().getTypeQName()), Map.of())
+                            .get(new MissingRefKey(ref.getOid(), ref.getType()));
+                    if (action == null) {
+                        action = defaultAction;
+                    }
+
+                    return action == MissingRefAction.DOWNLOAD;
+                })
+                .toList();
+
+        Map<String, Long> messagesCounted = filteredMessages.stream()
                 .collect(Collectors.groupingBy(cm -> cm.message().getFallbackMessage(), Collectors.counting()));
 
         List<String> msgs = messagesCounted.keySet().stream()
@@ -258,6 +277,10 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
                 })
                 .sorted()
                 .collect(Collectors.toList());
+
+        if (msgs.isEmpty()) {
+            return;
+        }
 
         String msg = "Cleanup warnings for object '" + object.getName() + "':<br/><br/>"
                 + StringUtils.join(msgs, "<br/>");

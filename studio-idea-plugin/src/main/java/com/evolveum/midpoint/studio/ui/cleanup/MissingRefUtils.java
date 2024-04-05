@@ -10,10 +10,13 @@ import java.util.stream.Collectors;
 public class MissingRefUtils {
 
     private static MissingRefObject removeNonActionableRefs(MissingRefObject object) {
-        object.getReferences().removeIf(ref -> ref.getAction() == null || ref.getAction() == MissingRefAction.IGNORE);
+        object.getReferences().removeIf(ref -> ref.getAction() == null || ref.getAction() == MissingRefAction.UNDEFINED);
         return object.getReferences().isEmpty() ? null : object;
     }
 
+    /**
+     * Clones the list of objects and removes those that have no actionable references (i.e. UNDEFINED or null action).
+     */
     public static List<MissingRefObject> cloneAndRemoveNonActionable(List<MissingRefObject> objects) {
         return objects.stream()
                 .map(MissingRefObject::copy)
