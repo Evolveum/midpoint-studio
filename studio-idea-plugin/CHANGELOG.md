@@ -12,7 +12,7 @@
 ### Fixed
 - MID-9282 Properties host injector
 - MID-9383 Fixed groovy-all dependency in pom.xml in project template
-- MID-9501 Missing "t" prefix in bulk actions fixed
+- MID-9501 Missing "t" prefix in actions fixed
 - Fixed browser panel UI issues
 
 ## [4.8.0]

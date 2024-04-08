@@ -36,7 +36,7 @@
     </assignment>
     <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
     <executionStatus>closed</executionStatus>
-    <category>BulkActions</category>
+    <category>Actions</category>
     <handlerUri>http://midpoint.evolveum.com/xml/ns/public/task/workers-creation/handler-3</handlerUri>
     <workManagement>
         <taskKind>coordinator</taskKind>

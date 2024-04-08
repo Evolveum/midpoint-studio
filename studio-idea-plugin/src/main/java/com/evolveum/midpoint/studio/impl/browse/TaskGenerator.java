@@ -61,7 +61,7 @@ public class TaskGenerator extends Generator {
 
     @Override
     public String generate(Project project, List<ObjectType> objects, GeneratorOptions options) {
-        // TODO deduplicate with bulk actions
+        // TODO deduplicate with actions
         ObjectTypes type = action.applicableTo;
         if (options.isBatchUsingOriginalQuery()) {
             if (options.getOriginalQueryTypes().size() == 1) {

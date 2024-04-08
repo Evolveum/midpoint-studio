@@ -28,11 +28,11 @@
         </scext:executeScript>
     </extension>
     <assignment>
-        <targetRef oid="00000000-0000-0000-0000-000000000508" type="ArchetypeType"/> <!--Iterative bulk action task -->
+        <targetRef oid="00000000-0000-0000-0000-000000000508" type="ArchetypeType"/> <!--Iterative action task -->
     </assignment>
     <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
     <executionStatus>runnable</executionStatus>
-    <category>BulkActions</category>
+    <category>Actions</category>
     <handlerUri>http://midpoint.evolveum.com/xml/ns/public/model/scripting/handler-3</handlerUri>
     <recurrence>single</recurrence>
 </task>
