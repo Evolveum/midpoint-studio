@@ -4,9 +4,9 @@ import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.impl.diff.InitialObjectDiffProcessor;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -26,6 +26,11 @@ public class TestAction extends AnAction {
     }
 
     @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
+    }
+
+    @Override
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
@@ -34,8 +39,8 @@ public class TestAction extends AnAction {
             return;
         }
 
-        boolean internal = ApplicationManager.getApplication().isInternal();
-        e.getPresentation().setVisible(internal);
+        boolean visible = MidPointUtils.isDevelopmentMode(true);
+        e.getPresentation().setVisible(visible);
     }
 
     @Override

@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class CleanupConfiguration implements Serializable {
 
@@ -25,6 +24,8 @@ public class CleanupConfiguration implements Serializable {
     private boolean warnAboutMissingReferences;
 
     private boolean removeContainerIds;
+
+    private MissingRefObjects missingReferences;
 
     public @NotNull List<CleanupPathConfiguration> getCleanupPaths() {
         if (cleanupPaths == null) {
@@ -77,6 +78,18 @@ public class CleanupConfiguration implements Serializable {
         this.removeContainerIds = removeContainerIds;
     }
 
+    public MissingRefObjects getMissingReferences() {
+        if (missingReferences == null) {
+            missingReferences = new MissingRefObjects();
+            missingReferences.setDefaultAction(MissingRefAction.DOWNLOAD);
+        }
+        return missingReferences;
+    }
+
+    public void setMissingReferences(MissingRefObjects missingReferences) {
+        this.missingReferences = missingReferences;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -87,26 +100,33 @@ public class CleanupConfiguration implements Serializable {
                 && warnAboutMissingReferences == that.warnAboutMissingReferences
                 && Objects.equals(cleanupPaths, that.cleanupPaths)
                 && askActionOverride == that.askActionOverride
-                && removeContainerIds == that.removeContainerIds;
+                && removeContainerIds == that.removeContainerIds
+                && Objects.equals(missingReferences, that.missingReferences);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
                 cleanupPaths, askActionOverride, cleanupConnectorReferences, replaceConnectorOidsWithFilter,
-                warnAboutMissingReferences, removeContainerIds);
+                warnAboutMissingReferences, removeContainerIds, missingReferences);
     }
 
     public void copyTo(@NotNull CleanupConfiguration configuration) {
         configuration.setAskActionOverride(askActionOverride);
 
-        List paths = getCleanupPaths().stream().map(p -> p.copy()).collect(Collectors.toList());
+        List<CleanupPathConfiguration> paths = getCleanupPaths().stream()
+                .map(CleanupPathConfiguration::copy)
+                .toList();
         configuration.setCleanupPaths(paths);
 
         configuration.setCleanupConnectorReferences(cleanupConnectorReferences);
         configuration.setReplaceConnectorOidsWithFilter(replaceConnectorOidsWithFilter);
         configuration.setWarnAboutMissingReferences(warnAboutMissingReferences);
         configuration.setRemoveContainerIds(removeContainerIds);
+
+        if (missingReferences != null) {
+            configuration.setMissingReferences(missingReferences.copy());
+        }
     }
 
     public CleanupConfiguration copy() {

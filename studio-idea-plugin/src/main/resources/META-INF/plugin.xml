@@ -69,6 +69,14 @@
                 key="CleanupConfigurable.title"
                 bundle="messages.MidPointStudio"/>
 
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
+                groupWeight="50"
+                instance="com.evolveum.midpoint.studio.ui.configuration.MissingRefObjectsConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.MissingRefObjectsConfigurable"
+                key="MissingReferencesConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>

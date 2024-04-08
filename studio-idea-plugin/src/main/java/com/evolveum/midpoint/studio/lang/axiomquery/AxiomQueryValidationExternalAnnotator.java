@@ -8,7 +8,9 @@ import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +41,10 @@ public class AxiomQueryValidationExternalAnnotator
             return Collections.emptyList();
         }
 
-        ItemDefinition<?> def = getItemDefinitionFromHint(file);
+        PsiDocumentManager documentManager = PsiDocumentManager.getInstance(file.getProject());
+        Document doc = documentManager.getDocument(file);
+
+        ItemDefinition<?> def = getItemDefinitionFromHint(doc);
 
         return axiomQueryLangService.validate(def, content);
     }

@@ -11,6 +11,7 @@ import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
@@ -469,7 +470,11 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
 
         LOG.info("Task " + getTitle() + " status: " + type.name() + "\n" + msg);
 
-        MidPointUtils.publishNotification(getProject(), notificationKey, title, msg.toString(), type);
+        MidPointUtils.publishNotification(getProject(), notificationKey, title, msg.toString(), type, getNotificationActionsAfterFinish());
+    }
+
+    protected NotificationAction[] getNotificationActionsAfterFinish() {
+        return new NotificationAction[0];
     }
 
     protected boolean shouldSkipObjectProcessing(MidPointObject object) {

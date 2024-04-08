@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import org.jetbrains.annotations.NotNull;
@@ -20,5 +21,10 @@ public class MidPointFacetActionGroup extends DefaultActionGroup {
 
         boolean hasFacet = MidPointUtils.hasMidPointFacet(e.getProject());
         e.getPresentation().setVisible(hasFacet);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
     }
 }

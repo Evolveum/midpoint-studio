@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
-import com.evolveum.midpoint.studio.MidPointConstants
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService
 import com.evolveum.midpoint.studio.util.MavenUtils
@@ -10,7 +9,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.ValidationInfo
-import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.layout.ValidationInfoBuilder
