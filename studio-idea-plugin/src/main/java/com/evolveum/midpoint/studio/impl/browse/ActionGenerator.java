@@ -20,7 +20,7 @@ import java.util.UUID;
 
 import static com.evolveum.midpoint.studio.impl.browse.Constants.*;
 
-public class BulkActionGenerator extends Generator {
+public class ActionGenerator extends Generator {
 
     public static final String ITERATIVE_SCRIPT_EXECUTION_TASK_HANDLER_URI = SchemaConstants.NS_MODEL + "/iterative-scripting/handler-3";
 
@@ -74,13 +74,13 @@ public class BulkActionGenerator extends Generator {
 
     private Action action;
 
-    public BulkActionGenerator(Action action) {
+    public ActionGenerator(Action action) {
         this.action = action;
     }
 
     @Override
     public String getLabel() {
-        return "Bulk action: " + action.displayName;
+        return "Action: " + action.displayName;
     }
 
     @Override
@@ -144,7 +144,7 @@ public class BulkActionGenerator extends Generator {
                     options.isCreateSuspended() ? "suspended" : "runnable"
             );
 
-            DOMUtil.createSubElement(task, TaskType.F_CATEGORY).setTextContent("BulkActions");
+            DOMUtil.createSubElement(task, TaskType.F_CATEGORY).setTextContent("Actions");
             DOMUtil.createSubElement(task, TaskType.F_HANDLER_URI).setTextContent(ITERATIVE_SCRIPT_EXECUTION_TASK_HANDLER_URI);
             DOMUtil.createSubElement(task, TaskType.F_RECURRENCE).setTextContent(TaskRecurrenceType.SINGLE.value());
         }
@@ -230,7 +230,7 @@ public class BulkActionGenerator extends Generator {
                                 objectQuery, v, k, objectQuery.getOwnerDocument().getDocumentElement(), false);
                     });
                 } catch (RuntimeException e) {
-                    MidPointUtils.publishExceptionNotification(project, null, BulkActionGenerator.class,
+                    MidPointUtils.publishExceptionNotification(project, null, ActionGenerator.class,
                             GeneratorTask.NOTIFICATION_KEY, "Couldn't parse XML query", e);
                 }
             }

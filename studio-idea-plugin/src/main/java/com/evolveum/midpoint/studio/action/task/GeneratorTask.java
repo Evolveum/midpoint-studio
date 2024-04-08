@@ -4,21 +4,25 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.impl.browse.Generator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -175,18 +179,31 @@ public class GeneratorTask extends SimpleBackgroundableTask {
                         new OutputStreamWriter(file.getOutputStream(GeneratorTask.this), file.getCharset()));
 
                 IOUtils.write(content, out);
-
-                FileEditorManager fem = FileEditorManager.getInstance(project);
-                fem.openFile(file, true, true);
             } catch (IOException ex) {
                 MidPointUtils.publishExceptionNotification(project, env, GeneratorTask.class, NOTIFICATION_KEY,
                         "Couldn't store generated content to file " + (file != null ? file.getName() : "[null]"), ex);
             } finally {
                 IOUtils.closeQuietly(out);
             }
+
+            if (file != null) {
+                formatAndOpenFile(project, file);
+            }
         });
 
         updateIndicator(indicator, "File saved");
+    }
+
+    private void formatAndOpenFile(Project project, VirtualFile file) {
+        PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
+        WriteCommandAction.writeCommandAction(getProject()).run(() ->
+                CodeStyleManager.getInstance(getProject()).reformatText(
+                        psiFile, List.of(psiFile.getTextRange())
+                )
+        );
+
+        FileEditorManager fem = FileEditorManager.getInstance(project);
+        fem.openFile(file, true, true);
     }
 
     private void updateIndicator(ProgressIndicator indicator, String message) {

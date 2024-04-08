@@ -12,7 +12,7 @@ Plugin for Intellij Idea to help identity engineers customize https://midpoint.e
 
 * MidPoint objects manipulation
 ** Browse, upload objects
-** Execute tasks, bulk actions
+** Execute tasks, actions
 ** Test resources
 * Documentation generator
 * Debugger for Groovy scripts expressions

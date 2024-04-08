@@ -28,6 +28,9 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.util.LineSeparator;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -366,6 +369,10 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
 
         com.intellij.openapi.editor.Document document = editor.getDocument();
 
+        String normalized = normalizeText(text.toString(), document);
+
+        int startIndex;
+        int endIndex;
         if (isUpdateSelection) {
             AtomicInteger start = new AtomicInteger(0);
             AtomicInteger end = new AtomicInteger(0);
@@ -376,18 +383,22 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
                 end.set(model.getSelectionEnd());
             });
 
-            WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-                String normalized = normalizeText(text.toString(), document);
-
-                document.replaceString(start.get(), end.get(), normalized);
-            });
+            startIndex = start.get();
+            endIndex = end.get();
         } else {
-            WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-                String normalized = normalizeText(text.toString(), document);
-
-                document.replaceString(0, document.getTextLength(), normalized);
-            });
+            startIndex = 0;
+            endIndex = document.getTextLength();
         }
+
+        Project project = getProject();
+
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            document.replaceString(startIndex, endIndex, normalized);
+
+            VirtualFile file = editor.getVirtualFile();
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
+            CodeStyleManager.getInstance(project).reformatText(psiFile, startIndex, normalized.length());
+        });
     }
 
     private String normalizeText(String text, Document document) {

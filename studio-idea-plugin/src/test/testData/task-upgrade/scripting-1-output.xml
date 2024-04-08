@@ -2,7 +2,7 @@
     <name>Delete asdf</name>
     <assignment>
         <targetRef oid="00000000-0000-0000-0000-000000000508" type="ArchetypeType"/>
-        <!--Iterative bulk action task -->
+        <!--Iterative action task -->
     </assignment>
     <ownerRef oid="00000000-0000-0000-0000-000000000002"/>
     <executionState>runnable</executionState>

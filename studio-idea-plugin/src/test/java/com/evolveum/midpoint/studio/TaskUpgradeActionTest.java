@@ -93,12 +93,12 @@ public class TaskUpgradeActionTest extends StudioActionTest {
 
     @Test
     public void testBulkIterative1Multinode() {
-        testUpgrade("bulk-iterative-1-input.xml", "bulk-iterative-1-output.xml");
+        testUpgrade("action-iterative-1-input.xml", "action-iterative-1-output.xml");
     }
 
     @Test
     public void testBulkIterative2() {
-        testUpgrade("bulk-iterative-2-input.xml", "bulk-iterative-2-output.xml");
+        testUpgrade("action-iterative-2-input.xml", "action-iterative-2-output.xml");
     }
 
     @Test
