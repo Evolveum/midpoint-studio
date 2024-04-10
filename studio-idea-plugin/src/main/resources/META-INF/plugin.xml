@@ -325,6 +325,11 @@
                 text="Download Selected Types"
                 icon="AllIcons.Actions.Download"/>
 
+        <action id="MidPoint.Action.UploadFullProcessing"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadFullProcessingAction"
+                text="Upload (Full Processing)"
+                icon="AllIcons.Actions.Upload"/>
+
         <action id="MidPoint.Action.UploadExecute"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
@@ -435,23 +440,20 @@
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
             <group id="MidPoint.Group.Menu.TransferRelated"
-                   text="Other Actions"
+                   text="MidPoint Actions"
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
-                <reference ref="MidPoint.Action.Recompute"/>
-                <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
-
-                <separator/>
-
                 <reference ref="MidPoint.Action.UploadExecute"/>
                 <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
-
-                <separator/>
-
                 <reference ref="MidPoint.Action.UploadRecompute"/>
                 <reference ref="MidPoint.Action.UploadTestResource"/>
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.Recompute"/>
+                <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
 
                 <separator/>
 
@@ -460,15 +462,10 @@
                 <separator/>
 
                 <reference ref="MidPoint.Action.Refresh"/>
-
                 <reference ref="MidPoint.Action.DiffLocal"/>
-
                 <reference ref="MidPoint.Action.DiffRemote"/>
-
                 <reference ref="MidPoint.Action.CleanupFile"/>
-
                 <reference ref="MidPoint.Action.VerifyAction"/>
-
                 <reference ref="MidPoint.Action.UpgradeTask"/>
 
                 <separator/>
@@ -526,14 +523,11 @@
 
             <reference ref="MidPoint.Action.TestAction"/>
 
-            <reference ref="MidPoint.Action.UploadExecute"/>
-            <reference ref="MidPoint.Action.UploadRecompute"/>
-            <reference ref="MidPoint.Action.UploadTestResource"/>
+            <reference ref="MidPoint.Action.UploadFullProcessing"/>
 
             <separator/>
 
             <reference ref="MidPoint.Action.Refresh"/>
-
             <reference ref="MidPoint.Action.DiffRemote"/>
 
             <separator/>
@@ -548,6 +542,14 @@
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
+                <reference ref="MidPoint.Action.UploadExecute"/>
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+                <reference ref="MidPoint.Action.UploadRecompute"/>
+                <reference ref="MidPoint.Action.UploadTestResource"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
                 <reference ref="MidPoint.Action.Recompute"/>
                 <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
 
@@ -557,17 +559,9 @@
 
                 <separator/>
 
-                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
-                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
-
-                <separator/>
-
                 <reference ref="MidPoint.Action.DiffLocal"/>
-
                 <reference ref="MidPoint.Action.CleanupFile"/>
-
                 <reference ref="MidPoint.Action.VerifyAction"/>
-
                 <reference ref="MidPoint.Action.UpgradeTask"/>
 
                 <separator/>
@@ -596,9 +590,7 @@
 
             <reference ref="MidPoint.Action.TestAction"/>
 
-            <reference ref="MidPoint.ExpUI.Action.UploadExecute"/>
-            <reference ref="MidPoint.Action.UploadRecompute"/>
-            <reference ref="MidPoint.ExpUI.Action.UploadTestResource"/>
+            <reference ref="MidPoint.Action.UploadFullProcessing"/>
 
             <separator/>
 
@@ -614,10 +606,19 @@
                    popup="true"
                    icon="AllIcons.Actions.More">
 
+                <reference ref="MidPoint.ExpUI.Action.UploadExecute"/>
                 <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+                <reference ref="MidPoint.Action.UploadRecompute"/>
+                <reference ref="MidPoint.ExpUI.Action.UploadTestResource"/>
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
                 <reference ref="MidPoint.Action.Recompute"/>
                 <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
+
+                <separator/>
+
                 <reference ref="MidPoint.Action.TestResource"/>
 
                 <separator/>

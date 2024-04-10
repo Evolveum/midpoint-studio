@@ -107,7 +107,7 @@ public class GeneratorTask extends SimpleBackgroundableTask {
         int success = 0;
         for (MidPointObject object : objects) {
             try {
-                OperationResult result = UploadExecuteTask.uploadExecute(client, object);
+                OperationResult result = UploadTaskMixin.uploadExecute(client, object);
                 boolean problem = result != null && !result.isSuccess();
 
                 if (problem) {
