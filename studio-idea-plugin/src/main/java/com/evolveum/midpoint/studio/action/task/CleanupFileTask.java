@@ -148,7 +148,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             processor.setHandler(handler);
 
             for (PrismObject<? extends ObjectType> obj : clonedObjects) {
-                CleanupResult result = processor.process(obj, Source.of(object.getFile(), object.getContent()));
+                CleanupResult result = processor.process(obj);
 
                 updateMissingReferencesSummary(object, result.getMessages());
 

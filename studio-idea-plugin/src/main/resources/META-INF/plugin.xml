@@ -230,6 +230,8 @@
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotator"/>
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.MappingAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
