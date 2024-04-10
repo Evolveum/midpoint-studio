@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.action.browse;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -29,6 +30,11 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
     public void removeSelectionListener(SelectionListener<ObjectTypes> listener) {
         selectionListeners.remove(listener);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
     }
 
     @Override
