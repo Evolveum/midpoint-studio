@@ -35,10 +35,6 @@ public class UploadTestResourceTask extends UploadExecuteTask {
     public ProcessObjectResult processObject(MidPointObject obj) throws Exception {
         ProcessObjectResult por = super.processObject(obj);
 
-        if (obj.isExecutable()) {
-            return por;
-        }
-
         OperationResult uploadResult = por.result();
 
         if (uploadResult != null && !uploadResult.isSuccess()) {
@@ -46,12 +42,11 @@ public class UploadTestResourceTask extends UploadExecuteTask {
             return por;
         }
 
-        if (!ObjectTypes.RESOURCE.equals(obj.getType())) {
-            printProblem("Can't test connection for " + obj.getName() + ", because it's not resource, it's " + obj.getType().getClassDefinition().getName());
+        OperationResult testConnectionResult = UploadTaskMixin.testResourceConnection(client, obj);
+        if (testConnectionResult == null) {
             return por;
         }
 
-        OperationResult testConnectionResult = client.testResource(obj.getOid());
         return validateOperationResult(OPERATION_TEST_CONNECTION, testConnectionResult, obj.getName());
     }
 }

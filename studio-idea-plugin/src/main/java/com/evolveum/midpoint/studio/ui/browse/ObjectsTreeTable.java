@@ -1,15 +1,17 @@
 package com.evolveum.midpoint.studio.ui.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPopupMenu;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.ui.TreeTableSpeedSearch;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.UIAction;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,20 +51,9 @@ public class ObjectsTreeTable extends DefaultTreeTable<ObjectsTreeTableModel> {
 
     private void setupPopupMenu() {
         DefaultActionGroup group = new DefaultActionGroup();
-        group.add(new AnAction("Copy oids") {
+        group.add(new UiAction("Copy oids", e -> copySelectedObjectOids()));
+        group.add(new UiAction("Copy names", e -> copySelectedObjectNames()));
 
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                copySelectedObjectOids();
-            }
-        });
-        group.add(new AnAction("Copy names") {
-
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                copySelectedObjectNames();
-            }
-        });
         ActionPopupMenu menu = ActionManager.getInstance().createActionPopupMenu("ObjectTreeTablePopupMenu", group);
         setComponentPopupMenu(menu.getComponent());
     }

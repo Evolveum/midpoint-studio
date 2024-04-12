@@ -220,6 +220,10 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) {
+        return get(type, oid, opts, false);
+    }
+
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts, boolean allowNotFound) {
         printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
 
         MidPointObject result = null;
@@ -243,6 +247,10 @@ public class MidPointClient {
 
             printToConsole("Get done");
         } catch (Exception ex) {
+            if (allowNotFound && ex instanceof ObjectNotFoundException) {
+                return null;
+            }
+
             handleGenericException("Error occurred while searching objects", ex);
         }
 
@@ -294,9 +302,12 @@ public class MidPointClient {
             SearchOptions opts = new SearchOptions();
             opts.raw(options.contains("raw"));
 
-            MidPointObject existingObject = get(obj.getType().getClassDefinition(), obj.getOid(), opts);
+            MidPointObject existingObject = get(obj.getType().getClassDefinition(), obj.getOid(), opts, true);
             if (existingObject == null) {
-                throw new ObjectNotFoundException("Object with oid '" + obj.getOid() + "' was not found");
+                String oid = client.add(obj, options);
+                response.setOid(oid);
+
+                return response;
             }
             PrismObject existing = parseObject(existingObject.getContent());
             PrismObject current = parseObject(obj.getContent());

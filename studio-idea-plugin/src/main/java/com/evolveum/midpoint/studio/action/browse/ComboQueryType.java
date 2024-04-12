@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.browse;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -72,6 +73,11 @@ public class ComboQueryType extends ComboBoxAction implements DumbAware {
         return group;
     }
 
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
+    }
+
     private static class TypeAction extends AnAction implements DumbAware {
 
         private Type type;
@@ -93,6 +99,11 @@ public class ComboQueryType extends ComboBoxAction implements DumbAware {
         public void actionPerformed(@NotNull AnActionEvent e) {
             combo.setSelected(type);
             combo.update(e);
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
         }
     }
 }
