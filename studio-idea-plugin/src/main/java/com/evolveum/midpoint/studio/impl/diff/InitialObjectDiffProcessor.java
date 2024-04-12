@@ -3,7 +3,9 @@ package com.evolveum.midpoint.studio.impl.diff;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.delta.DiffUtil;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
+import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -23,48 +25,48 @@ public class InitialObjectDiffProcessor<O extends ObjectType> {
     private final Project project;
 
     /**
-     * Plain vanilla initial object from previous version of midPoint.
+     * E.g. Plain vanilla initial object from previous version of midPoint.
      */
-    private final PrismObject<O> previousInitialObject;
+    private final PrismObject<O> baseObject;
 
     /**
-     * Plain vanilla initial object from current (next) version of midPoint.
+     * E.g. Plain vanilla initial object from current (next) version of midPoint.
      */
-    private final PrismObject<O> currentInitialObject;
+    private final PrismObject<O> leftObject;
 
     /**
-     * Object that is currently being edited (stored in midPoint repository).
+     * E.g. Object that is currently being edited (stored in midPoint repository).
      */
-    private final PrismObject<O> currentObject;
+    private final PrismObject<O> rightObject;
 
     private JComponent component;
 
-    private DeltaTreeTable initialDeltaTable;
+    private DeltaTreeTable leftDeltaTable;
 
-    private DeltaTreeTable currentDeltaTable;
+    private DeltaTreeTable rightDeltaTable;
 
-    private Editor initialEditor;
+    private Editor leftEditor;
 
-    private Editor resultEditor;
+    private Editor baseEditor;
 
-    private Editor currentEditor;
+    private Editor rightEditor;
 
     public InitialObjectDiffProcessor(
             @NotNull Project project,
-            PrismObject<O> previousInitialObject,
-            PrismObject<O> currentInitialObject,
-            PrismObject<O> currentObject) {
+            PrismObject<O> baseObject,
+            PrismObject<O> leftObject,
+            PrismObject<O> rightObject) {
 
         this.project = project;
 
-        if (previousInitialObject == null && currentObject != null) {
+        if (baseObject == null && rightObject != null) {
             throw new IllegalArgumentException(
                     "Previous initial object must not be null since current must have been created from something");
         }
 
-        this.previousInitialObject = previousInitialObject;
-        this.currentInitialObject = currentInitialObject;
-        this.currentObject = currentObject;
+        this.baseObject = baseObject;
+        this.leftObject = leftObject;
+        this.rightObject = rightObject;
 
         init();
 
@@ -74,14 +76,14 @@ public class InitialObjectDiffProcessor<O extends ObjectType> {
     private void init() {
         EditorFactory editorFactory = EditorFactory.getInstance();
 
-        Document initialDocument = editorFactory.createDocument("initial");
-        initialEditor = editorFactory.createViewer(initialDocument, project);
+        Document leftDocument = editorFactory.createDocument("initial");
+        leftEditor = editorFactory.createViewer(leftDocument, project);
 
-        Document resultDocument = editorFactory.createDocument("result");
-        resultEditor = editorFactory.createViewer(resultDocument, project);
+        Document baseDocument = editorFactory.createDocument("result");
+        baseEditor = editorFactory.createViewer(baseDocument, project);
 
-        Document currentDocument = editorFactory.createDocument("current");
-        currentEditor = editorFactory.createViewer(currentDocument, project);
+        Document rightDocument = editorFactory.createDocument("current");
+        rightEditor = editorFactory.createViewer(rightDocument, project);
     }
 
     private void initComponent() {
@@ -104,13 +106,10 @@ public class InitialObjectDiffProcessor<O extends ObjectType> {
 
     private JComponent initToolbar(JComponent parent) {
         DefaultActionGroup group = new DefaultActionGroup();
-        group.add(new AnAction("as") {
-
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-
-            }
-        });
+        group.add(new UiAction("Apply non-conflicting from left", AllIcons.Chooser.Right, e -> {
+        }));
+        group.add(new UiAction("Apply non-conflicting from right", AllIcons.Chooser.Left, e -> {
+        }));
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("toolbar", group, true);
         toolbar.setTargetComponent(parent);
@@ -118,24 +117,24 @@ public class InitialObjectDiffProcessor<O extends ObjectType> {
     }
 
     private JComponent initDeltaViews() {
-        initialDeltaTable = new DeltaTreeTable(null);
+        leftDeltaTable = new DeltaTreeTable(null);
 
-        currentDeltaTable = new DeltaTreeTable(null);
+        rightDeltaTable = new DeltaTreeTable(null);
 
         JBSplitter splitter = new OnePixelSplitter("deltas", 0.5f);
-        splitter.setFirstComponent(new JBScrollPane(initialDeltaTable));
-        splitter.setSecondComponent(new JBScrollPane(currentDeltaTable));
+        splitter.setFirstComponent(new JBScrollPane(leftDeltaTable));
+        splitter.setSecondComponent(new JBScrollPane(rightDeltaTable));
 
         return splitter;
     }
 
     private JComponent initEditors() {
         JBSplitter editorSplitter1 = new OnePixelSplitter("proportion_key1", 0.33f);
-        editorSplitter1.setFirstComponent(new JBScrollPane(initialEditor.getComponent()));
+        editorSplitter1.setFirstComponent(new JBScrollPane(leftEditor.getComponent()));
 
         JBSplitter editorSplitter2 = new OnePixelSplitter("proportion_key2", 0.5f);
-        editorSplitter2.setFirstComponent(new JBScrollPane(resultEditor.getComponent()));
-        editorSplitter2.setSecondComponent(new JBScrollPane(currentEditor.getComponent()));
+        editorSplitter2.setFirstComponent(new JBScrollPane(baseEditor.getComponent()));
+        editorSplitter2.setSecondComponent(new JBScrollPane(rightEditor.getComponent()));
 
         editorSplitter1.setSecondComponent(editorSplitter2);
 
@@ -143,17 +142,17 @@ public class InitialObjectDiffProcessor<O extends ObjectType> {
     }
 
     private InitialObjectDiffRequest<O> process() {
-        if (previousInitialObject == null && currentInitialObject != null) {
+        if (baseObject == null && leftObject != null) {
             // todo object was created by developers, no conflict - new initial object
         }
 
-        ObjectDelta<O> initialChanges = DiffUtil.diff(previousInitialObject, currentInitialObject);
+        ObjectDelta<O> initialChanges = DiffUtil.diff(baseObject, leftObject);
 
-        if (previousInitialObject != null && currentObject == null && !initialChanges.isEmpty()) {
+        if (baseObject != null && rightObject == null && !initialChanges.isEmpty()) {
             // todo object was deleted by user, however developers have changed initial objects - conflict
         }
 
-        ObjectDelta<O> currentChanges = DiffUtil.diff(previousInitialObject, currentObject);
+        ObjectDelta<O> currentChanges = DiffUtil.diff(baseObject, rightObject);
 
         // todo check for conflicts in deltas
 

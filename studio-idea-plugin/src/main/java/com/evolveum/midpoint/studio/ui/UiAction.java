@@ -7,6 +7,7 @@ import com.intellij.openapi.util.NlsActions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.function.Consumer;
 
 public class UiAction extends AnAction {
@@ -16,8 +17,15 @@ public class UiAction extends AnAction {
     public UiAction(
             @Nullable @NlsActions.ActionText String text,
             @Nullable Consumer<AnActionEvent> actionPerformedConsumer) {
+        this(text, null, actionPerformedConsumer);
+    }
 
-        super(text);
+    public UiAction(
+            @Nullable @NlsActions.ActionText String text,
+            @Nullable Icon icon,
+            @Nullable Consumer<AnActionEvent> actionPerformedConsumer) {
+
+        super(text, null, icon);
 
         this.actionPerformedConsumer = actionPerformedConsumer;
     }
