@@ -1,7 +1,11 @@
 package com.evolveum.midpoint.studio.impl.lang.annotation;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContainerDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObjectDefinition;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
@@ -13,6 +17,7 @@ import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MissingNaturalKeyAnnotator implements Annotator, MidPointAnnotator {
@@ -28,14 +33,29 @@ public class MissingNaturalKeyAnnotator implements Annotator, MidPointAnnotator 
             return;
         }
 
-        QName type = PsiUtils.getTagXsdType(tag);
-        if (type == null) {
+        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+
+        List<XmlTag> tags = listTagsToRoot(tag, new ArrayList<>());
+        if (tags.isEmpty()) {
             return;
         }
 
-        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
-        ComplexTypeDefinition def = ctx.getSchemaRegistry().findComplexTypeDefinitionByType(type);
-        if (def == null) {
+        // todo suppose that this could be also c:objects not only specific object type
+        XmlTag root = tags.get(0);
+        QName rootType = PsiUtils.getTagXsdType(root);
+        Class<?> rootTypeClass = ObjectTypes.getObjectTypeClassIfKnown(rootType);
+        if (rootTypeClass == null) {
+            return;
+        }
+
+        PrismObjectDefinition objectDefinition = ctx.getSchemaRegistry().findObjectDefinitionByType(rootType);
+        if (objectDefinition == null) {
+            return;
+        }
+
+        List<QName> path = toQNames(tags.subList(1, tags.size()));
+        ItemDefinition def = objectDefinition.findItemDefinition(ItemPath.create(path));
+        if (!def.isMultiValue() || !(def instanceof PrismContainerDefinition<?>)) {
             return;
         }
 
@@ -51,5 +71,18 @@ public class MissingNaturalKeyAnnotator implements Annotator, MidPointAnnotator 
                         "Missing key natural key constituent: " + key.getLocalPart(), null);
             }
         }
+    }
+
+    private List<QName> toQNames(List<XmlTag> tags) {
+        return tags.stream()
+                .map(MidPointUtils::createQName)
+                .toList();
+    }
+
+    private List<XmlTag> listTagsToRoot(XmlTag tag, List<XmlTag> result) {
+        result.add(0, tag);
+
+        XmlTag parent = tag.getParentTag();
+        return parent != null ? listTagsToRoot(parent, result) : result;
     }
 }
