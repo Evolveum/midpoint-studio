@@ -231,7 +231,7 @@
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>
         <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.MappingAnnotator"/>
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.MissingNaturalKeyAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>

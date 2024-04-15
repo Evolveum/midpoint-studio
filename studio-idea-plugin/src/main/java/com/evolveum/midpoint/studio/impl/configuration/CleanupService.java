@@ -1,8 +1,8 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
-import com.evolveum.midpoint.common.cleanup.CleanupActionProcessor;
 import com.evolveum.midpoint.common.cleanup.CleanupPath;
 import com.evolveum.midpoint.common.cleanup.CleanupPathAction;
+import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
@@ -50,8 +50,8 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
         return MidPointUtils.isDevelopmentMode(true) && getSettings().isRemoveContainerIds();
     }
 
-    public CleanupActionProcessor createCleanupProcessor() {
-        CleanupActionProcessor processor = new CleanupActionProcessor();
+    public ObjectCleaner createCleanupProcessor() {
+        ObjectCleaner processor = new ObjectCleaner();
         processor.setIgnoreNamespaces(true);
         processor.setPaths(getCleanupPaths());
         processor.setRemoveAskActionItemsByDefault(getAskActionOverride() == CleanupPathAction.REMOVE);
