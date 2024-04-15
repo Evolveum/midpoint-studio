@@ -59,7 +59,7 @@ public class MissingNaturalKeyAnnotator implements Annotator, MidPointAnnotator 
             return;
         }
 
-        List<QName> naturalKeys = def.getNaturalKey();
+        List<QName> naturalKeys = null; //todo enable def.getNaturalKey();
         if (naturalKeys == null || naturalKeys.isEmpty()) {
             return;
         }

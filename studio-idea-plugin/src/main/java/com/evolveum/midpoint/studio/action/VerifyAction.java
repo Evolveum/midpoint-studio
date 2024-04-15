@@ -78,7 +78,7 @@ public class VerifyAction extends AnAction {
     }
 
     private void processFiles(AnActionEvent evt, MidPointService mm, Environment env, List<VirtualFile> files) {
-        ObjectValidator validator = new ObjectValidator(MidPointUtils.DEFAULT_PRISM_CONTEXT);
+        ObjectValidator validator = new ObjectValidator();
         validator.setAllWarnings();
 
         MidPointClient client = new MidPointClient(evt.getProject(), env);
@@ -116,24 +116,24 @@ public class VerifyAction extends AnAction {
 
         StringBuilder sb = new StringBuilder();
 
-        if (validationItem.getStatus() != null) {
-            sb.append(validationItem.getStatus().toString());
+        if (validationItem.status() != null) {
+            sb.append(validationItem.status().toString());
             sb.append(" ");
         } else {
             sb.append("INFO ");
         }
         sb.append(object.toString());
         sb.append(" ");
-        if (validationItem.getItemPath() != null) {
-            sb.append(validationItem.getItemPath().toString());
+        if (validationItem.path() != null) {
+            sb.append(validationItem.path());
             sb.append(" ");
         }
-        writeMessage(sb, validationItem.getMessage());
+        writeMessage(sb, validationItem.message());
 
         return sb.toString();
     }
 
-    private void writeMessage(StringBuilder sb, LocalizableMessage message) throws IOException {
+    private void writeMessage(StringBuilder sb, LocalizableMessage message) {
         if (message == null) {
             return;
         }
