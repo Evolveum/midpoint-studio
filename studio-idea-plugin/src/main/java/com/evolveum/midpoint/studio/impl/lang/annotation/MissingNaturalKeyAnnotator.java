@@ -55,7 +55,7 @@ public class MissingNaturalKeyAnnotator implements Annotator, MidPointAnnotator 
 
         List<QName> path = toQNames(tags.subList(1, tags.size()));
         ItemDefinition def = objectDefinition.findItemDefinition(ItemPath.create(path));
-        if (!def.isMultiValue() || !(def instanceof PrismContainerDefinition<?>)) {
+        if (def == null || !def.isMultiValue() || !(def instanceof PrismContainerDefinition<?>)) {
             return;
         }
 
