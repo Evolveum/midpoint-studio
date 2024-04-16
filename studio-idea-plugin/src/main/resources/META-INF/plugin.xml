@@ -230,8 +230,6 @@
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotator"/>
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.MissingNaturalKeyAnnotator"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
@@ -262,6 +260,12 @@
         <fileBasedIndex implementation="com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl"/>
 
         <customizableActionGroupProvider implementation="com.evolveum.midpoint.studio.action.ExpUiActionGroupProvider"/>
+
+        <localInspection language="XML"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="MissingNaturalKeyInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.MissingNaturalKeyInspection"/>
 
         <intentionAction>
             <className>com.evolveum.midpoint.studio.impl.lang.intention.DownloadObjectIntention</className>
