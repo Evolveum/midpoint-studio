@@ -221,8 +221,6 @@
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>
         <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.DeprecatedElementAnnotator"/>
-        <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.TaskHandlerAnnotatorCompletionProvider"/>
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention"/>
@@ -266,6 +264,11 @@
                          groupKey="MidpointInspectionGroup.title"
                          key="MissingNaturalKeyInspection.title"
                          implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.MissingNaturalKeyInspection"/>
+        <localInspection language="XML"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="DeprecatedElementInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.DeprecatedElementInspection"/>
 
         <intentionAction>
             <className>com.evolveum.midpoint.studio.impl.lang.intention.DownloadObjectIntention</className>

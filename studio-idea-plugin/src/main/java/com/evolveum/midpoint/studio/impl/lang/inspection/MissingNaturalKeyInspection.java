@@ -11,7 +11,6 @@ import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.openapi.progress.ProgressIndicatorProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -29,7 +28,7 @@ public class MissingNaturalKeyInspection extends LocalInspectionTool implements 
         return new PsiElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {
-                ProgressIndicatorProvider.checkCanceled();
+                super.visitElement(element);
 
                 Project project = element.getProject();
                 if (!MidPointUtils.hasMidPointFacet(project)) {
