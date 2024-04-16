@@ -66,7 +66,7 @@ public class MissingNaturalKeyInspection extends LocalInspectionTool implements 
                     return;
                 }
 
-                List<QName> naturalKeys = def.getNaturalKeyConstituents();
+                List<QName> naturalKeys = null;//def.getNaturalKeyConstituents();
                 if (naturalKeys == null || naturalKeys.isEmpty()) {
                     return;
                 }
