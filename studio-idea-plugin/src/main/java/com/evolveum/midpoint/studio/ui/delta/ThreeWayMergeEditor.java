@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +43,7 @@ public class ThreeWayMergeEditor implements FileEditor {
 
     @Override
     public @Nullable JComponent getPreferredFocusedComponent() {
-        return UIUtil.getPreferredFocusedComponent(getComponent());
+        return null;
     }
 
     @Override
