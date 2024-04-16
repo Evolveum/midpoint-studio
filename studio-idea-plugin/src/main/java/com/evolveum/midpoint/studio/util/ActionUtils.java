@@ -30,6 +30,11 @@ public class ActionUtils {
                         ObjectTypes.getObjectTypeFromTypeQName(ref.getType())))
                 .toList();
 
+        if (objectRefs.isEmpty()) {
+            MidPointUtils.publishNotification(
+                    project, "Download missing", "Information", "No references to download.", NotificationType.INFORMATION);
+        }
+
         DownloadTask task = new DownloadTask(project, objectRefs, null, null, showOnly, true, false);
         task.setEnvironment(env);
         task.setOpenAfterDownload(false);

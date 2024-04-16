@@ -1,13 +1,15 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.studio.action.ShowEnvironmentConfigurationAction;
+import com.evolveum.midpoint.studio.action.ShowConfigurationAction;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ide.MavenManagerListener;
 import com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider;
-import com.evolveum.midpoint.studio.util.StudioLocalization;
+import com.evolveum.midpoint.studio.ui.configuration.CredentialsConfigurable;
+import com.evolveum.midpoint.studio.ui.configuration.EnvironmentsConfigurable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.codeInspection.ex.InspectionProfileImpl;
 import com.intellij.codeInspection.ex.ToolsImpl;
 import com.intellij.facet.FacetManager;
@@ -161,7 +163,7 @@ public class MidPointStartupActivity implements StartupActivity {
 
         MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
                 StudioLocalization.message("MidPointStartupActivity.checkFacet.title"),
-                StudioLocalization.message("MidPointStartupActivity.checkFacet.msg", module.getName()),
+                StudioLocalization.message("MidPointStartupActivity.checkFacet.msg", module.getName()), // todo this ignores parameter???
                 NotificationType.INFORMATION,
                 NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> addFacetPerformed(module)),
                 NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAboutMidpointConfigurationAgainPerformed(project)));
@@ -198,8 +200,30 @@ public class MidPointStartupActivity implements StartupActivity {
         }
 
         // todo check whether there is credentials.kdbx and master password is available and valid
+        validateProjectCredentialsConfiguration(project);
 
         validateEnvironmentsConfiguration(module);
+    }
+
+    private void validateProjectCredentialsConfiguration(Project project) {
+        EncryptionService service = EncryptionService.getInstance(project);
+        EncryptionService.StatusMessage status = service.getStatus();
+
+        if (status.getStatus() == EncryptionService.Status.OK) {
+            return;
+        }
+
+        MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
+                StudioLocalization.message("MidPointStartupActivity.checkProjectCredentials.title"),
+                StudioLocalization.message(
+                        "MidPointStartupActivity.checkProjectCredentials.msg", status.getMessage()),
+                NotificationType.INFORMATION,
+                NotificationAction.createExpiring(
+                        StudioLocalization.message("MidPointStartupActivity.checkProjectCredentials.openConfiguration"),
+                        (evt, notification) -> new ShowConfigurationAction(CredentialsConfigurable.class).actionPerformed(evt)),
+                NotificationAction.createExpiring(
+                        StudioLocalization.message("MidPointStartupActivity.checkProjectCredentials.dontAsk"),
+                        (evt, notification) -> dontAskAboutCredentialsAgainPerformed(project)));
     }
 
     private void validateEnvironmentsConfiguration(Module module) {
@@ -220,15 +244,15 @@ public class MidPointStartupActivity implements StartupActivity {
         }
 
         MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
-                StudioLocalization.message("MidPointStartupActivity.checkCredentials.title"),
-                StudioLocalization.message("MidPointStartupActivity.checkCredentials.msg", module.getName()),
+                StudioLocalization.message("MidPointStartupActivity.checkEnvironmentCredentials.title"),
+                StudioLocalization.message("MidPointStartupActivity.checkEnvironmentCredentials.msg", module.getName()),
                 NotificationType.INFORMATION,
-                NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkCredentials.openConfiguration"), (evt, notification) -> openEnvironmentsConfiguration(evt)),
-                NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkCredentials.dontAsk"), (evt, notification) -> dontAskAboutCredentialsAgainPerformed(project)));
-    }
-
-    private void openEnvironmentsConfiguration(AnActionEvent evt) {
-        new ShowEnvironmentConfigurationAction().actionPerformed(evt);
+                NotificationAction.createExpiring(
+                        StudioLocalization.message("MidPointStartupActivity.checkCredentials.openConfiguration"),
+                        (evt, notification) -> new ShowConfigurationAction(EnvironmentsConfigurable.class).actionPerformed(evt)),
+                NotificationAction.createExpiring(
+                        StudioLocalization.message("MidPointStartupActivity.checkCredentials.dontAsk"),
+                        (evt, notification) -> dontAskAboutCredentialsAgainPerformed(project)));
     }
 
     private void dontAskAboutCredentialsAgainPerformed(Project project) {

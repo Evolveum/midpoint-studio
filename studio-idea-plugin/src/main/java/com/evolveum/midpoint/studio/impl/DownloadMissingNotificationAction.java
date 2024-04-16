@@ -22,7 +22,7 @@ public class DownloadMissingNotificationAction extends NotificationAction {
 
     private final Project project;
 
-    private final List<ObjectReferenceType> references;
+    private final List<MissingRefObject> data;
 
     /**
      * @param data list of missing references from cleanup task. It will be used to compute
@@ -33,12 +33,13 @@ public class DownloadMissingNotificationAction extends NotificationAction {
         super(TEXT);
 
         this.project = project;
-
-        this.references = MissingRefUtils.computeDownloadOnly(project, data);
+        this.data = data;
     }
 
     @Override
     public void actionPerformed(AnActionEvent e, Notification notification) {
+        List<ObjectReferenceType> references = MissingRefUtils.computeDownloadOnly(project, data);
+
         ActionUtils.runDownloadTask(project, references, false);
     }
 
@@ -48,6 +49,6 @@ public class DownloadMissingNotificationAction extends NotificationAction {
     }
 
     public boolean isVisible() {
-        return !references.isEmpty();
+        return !data.isEmpty();
     }
 }

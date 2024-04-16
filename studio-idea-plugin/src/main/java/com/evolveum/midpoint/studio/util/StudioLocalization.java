@@ -16,7 +16,6 @@ import java.util.Properties;
 /**
  * Service that simplifies localization of MidPoint related keys.
  * <p>
- * todo create singleton from this instead of service!
  * todo this should probably also implement {@link com.evolveum.midpoint.common.LocalizationService}
  */
 public class StudioLocalization {
@@ -87,11 +86,20 @@ public class StudioLocalization {
         return defaultValue;
     }
 
+    public String translate(String key, String defaultValue, Object[] params) {
+        String msg = translate(key, defaultValue);
+        if (msg == null) {
+            msg = defaultValue;
+        }
+
+        return String.format(msg, params);
+    }
+
     @NotNull
     public static String message(@NotNull
                                  @PropertyKey(resourceBundle = "messages.MidPointStudio")
                                  String key, Object... params) {
-        String value = get().translate(key);
+        String value = get().translate(key, key, params);
         return value != null ? value : key;
     }
 }
