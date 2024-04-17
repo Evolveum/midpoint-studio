@@ -14,6 +14,7 @@ import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AssignmentHolderType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ModelExecuteOptionsType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ActionExpressionType;
 import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ExpressionPipelineType;
@@ -32,11 +33,11 @@ public interface UploadTaskMixin {
 
     static List<String> buildUploadOptions(MidPointObject object) {
         List<String> options = new ArrayList<>();
-        options.add("isImport");
+        options.add(ModelExecuteOptionsType.F_IS_IMPORT.getLocalPart());
 
         ObjectTypes type = object.getType();
         if (type != ObjectTypes.TASK && type != ObjectTypes.SYSTEM_CONFIGURATION) {
-            options.add("raw");
+            options.add(ModelExecuteOptionsType.F_RAW.getLocalPart());
         }
 
         return options;

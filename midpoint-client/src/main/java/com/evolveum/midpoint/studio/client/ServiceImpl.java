@@ -170,20 +170,14 @@ public class ServiceImpl implements Service {
         }
 
         Map<String, Object> options = new HashMap<>();
-        opts.forEach(o -> options.put("options", o));
+        options.put("options", opts);
 
-        MidPointObject toBeModified;
-        try {
-            toBeModified = get(ObjectTypes.OBJECT.getClassDefinition(), object.getOid(), GetOperationOptions.createRawCollection());
-
-            if (toBeModified == null) {
-                throw new ObjectNotFoundException("Couldn't fetch object before modification to find out proper type");
-            }
-        } catch (IOException | ObjectNotFoundException ex) {
-            throw new ClientException("Couldn't fetch object before modification to find out proper type", ex);
+        ObjectTypes type = object.getType();
+        if (type == null) {
+            type = getObjectType(object.getOid());
         }
 
-        String path = "/" + ObjectTypes.getRestTypeFromClass(toBeModified.getType().getClassDefinition()) + "/" + object.getOid();
+        String path = "/" + ObjectTypes.getRestTypeFromClass(type.getClassDefinition()) + "/" + object.getOid();
 
         Request req = context.build(path, options)
                 .patch(RequestBody.create(object.getContent(), ServiceContext.APPLICATION_XML))
@@ -195,6 +189,21 @@ public class ServiceImpl implements Service {
             // shouldn't happen, there's no parsing involved
             throw new ClientException("Couldn't modify object", ex);
         }
+    }
+
+    private ObjectTypes getObjectType(String oid) {
+        MidPointObject toBeModified;
+        try {
+            toBeModified = get(ObjectTypes.OBJECT.getClassDefinition(), oid, GetOperationOptions.createRawCollection());
+
+            if (toBeModified == null) {
+                throw new ObjectNotFoundException("Couldn't fetch object before modification to find out proper type");
+            }
+        } catch (IOException | ObjectNotFoundException | AuthenticationException ex) {
+            throw new ClientException("Couldn't fetch object before modification to find out proper type", ex);
+        }
+
+        return toBeModified.getType();
     }
 
     @Override

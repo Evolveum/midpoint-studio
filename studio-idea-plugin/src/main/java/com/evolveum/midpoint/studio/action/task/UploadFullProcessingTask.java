@@ -5,7 +5,11 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ModelExecuteOptionsType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +39,7 @@ public class UploadFullProcessingTask extends ClientBackgroundableTask<TaskState
 
     @Override
     protected ProcessObjectResult processObject(MidPointObject object) throws Exception {
-        OperationResult result = UploadTaskMixin.uploadExecute(client, object, buildUploadOptions(object));
+        OperationResult result = UploadTaskMixin.uploadExecute(client, object, buildUploadOptions(getProject(), object));
 
         ProcessObjectResult por = validateOperationResult(OPERATION_UPLOAD, result, object.getName());
 
@@ -61,13 +65,18 @@ public class UploadFullProcessingTask extends ClientBackgroundableTask<TaskState
         return validateOperationResult(OPERATION_TEST_CONNECTION, testConnectionResult, object.getName());
     }
 
-    public static List<String> buildUploadOptions(MidPointObject object) {
+    public static List<String> buildUploadOptions(Project project, MidPointObject object) {
         List<String> options = new ArrayList<>();
-        options.add("isImport");
+        options.add(ModelExecuteOptionsType.F_IS_IMPORT.getLocalPart());
 
         ObjectTypes type = object.getType();
         if (type != ObjectTypes.TASK && type != ObjectTypes.SYSTEM_CONFIGURATION) {
-            options.add("raw");
+            options.add(ModelExecuteOptionsType.F_RAW.getLocalPart());
+        }
+
+        MidPointConfiguration settings = MidPointService.get(project).getSettings();
+        if (settings.isUpdateOnUpload()) {
+            options.add(ModelExecuteOptionsType.F_REEVALUATE_SEARCH_FILTERS.getLocalPart());
         }
 
         return options;
