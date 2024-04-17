@@ -49,7 +49,7 @@ public class DeprecatedElementInspection extends LocalInspectionTool implements 
                     return;
                 }
 
-                String msg = "Element marked as deprecated (since <b>" + deprecatedSince + "</b>)";
+                String msg = "Element marked as deprecated (since " + deprecatedSince + ")";
 
                 if (xmlElement instanceof XmlTag tag) {
                     registerTagProblems(tag, holder, ProblemHighlightType.LIKE_DEPRECATED, msg);
