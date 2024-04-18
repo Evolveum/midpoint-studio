@@ -250,6 +250,8 @@
 
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.delta.ObjectDeltaEditorProvider"/>
 
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.diff.DiffEditorProvider"/>
+
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.delta.ThreeWayMergeEditorProvider"/>
 
         <diff.lang.DiffIgnoredRangeProvider

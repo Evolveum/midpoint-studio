@@ -2,8 +2,8 @@ package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.client.ClientUtils;
-import com.evolveum.midpoint.studio.impl.diff.InitialObjectDiffProcessor;
-import com.evolveum.midpoint.studio.ui.delta.ThreeWayMergeVirtualFile;
+import com.evolveum.midpoint.studio.ui.diff.DiffProcessor;
+import com.evolveum.midpoint.studio.ui.diff.DiffVirtualFile;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -50,20 +50,33 @@ public class TestAction extends AnAction {
             return;
         }
 
-        try {
-            VirtualFile parent = project.getBaseDir();
-            VirtualFile previousInitialFile = parent.findFileByRelativePath("./_3-merge/previous-initial-system.xml");
-            VirtualFile currentInitialFile = parent.findFileByRelativePath("./_3-merge/current-initial-system.xml");
-            VirtualFile currentObjectFile = parent.findFileByRelativePath("./_3-merge/current-system.xml");
+        VirtualFile parent = project.getBaseDir();
 
+        VirtualFile previousInitialFile = parent.findFileByRelativePath("./_3-merge/previous-initial-system.xml");
+        VirtualFile currentInitialFile = parent.findFileByRelativePath("./_3-merge/current-initial-system.xml");
+        VirtualFile currentObjectFile = parent.findFileByRelativePath("./_3-merge/current-system.xml");
+
+
+        try {
             PrismObject<?> previousInitial = parse(previousInitialFile);
             PrismObject<?> currentInitial = parse(currentInitialFile);
             PrismObject<?> currentObject = parse(currentObjectFile);
+//
+//            InitialObjectDiffProcessor processor = new InitialObjectDiffProcessor(
+//                    project, previousInitial, currentInitial, currentObject);
+//
+//            ThreeWayMergeVirtualFile file = new ThreeWayMergeVirtualFile(processor);
+//            MidPointUtils.openFile(project, file);
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
 
-            InitialObjectDiffProcessor processor = new InitialObjectDiffProcessor(
-                    project, previousInitial, currentInitial, currentObject);
+            DiffProcessor processor = new DiffProcessor(
+                    project, "Current initial", currentInitialFile, "Previous initial",
+                    previousInitialFile);
+            processor.initialize();
+            DiffVirtualFile file = new DiffVirtualFile(processor);
 
-            ThreeWayMergeVirtualFile file = new ThreeWayMergeVirtualFile(processor);
             MidPointUtils.openFile(project, file);
         } catch (Exception ex) {
             ex.printStackTrace();
