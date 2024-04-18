@@ -100,6 +100,16 @@ public abstract class RunnableUtils {
         });
     }
 
+    public static void executeOnPooledThread(Runnable runnable) {
+        ApplicationManager.getApplication().executeOnPooledThread(runnable);
+    }
+
+    public static void invokeLaterIfNeeded() {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            // do something
+        });
+    }
+
     public static CancellablePromise<Void> submitNonBlockingReadAction(Runnable runnable, ExecutorService executor) {
         return ReadAction.nonBlocking(new PluginClasspathRunnable() {
 

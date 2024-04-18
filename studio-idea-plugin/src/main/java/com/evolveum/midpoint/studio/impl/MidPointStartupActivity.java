@@ -19,7 +19,10 @@ import com.intellij.facet.impl.FacetUtil;
 import com.intellij.javaee.ExternalResourceManagerEx;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.Constraints;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.impl.stores.IProjectStore;
 import com.intellij.openapi.diagnostic.Logger;
@@ -65,7 +68,7 @@ public class MidPointStartupActivity implements StartupActivity {
 
         initializeUI();
 
-        ModalityUiUtil.invokeLaterIfNeeded(ModalityState.any(), () -> validateStudioConfiguration(project));
+        RunnableUtils.executeOnPooledThread(() -> validateStudioConfiguration(project));
     }
 
     private void initializePrism() {
@@ -161,12 +164,15 @@ public class MidPointStartupActivity implements StartupActivity {
 
         Module module = modules[0];
 
-        MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
-                StudioLocalization.message("MidPointStartupActivity.checkFacet.title"),
-                StudioLocalization.message("MidPointStartupActivity.checkFacet.msg", module.getName()), // todo this ignores parameter???
-                NotificationType.INFORMATION,
-                NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> addFacetPerformed(module)),
-                NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAboutMidpointConfigurationAgainPerformed(project)));
+        ModalityUiUtil.invokeLaterIfNeeded(
+                ModalityState.nonModal(), () -> {
+                    MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
+                            StudioLocalization.message("MidPointStartupActivity.checkFacet.title"),
+                            StudioLocalization.message("MidPointStartupActivity.checkFacet.msg", module.getName()), // todo this ignores parameter???
+                            NotificationType.INFORMATION,
+                            NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkFacet.addFacet"), (evt, notification) -> addFacetPerformed(module)),
+                            NotificationAction.createExpiring(StudioLocalization.message("MidPointStartupActivity.checkFacet.dontAsk"), (evt, notification) -> dontAskAboutMidpointConfigurationAgainPerformed(project)));
+                });
     }
 
     private void addFacetPerformed(Module module) {

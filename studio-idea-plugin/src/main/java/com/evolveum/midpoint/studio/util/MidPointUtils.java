@@ -13,6 +13,7 @@ import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -110,11 +111,17 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  */
 public class MidPointUtils {
 
-    public static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+    public static final Pattern UUID_PATTERN =
+            Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
-    public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = Comparator.comparing(o -> o.name());
+    public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR =
+            Comparator.comparing(o -> o.name());
 
-    public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
+    public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR =
+            (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(
+                    getOrigFromPolyString(o1.getName()),
+                    getOrigFromPolyString(o2.getName())
+            );
 
     private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
 
@@ -349,19 +356,16 @@ public class MidPointUtils {
         return createAnAction(text, icon, actionPerformed, null);
     }
 
-    public static AnAction createAnAction(String text, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
+    public static AnAction createAnAction(
+            String text, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
+
         return createAnAction(text, text, icon, actionPerformed, update);
     }
 
-    public static AnAction createAnAction(String text, String description, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
-        return new AnAction(text, description, icon) {
+    public static AnAction createAnAction(
+            String text, String description, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
 
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                if (actionPerformed != null) {
-                    actionPerformed.accept(e);
-                }
-            }
+        return new UiAction(text, description, icon, actionPerformed) {
 
             @Override
             public void update(@NotNull AnActionEvent e) {

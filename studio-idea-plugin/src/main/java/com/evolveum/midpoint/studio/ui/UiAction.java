@@ -24,8 +24,16 @@ public class UiAction extends AnAction {
             @Nullable @NlsActions.ActionText String text,
             @Nullable Icon icon,
             @Nullable Consumer<AnActionEvent> actionPerformedConsumer) {
+        this(text, null, icon, actionPerformedConsumer);
+    }
 
-        super(text, null, icon);
+    public UiAction(
+            @Nullable @NlsActions.ActionText String text,
+            @Nullable @NlsActions.ActionText String description,
+            @Nullable Icon icon,
+            @Nullable Consumer<AnActionEvent> actionPerformedConsumer) {
+
+        super(text, description, icon);
 
         this.actionPerformedConsumer = actionPerformedConsumer;
     }

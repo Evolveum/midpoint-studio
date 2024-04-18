@@ -251,6 +251,11 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         CheckboxAction rawSearch = new CheckboxAction("Raw") {
 
             @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.EDT;
+            }
+
+            @Override
             public void update(AnActionEvent e) {
                 e.getPresentation().setEnabled(isSearchEnabled());
 
@@ -337,6 +342,11 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         CheckboxAction rawSearch = new CheckboxAction("Raw") {
 
             @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.EDT;
+            }
+
+            @Override
             public void update(AnActionEvent e) {
                 e.getPresentation().setEnabled(isDownloadShowEnabled());
 
@@ -364,6 +374,11 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         group.add(new Separator());
 
         pagingText = new TextAction() {
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.EDT;
+            }
 
             @NotNull
             @Override
