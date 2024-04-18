@@ -68,7 +68,7 @@ public class StudioLocalization {
         }
 
         String key = MidPointUtils.createKeyForEnum(e);
-        return translate(key);
+        return translate(key, key);
     }
 
     public String translate(String key) {
