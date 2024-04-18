@@ -2,32 +2,34 @@ package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.studio.ui.UiAction;
-import com.intellij.diff.DiffRequestFactory;
-import com.intellij.diff.chains.DiffRequestChain;
-import com.intellij.diff.chains.SimpleDiffRequestChain;
-import com.intellij.diff.impl.CacheDiffRequestChainProcessor;
-import com.intellij.diff.requests.DiffRequest;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
-import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBPanel;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class DiffPanel extends JBPanel {
+public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
 
     private final Project project;
 
-    private ObjectDelta delta;
+    private ObjectDeltaTree<O> deltaTree;
 
-    public DiffPanel(@NotNull Project project, ObjectDelta delta) {
+    private ObjectDelta<O> delta;
+
+    public DiffPanel(@NotNull Project project, ObjectDelta<O> delta) {
         super(new BorderLayout());
 
         this.project = project;
@@ -42,7 +44,7 @@ public class DiffPanel extends JBPanel {
 
         JBSplitter splitter = new JBSplitter(true, 0.5f);
 
-        ObjectDeltaTree deltaTree = createDeltaTable();
+        deltaTree = createDeltaTable();
         splitter.setFirstComponent(ScrollPaneFactory.createScrollPane(deltaTree));
 
         JComponent diffEditor = createTextDiff();
@@ -56,62 +58,16 @@ public class DiffPanel extends JBPanel {
         return tree;
     }
 
-    private JComponent createTextDiff() {
-        LightVirtualFile left = new LightVirtualFile("(RESULT) system-configuration.xml", "left\ncontent");
-        LightVirtualFile right = new LightVirtualFile("(REMOTE) system-configuration.xml", "right\ncontent");
-
-        DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, left, right);
-
-        DiffRequestChain chain = new SimpleDiffRequestChain(request);
-
-        CacheDiffRequestChainProcessor processor = new CacheDiffRequestChainProcessor(project, chain) {
-
-            @Override
-            protected @org.jetbrains.annotations.NotNull List<AnAction> getNavigationActions() {
-                List<AnAction> list = new ArrayList<>();
-//                list.add(strategyCombo);
-//                list.add(new Separator());
-
-                list.addAll(super.getNavigationActions());
-
-                return list;
-            }
-        };
-        processor.updateRequest();
-
-        return processor.getComponent();
-    }
+    protected abstract JComponent createTextDiff();
 
     private JComponent initMainToolbar(JComponent parent) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        group.add(new DiffStrategyComboAction(DiffStrategy.NATURAL_KEYS) {
+        group.add(new UiAction("Expand all", AllIcons.Actions.Expandall, e -> expandAllPerformed()));
+        group.add(new UiAction("Collapse all", AllIcons.Actions.Collapseall, e -> collapseAllPerformed()));
 
-            @Override
-            public DiffStrategy getDefaultItem() {
-                return super.getDefaultItem();
-            }
-
-            @Override
-            public void setSelected(DiffStrategy selected) {
-                super.setSelected(selected);
-
-                diffStrategyChanged(selected);
-            }
-        });
-
-        group.add(new Separator());
-
-        group.add(new UiAction("Accept", AllIcons.Diff.ApplyNotConflictsLeft, e -> acceptPerformed()));
-        group.add(new UiAction("Ignore", AllIcons.Diff.ApplyNotConflictsRight, e -> ignorePerformed()));
-
-        group.add(new Separator());
-
-        group.add(new UiAction("Cleanup right", AllIcons.General.InspectionsEye, e -> cleanupRightPerformed()));
-
-        group.add(new UiAction("Save", AllIcons.General.GreenCheckmark, e -> savePerformed()));
-        group.add(new UiAction("Roll back", AllIcons.Actions.Rollback, e -> rollbackPerformed()));
-
+        List<AnAction> actions = createToolbarActions();
+        actions.forEach(group::add);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("toolbar", group, true);
         toolbar.setTargetComponent(parent);
@@ -119,31 +75,41 @@ public class DiffPanel extends JBPanel {
         return toolbar.getComponent();
     }
 
-    private void rollbackPerformed() {
-        // todo implement
+    protected @NotNull List<AnAction> createToolbarActions() {
+        return List.of();
     }
 
-    private void savePerformed() {
-        // todo implement
+    private void expandAllPerformed() {
+        if (deltaTree == null) {
+            return;
+        }
+        TreeUtil.expandAll(deltaTree);
     }
 
-    private void diffStrategyChanged(DiffStrategy strategy) {
-        // todo implement
+    private void collapseAllPerformed() {
+        if (deltaTree == null) {
+            return;
+        }
+        TreeUtil.collapseAll(deltaTree, 1);
     }
 
-    private void acceptPerformed() {
-        // todo implement
+    public @NotNull List<DefaultMutableTreeNode> getSelectedNodes() {
+        if (deltaTree == null) {
+            return List.of();
+        }
+
+        DefaultMutableTreeNode[] selected = deltaTree.getSelectedNodes(DefaultMutableTreeNode.class, null);
+        return Arrays.asList(selected);
     }
 
-    private void ignorePerformed() {
-        // todo implement
-    }
+    public void removeNodes(@NotNull List<DefaultMutableTreeNode> nodes) {
+        if (deltaTree == null) {
+            return;
+        }
 
-    private void cleanupLeft() {
-        // todo implement
-    }
+        // todo remove also nodes that don't have children
 
-    private void cleanupRightPerformed() {
-        // todo implement
+        ObjectDeltaTreeModel<O> model = (ObjectDeltaTreeModel<O>) deltaTree.getModel();
+        nodes.forEach(n -> model.removeNodeFromParent(n));
     }
 }

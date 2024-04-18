@@ -10,7 +10,6 @@ import com.intellij.util.ui.ColumnInfo;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.tree.TreePath;
-import javax.xml.crypto.Data;
 import javax.xml.namespace.QName;
 import java.util.*;
 import java.util.stream.Collectors;

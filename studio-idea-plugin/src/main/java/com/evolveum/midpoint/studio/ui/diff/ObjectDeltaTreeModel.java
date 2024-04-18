@@ -9,9 +9,12 @@ import com.intellij.util.ui.tree.AbstractTreeModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.util.Collection;
 
 public class ObjectDeltaTreeModel<O extends ObjectType> extends AbstractTreeModel {
+
+    public static final Object ROOT_ALL = "All";
 
     private ObjectDelta<O> delta;
 
@@ -47,7 +50,7 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends AbstractTreeMode
     }
 
     public void setDelta(@NotNull ObjectDelta<O> delta) {
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("All");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(delta);
         Collection<? extends ItemDelta<?, ?>> modifications = delta.getModifications();
         for (ItemDelta<?, ?> modification : modifications) {
             DefaultMutableTreeNode itemDeltaNode = new DefaultMutableTreeNode(modification);
@@ -70,5 +73,21 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends AbstractTreeMode
         }
 
         values.forEach(v -> parent.add(new DefaultMutableTreeNode(new DeltaItem(modificationType, v))));
+    }
+
+
+    public void removeNodeFromParent(DefaultMutableTreeNode node) {
+        DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+        if (parent == null) {
+            return;
+        }
+
+        TreePath path = new TreePath(parent.getPath());
+        int[] indices = new int[]{parent.getIndex(node)};
+        Object[] children = new Object[]{node};
+
+        parent.remove(node);
+
+        treeNodesRemoved(path, indices, children);
     }
 }

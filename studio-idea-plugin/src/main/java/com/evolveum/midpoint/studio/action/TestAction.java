@@ -3,6 +3,8 @@ package com.evolveum.midpoint.studio.action;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.ui.diff.DiffProcessor;
+import com.evolveum.midpoint.studio.ui.diff.DiffSource;
+import com.evolveum.midpoint.studio.ui.diff.DiffSourceType;
 import com.evolveum.midpoint.studio.ui.diff.DiffVirtualFile;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
@@ -71,9 +73,10 @@ public class TestAction extends AnAction {
 //            ex.printStackTrace();
 //        }
 
-            DiffProcessor processor = new DiffProcessor(
-                    project, "Current initial", currentInitialFile, "Previous initial",
-                    previousInitialFile);
+            DiffSource left = new DiffSource("Current object", currentObjectFile, DiffSourceType.LOCAL);
+            DiffSource right = new DiffSource("Previous object", previousInitialFile, DiffSourceType.LOCAL);
+
+            DiffProcessor processor = new DiffProcessor(project, left, right);
             processor.initialize();
             DiffVirtualFile file = new DiffVirtualFile(processor);
 
