@@ -10,6 +10,8 @@ import com.evolveum.midpoint.studio.impl.xml.DiffObjectType;
 import com.evolveum.midpoint.studio.impl.xml.DiffType;
 import com.evolveum.midpoint.studio.impl.xml.ObjectsDiffFactory;
 import com.evolveum.midpoint.studio.ui.CustomComboBoxAction;
+import com.evolveum.midpoint.studio.ui.diff.DiffStrategy;
+import com.evolveum.midpoint.studio.ui.diff.DiffStrategyComboAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -35,7 +37,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -44,36 +45,6 @@ import java.util.List;
 public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
     private static final Logger LOG = Logger.getInstance(ObjectDeltaPanel.class);
-
-    public enum DiffStrategy {
-
-        LITERAL("Literal", ParameterizedEquivalenceStrategy.LITERAL),
-
-        DATA("Data", ParameterizedEquivalenceStrategy.DATA),
-
-        IGNORE_METADATA("Ignore Metadata", ParameterizedEquivalenceStrategy.IGNORE_METADATA),
-
-        DEFAULT("Default Compare", ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION),
-
-        REAL_VALUE("Real Value", ParameterizedEquivalenceStrategy.REAL_VALUE);
-
-        private final String label;
-
-        private final ParameterizedEquivalenceStrategy strategy;
-
-        DiffStrategy(String label, ParameterizedEquivalenceStrategy strategy) {
-            this.label = label;
-            this.strategy = strategy;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public ParameterizedEquivalenceStrategy getStrategy() {
-            return strategy;
-        }
-    }
 
     private Project project;
 
@@ -95,22 +66,7 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
     }
 
     private void initLayout() {
-        strategyCombo = new CustomComboBoxAction<>() {
-
-            @Override
-            public DiffStrategy getDefaultItem() {
-                return DiffStrategy.DEFAULT;
-            }
-
-            @Override
-            public List<DiffStrategy> getItems() {
-                return Arrays.asList(DiffStrategy.values());
-            }
-
-            @Override
-            protected String createItemLabel(DiffStrategy item) {
-                return item != null ? item.getLabel() : "";
-            }
+        strategyCombo = new DiffStrategyComboAction(DiffStrategy.DEFAULT) {
 
             @Override
             public void setSelected(DiffStrategy selected) {

@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.evolveum.midpoint.prism.ModificationType;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
@@ -49,31 +50,25 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends AbstractTreeMode
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("All");
         Collection<? extends ItemDelta<?, ?>> modifications = delta.getModifications();
         for (ItemDelta<?, ?> modification : modifications) {
-            DefaultMutableTreeNode modificationNode = new DefaultMutableTreeNode(modification.getPath().toString());
-            root.add(modificationNode);
+            DefaultMutableTreeNode itemDeltaNode = new DefaultMutableTreeNode(modification);
+            root.add(itemDeltaNode);
 
-            if (modification.getValuesToAdd() != null) {
-                for (PrismValue value : modification.getValuesToAdd()) {
-                    modificationNode.add(
-                            new DefaultMutableTreeNode("+" + value.debugDump()));
-                }
-            }
-
-            if (modification.getValuesToDelete() != null) {
-                for (PrismValue value : modification.getValuesToDelete()) {
-                    modificationNode.add(
-                            new DefaultMutableTreeNode("-" + value.debugDump()));
-                }
-            }
-
-            if (modification.getValuesToReplace() != null) {
-                for (PrismValue value : modification.getValuesToReplace()) {
-                    modificationNode.add(
-                            new DefaultMutableTreeNode("!" + value.debugDump()));
-                }
-            }
+            addValues(itemDeltaNode, ModificationType.ADD, modification.getValuesToAdd());
+            addValues(itemDeltaNode, ModificationType.DELETE, modification.getValuesToDelete());
+            addValues(itemDeltaNode, ModificationType.REPLACE, modification.getValuesToReplace());
         }
 
         this.root = root;
+    }
+
+    private void addValues(
+            DefaultMutableTreeNode parent, ModificationType modificationType,
+            Collection<? extends PrismValue> values) {
+
+        if (values == null) {
+            return;
+        }
+
+        values.forEach(v -> parent.add(new DefaultMutableTreeNode(new DeltaItem(modificationType, v))));
     }
 }

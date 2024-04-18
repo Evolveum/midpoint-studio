@@ -44,10 +44,7 @@ import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.ui.EditorTextField;
-import com.intellij.ui.EditorTextFieldProvider;
-import com.intellij.ui.MonospaceEditorCustomization;
-import com.intellij.ui.OnePixelSplitter;
+import com.intellij.ui.*;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
@@ -147,8 +144,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         root.add(toolbar.getComponent(), BorderLayout.NORTH);
 
         query = createQueryTextField(ComboQueryType.Type.NAME_OR_OID);
-        JBScrollPane pane = new JBScrollPane(query);
-        root.add(pane, BorderLayout.CENTER);
+        root.add(ScrollPaneFactory.createScrollPane(query, true), BorderLayout.CENTER);
 
         return root;
     }

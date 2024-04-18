@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -19,6 +20,15 @@ public class CustomComboBoxAction<T> extends ComboBoxAction {
 
     public CustomComboBoxAction() {
         selected = getDefaultItem();
+    }
+
+    public CustomComboBoxAction(T selected) {
+        this.selected = selected;
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
     }
 
     @Override
@@ -91,6 +101,11 @@ public class CustomComboBoxAction<T> extends ComboBoxAction {
         public ComboItemAction(CustomComboBoxAction combo, T item) {
             this.combo = combo;
             this.item = item;
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
         }
 
         @Override
