@@ -37,6 +37,8 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.trace.TraceService"/>
 
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.ui.diff.SynchronizationManager"/>
+
         <projectConfigurable
                 parentId="language"
                 instance="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
@@ -133,6 +135,13 @@
                           order="last"
                           icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
+
+        <facet.toolWindow id="Synchronization"
+                          facetIdList="MidPointFacet"
+                          anchor="left"
+                          order="last"
+                          icon="AllIcons.Actions.Refresh"
+                          factoryClass="com.evolveum.midpoint.studio.ui.diff.SynchronizationToolWindowFactory"/>
 
         <fileType
                 name="MPTrace"
@@ -364,6 +373,10 @@
                 class="com.evolveum.midpoint.studio.action.transfer.DiffRemoteAction"
                 text="Diff Remote"
                 icon="AllIcons.Actions.Diff"/>
+        <action id="MidPoint.Action.SynchronizeToProject"
+                class="com.evolveum.midpoint.studio.action.transfer.SynchronizeToProjectAction"
+                text="Synchronize To Project"
+                icon="AllIcons.Actions.Refresh"/>
 
         <!-- SERVER SIDE -->
 
@@ -475,6 +488,7 @@
                 <reference ref="MidPoint.Action.Refresh"/>
                 <reference ref="MidPoint.Action.DiffLocal"/>
                 <reference ref="MidPoint.Action.DiffRemote"/>
+                <reference ref="MidPoint.Action.SynchronizeToProject"/>
                 <reference ref="MidPoint.Action.CleanupFile"/>
                 <reference ref="MidPoint.Action.VerifyAction"/>
                 <reference ref="MidPoint.Action.UpgradeTask"/>
@@ -540,6 +554,7 @@
 
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.DiffRemote"/>
+            <reference ref="MidPoint.Action.SynchronizeToProject"/>
 
             <separator/>
 
@@ -607,6 +622,7 @@
 
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.DiffRemote"/>
+            <reference ref="MidPoint.Action.SynchronizeToProject"/>
 
             <separator/>
 

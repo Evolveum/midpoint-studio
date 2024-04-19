@@ -104,10 +104,8 @@ public abstract class RunnableUtils {
         ApplicationManager.getApplication().executeOnPooledThread(runnable);
     }
 
-    public static void invokeLaterIfNeeded() {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            // do something
-        });
+    public static void invokeLaterIfNeeded(Runnable runnable) {
+        ApplicationManager.getApplication().invokeLater(runnable);
     }
 
     public static CancellablePromise<Void> submitNonBlockingReadAction(Runnable runnable, ExecutorService executor) {

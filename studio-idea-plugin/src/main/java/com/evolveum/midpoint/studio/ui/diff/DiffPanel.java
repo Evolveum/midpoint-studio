@@ -57,6 +57,7 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
     private JBPanel createDeltaTablePanel() {
         deltaTree = new ObjectDeltaTree(new ObjectDeltaTreeModel(delta));
         deltaTree.addTreeSelectionListener(e -> onTreeSelectionChanged(getSelectedNodes()));
+        TreeUtil.expand(deltaTree, 2);
 
         JBPanel treePanel = new JBPanel(new BorderLayout());
         treePanel.setBorder(JBUI.Borders.customLineBottom(JBUI.CurrentTheme.Editor.BORDER_COLOR));

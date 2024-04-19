@@ -17,12 +17,14 @@ import com.intellij.diff.DiffRequestFactory;
 import com.intellij.diff.chains.DiffRequestChain;
 import com.intellij.diff.chains.SimpleDiffRequestChain;
 import com.intellij.diff.impl.CacheDiffRequestChainProcessor;
-import com.intellij.diff.requests.DiffRequest;
+import com.intellij.diff.requests.ContentDiffRequest;
+import com.intellij.diff.util.DiffUserDataKeysEx;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.newvfs.RefreshQueue;
 import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
 
@@ -78,8 +80,7 @@ public class DiffProcessor<O extends ObjectType> {
             leftPreviewFile = new LightVirtualFile(buildTextDiffFileName(leftSource, true), leftTextContent);
             LightVirtualFile right = new LightVirtualFile(buildTextDiffFileName(rightSource, false), rightTextContent);
 
-            DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, leftPreviewFile, right);
-
+            ContentDiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, leftPreviewFile, right);
             DiffRequestChain chain = new SimpleDiffRequestChain(request);
 
             diffProcessor = new CacheDiffRequestChainProcessor(project, chain) {
@@ -133,11 +134,13 @@ public class DiffProcessor<O extends ObjectType> {
         // todo implement
     }
 
-    private void updateLeftPreviewFile() throws IOException, SchemaException {
+    private void updateLeftPreviewFile() throws SchemaException {
         String leftTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, leftObjectPreview);
-        leftPreviewFile.setBinaryContent(leftTextContent.getBytes());
+        leftPreviewFile.setContent(this, leftTextContent, true);
 
-        diffProcessor.updateRequest(true);
+        RefreshQueue.getInstance().refresh(false, false, null, leftPreviewFile);
+
+        diffProcessor.updateRequest(true, false, DiffUserDataKeysEx.ScrollToPolicy.FIRST_CHANGE);
     }
 
     private List<AnAction> createToolbarActions() {
