@@ -73,8 +73,8 @@ public class TestAction extends AnAction {
 //            ex.printStackTrace();
 //        }
 
-            DiffSource left = new DiffSource("Current object", currentObjectFile, DiffSourceType.LOCAL);
-            DiffSource right = new DiffSource("Previous object", previousInitialFile, DiffSourceType.LOCAL);
+            DiffSource left = new DiffSource("System configuration", currentObjectFile, DiffSourceType.LOCAL);
+            DiffSource right = new DiffSource("System configuration", previousInitialFile, DiffSourceType.REMOTE);
 
             DiffProcessor processor = new DiffProcessor(project, left, right);
             processor.initialize();

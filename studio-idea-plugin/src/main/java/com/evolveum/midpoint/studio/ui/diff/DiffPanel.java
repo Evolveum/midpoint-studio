@@ -11,7 +11,9 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ScrollPaneFactory;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,18 +46,28 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
 
         JBSplitter splitter = new JBSplitter(true, 0.5f);
 
-        deltaTree = createDeltaTable();
-        splitter.setFirstComponent(ScrollPaneFactory.createScrollPane(deltaTree));
+        JBPanel deltaPanel = createDeltaTablePanel();
+        splitter.setFirstComponent(deltaPanel);
 
         JComponent diffEditor = createTextDiff();
         splitter.setSecondComponent(diffEditor);
         add(splitter, BorderLayout.CENTER);
     }
 
-    private ObjectDeltaTree createDeltaTable() {
-        ObjectDeltaTree tree = new ObjectDeltaTree(new ObjectDeltaTreeModel(delta));
+    private JBPanel createDeltaTablePanel() {
+        deltaTree = new ObjectDeltaTree(new ObjectDeltaTreeModel(delta));
+        deltaTree.addTreeSelectionListener(e -> onTreeSelectionChanged(getSelectedNodes()));
 
-        return tree;
+        JBPanel treePanel = new JBPanel(new BorderLayout());
+        treePanel.setBorder(JBUI.Borders.customLineBottom(JBUI.CurrentTheme.Editor.BORDER_COLOR));
+
+        JBLabel label = new JBLabel("Review changes loaded from remote object:");
+        label.setBorder(JBUI.Borders.emptyLeft(12));
+        treePanel.add(label, BorderLayout.NORTH); // todo fix
+
+        treePanel.add(ScrollPaneFactory.createScrollPane(this.deltaTree), BorderLayout.CENTER);
+
+        return treePanel;
     }
 
     protected abstract JComponent createTextDiff();
@@ -75,6 +87,10 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
         return toolbar.getComponent();
     }
 
+    protected void onTreeSelectionChanged(@NotNull List<DefaultMutableTreeNode> selected) {
+        // intentionally left empty
+    }
+
     protected @NotNull List<AnAction> createToolbarActions() {
         return List.of();
     }
@@ -90,7 +106,7 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
         if (deltaTree == null) {
             return;
         }
-        TreeUtil.collapseAll(deltaTree, 1);
+        TreeUtil.collapseAll(deltaTree, 2);
     }
 
     public @NotNull List<DefaultMutableTreeNode> getSelectedNodes() {
@@ -106,8 +122,6 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
         if (deltaTree == null) {
             return;
         }
-
-        // todo remove also nodes that don't have children
 
         ObjectDeltaTreeModel<O> model = (ObjectDeltaTreeModel<O>) deltaTree.getModel();
         nodes.forEach(n -> model.removeNodeFromParent(n));

@@ -14,7 +14,7 @@ import java.util.Collection;
 
 public class ObjectDeltaTreeModel<O extends ObjectType> extends AbstractTreeModel {
 
-    public static final Object ROOT_ALL = "All";
+    private static final Object NODE_ROOT = "";
 
     private ObjectDelta<O> delta;
 
@@ -50,29 +50,33 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends AbstractTreeMode
     }
 
     public void setDelta(@NotNull ObjectDelta<O> delta) {
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode(delta);
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(NODE_ROOT);
+
+        DefaultMutableTreeNode all = new DefaultMutableTreeNode(delta);
+        root.add(all);
+
         Collection<? extends ItemDelta<?, ?>> modifications = delta.getModifications();
         for (ItemDelta<?, ?> modification : modifications) {
             DefaultMutableTreeNode itemDeltaNode = new DefaultMutableTreeNode(modification);
-            root.add(itemDeltaNode);
+            all.add(itemDeltaNode);
 
-            addValues(itemDeltaNode, ModificationType.ADD, modification.getValuesToAdd());
-            addValues(itemDeltaNode, ModificationType.DELETE, modification.getValuesToDelete());
-            addValues(itemDeltaNode, ModificationType.REPLACE, modification.getValuesToReplace());
+            addValues(itemDeltaNode, modification, ModificationType.ADD, modification.getValuesToAdd());
+            addValues(itemDeltaNode, modification, ModificationType.DELETE, modification.getValuesToDelete());
+            addValues(itemDeltaNode, modification, ModificationType.REPLACE, modification.getValuesToReplace());
         }
 
         this.root = root;
     }
 
     private void addValues(
-            DefaultMutableTreeNode parent, ModificationType modificationType,
+            DefaultMutableTreeNode parent, ItemDelta<?, ?> itemDelta, ModificationType modificationType,
             Collection<? extends PrismValue> values) {
 
         if (values == null) {
             return;
         }
 
-        values.forEach(v -> parent.add(new DefaultMutableTreeNode(new DeltaItem(modificationType, v))));
+        values.forEach(v -> parent.add(new DefaultMutableTreeNode(new DeltaItem(itemDelta, modificationType, v))));
     }
 
 
@@ -89,5 +93,9 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends AbstractTreeMode
         parent.remove(node);
 
         treeNodesRemoved(path, indices, children);
+
+        if (parent.isLeaf()) {
+            removeNodeFromParent(parent);
+        }
     }
 }

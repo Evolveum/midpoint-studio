@@ -26,12 +26,14 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree {
     private static final ColorKey MODIFIED = ColorKey.createColorKey("FILESTATUS_MODIFIED");
 
     public ObjectDeltaTree(@NotNull ObjectDeltaTreeModel<O> model) {
-        super(model);  // todo implement
+        super(model);
 
         setup();
     }
 
     private void setup() {
+        setRootVisible(false);
+
         setCellRenderer(new LabelBasedRenderer.Tree() {
 
             @Override

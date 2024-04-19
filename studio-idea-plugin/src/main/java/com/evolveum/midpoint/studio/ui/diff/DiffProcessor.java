@@ -45,7 +45,11 @@ public class DiffProcessor<O extends ObjectType> {
 
     private ObjectDelta<O> delta;
 
-    private DiffPanel panel;
+    private PrismObject<O> leftObjectPreview;
+    private LightVirtualFile leftPreviewFile;
+    private CacheDiffRequestChainProcessor diffProcessor;
+
+    private DiffPanel<O> panel;
 
     private ParameterizedEquivalenceStrategy equivalenceStrategy = EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS;
 
@@ -63,20 +67,22 @@ public class DiffProcessor<O extends ObjectType> {
     public void initialize() {
         try {
             leftObject = parseObject(leftSource);
+            leftObjectPreview = leftObject.clone();
+
             rightObject = parseObject(rightSource);
 
             delta = leftObject.diff(rightObject, equivalenceStrategy);
 
-            String leftTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, leftObject);
+            String leftTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, leftObjectPreview);
             String rightTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, rightObject);
-            LightVirtualFile left = new LightVirtualFile(buildTextDiffFileName(leftSource, true), leftTextContent);
+            leftPreviewFile = new LightVirtualFile(buildTextDiffFileName(leftSource, true), leftTextContent);
             LightVirtualFile right = new LightVirtualFile(buildTextDiffFileName(rightSource, false), rightTextContent);
 
-            DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, left, right);
+            DiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, leftPreviewFile, right);
 
             DiffRequestChain chain = new SimpleDiffRequestChain(request);
 
-            CacheDiffRequestChainProcessor processor = new CacheDiffRequestChainProcessor(project, chain) {
+            diffProcessor = new CacheDiffRequestChainProcessor(project, chain) {
 
                 @Override
                 protected @org.jetbrains.annotations.NotNull List<AnAction> getNavigationActions() {
@@ -89,23 +95,49 @@ public class DiffProcessor<O extends ObjectType> {
                     return list;
                 }
             };
-            processor.updateRequest();
+            diffProcessor.updateRequest();
 
-            panel = new DiffPanel(project, delta) {
+            panel = new DiffPanel<>(project, delta) {
 
                 @Override
                 protected JComponent createTextDiff() {
-                    return processor.getComponent();
+                    return diffProcessor.getComponent();
                 }
 
                 @Override
                 protected @NotNull List<AnAction> createToolbarActions() {
                     return DiffProcessor.this.createToolbarActions();
                 }
+
+                @Override
+                protected void onTreeSelectionChanged(@NotNull List<DefaultMutableTreeNode> selected) {
+                    DiffProcessor.this.onTreeSelectionChanged(selected);
+                }
             };
         } catch (Exception ex) {
             throw new RuntimeException("Couldn't parse object", ex);
         }
+    }
+
+    private void onTreeSelectionChanged(List<DefaultMutableTreeNode> selected) {
+        leftObjectPreview = leftObject.clone();
+
+        try {
+            applyDeltaNodesToObject(leftObjectPreview, selected);
+
+            updateLeftPreviewFile();
+        } catch (Exception ex) {
+            ex.printStackTrace(); // todo fix
+        }
+
+        // todo implement
+    }
+
+    private void updateLeftPreviewFile() throws IOException, SchemaException {
+        String leftTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, leftObjectPreview);
+        leftPreviewFile.setBinaryContent(leftTextContent.getBytes());
+
+        diffProcessor.updateRequest(true);
     }
 
     private List<AnAction> createToolbarActions() {
@@ -209,25 +241,35 @@ public class DiffProcessor<O extends ObjectType> {
             List<DefaultMutableTreeNode> selected = panel.getSelectedNodes();
 
             // todo implement - apply partial delta
-
-            for (DefaultMutableTreeNode node : selected) {
-                Object userObject = node.getUserObject();
-                if (userObject instanceof ObjectDelta<?> od) {
-
-                } else if (userObject instanceof ItemDelta<?, ?> id) {
-                    ObjectDelta<O> delta = leftObject.createModifyDelta();
-                    delta.addModification(id.clone());
-
-                    delta.applyTo(leftObject);
-                } else if (userObject instanceof DeltaItem) {
-
-                }
-            }
+            applyDeltaNodesToObject(leftObject, selected);
 
             panel.removeNodes(selected);
+
+
         } catch (Exception ex) {
             // todo fix
             ex.printStackTrace();
+        }
+    }
+
+    private void applyDeltaNodesToObject(PrismObject<O> object, List<DefaultMutableTreeNode> nodes)
+            throws SchemaException {
+
+        // todo implement
+        for (DefaultMutableTreeNode node : nodes) {
+            Object userObject = node.getUserObject();
+            if (userObject instanceof ObjectDelta<?> od) {
+                delta.applyTo(object);
+            } else if (userObject instanceof ItemDelta<?, ?> id) {
+                ObjectDelta<O> delta = leftObjectPreview.createModifyDelta();
+                delta.addModification(id.clone());
+
+                delta.applyTo(object);
+            } else if (userObject instanceof DeltaItem di) {
+//
+//                    ObjectDelta<O> delta = leftObject.createModifyDelta();
+//                    delta.createm
+            }
         }
     }
 
