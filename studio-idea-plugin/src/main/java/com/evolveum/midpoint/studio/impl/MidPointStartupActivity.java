@@ -29,12 +29,15 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.profile.codeInspection.ProjectInspectionProfileManager;
 import com.intellij.project.ProjectKt;
 import com.intellij.ui.NewUI;
 import com.intellij.util.ModalityUiUtil;
+import kotlin.Unit;
+import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.File;
@@ -44,7 +47,7 @@ import java.util.*;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class MidPointStartupActivity implements StartupActivity {
+public class MidPointStartupActivity implements ProjectActivity {
 
     private static final Logger LOG = Logger.getInstance(MidPointStartupActivity.class);
 
@@ -52,8 +55,9 @@ public class MidPointStartupActivity implements StartupActivity {
 
     public static String NOTIFICATION_KEY = TITLE;
 
+    @Nullable
     @Override
-    public void runActivity(@NotNull Project project) {
+    public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
         if (MidPointUtils.hasMidPointFacet(project)) {
             // listen for maven project refresh event (after import) and check whether facet is there
             MavenProjectsManager mpm = MavenProjectsManager.getInstance(project);
@@ -62,13 +66,15 @@ public class MidPointStartupActivity implements StartupActivity {
 
         initializePrism();
 
-        initializeIgnoredResources();
+        RunnableUtils.invokeLaterIfNeeded(() -> RunnableUtils.runWriteAction(() -> initializeIgnoredResources()));
 
         initializeInspections(project);
 
         initializeUI();
 
         RunnableUtils.executeOnPooledThread(() -> validateStudioConfiguration(project));
+
+        return null;
     }
 
     private void initializePrism() {

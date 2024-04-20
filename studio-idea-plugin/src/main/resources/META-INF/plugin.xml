@@ -81,6 +81,8 @@
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
+        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
+
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <framework.detector implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFacetFrameworkDetector"/>
