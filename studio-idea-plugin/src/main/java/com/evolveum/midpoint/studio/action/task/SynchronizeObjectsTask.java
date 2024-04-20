@@ -13,7 +13,6 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -98,7 +97,9 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
                             continue;
                         }
 
-                        item.objects().add(new SynchronizationObjectItem(object.getName(), object.getOid(), object.getType(), object, newObject));
+                        item.objects().add(
+                                new SynchronizationObjectItem(
+                                        object.getOid(), object.getName(), object.getType(), object, newObject));
 
                         diffed.incrementAndGet();
                     } catch (Exception ex) {

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class SynchronizationTreeModel extends DefaultTreeModel<List<SynchronizationFileItem>> {
 
-    private static final Object NODE_ROOT = "";
+    private static final Object NODE_ROOT = "Root";
 
     @Override
     public void setData(List<SynchronizationFileItem> data) {
@@ -37,7 +37,9 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
             indices[i] = root.getIndex(nodes.get(i));
         }
 
-        treeNodesInserted(TreePathUtil.toTreePath(root), indices, nodes.toArray());
+        // todo this does not work
+//        treeNodesInserted(TreePathUtil.toTreePath(root), indices, nodes.toArray());
+        treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
     private List<DefaultMutableTreeNode> addTreeNodes(DefaultMutableTreeNode root, List<SynchronizationFileItem> items) {

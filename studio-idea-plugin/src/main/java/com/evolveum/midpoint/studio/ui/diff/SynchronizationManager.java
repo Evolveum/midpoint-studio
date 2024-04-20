@@ -38,7 +38,7 @@ public class SynchronizationManager {
     }
 
     public void add(@NotNull List<SynchronizationFileItem> items) {
-        items.addAll(items);
+        this.items.addAll(items);
 
         // todo notify synchronization tree model in tool window
 

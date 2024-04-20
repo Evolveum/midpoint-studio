@@ -52,8 +52,6 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree {
     }
 
     private Color computeColor(Object userObject) {
-        EditorColorsScheme scheme = EditorColorsManager.getInstance().getSchemeForCurrentUITheme();
-
         ModificationType type = null;
         if (userObject instanceof DeltaItem di) {
             type = di.modificationType();
