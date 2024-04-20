@@ -57,7 +57,7 @@ public class SynchronizationPanel extends BorderLayoutPanel {
     }
 
     public SynchronizationTreeModel getModel() {
-        return tree.getModel();
+        return (SynchronizationTreeModel) tree.getModel();
     }
 
     private void savePerformed() {

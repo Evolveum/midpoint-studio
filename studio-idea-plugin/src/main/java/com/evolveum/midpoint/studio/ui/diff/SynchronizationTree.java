@@ -4,12 +4,10 @@ import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.ui.CheckboxTree;
 import com.intellij.ui.DoubleClickListener;
-import com.intellij.ui.render.LabelBasedRenderer;
-import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -17,12 +15,14 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
-public class SynchronizationTree extends Tree {
+public class SynchronizationTree extends CheckboxTree {
 
     private final Project project;
 
     public SynchronizationTree(@NotNull Project project, @NotNull SynchronizationTreeModel model) {
-        super(model);
+        super(new TreeRenderer(), null, new CheckPolicy(true, true, false, true));
+
+        setModel(model);
 
         this.project = project;
 
@@ -32,24 +32,24 @@ public class SynchronizationTree extends Tree {
     private void setup() {
         setRootVisible(false);
 
-        setCellRenderer(new LabelBasedRenderer.Tree() {
-
-            @Override
-            public @NotNull Component getTreeCellRendererComponent(
-                    @NotNull JTree tree, @Nullable Object value, boolean selected, boolean expanded, boolean leaf,
-                    int row, boolean focused) {
-
-                Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, focused);
-
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-                Color color = computeColor(node.getUserObject());
-                if (color != null) {
-                    c.setForeground(color);
-                }
-
-                return c;
-            }
-        });
+//        setCellRenderer(new LabelBasedRenderer.Tree() {
+//
+//            @Override
+//            public @NotNull Component getTreeCellRendererComponent(
+//                    @NotNull JTree tree, @Nullable Object value, boolean selected, boolean expanded, boolean leaf,
+//                    int row, boolean focused) {
+//
+//                Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, focused);
+//
+//                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+//                Color color = computeColor(node.getUserObject());
+//                if (color != null) {
+//                    c.setForeground(color);
+//                }
+//
+//                return c;
+//            }
+//        });
 
         DoubleClickListener doubleClickListener = new DoubleClickListener() {
 
@@ -123,8 +123,16 @@ public class SynchronizationTree extends Tree {
         return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
     }
 
-    @Override
-    public SynchronizationTreeModel getModel() {
-        return (SynchronizationTreeModel) super.getModel();
+    private static class TreeRenderer extends CheckboxTreeCellRenderer {
+
+        @Override
+        public void customizeRenderer(
+                JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            // todo implement
+
+            String text = tree.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
+
+            getTextRenderer().append(text);
+        }
     }
 }

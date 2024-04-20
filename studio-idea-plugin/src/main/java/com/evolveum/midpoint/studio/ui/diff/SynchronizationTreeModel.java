@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.tree.TreePathUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
 
         super.setData(new ArrayList<>());
 
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode(NODE_ROOT);
+        CheckedTreeNode root = new CheckedTreeNode(NODE_ROOT);
         setRoot(root);
 
         addTreeNodes(root, data);
@@ -28,9 +28,9 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
     }
 
     public void addData(@NotNull List<SynchronizationFileItem> data) {
-        DefaultMutableTreeNode root = getRoot();
+        CheckedTreeNode root = (CheckedTreeNode) getRoot();
 
-        List<DefaultMutableTreeNode> nodes = addTreeNodes(root, data);
+        List<CheckedTreeNode> nodes = addTreeNodes(root, data);
 
         int[] indices = new int[nodes.size()];
         for (int i = 0; i < nodes.size(); i++) {
@@ -42,8 +42,8 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
-    private List<DefaultMutableTreeNode> addTreeNodes(DefaultMutableTreeNode root, List<SynchronizationFileItem> items) {
-        List<DefaultMutableTreeNode> nodes = new ArrayList<>();
+    private List<CheckedTreeNode> addTreeNodes(CheckedTreeNode root, List<SynchronizationFileItem> items) {
+        List<CheckedTreeNode> nodes = new ArrayList<>();
 
         for (SynchronizationFileItem item : items) {
             getData().add(item);
@@ -53,12 +53,12 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
                 continue;
             }
 
-            DefaultMutableTreeNode node = new DefaultMutableTreeNode(item);
+            CheckedTreeNode node = new CheckedTreeNode(item);
             root.add(node);
 
             if (objects.size() > 1) {
                 for (SynchronizationObjectItem object : objects) {
-                    node.add(new DefaultMutableTreeNode(object));
+                    node.add(new CheckedTreeNode(object));
                 }
             }
 
