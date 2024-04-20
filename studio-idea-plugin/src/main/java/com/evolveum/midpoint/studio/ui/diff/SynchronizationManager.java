@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class SynchronizationManager {
 
@@ -42,11 +43,7 @@ public class SynchronizationManager {
 
         // todo notify synchronization tree model in tool window
 
-        RunnableUtils.invokeLaterIfNeeded(() -> {
-            SynchronizationPanel panel = (SynchronizationPanel) ToolWindowManager.getInstance(project)
-                    .getToolWindow("Synchronization").getContentManager().getContent(0).getComponent();
-            panel.getModel().addData(items);
-        });
+        updateSynchronizationPanel(panel -> panel.getModel().addData(items));
     }
 
     public void start() {
@@ -54,16 +51,23 @@ public class SynchronizationManager {
 
         items.clear();
 
+        updateSynchronizationPanel(panel -> panel.getModel().setData(new ArrayList<>()));
+        // todo implement
+    }
+
+    private void updateSynchronizationPanel(Consumer<SynchronizationPanel> consumer) {
         RunnableUtils.invokeLaterIfNeeded(() -> {
             SynchronizationPanel panel = (SynchronizationPanel) ToolWindowManager.getInstance(project)
                     .getToolWindow("Synchronization").getContentManager().getContent(0).getComponent();
-            panel.getModel().setData(new ArrayList<>());
+            consumer.accept(panel);
         });
-
-        // todo implement
     }
 
     public void finish() {
         running = false;
+
+        RunnableUtils.invokeLaterIfNeeded(() -> ToolWindowManager.getInstance(project)
+                .getToolWindow("Synchronization").show());
+
     }
 }

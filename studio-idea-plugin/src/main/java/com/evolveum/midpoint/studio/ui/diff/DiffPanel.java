@@ -82,7 +82,7 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
         List<AnAction> actions = createToolbarActions();
         actions.forEach(group::add);
 
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("toolbar", group, true);
+        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("diff-panel-toolbar", group, true);
         toolbar.setTargetComponent(parent);
 
         return toolbar.getComponent();

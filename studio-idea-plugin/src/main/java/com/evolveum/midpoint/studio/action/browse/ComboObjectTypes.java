@@ -92,6 +92,11 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
         }
 
         @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
+        }
+
+        @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             combo.setSelected(type);
             combo.update(e);

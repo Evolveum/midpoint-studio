@@ -56,8 +56,10 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
             DefaultMutableTreeNode node = new DefaultMutableTreeNode(item);
             root.add(node);
 
-            for (SynchronizationObjectItem object : objects) {
-                node.add(new DefaultMutableTreeNode(object));
+            if (objects.size() > 1) {
+                for (SynchronizationObjectItem object : objects) {
+                    node.add(new DefaultMutableTreeNode(object));
+                }
             }
 
             nodes.add(node);

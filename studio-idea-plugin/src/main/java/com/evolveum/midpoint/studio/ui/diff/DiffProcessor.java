@@ -53,7 +53,8 @@ public class DiffProcessor<O extends ObjectType> {
 
     private DiffPanel<O> panel;
 
-    private ParameterizedEquivalenceStrategy equivalenceStrategy = EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS;
+    // todo fix EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS;
+    private ParameterizedEquivalenceStrategy equivalenceStrategy = EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS;
 
     public DiffProcessor(
             @NotNull Project project,
