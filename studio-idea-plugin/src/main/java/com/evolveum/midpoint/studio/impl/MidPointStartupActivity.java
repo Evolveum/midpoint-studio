@@ -70,9 +70,9 @@ public class MidPointStartupActivity implements ProjectActivity {
 
         initializeInspections(project);
 
-        initializeUI();
-
         RunnableUtils.executeOnPooledThread(() -> validateStudioConfiguration(project));
+
+        RunnableUtils.invokeLaterIfNeeded(() -> initializeUI());
 
         return null;
     }
