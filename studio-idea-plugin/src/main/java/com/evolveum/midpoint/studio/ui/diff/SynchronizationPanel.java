@@ -42,7 +42,7 @@ public class SynchronizationPanel extends BorderLayoutPanel {
         group.add(new UiAction(
                 "Expand all", AllIcons.Actions.Expandall, e -> TreeUtil.expandAll(tree)));
         group.add(new UiAction(
-                "Collapse all", AllIcons.Actions.Collapseall, e -> TreeUtil.collapseAll(tree, 2)));
+                "Collapse all", AllIcons.Actions.Collapseall, e -> TreeUtil.collapseAll(tree, 1)));
 
         group.add(new Separator());
 

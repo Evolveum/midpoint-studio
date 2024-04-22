@@ -2,11 +2,15 @@ package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.CheckboxTree;
+import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.DoubleClickListener;
-import com.intellij.util.ui.tree.TreeUtil;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -15,7 +19,7 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
-public class SynchronizationTree extends CheckboxTree {
+public class SynchronizationTree extends CheckboxTree implements Disposable {
 
     private final Project project;
 
@@ -29,38 +33,22 @@ public class SynchronizationTree extends CheckboxTree {
         setup();
     }
 
+    @Override
+    public void dispose() {
+        UIUtil.dispose(this);
+    }
+
     private void setup() {
         setRootVisible(false);
-
-//        setCellRenderer(new LabelBasedRenderer.Tree() {
-//
-//            @Override
-//            public @NotNull Component getTreeCellRendererComponent(
-//                    @NotNull JTree tree, @Nullable Object value, boolean selected, boolean expanded, boolean leaf,
-//                    int row, boolean focused) {
-//
-//                Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, focused);
-//
-//                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-//                Color color = computeColor(node.getUserObject());
-//                if (color != null) {
-//                    c.setForeground(color);
-//                }
-//
-//                return c;
-//            }
-//        });
 
         DoubleClickListener doubleClickListener = new DoubleClickListener() {
 
             @Override
             protected boolean onDoubleClick(@NotNull MouseEvent event) {
-                TreePath path = TreeUtil.getPathForLocation(SynchronizationTree.this, event.getX(), event.getY());
+                TreePath path = getClosestPathForLocation(event.getX(), event.getY());
                 if (path == null) {
                     return false;
                 }
-
-                // todo if checkbox is there: if (tree.getPathIfCheckBoxClicked(e.point) != null) return false
 
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
                 if (node == null) {
@@ -73,6 +61,12 @@ public class SynchronizationTree extends CheckboxTree {
             }
         };
         doubleClickListener.installOn(this);
+        Disposer.register(this, () -> doubleClickListener.uninstall(this));
+    }
+
+    @Override
+    protected void onDoubleClick(CheckedTreeNode node) {
+        doubleClickPerformed(node);
     }
 
     private void doubleClickPerformed(DefaultMutableTreeNode node) {
@@ -96,17 +90,11 @@ public class SynchronizationTree extends CheckboxTree {
         DiffSource left = new DiffSource(leftFile.getName(), leftFile, DiffSourceType.LOCAL);
         DiffSource right = new DiffSource(rightFile.getName(), rightFile, DiffSourceType.REMOTE);
 
-        DiffProcessor processor = new DiffProcessor(project, left, right);
+        DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(project, left, right);
         processor.initialize();
         DiffVirtualFile file = new DiffVirtualFile(processor);
 
         MidPointUtils.openFile(project, file);
-    }
-
-    private Color computeColor(Object userObject) {
-        // todo implement
-
-        return null;
     }
 
     @Override
@@ -128,11 +116,24 @@ public class SynchronizationTree extends CheckboxTree {
         @Override
         public void customizeRenderer(
                 JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            // todo implement
+            if (!(value instanceof DefaultMutableTreeNode node)) {
+                return;
+            }
 
             String text = tree.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
 
+            Color foreground = computeColor(node.getUserObject());
+            if (foreground != null) {
+                getTextRenderer().setForeground(foreground);
+            }
+
             getTextRenderer().append(text);
+        }
+
+        private Color computeColor(Object userObject) {
+            // todo implement
+
+            return null;
         }
     }
 }
