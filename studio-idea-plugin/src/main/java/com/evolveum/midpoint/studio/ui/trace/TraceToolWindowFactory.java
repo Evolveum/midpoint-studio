@@ -39,8 +39,8 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
         Content operationResultRaw = buildOperationResultRaw(project);
         contentManager.addContent(operationResultRaw);
 
-        Content traceGraph = buildTraceGraph(project);
-        contentManager.addContent(traceGraph);
+//        Content traceGraph = buildTraceGraph(project);
+//        contentManager.addContent(traceGraph);
 
         Content traceOptions = buildTraceOptions(project);
         contentManager.addContent(traceOptions);
@@ -77,10 +77,10 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
         return ContentFactory.getInstance().createContent(perfInformation, "Performance Information", false);
     }
 
-    private Content buildTraceGraph(Project project) {
-        TraceGraphPanel graphPanel = new TraceGraphPanel(project);
-        return ContentFactory.getInstance().createContent(graphPanel, "Graph", false);
-    }
+//    private Content buildTraceGraph(Project project) {
+//        TraceGraphPanel graphPanel = new TraceGraphPanel(project);
+//        return ContentFactory.getInstance().createContent(graphPanel, "Graph", false);
+//    }
 
     private Content buildTraceOptions(Project project) {
         TraceOptionsPanel optionsPanel = new TraceOptionsPanel(project);
