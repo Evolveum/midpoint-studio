@@ -23,6 +23,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SynchronizationTree extends CheckboxTree implements Disposable {
 
@@ -126,12 +128,11 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
     public String convertValueToText(
             Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-        if (node.getUserObject() instanceof SynchronizationFile file) {
-            value = file.getItem().local().getName();
-        } else if (node.getUserObject() instanceof SynchronizationObject object) {
-            value = object.getItem().name();
+        if (!(value instanceof DefaultMutableTreeNode node)) {
+            return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
         }
+
+        value = ((SynchronizationTreeModel) getModel()).convertValueToText(node.getUserObject());
 
         return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
     }
@@ -165,14 +166,17 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         }
 
         private Color computeColor(Object userObject) {
+            ModificationType modification = null;
             if (userObject instanceof SynchronizationObject object) {
-                return SynchronizationUtil.getColorForModificationType(object.getModificationType());
+                modification = object.getModificationType();
             } else if (userObject instanceof SynchronizationFile file) {
-                // todo
+                Set<ModificationType> set = file.getObjects().stream()
+                        .map(o -> o.getModificationType())
+                        .collect(Collectors.toSet());
+                modification = SynchronizationUtil.getModificationType(set);
             }
-            // todo implement
 
-            return null;
+            return SynchronizationUtil.getColorForModificationType(modification);
         }
     }
 }

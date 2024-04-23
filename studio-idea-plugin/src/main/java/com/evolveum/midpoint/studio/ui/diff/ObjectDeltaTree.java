@@ -86,7 +86,7 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
                 .map(this::getModificationType)
                 .collect(Collectors.toSet());
 
-        return getModificationType(set);
+        return SynchronizationUtil.getModificationType(set);
     }
 
     private ModificationType getModificationType(ItemDelta<?, ?> delta) {
@@ -101,17 +101,7 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
             modifications.add(ModificationType.REPLACE);
         }
 
-        return getModificationType(modifications);
-    }
-
-    private ModificationType getModificationType(Set<ModificationType> modificationTypes) {
-        if (modificationTypes.size() > 1) {
-            return ModificationType.REPLACE;
-        } else if (modificationTypes.size() == 1) {
-            return modificationTypes.iterator().next();
-        }
-
-        return null;
+        return SynchronizationUtil.getModificationType(modifications);
     }
 
     @Override
@@ -122,7 +112,13 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
             return "All";
         } else if (node.getUserObject() instanceof DeltaItem di) {
             ModificationType modificationType = getModificationType(node.getUserObject());
-            String prefix = modificationType == ModificationType.REPLACE ? "Replace existing with: " : "";
+            String prefix = modificationType == null ?
+                    "" :
+                    switch (modificationType) {
+                        case ADD -> "Add: ";
+                        case DELETE -> "Remove: ";
+                        case REPLACE -> "Replace existing with: ";
+                    };
 
             PrismValue prismValue = di.value();
             if (prismValue instanceof PrismPropertyValue<?> property) {

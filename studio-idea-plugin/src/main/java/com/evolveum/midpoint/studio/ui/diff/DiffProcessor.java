@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui.diff;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
+import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
@@ -13,20 +14,11 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.diff.DiffRequestFactory;
-import com.intellij.diff.chains.DiffRequestChain;
-import com.intellij.diff.chains.SimpleDiffRequestChain;
-import com.intellij.diff.impl.CacheDiffRequestChainProcessor;
-import com.intellij.diff.requests.ContentDiffRequest;
-import com.intellij.diff.util.DiffUserDataKeysEx;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.newvfs.RefreshQueue;
-import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -40,17 +32,13 @@ public class DiffProcessor<O extends ObjectType> {
 
     private final Project project;
 
-    private DiffSource leftSource;
-    private DiffSource rightSource;
+    private final DiffSource leftSource;
+    private final DiffSource rightSource;
 
     private PrismObject<O> leftObject;
     private PrismObject<O> rightObject;
 
     private ObjectDelta<O> delta;
-
-    private PrismObject<O> leftObjectPreview;
-    private LightVirtualFile leftPreviewFile;
-    private CacheDiffRequestChainProcessor diffProcessor;
 
     private DiffPanel<O> panel;
 
@@ -79,50 +67,15 @@ public class DiffProcessor<O extends ObjectType> {
     public void initialize() {
         try {
             leftObject = parseObject(leftSource);
-            leftObjectPreview = leftObject.clone();
-
             rightObject = parseObject(rightSource);
 
             delta = leftObject.diff(rightObject, equivalenceStrategy);
 
-            String leftTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, leftObjectPreview);
-            String rightTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, rightObject);
-
-            leftPreviewFile = new LightVirtualFile(
-                    buildTextDiffFileName(leftSource, true),
-                    XmlFileType.INSTANCE,
-                    leftTextContent,
-                    System.currentTimeMillis());
-
-            LightVirtualFile right = new LightVirtualFile(
-                    buildTextDiffFileName(rightSource, false),
-                    XmlFileType.INSTANCE,
-                    rightTextContent,
-                    System.currentTimeMillis());
-
-            ContentDiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, leftPreviewFile, right);
-            DiffRequestChain chain = new SimpleDiffRequestChain(request);
-
-            diffProcessor = new CacheDiffRequestChainProcessor(project, chain) {
-
-                @Override
-                protected @org.jetbrains.annotations.NotNull List<AnAction> getNavigationActions() {
-                    List<AnAction> list = new ArrayList<>();
-//                list.add(strategyCombo);
-//                list.add(new Separator());
-
-                    list.addAll(super.getNavigationActions());
-
-                    return list;
-                }
-            };
-            diffProcessor.updateRequest();
-
-            panel = new DiffPanel<>(project, leftSource.file().getName() + "(" + leftSource.type() + ")", delta) {  // todo fix
+            panel = new DiffPanel<>(project, leftSource.file().getName() + " (" + leftSource.type() + ")", delta) {  // todo fix
 
                 @Override
                 protected JComponent createTextDiff() {
-                    return diffProcessor.getComponent();
+                    return new JPanel(); // todo implement later
                 }
 
                 @Override
@@ -141,26 +94,7 @@ public class DiffProcessor<O extends ObjectType> {
     }
 
     private void onTreeSelectionChanged(List<DefaultMutableTreeNode> selected) {
-        leftObjectPreview = leftObject.clone();
-
-        try {
-            applyDeltaNodesToObject(leftObjectPreview, selected);
-
-            updateLeftPreviewFile();
-        } catch (Exception ex) {
-            ex.printStackTrace(); // todo fix
-        }
-
         // todo implement
-    }
-
-    private void updateLeftPreviewFile() throws SchemaException {
-        String leftTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, leftObjectPreview);
-        leftPreviewFile.setContent(this, leftTextContent, true);
-
-        RefreshQueue.getInstance().refresh(false, false, null, leftPreviewFile);
-
-        diffProcessor.updateRequest(true, false, DiffUserDataKeysEx.ScrollToPolicy.FIRST_CHANGE);
     }
 
     private List<AnAction> createToolbarActions() {
@@ -208,12 +142,10 @@ public class DiffProcessor<O extends ObjectType> {
             }
         });
 
-//        group.add(new UiAction("Show text diff"));// todo implement
-
         return actions;
     }
 
-    private <O extends ObjectType> PrismObject<O> parseObject(DiffSource source) throws SchemaException, IOException {
+    private <T extends ObjectType> PrismObject<T> parseObject(DiffSource source) throws SchemaException, IOException {
         PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
         try (InputStream is = source.file().getInputStream()) {
             PrismParser parser = ClientUtils.createParser(ctx, is);
@@ -224,7 +156,7 @@ public class DiffProcessor<O extends ObjectType> {
     private String buildTextDiffFileName(DiffSource source, boolean result) {
         String resultLabel = result ? "Result: " : "Source: ";
 
-        return resultLabel + source.file().getName() + "(" + source.type() + ")";
+        return resultLabel + source.file().getName() + " (" + source.type() + ")";
     }
 
     public String getName() {
@@ -233,10 +165,6 @@ public class DiffProcessor<O extends ObjectType> {
 
     public JComponent getComponent() {
         return panel;
-    }
-
-    private void rollbackPerformed() {
-        // todo implement
     }
 
     private void savePerformed() {
@@ -263,33 +191,60 @@ public class DiffProcessor<O extends ObjectType> {
             applyDeltaNodesToObject(leftObject, selected);
 
             panel.removeNodes(selected);
-
-            updateLeftPreviewFile();
         } catch (Exception ex) {
             // todo fix
             ex.printStackTrace();
         }
     }
 
-    private void applyDeltaNodesToObject(PrismObject<O> object, List<DefaultMutableTreeNode> nodes)
+    private void applyDeltaNodesToObject(PrismObject<O> object, List<DefaultMutableTreeNode> selected)
             throws SchemaException {
 
-        // todo implement
-        for (DefaultMutableTreeNode node : nodes) {
+        for (DefaultMutableTreeNode node : selected) {
+            if (hasParentSelected(node, selected)) {
+                continue;
+            }
+
+            ObjectDelta<O> delta = null;
+
             Object userObject = node.getUserObject();
             if (userObject instanceof ObjectDelta<?> od) {
-                delta.applyTo(object);
+                delta = (ObjectDelta<O>) od;
             } else if (userObject instanceof ItemDelta<?, ?> id) {
-                ObjectDelta<O> delta = leftObjectPreview.createModifyDelta();
+                delta = object.createModifyDelta();
                 delta.addModification(id.clone());
-
-                delta.applyTo(object);
             } else if (userObject instanceof DeltaItem di) {
-//
-//                    ObjectDelta<O> delta = leftObject.createModifyDelta();
-//                    delta.createm
+                PrismValue cloned = di.value().clone();
+
+                ItemDelta itemDelta = di.parent().clone();
+                itemDelta.clear();
+                switch (di.modificationType()) {
+                    case REPLACE -> itemDelta.addValueToReplace(cloned);
+                    case ADD -> itemDelta.addValueToAdd(cloned);
+                    case DELETE -> itemDelta.addValueToDelete(cloned);
+                }
+
+                delta = object.createModifyDelta();
+                delta.addModification(itemDelta);
+            }
+
+            if (delta != null) {
+                delta.applyTo(leftObject);
             }
         }
+    }
+
+    private boolean hasParentSelected(DefaultMutableTreeNode node, List<DefaultMutableTreeNode> selected) {
+        DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+        if (parent == null) {
+            return false;
+        }
+
+        if (selected.contains(parent)) {
+            return true;
+        }
+
+        return hasParentSelected(parent, selected);
     }
 
     private void ignorePerformed() {

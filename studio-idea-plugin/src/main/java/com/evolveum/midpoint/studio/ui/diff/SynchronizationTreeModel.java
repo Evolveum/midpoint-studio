@@ -5,6 +5,7 @@ import com.intellij.ui.tree.TreePathUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class SynchronizationTreeModel extends DefaultTreeModel<List<SynchronizationFile>> {
@@ -54,17 +55,35 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
             }
 
             CheckedTreeNode node = new CheckedTreeNode(item);
-            root.add(node);
 
             if (objects.size() > 1) {
+                List<CheckedTreeNode> children = new ArrayList<>();
+
                 for (SynchronizationObject object : objects) {
-                    node.add(new CheckedTreeNode(object));
+                    children.add(new CheckedTreeNode(object));
                 }
+
+                children.sort(Comparator.comparing(o -> convertValueToText(o.getUserObject())));
+                children.forEach(node::add);
             }
 
             nodes.add(node);
         }
 
+        nodes.sort(Comparator.comparing(o -> convertValueToText(o.getUserObject())));
+        nodes.forEach(root::add);
+
         return nodes;
+    }
+
+    public String convertValueToText(Object userObject) {
+        String value = null;
+        if (userObject instanceof SynchronizationFile file) {
+            value = file.getItem().local().getName();
+        } else if (userObject instanceof SynchronizationObject object) {
+            value = object.getItem().name();
+        }
+
+        return value != null ? value.toString() : "<<null>>";
     }
 }

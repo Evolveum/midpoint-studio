@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 
 import java.awt.*;
+import java.util.Set;
 
 public class SynchronizationUtil {
 
@@ -26,5 +27,21 @@ public class SynchronizationUtil {
             case DELETE -> scheme.getColor(DELETED);
             case REPLACE -> scheme.getColor(MODIFIED);
         };
+    }
+
+    public static ModificationType getModificationType(Set<ModificationType> set) {
+        if (set == null
+                || set.isEmpty()
+                || set.stream().allMatch(m -> m == null)) {
+            return null;
+        }
+
+        if (set.size() > 1) {
+            return ModificationType.REPLACE;
+        } else if (set.size() == 1) {
+            return set.iterator().next();
+        }
+
+        return null;
     }
 }
