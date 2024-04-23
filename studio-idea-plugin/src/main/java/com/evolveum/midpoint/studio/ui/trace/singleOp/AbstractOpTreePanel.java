@@ -188,11 +188,6 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         variablesWrapText = new SimpleCheckboxAction("Wrap text") {
 
             @Override
-            public @NotNull ActionUpdateThread getActionUpdateThread() {
-                return ActionUpdateThread.EDT;
-            }
-
-            @Override
             public void onStateChange() {
                 variablesValue.setLineWrap(isSelected());
                 variablesValue.invalidate();

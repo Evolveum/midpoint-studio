@@ -58,6 +58,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
     private void initLayout() {
         DefaultActionGroup group = new DefaultActionGroup();
         SimpleCheckboxAction logsWrapText = new SimpleCheckboxAction("Wrap text") {
+
             @Override
             public void onStateChange() {
                 logs.setLineWrap(isSelected());
@@ -67,6 +68,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
         group.add(logsWrapText);
 
         currentOpOnly = new SimpleCheckboxAction("Current operation only") {
+
             @Override
             public void onStateChange() {
                 updateTexts(fullyLoaded);

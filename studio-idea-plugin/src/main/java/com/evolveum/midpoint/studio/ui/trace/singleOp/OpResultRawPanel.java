@@ -55,6 +55,7 @@ public class OpResultRawPanel extends BorderLayoutPanel {
 
         DefaultActionGroup group = new DefaultActionGroup();
         showChildren = new SimpleCheckboxAction("Show children") {
+
             @Override
             public void onStateChange() {
                 nodeChange(currentNode, loaded);

@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.ex.CheckboxAction;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,11 @@ public class SimpleCheckboxAction extends CheckboxAction {
 
     public SimpleCheckboxAction(String text) {
         super(text);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
     }
 
     @Override
