@@ -105,7 +105,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         };
         group.add(viewTypeComboboxAction);
 
-        AnAction apply = new UiAction("Apply", AllIcons.General.GreenCheckmark, e -> applyPerformed());
+        AnAction apply = new UiAction("Apply", AllIcons.Actions.Commit, e -> applyPerformed());
         group.add(apply);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceOptionsToolbar", group, true);

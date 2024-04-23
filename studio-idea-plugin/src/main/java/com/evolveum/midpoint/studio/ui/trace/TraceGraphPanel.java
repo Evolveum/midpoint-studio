@@ -76,7 +76,7 @@ public class TraceGraphPanel extends BorderLayoutPanel {
     private void createToolbar() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        AnAction create = new UiAction("Create", AllIcons.General.GreenCheckmark, e -> applyPerformed());
+        AnAction create = new UiAction("Create", AllIcons.Actions.Commit, e -> applyPerformed());
         group.add(create);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceGraphToolbar", group, true);
