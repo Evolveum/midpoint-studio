@@ -79,10 +79,14 @@ public class SynchronizationPanel extends BorderLayoutPanel {
     }
 
     private void refreshPerformed() {
+        Object[] checked = tree.getCheckedNodes(Object.class, null);
+
         // todo implement
     }
 
     private void savePerformed() {
+        Object[] checked = tree.getCheckedNodes(Object.class, null);
+
         // todo implement
     }
 }

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class SynchronizationTreeModel extends DefaultTreeModel<List<SynchronizationFile>> {
+public class SynchronizationTreeModel extends DefaultTreeModel<List<SyncFileItem>> {
 
     private static final Object NODE_ROOT = "Root";
 
@@ -30,7 +30,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
     }
 
     @Override
-    public void setData(List<SynchronizationFile> data) {
+    public void setData(List<SyncFileItem> data) {
         if (data == null) {
             data = new ArrayList<>();
         }
@@ -45,7 +45,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
-    public void addData(@NotNull List<SynchronizationFile> data) {
+    public void addData(@NotNull List<SyncFileItem> data) {
         CheckedTreeNode root = (CheckedTreeNode) getRoot();
 
         List<CheckedTreeNode> nodes = addTreeNodes(root, data);
@@ -60,13 +60,13 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
-    private List<CheckedTreeNode> addTreeNodes(CheckedTreeNode root, List<SynchronizationFile> items) {
+    private List<CheckedTreeNode> addTreeNodes(CheckedTreeNode root, List<SyncFileItem> items) {
         List<CheckedTreeNode> nodes = new ArrayList<>();
 
-        for (SynchronizationFile item : items) {
+        for (SyncFileItem item : items) {
             getData().add(item);
 
-            List<SynchronizationObject> objects = item.getObjects();
+            List<SyncObjecItem> objects = item.getObjects();
             if (objects.isEmpty()) {
                 continue;
             }
@@ -76,7 +76,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
             if (objects.size() > 1) {
                 List<CheckedTreeNode> children = new ArrayList<>();
 
-                for (SynchronizationObject object : objects) {
+                for (SyncObjecItem object : objects) {
                     children.add(new CheckedTreeNode(object));
                 }
 
@@ -95,9 +95,9 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
 
     public String convertValueToText(Object userObject) {
         String value = null;
-        if (userObject instanceof SynchronizationFile file) {
+        if (userObject instanceof SyncFileItem file) {
             value = file.getItem().local().getName();
-        } else if (userObject instanceof SynchronizationObject object) {
+        } else if (userObject instanceof SyncObjecItem object) {
             value = object.getItem().name();
         }
 

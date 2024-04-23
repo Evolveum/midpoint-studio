@@ -24,7 +24,7 @@ public class SynchronizationManager {
 
     // todo move this to some kind of SynchronizationSession object that will be simpler to manage in
     //  terms of threading (start/finish, cancel multiple ones)
-    private final List<SynchronizationFile> items = new ArrayList<>();
+    private final List<SyncFileItem> items = new ArrayList<>();
 
     private boolean running = false;
 
@@ -48,15 +48,15 @@ public class SynchronizationManager {
     }
 
     public void add(@NotNull List<FileItem> items) {
-        List<SynchronizationFile> files = new ArrayList<>();
+        List<SyncFileItem> files = new ArrayList<>();
 
         for (FileItem fi : items) {
-            List<SynchronizationObject> objects = new ArrayList<>();
+            List<SyncObjecItem> objects = new ArrayList<>();
             for (ObjectItem oi : fi.objects()) {
-                objects.add(new SynchronizationObject(oi));
+                objects.add(new SyncObjecItem(oi));
             }
 
-            files.add(new SynchronizationFile(fi, objects));
+            files.add(new SyncFileItem(fi, objects));
         }
 
         this.items.addAll(files);

@@ -4,13 +4,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class SynchronizationFile {
+public class SyncFileItem {
 
     private final FileItem item;
 
-    private final List<SynchronizationObject> objects;
+    private final List<SyncObjecItem> objects;
 
-    public SynchronizationFile(@NotNull FileItem item, List<SynchronizationObject> objects) {
+    public SyncFileItem(@NotNull FileItem item, List<SyncObjecItem> objects) {
         this.item = item;
         this.objects = objects != null ? objects : List.of();
     }
@@ -19,7 +19,7 @@ public class SynchronizationFile {
         return item;
     }
 
-    public List<SynchronizationObject> getObjects() {
+    public List<SyncObjecItem> getObjects() {
         return objects;
     }
 }

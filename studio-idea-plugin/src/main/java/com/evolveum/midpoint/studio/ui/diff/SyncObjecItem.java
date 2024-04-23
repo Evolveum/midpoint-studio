@@ -4,7 +4,7 @@ import com.evolveum.midpoint.prism.ModificationType;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import org.jetbrains.annotations.NotNull;
 
-public class SynchronizationObject {
+public class SyncObjecItem {
 
     private final ObjectItem item;
 
@@ -14,7 +14,7 @@ public class SynchronizationObject {
 
     private ModificationType modificationType;
 
-    public SynchronizationObject(@NotNull ObjectItem item) {
+    public SyncObjecItem(@NotNull ObjectItem item) {
         this.item = item;
 
         this.localObject = item.local() != null ? item.local().copy() : null;
