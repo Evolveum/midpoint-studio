@@ -40,7 +40,11 @@ public class SynchronizationManager {
         // todo implement
     }
 
-    public void synchronize(@NotNull List<VirtualFile> files, @NotNull Environment environment) {
+    public void synchronize(
+            @NotNull List<VirtualFile> files,
+            @NotNull Environment environment,
+            @NotNull SynchronizationDirection direction) {
+
         SynchronizeObjectsTask task = new SynchronizeObjectsTask(project, files);
         task.setEnvironment(environment);
 

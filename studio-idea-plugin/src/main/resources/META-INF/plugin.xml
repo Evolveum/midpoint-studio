@@ -364,7 +364,11 @@
         <action id="MidPoint.Action.SynchronizeToProject"
                 class="com.evolveum.midpoint.studio.action.transfer.SynchronizeToProjectAction"
                 text="Synchronize To Project"
-                icon="AllIcons.Actions.Refresh"/>
+                icon="AllIcons.Actions.Download"/>
+        <action id="MidPoint.Action.SynchronizeToMidPoint"
+                class="com.evolveum.midpoint.studio.action.transfer.SynchronizeToMidPointAction"
+                text="Synchronize To Project"
+                icon="AllIcons.Actions.Upload"/>
 
         <!-- SERVER SIDE -->
 
@@ -477,6 +481,7 @@
                 <reference ref="MidPoint.Action.DiffLocal"/>
                 <reference ref="MidPoint.Action.DiffRemote"/>
                 <reference ref="MidPoint.Action.SynchronizeToProject"/>
+                <reference ref="MidPoint.Action.SynchronizeToMidPoint"/>
                 <reference ref="MidPoint.Action.CleanupFile"/>
                 <reference ref="MidPoint.Action.VerifyAction"/>
                 <reference ref="MidPoint.Action.UpgradeTask"/>
@@ -543,6 +548,7 @@
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.DiffRemote"/>
             <reference ref="MidPoint.Action.SynchronizeToProject"/>
+            <reference ref="MidPoint.Action.SynchronizeToMidPoint"/>
 
             <separator/>
 
@@ -611,6 +617,7 @@
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.DiffRemote"/>
             <reference ref="MidPoint.Action.SynchronizeToProject"/>
+            <reference ref="MidPoint.Action.SynchronizeToMidPoint"/>
 
             <separator/>
 
