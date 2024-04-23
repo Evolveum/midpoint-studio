@@ -15,6 +15,8 @@ public enum DiffStrategy {
 
     REAL_VALUE("Real Value", ParameterizedEquivalenceStrategy.REAL_VALUE),
 
+    REAL_VALUE_CONSIDER_DIFFERENT_IDS("Real Value (consider different IDs)", EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS),
+
     NATURAL_KEYS("Natural Keys", EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS);
 
     private final String label;

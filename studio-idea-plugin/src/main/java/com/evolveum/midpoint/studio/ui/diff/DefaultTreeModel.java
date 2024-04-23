@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.intellij.ui.tree.TreePathUtil;
 import com.intellij.util.ui.tree.AbstractTreeModel;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,6 +31,8 @@ public class DefaultTreeModel<T> extends AbstractTreeModel {
 
     protected void setRoot(@NotNull DefaultMutableTreeNode root) {
         this.root = root;
+
+        treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
     @Override

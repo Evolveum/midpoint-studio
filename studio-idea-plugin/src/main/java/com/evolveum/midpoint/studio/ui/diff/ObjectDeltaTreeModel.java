@@ -15,8 +15,8 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel
 
     private static final Object NODE_ROOT = "";
 
-    public ObjectDeltaTreeModel(@NotNull ObjectDelta<O> delta) {
-        setData(delta);
+    public ObjectDeltaTreeModel() {
+        setRoot(new DefaultMutableTreeNode(NODE_ROOT));
     }
 
     @Override

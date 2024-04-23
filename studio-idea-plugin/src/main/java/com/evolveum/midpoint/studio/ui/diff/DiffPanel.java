@@ -8,12 +8,12 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.components.BorderLayoutPanel;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,24 +23,23 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
+public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel {
 
-    private final Project project;
+    private JBLabel label;
 
     private ObjectDeltaTree<O> deltaTree;
 
-    private String targetName;
-
-    private ObjectDelta<O> delta;
-
-    public DiffPanel(@NotNull Project project, String targetName, ObjectDelta<O> delta) {
-        super(new BorderLayout());
-
-        this.project = project;
-        this.targetName = targetName != null ? targetName : "target";
-        this.delta = delta;
-
+    public DiffPanel() {
         initLayout();
+    }
+
+    public void setTargetName(@NotNull String targetName) {
+        label.setText(targetName);
+    }
+
+    public void setDelta(@NotNull ObjectDelta<O> delta) {
+        ObjectDeltaTreeModel<O> model = getTreeModel();
+        model.setData(delta);
     }
 
     private void initLayout() {
@@ -49,7 +48,7 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
 
         JBSplitter splitter = new JBSplitter(true, 0.5f);
 
-        JBPanel deltaPanel = createDeltaTablePanel();
+        JBPanel<?> deltaPanel = createDeltaTablePanel();
         splitter.setFirstComponent(deltaPanel);
 
         JComponent diffEditor = createTextDiff();
@@ -57,17 +56,17 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
         add(splitter, BorderLayout.CENTER);
     }
 
-    private JBPanel createDeltaTablePanel() {
-        deltaTree = new ObjectDeltaTree(new ObjectDeltaTreeModel(delta));
+    private JBPanel<?> createDeltaTablePanel() {
+        deltaTree = new ObjectDeltaTree<>(new ObjectDeltaTreeModel<>());
         deltaTree.addTreeSelectionListener(e -> onTreeSelectionChanged(getSelectedNodes()));
         TreeUtil.expand(deltaTree, 2);
 
-        JBPanel treePanel = new JBPanel(new BorderLayout());
+        JBPanel<?> treePanel = new BorderLayoutPanel();
         treePanel.setBorder(JBUI.Borders.customLineBottom(JBUI.CurrentTheme.Editor.BORDER_COLOR));
 
-        JBLabel label = new JBLabel("Select changes to be applied to '" + targetName + "' object:");
+        label = new JBLabel();
         label.setBorder(JBUI.Borders.emptyLeft(12));
-        treePanel.add(label, BorderLayout.NORTH); // todo fix
+        treePanel.add(label, BorderLayout.NORTH);
 
         treePanel.add(ScrollPaneFactory.createScrollPane(this.deltaTree), BorderLayout.CENTER);
 
@@ -79,8 +78,8 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
     private JComponent initMainToolbar(JComponent parent) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        group.add(new UiAction("Expand all", AllIcons.Actions.Expandall, e -> expandAllPerformed()));
-        group.add(new UiAction("Collapse all", AllIcons.Actions.Collapseall, e -> collapseAllPerformed()));
+        group.add(new UiAction("Expand All", AllIcons.Actions.Expandall, e -> expandAllPerformed()));
+        group.add(new UiAction("Collapse All", AllIcons.Actions.Collapseall, e -> collapseAllPerformed()));
 
         List<AnAction> actions = createToolbarActions();
         actions.forEach(group::add);
@@ -127,7 +126,12 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
             return;
         }
 
-        ObjectDeltaTreeModel<O> model = (ObjectDeltaTreeModel<O>) deltaTree.getModel();
-        nodes.forEach(n -> model.removeNodeFromParent(n));
+        ObjectDeltaTreeModel<O> model = getTreeModel();
+        nodes.forEach(model::removeNodeFromParent);
+    }
+
+    @SuppressWarnings("unchecked")
+    private ObjectDeltaTreeModel<O> getTreeModel() {
+        return (ObjectDeltaTreeModel<O>) deltaTree.getModel();
     }
 }

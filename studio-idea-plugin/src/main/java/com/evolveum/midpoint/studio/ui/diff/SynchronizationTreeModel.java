@@ -4,6 +4,9 @@ import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.tree.TreePathUtil;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -11,6 +14,20 @@ import java.util.List;
 public class SynchronizationTreeModel extends DefaultTreeModel<List<SynchronizationFile>> {
 
     private static final Object NODE_ROOT = "Root";
+
+    @Override
+    public void valueForPathChanged(TreePath path, Object newValue) {
+        MutableTreeNode node = (MutableTreeNode) path.getLastPathComponent();
+
+        node.setUserObject(newValue);
+
+        TreeNode parent = node.getParent();
+        if (parent != null) {
+            treeNodesChanged(TreePathUtil.toTreePath(parent), new int[]{parent.getIndex(node)}, new Object[]{node});
+        } else {
+            treeNodesChanged(null, new int[]{0}, new Object[]{node});
+        }
+    }
 
     @Override
     public void setData(List<SynchronizationFile> data) {
