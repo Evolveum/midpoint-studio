@@ -142,6 +142,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         this.variables.addTreeSelectionListener(this::variablesSelectionChanged);
 
         this.variables.addHighlighter(new AbstractHighlighter() {
+
             @Override
             protected Component doHighlight(Component component, ComponentAdapter adapter) {
                 int row = adapter.convertRowIndexToModel(adapter.row);
@@ -172,6 +173,11 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         variablesDisplayAs = new FormatComboboxAction() {
 
             @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.EDT;
+            }
+
+            @Override
             public void setFormat(Format format) {
                 super.setFormat(format);
 
@@ -180,6 +186,11 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         };
         group.add(variablesDisplayAs);
         variablesWrapText = new SimpleCheckboxAction("Wrap text") {
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.EDT;
+            }
 
             @Override
             public void onStateChange() {

@@ -1,25 +1,25 @@
-package com.evolveum.midpoint.studio.ui.trace.graph;
+package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
+import com.evolveum.midpoint.studio.ui.UiAction;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
- *
+ * @author Pavol Mederly
  */
 public class TraceGraphPanel extends BorderLayoutPanel {
-
-    private static final Logger LOG = Logger.getInstance(TraceGraphPanel.class);
 
     private final TraceService traceManager;
 
@@ -75,13 +75,8 @@ public class TraceGraphPanel extends BorderLayoutPanel {
 
     private void createToolbar() {
         DefaultActionGroup group = new DefaultActionGroup();
-        AnAction create = new AnAction("Create", "Create graph", AllIcons.Actions.Commit) {
 
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                applyPerformed();
-            }
-        };
+        AnAction create = new UiAction("Create", AllIcons.General.GreenCheckmark, e -> applyPerformed());
         group.add(create);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceGraphToolbar", group, true);

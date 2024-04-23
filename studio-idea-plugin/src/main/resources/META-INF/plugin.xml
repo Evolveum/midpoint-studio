@@ -124,20 +124,6 @@
                           icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.lensContext.TraceLensContextToolWindowFactory"/>
 
-        <facet.toolWindow id="TraceOptions"
-                          facetIdList="MidPointFacet"
-                          anchor="right"
-                          order="last"
-                          icon="/icons/toolwindow_midpoint.svg"
-                          factoryClass="com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsWindowFactory"/>
-
-        <facet.toolWindow id="TraceGraph"
-                          facetIdList="MidPointFacet"
-                          anchor="right"
-                          order="last"
-                          icon="/icons/toolwindow_midpoint.svg"
-                          factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
-
         <facet.toolWindow id="Synchronization"
                           facetIdList="MidPointFacet"
                           anchor="left"
