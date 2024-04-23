@@ -7,12 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SynchronizationTreeModel extends DefaultTreeModel<List<SynchronizationFileItem>> {
+public class SynchronizationTreeModel extends DefaultTreeModel<List<SynchronizationFile>> {
 
     private static final Object NODE_ROOT = "Root";
 
     @Override
-    public void setData(List<SynchronizationFileItem> data) {
+    public void setData(List<SynchronizationFile> data) {
         if (data == null) {
             data = new ArrayList<>();
         }
@@ -27,7 +27,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
-    public void addData(@NotNull List<SynchronizationFileItem> data) {
+    public void addData(@NotNull List<SynchronizationFile> data) {
         CheckedTreeNode root = (CheckedTreeNode) getRoot();
 
         List<CheckedTreeNode> nodes = addTreeNodes(root, data);
@@ -42,13 +42,13 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
-    private List<CheckedTreeNode> addTreeNodes(CheckedTreeNode root, List<SynchronizationFileItem> items) {
+    private List<CheckedTreeNode> addTreeNodes(CheckedTreeNode root, List<SynchronizationFile> items) {
         List<CheckedTreeNode> nodes = new ArrayList<>();
 
-        for (SynchronizationFileItem item : items) {
+        for (SynchronizationFile item : items) {
             getData().add(item);
 
-            List<SynchronizationObjectItem> objects = item.objects();
+            List<SynchronizationObject> objects = item.getObjects();
             if (objects.isEmpty()) {
                 continue;
             }
@@ -57,7 +57,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
             root.add(node);
 
             if (objects.size() > 1) {
-                for (SynchronizationObjectItem object : objects) {
+                for (SynchronizationObject object : objects) {
                     node.add(new CheckedTreeNode(object));
                 }
             }

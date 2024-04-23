@@ -11,8 +11,8 @@ import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.*;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -44,9 +44,9 @@ public class MidPointClient {
 
     private final Environment environment;
 
-    private final boolean suppressNotifications;
+    private boolean suppressNotifications;
 
-    private final boolean suppressConsole;
+    private boolean suppressConsole;
 
     private final Optional<Console> console;
 
@@ -480,5 +480,13 @@ public class MidPointClient {
         }
 
         return result;
+    }
+
+    public void setSuppressConsole(boolean suppressConsole) {
+        this.suppressConsole = suppressConsole;
+    }
+
+    public void setSuppressNotifications(boolean suppressNotifications) {
+        this.suppressNotifications = suppressNotifications;
     }
 }

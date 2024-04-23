@@ -29,12 +29,15 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
 
     private ObjectDeltaTree<O> deltaTree;
 
+    private String targetName;
+
     private ObjectDelta<O> delta;
 
-    public DiffPanel(@NotNull Project project, ObjectDelta<O> delta) {
+    public DiffPanel(@NotNull Project project, String targetName, ObjectDelta<O> delta) {
         super(new BorderLayout());
 
         this.project = project;
+        this.targetName = targetName != null ? targetName : "target";
         this.delta = delta;
 
         initLayout();
@@ -62,7 +65,7 @@ public abstract class DiffPanel<O extends ObjectType> extends JBPanel {
         JBPanel treePanel = new JBPanel(new BorderLayout());
         treePanel.setBorder(JBUI.Borders.customLineBottom(JBUI.CurrentTheme.Editor.BORDER_COLOR));
 
-        JBLabel label = new JBLabel("Review changes loaded from remote object:");
+        JBLabel label = new JBLabel("Select changes to be applied to '" + targetName + "' object:");
         label.setBorder(JBUI.Borders.emptyLeft(12));
         treePanel.add(label, BorderLayout.NORTH); // todo fix
 

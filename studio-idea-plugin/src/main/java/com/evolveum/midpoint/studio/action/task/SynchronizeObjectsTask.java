@@ -3,9 +3,9 @@ package com.evolveum.midpoint.studio.action.task;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
-import com.evolveum.midpoint.studio.ui.diff.SynchronizationFileItem;
+import com.evolveum.midpoint.studio.ui.diff.FileItem;
 import com.evolveum.midpoint.studio.ui.diff.SynchronizationManager;
-import com.evolveum.midpoint.studio.ui.diff.SynchronizationObjectItem;
+import com.evolveum.midpoint.studio.ui.diff.ObjectItem;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
@@ -45,6 +45,9 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
     }
 
     private void processFiles(ProgressIndicator indicator, List<VirtualFile> files) {
+        client.setSuppressConsole(true);
+        client.setSuppressNotifications(true);
+
         SynchronizationManager sm = SynchronizationManager.get(getProject());
 
         int skipped = 0;
@@ -79,8 +82,8 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
                     continue;
                 }
 
-                List<SynchronizationFileItem> items = new ArrayList<>();
-                SynchronizationFileItem item = new SynchronizationFileItem(file, new ArrayList<>());
+                List<FileItem> items = new ArrayList<>();
+                FileItem item = new FileItem(file, new ArrayList<>());
                 items.add(item);
 
                 for (MidPointObject object : objects) {
@@ -98,7 +101,7 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
                         }
 
                         item.objects().add(
-                                new SynchronizationObjectItem(
+                                new ObjectItem(
                                         item, object.getOid(), object.getName(), object.getType(), object, newObject));
 
                         diffed.incrementAndGet();

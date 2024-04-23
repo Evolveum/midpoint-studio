@@ -2,11 +2,9 @@ package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.studio.ui.UiAction;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionToolbar;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import com.intellij.util.ui.tree.TreeUtil;
@@ -46,8 +44,27 @@ public class SynchronizationPanel extends BorderLayoutPanel {
 
         group.add(new Separator());
 
-        group.add(new UiAction(
-                "Save", AllIcons.Actions.Commit, e -> savePerformed()));
+        group.add(new UiAction("Refresh", AllIcons.Actions.Refresh, e -> refreshPerformed()) {
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                super.update(e);
+
+                boolean enabled = tree.getCheckedNodes(Object.class, null).length != 0;
+                e.getPresentation().setEnabled(enabled);
+            }
+        });
+
+        group.add(new UiAction("Save", AllIcons.General.GreenCheckmark, e -> savePerformed()) {
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                super.update(e);
+
+                boolean enabled = tree.getCheckedNodes(Object.class, null).length != 0;
+                e.getPresentation().setEnabled(enabled);
+            }
+        });
 
         ActionToolbar toolbar = ActionManager.getInstance()
                 .createActionToolbar("diff-panel-toolbar", group, true);
@@ -60,7 +77,11 @@ public class SynchronizationPanel extends BorderLayoutPanel {
         return (SynchronizationTreeModel) tree.getModel();
     }
 
-    private void savePerformed() {
+    private void refreshPerformed() {
+        // todo implement
+    }
 
+    private void savePerformed() {
+        // todo implement
     }
 }

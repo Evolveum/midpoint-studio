@@ -19,7 +19,7 @@ public class SynchronizationManager {
 
     // todo move this to some kind of SynchronizationSession object that will be simpler to manage in
     //  terms of threading (start/finish, cancel multiple ones)
-    private final List<SynchronizationFileItem> items = new ArrayList<>();
+    private final List<SynchronizationFile> items = new ArrayList<>();
 
     private boolean running = false;
 
@@ -38,24 +38,38 @@ public class SynchronizationManager {
         ProgressManager.getInstance().run(task);
     }
 
-    public void add(@NotNull List<SynchronizationFileItem> items) {
-        this.items.addAll(items);
+    public void add(@NotNull List<FileItem> items) {
+        List<SynchronizationFile> files = new ArrayList<>();
 
-        // todo notify synchronization tree model in tool window
+        for (FileItem fi : items) {
+            List<SynchronizationObject> objects = new ArrayList<>();
+            for (ObjectItem oi : fi.objects()) {
+                objects.add(new SynchronizationObject(oi));
+            }
 
-        updateSynchronizationPanel(panel -> panel.getModel().addData(items));
+            files.add(new SynchronizationFile(fi, objects));
+        }
+
+        this.items.addAll(files);
+
+        updateSynchronizationToolWindow(panel -> panel.getModel().addData(files));
     }
 
+    // todo improve this
     public void start() {
+        if (running == true) {
+            return;
+        }
+
         running = true;
 
         items.clear();
 
-        updateSynchronizationPanel(panel -> panel.getModel().setData(new ArrayList<>()));
+        updateSynchronizationToolWindow(panel -> panel.getModel().setData(new ArrayList<>()));
         // todo implement
     }
 
-    private void updateSynchronizationPanel(Consumer<SynchronizationPanel> consumer) {
+    private void updateSynchronizationToolWindow(Consumer<SynchronizationPanel> consumer) {
         RunnableUtils.invokeLaterIfNeeded(() -> {
             SynchronizationPanel panel = (SynchronizationPanel) ToolWindowManager.getInstance(project)
                     .getToolWindow("Synchronization").getContentManager().getContent(0).getComponent();

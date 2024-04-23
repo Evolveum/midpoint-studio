@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.evolveum.midpoint.prism.ModificationType;
+import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -10,8 +13,10 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.CheckboxTree;
 import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.DoubleClickListener;
+import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -71,26 +76,46 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
 
     private void doubleClickPerformed(DefaultMutableTreeNode node) {
         Object object = node.getUserObject();
-        if (object instanceof SynchronizationFileItem file) {
-            if (file.objects().size() == 1) {
-                openSynchronizationEditor(file.objects().get(0));
+        if (object instanceof SynchronizationFile file) {
+            if (file.getObjects().size() == 1) {
+                openSynchronizationEditor(file.getObjects().get(0));
             }
-        } else if (object instanceof SynchronizationObjectItem obj) {
+        } else if (object instanceof SynchronizationObject obj) {
             openSynchronizationEditor(obj);
         }
     }
 
-    private void openSynchronizationEditor(SynchronizationObjectItem object) {
-        MidPointObject leftObject = object.local();
-        MidPointObject rightObject = object.remote();
+    private void openSynchronizationEditor(SynchronizationObject object) {
+        MidPointObject leftObject = object.getItem().local();
+        MidPointObject rightObject = object.getItem().remote();
 
-        LightVirtualFile leftFile = new LightVirtualFile(leftObject.getName(), leftObject.getContent());
-        LightVirtualFile rightFile = new LightVirtualFile(rightObject.getName(), rightObject.getContent());
+        LightVirtualFile leftFile = new LightVirtualFile(leftObject.getName() + ".xml", leftObject.getContent());
+        LightVirtualFile rightFile = new LightVirtualFile(rightObject.getName() + ".xml", rightObject.getContent());
 
         DiffSource left = new DiffSource(leftFile.getName(), leftFile, DiffSourceType.LOCAL);
         DiffSource right = new DiffSource(rightFile.getName(), rightFile, DiffSourceType.REMOTE);
 
-        DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(project, left, right);
+        DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(project, left, right) {
+
+            @Override
+            protected void acceptPerformed() {
+                super.acceptPerformed();
+
+                try {
+                    PrismObject<? extends ObjectType> result = getLeftObject();
+                    // todo implement, this is bad
+                    PrismObject<? extends ObjectType> leftInitial =
+                            ClientUtils.createParser(
+                                    MidPointUtils.DEFAULT_PRISM_CONTEXT, object.getLocalObject().getContent()).parse();
+
+                    if (!result.equivalent(leftInitial)) {
+                        object.setModificationType(ModificationType.REPLACE);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
         processor.initialize();
         DiffVirtualFile file = new DiffVirtualFile(processor);
 
@@ -102,13 +127,22 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
             Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-        if (node.getUserObject() instanceof SynchronizationFileItem file) {
-            value = file.local().getName();
-        } else if (node.getUserObject() instanceof SynchronizationObjectItem object) {
-            value = object.name();
+        if (node.getUserObject() instanceof SynchronizationFile file) {
+            value = file.getItem().local().getName();
+        } else if (node.getUserObject() instanceof SynchronizationObject object) {
+            value = object.getItem().name();
         }
 
         return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
+    }
+
+    @Override
+    public <T> T[] getCheckedNodes(Class<? extends T> nodeType, @Nullable Tree.NodeFilter<? super T> filter) {
+        if (getModel().getRoot() == null) {
+            return (T[]) new Object[0];
+        }
+
+        return super.getCheckedNodes(nodeType, filter);
     }
 
     private static class TreeRenderer extends CheckboxTreeCellRenderer {
@@ -131,6 +165,11 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         }
 
         private Color computeColor(Object userObject) {
+            if (userObject instanceof SynchronizationObject object) {
+                return SynchronizationUtil.getColorForModificationType(object.getModificationType());
+            } else if (userObject instanceof SynchronizationFile file) {
+                // todo
+            }
             // todo implement
 
             return null;

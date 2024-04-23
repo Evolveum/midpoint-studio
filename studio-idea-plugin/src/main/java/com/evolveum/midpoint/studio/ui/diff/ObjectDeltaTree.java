@@ -1,18 +1,23 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
-import com.evolveum.midpoint.prism.ModificationType;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
+import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.Disposable;
 import com.intellij.ui.render.LabelBasedRenderer;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.UIUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.xml.namespace.QName;
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -58,6 +63,12 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
     }
 
     private Color computeColor(Object userObject) {
+        ModificationType type = getModificationType(userObject);
+
+        return SynchronizationUtil.getColorForModificationType(type);
+    }
+
+    private ModificationType getModificationType(Object userObject) {
         ModificationType type = null;
         if (userObject instanceof DeltaItem di) {
             type = di.modificationType();
@@ -67,7 +78,7 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
             type = getModificationType(od);
         }
 
-        return SynchronizationUtil.getColorForModificationType(type);
+        return type;
     }
 
     private ModificationType getModificationType(ObjectDelta<?> delta) {
@@ -106,10 +117,29 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
     @Override
     public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+
         if (node.getUserObject() instanceof ObjectDelta<?> od) {
             return "All";
         } else if (node.getUserObject() instanceof DeltaItem di) {
-            value = di.value();
+            ModificationType modificationType = getModificationType(node.getUserObject());
+            String prefix = modificationType == ModificationType.REPLACE ? "Replace existing with: " : "";
+
+            PrismValue prismValue = di.value();
+            if (prismValue instanceof PrismPropertyValue<?> property) {
+                value = property.getRealValue();
+            } else if (prismValue instanceof PrismReferenceValue ref) {
+                QName relation = ref.getRelation();
+                String relationStr = relation != null ? QNameUtil.prettyPrint(relation) : "";
+
+                ObjectTypes type = ObjectTypes.getObjectTypeFromTypeQNameIfKnown(ref.getTargetType());
+                String typeStr = type != null ? StudioLocalization.get().translateEnum(type) : "";
+
+                value = ref.getOid() + " (" + StringUtils.joinWith(", ", typeStr, relationStr) + ")";
+            } else if (prismValue instanceof PrismContainerValue<?> container) {
+                return container.debugDump();
+            }
+
+            value = prefix + value;
         } else if (node.getUserObject() instanceof ItemDelta<?, ?> id) {
             value = id.getPath().toString();
         }

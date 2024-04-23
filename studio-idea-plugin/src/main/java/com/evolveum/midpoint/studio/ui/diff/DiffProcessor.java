@@ -20,6 +20,7 @@ import com.intellij.diff.impl.CacheDiffRequestChainProcessor;
 import com.intellij.diff.requests.ContentDiffRequest;
 import com.intellij.diff.util.DiffUserDataKeysEx;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Separator;
@@ -67,6 +68,14 @@ public class DiffProcessor<O extends ObjectType> {
         this.rightSource = right;
     }
 
+    public PrismObject<O> getLeftObject() {
+        return leftObject;
+    }
+
+    public PrismObject<O> getRightObject() {
+        return rightObject;
+    }
+
     public void initialize() {
         try {
             leftObject = parseObject(leftSource);
@@ -78,8 +87,18 @@ public class DiffProcessor<O extends ObjectType> {
 
             String leftTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, leftObjectPreview);
             String rightTextContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, rightObject);
-            leftPreviewFile = new LightVirtualFile(buildTextDiffFileName(leftSource, true), leftTextContent);
-            LightVirtualFile right = new LightVirtualFile(buildTextDiffFileName(rightSource, false), rightTextContent);
+
+            leftPreviewFile = new LightVirtualFile(
+                    buildTextDiffFileName(leftSource, true),
+                    XmlFileType.INSTANCE,
+                    leftTextContent,
+                    System.currentTimeMillis());
+
+            LightVirtualFile right = new LightVirtualFile(
+                    buildTextDiffFileName(rightSource, false),
+                    XmlFileType.INSTANCE,
+                    rightTextContent,
+                    System.currentTimeMillis());
 
             ContentDiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, leftPreviewFile, right);
             DiffRequestChain chain = new SimpleDiffRequestChain(request);
@@ -99,7 +118,7 @@ public class DiffProcessor<O extends ObjectType> {
             };
             diffProcessor.updateRequest();
 
-            panel = new DiffPanel<>(project, delta) {
+            panel = new DiffPanel<>(project, leftSource.file().getName() + "(" + leftSource.type() + ")", delta) {  // todo fix
 
                 @Override
                 protected JComponent createTextDiff() {
@@ -166,6 +185,8 @@ public class DiffProcessor<O extends ObjectType> {
 
         actions.add(new Separator());
 
+        actions.add(new UiAction("Cleanup right", AllIcons.General.InspectionsEye, e -> cleanupPerformed()));
+
         actions.add(new UiAction("Accept", AllIcons.RunConfigurations.ShowPassed, e -> acceptPerformed()) {
 
             @Override
@@ -187,14 +208,7 @@ public class DiffProcessor<O extends ObjectType> {
             }
         });
 
-
-        actions.add(new UiAction("Cleanup right", AllIcons.General.InspectionsEye, e -> cleanupPerformed()));
 //        group.add(new UiAction("Show text diff"));// todo implement
-
-        actions.add(new Separator());
-
-        actions.add(new UiAction("Save", AllIcons.General.GreenCheckmark, e -> savePerformed()));
-        actions.add(new UiAction("Roll back", AllIcons.Actions.Rollback, e -> rollbackPerformed()));
 
         return actions;
     }
@@ -208,8 +222,9 @@ public class DiffProcessor<O extends ObjectType> {
     }
 
     private String buildTextDiffFileName(DiffSource source, boolean result) {
-        String resultLabel = result ? ", result" : "";
-        return source.getName() + " (" + source.type().name() + resultLabel + ")";
+        String resultLabel = result ? "Result: " : "Source: ";
+
+        return resultLabel + source.file().getName() + "(" + source.type() + ")";
     }
 
     public String getName() {
@@ -240,7 +255,7 @@ public class DiffProcessor<O extends ObjectType> {
         // todo implement
     }
 
-    private void acceptPerformed() {
+    protected void acceptPerformed() {
         try {
             List<DefaultMutableTreeNode> selected = panel.getSelectedNodes();
 
@@ -249,7 +264,7 @@ public class DiffProcessor<O extends ObjectType> {
 
             panel.removeNodes(selected);
 
-
+            updateLeftPreviewFile();
         } catch (Exception ex) {
             // todo fix
             ex.printStackTrace();
