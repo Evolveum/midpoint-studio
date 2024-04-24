@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
@@ -7,6 +8,11 @@ import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.StudioCleanupListener;
+import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
 import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -15,6 +21,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBLabel;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +35,12 @@ import java.util.List;
 
 public class DiffProcessor<O extends ObjectType> {
 
+    private static final Logger LOG = Logger.getInstance(DiffProcessor.class);
+
+    private enum Direction {
+        LEFT_TO_RIGHT, RIGHT_TO_LEFT
+    }
+
     private final Project project;
 
     private final DiffSource leftSource;
@@ -39,6 +52,8 @@ public class DiffProcessor<O extends ObjectType> {
     private ObjectDelta<O> delta;
 
     private DiffPanel<O> panel;
+
+    private Direction direction = Direction.RIGHT_TO_LEFT;
 
     private DiffStrategy strategy = DiffStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS; // todo use natural keys by default
 
@@ -84,13 +99,22 @@ public class DiffProcessor<O extends ObjectType> {
             leftObject = parseObject(leftSource);
             rightObject = parseObject(rightSource);
 
-            delta = leftObject.diff(rightObject, strategy.getStrategy());
-
-            panel.setTargetName(leftSource.file().getName() + " (" + leftSource.type() + ")");
-            panel.setDelta(delta);
+            recomputeDelta();
         } catch (Exception ex) {
             throw new RuntimeException("Couldn't parse object", ex);
         }
+    }
+
+    private void recomputeDelta() {
+        DiffSource toSource = direction == Direction.LEFT_TO_RIGHT ? rightSource : leftSource;
+
+        PrismObject<O> from = direction == Direction.LEFT_TO_RIGHT ? leftObject : rightObject;
+        PrismObject<O> to = direction == Direction.LEFT_TO_RIGHT ? rightObject : leftObject;
+
+        delta = from.diff(to, strategy.getStrategy());
+
+        panel.setTargetName(toSource.file().getName() + " (" + toSource.type() + ")");
+        panel.setDelta(delta);
     }
 
     private void onTreeSelectionChanged(List<DefaultMutableTreeNode> selected) {
@@ -120,6 +144,8 @@ public class DiffProcessor<O extends ObjectType> {
         actions.add(new UiAction("Cleanup", AllIcons.General.InspectionsEye, e -> cleanupPerformed()));
 
         actions.add(new Separator());
+
+        actions.add(new UiAction("Switch sides", AllIcons.Diff.ArrowLeftRight, e -> switchSidesPerformed()));
 
         actions.add(new UiAction("Accept", AllIcons.RunConfigurations.ShowPassed, e -> acceptPerformed()) {
 
@@ -171,20 +197,19 @@ public class DiffProcessor<O extends ObjectType> {
         this.strategy = strategy;
 
         initialize();
-        // todo implement
     }
 
     protected void acceptPerformed() {
         try {
             List<DefaultMutableTreeNode> selected = panel.getSelectedNodes();
 
-            // todo implement - apply partial delta
-            applyDeltaNodesToObject(leftObject, selected);
+            PrismObject<O> object = direction == Direction.LEFT_TO_RIGHT ? rightObject : leftObject;
+
+            applyDeltaNodesToObject(object, selected);
 
             panel.removeNodes(selected);
         } catch (Exception ex) {
-            // todo fix
-            ex.printStackTrace();
+            throw new RuntimeException("Couldn't apply delta", ex);
         }
     }
 
@@ -243,6 +268,26 @@ public class DiffProcessor<O extends ObjectType> {
     }
 
     private void cleanupPerformed() {
-        // todo implement
+        CleanupService cs = CleanupService.get(project);
+
+        MidPointClient client = null;
+        Environment environment = EnvironmentService.getInstance(project).getSelected();
+        if (environment != null) {
+            client = new MidPointClient(project, environment, false, false);
+        }
+
+        ObjectCleaner processor = cs.createCleanupProcessor();
+        processor.setListener(new StudioCleanupListener(project, client, MidPointUtils.DEFAULT_PRISM_CONTEXT));
+
+        processor.process(leftObject);
+        processor.process(rightObject);
+
+        recomputeDelta();
+    }
+
+    private void switchSidesPerformed() {
+        direction = direction == Direction.LEFT_TO_RIGHT ? Direction.RIGHT_TO_LEFT : Direction.LEFT_TO_RIGHT;
+
+        recomputeDelta();
     }
 }

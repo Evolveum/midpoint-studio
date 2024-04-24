@@ -25,8 +25,8 @@ public class DiffEditor implements FileEditor {
 
     private final List<PropertyChangeListener> propertyChangeListeners = new ArrayList<>();
 
-    public DiffEditor(@NotNull Project project, @NotNull VirtualFile file) {
-        this.file = (DiffVirtualFile) file;
+    public DiffEditor(@NotNull Project project, @NotNull DiffVirtualFile file) {
+        this.file = file;
         this.project = project;
     }
 

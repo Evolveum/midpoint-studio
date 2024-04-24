@@ -34,7 +34,7 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
     }
 
     public void setTargetName(@NotNull String targetName) {
-        label.setText(targetName);
+        label.setText("Select changes to be applied to '" + targetName + "' object:");
     }
 
     public void setDelta(@NotNull ObjectDelta<O> delta) {

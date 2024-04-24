@@ -1,7 +1,9 @@
 package com.evolveum.midpoint.studio.action.task;
 
-import com.evolveum.midpoint.common.cleanup.*;
-import com.evolveum.midpoint.prism.Item;
+import com.evolveum.midpoint.common.cleanup.CleanupItem;
+import com.evolveum.midpoint.common.cleanup.CleanupItemType;
+import com.evolveum.midpoint.common.cleanup.CleanupResult;
+import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismSerializer;
@@ -14,25 +16,22 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
-import com.evolveum.midpoint.studio.impl.configuration.*;
-import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
+import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
+import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
+import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction;
+import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingRefKey;
 import com.evolveum.midpoint.studio.ui.cleanup.MissingRefUtils;
 import com.evolveum.midpoint.studio.util.MavenUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.exception.SystemException;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.ui.messages.MessageDialog;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import org.apache.commons.lang3.StringUtils;
@@ -143,9 +142,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             CleanupService cs = CleanupService.get(getProject());
 
             ObjectCleaner processor = cs.createCleanupProcessor();
-
-            DefaultCleanupListener handler = getListener(cs);
-            processor.setListener(handler);
+            processor.setListener(new StudioCleanupListener(getProject(), client, MidPointUtils.DEFAULT_PRISM_CONTEXT));
 
             ObjectValidator validator = new ObjectValidator();
             validator.setAllWarnings();
@@ -190,63 +187,6 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         if (!missingRefObject.isEmpty()) {
             missingReferencesSummary.add(missingRefObject);
         }
-    }
-
-    @NotNull
-    private DefaultCleanupListener getListener(CleanupService cs) {
-        DefaultCleanupListener listener = new DefaultCleanupListener(MidPointUtils.DEFAULT_PRISM_CONTEXT) {
-
-            @Override
-            public boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
-                return CleanupFileTask.this.onConfirmOptionalCleanup(event);
-            }
-
-            @Override
-            protected String getMidpointVersion() {
-                String current = MavenUtils.getMidpointVersion(getProject());
-                return current != null ? current : MidPointConstants.DEFAULT_MIDPOINT_VERSION;
-            }
-
-            @Override
-            protected <O extends ObjectType> boolean canResolveLocalObject(Class<O> type, String oid) {
-                return CleanupFileTask.this.canResolveLocalObject(type, oid);
-            }
-
-            @Override
-            protected PrismObject<ConnectorType> resolveConnector(String oid) {
-                return CleanupFileTask.this.resolveConnector(oid);
-            }
-        };
-
-        CleanupConfiguration configuration = cs.getSettings();
-        listener.setWarnAboutMissingReferences(configuration.isWarnAboutMissingReferences());
-
-        return listener;
-    }
-
-    private <O extends ObjectType> PrismObject<O> resolveConnector(String oid) {
-        try {
-            MidPointObject object = client.get(ConnectorType.class, oid, new SearchOptions().raw(true));
-            if (object == null) {
-                return null;
-            }
-
-            return (PrismObject<O>) client.parseObject(object.getContent());
-        } catch (Exception ex) {
-            throw new SystemException(ex);
-        }
-    }
-
-    private <O extends ObjectType> boolean canResolveLocalObject(Class<O> type, String oid) {
-        if (oid == null) {
-            return false;
-        }
-
-        List<VirtualFile> files = ApplicationManager.getApplication().runReadAction(
-                (Computable<List<VirtualFile>>) () ->
-                        ObjectFileBasedIndexImpl.getVirtualFiles(oid, getProject(), true));
-
-        return !files.isEmpty();
     }
 
     private void publishNotification(
@@ -358,14 +298,6 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         }
 
         return actions.toArray(NotificationAction[]::new);
-    }
-
-    private boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
-        int result = MidPointUtils.showConfirmationDialog(
-                getProject(), null, "Do you really want to remove item " + event.path() + "?",
-                "Confirm remove", "Remove", "Skip");
-
-        return result == MessageDialog.OK_EXIT_CODE;
     }
 
     @Override

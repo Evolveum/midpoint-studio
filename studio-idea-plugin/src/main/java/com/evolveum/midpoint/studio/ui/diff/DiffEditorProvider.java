@@ -20,7 +20,7 @@ public class DiffEditorProvider implements FileEditorProvider, DumbAware {
 
     @Override
     public @NotNull FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
-        return new DiffEditor(project, file);
+        return new DiffEditor(project, (DiffVirtualFile) file);
     }
 
     @Override
