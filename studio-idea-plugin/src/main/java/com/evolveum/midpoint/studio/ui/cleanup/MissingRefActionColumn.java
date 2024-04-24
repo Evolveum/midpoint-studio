@@ -19,8 +19,12 @@ import java.awt.*;
 
 public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRefAction> {
 
-    public MissingRefActionColumn() {
+    private final MissingRefObjectsTableModel model;
+
+    public MissingRefActionColumn(@NotNull MissingRefObjectsTableModel model) {
         super("Action");
+
+        this.model = model;
 
         setPreferredWidth(150);
         setMinWidth(150);
@@ -67,6 +71,7 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
     public void setValue(DefaultMutableTreeTableNode node, MissingRefAction value) {
         Object object = node.getUserObject();
 
+
         if (object instanceof MissingRefNode refNode) {
             refNode.setAction(value);
 
@@ -77,6 +82,8 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
         } else if (object instanceof MissingRef ref) {
             ref.setAction(value);
         }
+
+        model.nodeChanged(node);
     }
 
     private static class Editor extends ComboBoxTableRenderer<MissingRefAction> {

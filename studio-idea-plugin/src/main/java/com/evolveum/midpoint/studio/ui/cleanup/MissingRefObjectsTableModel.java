@@ -6,7 +6,6 @@ import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.intellij.util.ui.ColumnInfo;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.tree.TreePath;
@@ -20,13 +19,13 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
 
     public static final Object NODE_ALL = new Object();
 
-    private static final List<ColumnInfo> COLUMNS = List.of(
-            new MissingRefColumn(),
-            new MissingRefActionColumn()
-    );
-
     public MissingRefObjectsTableModel() {
-        super(COLUMNS);
+        super();
+
+        setColumns(List.of(
+                new MissingRefColumn(),
+                new MissingRefActionColumn(this)
+        ));
     }
 
     @Override

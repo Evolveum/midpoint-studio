@@ -8,6 +8,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.util.List;
 
@@ -19,16 +20,18 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
 
     private T data;
 
-    public DefaultTreeTableModel(@NotNull List<ColumnInfo> columns) {
-        this(columns, null);
+    public DefaultTreeTableModel() {
+        super(new DefaultMutableTreeNode());
     }
 
-    public DefaultTreeTableModel(@NotNull List<ColumnInfo> columns, T data) {
+    public DefaultTreeTableModel(@NotNull List<ColumnInfo> columns) {
         super(new DefaultMutableTreeTableNode());
 
         this.columns = columns;
+    }
 
-        setData(data);
+    public void setColumns(@NotNull List<ColumnInfo> columns) {
+        this.columns = columns;
     }
 
     public ColumnInfo getColumnInfo(int index) {
