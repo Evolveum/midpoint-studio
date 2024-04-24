@@ -7,6 +7,8 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.configuration.CleanupConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.util.MavenUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -36,6 +38,10 @@ public class StudioCleanupListener extends DefaultCleanupListener {
 
         this.project = project;
         this.client = client;
+
+        CleanupService cs = CleanupService.get(project);
+        CleanupConfiguration configuration = cs.getSettings();
+        setWarnAboutMissingReferences(configuration.isWarnAboutMissingReferences());
     }
 
     @Override

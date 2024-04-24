@@ -27,6 +27,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -154,6 +155,10 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             validator.setWarnPlannedRemovalVersion(current);
 
             for (PrismObject<? extends ObjectType> obj : clonedObjects) {
+                if (ResourceType.COMPLEX_TYPE.equals(obj.getDefinition().getTypeName())) {
+                    applyConnectorSchema((PrismObject<ResourceType>) obj);
+                }
+
                 CleanupResult cleanupResult = processor.process(obj);
 
                 ValidationResult validationResult = validator.validate(obj);
@@ -178,6 +183,10 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         }
 
         return content;
+    }
+
+    private void applyConnectorSchema(PrismObject<ResourceType> resource) {
+        // todo apply connector schema
     }
 
     private void updateMissingReferencesSummary(MidPointObject object, List<CleanupItem<?>> messages) {
