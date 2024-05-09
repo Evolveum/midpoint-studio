@@ -222,7 +222,7 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) {
-        printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
+        printToConsole("Getting object " + type.getSimpleName() + ", oid= " + oid + ", " + opts);
 
         MidPointObject result = null;
         try {
@@ -281,8 +281,12 @@ public class MidPointClient {
 
             String expanded = expander.expand(obj.getContent(), file);
 
-            obj = MidPointObject.copy(obj);
+            MidPointObject expandedObject = ClientUtils.parseText(expanded).get(0);
+
             obj.setContent(expanded);
+            obj.setOid(expandedObject.getOid());
+            obj.setName(expandedObject.getName());
+            obj.setDisplayName(expandedObject.getDisplayName());
         }
 
         UploadResponse response = new UploadResponse();

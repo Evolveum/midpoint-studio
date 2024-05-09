@@ -2,14 +2,13 @@ package com.evolveum.midpoint.studio.lang.properties;
 
 import com.evolveum.midpoint.studio.impl.Expander;
 import com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService;
-import com.intellij.codeInsight.hints.HintInfo;
 import com.intellij.codeInsight.hints.InlayInfo;
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlText;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,16 +24,14 @@ public class SPropertiesInlayParameterHintsProvider implements InlayParameterHin
     @Override
     public @NotNull List<InlayInfo> getParameterHints(@NotNull PsiElement element) {
         Project project = element.getProject();
-        if (project == null) {
-            return Collections.emptyList();
+
+        String value = null;
+        if (element instanceof XmlText xmlText) {
+            value = xmlText.getValue();
+        } else if (element instanceof XmlAttributeValue xmlAttributeValue) {
+            value = xmlAttributeValue.getValue();
         }
 
-        if (!(element instanceof XmlText)) {
-            return Collections.emptyList();
-        }
-
-        XmlText xmlText = (XmlText) element;
-        String value = xmlText.getValue();
         if (value == null) {
             return Collections.emptyList();
         }
@@ -61,12 +58,6 @@ public class SPropertiesInlayParameterHintsProvider implements InlayParameterHin
         });
 
         return result;
-    }
-
-    @Nullable
-    @Override
-    public HintInfo getHintInfo(@NotNull PsiElement element) {
-        return null;
     }
 
     @NotNull
