@@ -57,12 +57,15 @@ public class UploadFullProcessingTask extends ClientBackgroundableTask<TaskState
 
         OperationResult recomputeResult = UploadTaskMixin.recompute(client, object);
         if (recomputeResult != null) {
-            validateOperationResult(OPERATION_RECOMPUTE, recomputeResult, object.getName());
+            por = validateOperationResult(OPERATION_RECOMPUTE, recomputeResult, object.getName());
         }
 
         OperationResult testConnectionResult = UploadTaskMixin.testResourceConnection(client, object);
+        if (testConnectionResult != null) {
+            por = validateOperationResult(OPERATION_TEST_CONNECTION, testConnectionResult, object.getName());
+        }
 
-        return validateOperationResult(OPERATION_TEST_CONNECTION, testConnectionResult, object.getName());
+        return por;
     }
 
     public static List<String> buildUploadOptions(Project project, MidPointObject object) {

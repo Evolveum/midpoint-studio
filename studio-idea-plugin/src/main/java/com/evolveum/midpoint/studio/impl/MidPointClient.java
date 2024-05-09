@@ -224,7 +224,7 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts, boolean allowNotFound) {
-        printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
+        printToConsole("Getting object " + type.getSimpleName() + ", oid=" + oid + ", " + opts);
 
         MidPointObject result = null;
         try {
@@ -331,10 +331,14 @@ public class MidPointClient {
 
         String expanded = expander.expand(obj.getContent(), file);
 
-        MidPointObject result = MidPointObject.copy(obj);
-        result.setContent(expanded);
+        MidPointObject expandedObject = ClientUtils.parseText(expanded).get(0);
 
-        return result;
+        obj.setContent(expanded);
+        obj.setOid(expandedObject.getOid());
+        obj.setName(expandedObject.getName());
+        obj.setDisplayName(expandedObject.getDisplayName());
+
+        return obj;
     }
 
     public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand, VirtualFile file) throws IOException, AuthenticationException {
