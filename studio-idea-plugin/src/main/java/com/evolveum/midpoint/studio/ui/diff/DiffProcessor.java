@@ -74,6 +74,14 @@ public class DiffProcessor<O extends ObjectType> {
         return rightObject;
     }
 
+    public DiffSourceType getLeftDiffSourceType() {
+        return leftSource.type();
+    }
+
+    public DiffSourceType getRightDiffSourceType() {
+        return rightSource.type();
+    }
+
     private DiffPanel<O> initPanel() {
         return new DiffPanel<>() {  // todo fix
 
@@ -108,8 +116,8 @@ public class DiffProcessor<O extends ObjectType> {
     private void recomputeDelta() {
         DiffSource toSource = direction == Direction.LEFT_TO_RIGHT ? rightSource : leftSource;
 
-        PrismObject<O> from = direction == Direction.LEFT_TO_RIGHT ? leftObject : rightObject;
-        PrismObject<O> to = direction == Direction.LEFT_TO_RIGHT ? rightObject : leftObject;
+        PrismObject<O> from = direction == Direction.LEFT_TO_RIGHT ? rightObject : leftObject;
+        PrismObject<O> to = direction == Direction.LEFT_TO_RIGHT ? leftObject : rightObject;
 
         delta = from.diff(to, strategy.getStrategy());
 
@@ -145,7 +153,15 @@ public class DiffProcessor<O extends ObjectType> {
 
         actions.add(new Separator());
 
-        actions.add(new UiAction("Switch sides", AllIcons.Diff.ArrowLeftRight, e -> switchSidesPerformed()));
+        actions.add(new UiAction("Switch Sides", getDirectionIcon(), e -> switchSidesPerformed()) {
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                super.update(e);
+
+                e.getPresentation().setIcon(getDirectionIcon());
+            }
+        });
 
         actions.add(new UiAction("Accept", AllIcons.RunConfigurations.ShowPassed, e -> acceptPerformed()) {
 
@@ -169,6 +185,10 @@ public class DiffProcessor<O extends ObjectType> {
         });
 
         return actions;
+    }
+
+    private Icon getDirectionIcon() {
+        return direction == Direction.LEFT_TO_RIGHT ? AllIcons.Diff.ArrowRight : AllIcons.Diff.Arrow;
     }
 
     private <T extends ObjectType> PrismObject<T> parseObject(DiffSource source) throws SchemaException, IOException {

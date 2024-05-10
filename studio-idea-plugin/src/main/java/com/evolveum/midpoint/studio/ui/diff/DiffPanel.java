@@ -8,7 +8,6 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
@@ -40,20 +39,24 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
     public void setDelta(@NotNull ObjectDelta<O> delta) {
         ObjectDeltaTreeModel<O> model = getTreeModel();
         model.setData(delta);
+
+        expandAllPerformed();
     }
 
     private void initLayout() {
         JComponent mainToolbar = initMainToolbar(this);
         add(mainToolbar, BorderLayout.NORTH);
 
-        JBSplitter splitter = new JBSplitter(true, 0.5f);
+//        JBSplitter splitter = new JBSplitter(true, 0.5f);
 
         JBPanel<?> deltaPanel = createDeltaTablePanel();
-        splitter.setFirstComponent(deltaPanel);
+        add(deltaPanel, BorderLayout.CENTER);
 
-        JComponent diffEditor = createTextDiff();
-        splitter.setSecondComponent(diffEditor);
-        add(splitter, BorderLayout.CENTER);
+//        splitter.setFirstComponent(deltaPanel);
+
+//        JComponent diffEditor = createTextDiff();
+//        splitter.setSecondComponent(diffEditor);
+//        add(splitter, BorderLayout.CENTER);
     }
 
     private JBPanel<?> createDeltaTablePanel() {

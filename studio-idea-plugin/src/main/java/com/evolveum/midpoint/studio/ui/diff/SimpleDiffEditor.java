@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.ui.FileEditorBase;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.project.Project;
@@ -9,36 +10,46 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class DiffEditor extends FileEditorBase<DiffVirtualFile> {
+public class SimpleDiffEditor extends FileEditorBase<DiffVirtualFile> {
 
-    public DiffEditor(@NotNull Project project, @NotNull DiffVirtualFile file) {
+    private static final String NAME = "Text";
+
+    private SimpleDiffPanel panel;
+
+    public SimpleDiffEditor(@NotNull Project project, @NotNull DiffVirtualFile file) {
         super(project, file);
+
+        DiffProcessor processor = file.getProcessor();
+
+        PrismObject left = processor.getLeftObject();
+        PrismObject right = processor.getRightObject();
+
+        panel = new SimpleDiffPanel<>(project, left, processor.getLeftDiffSourceType(), right, processor.getRightDiffSourceType());
     }
 
     @Override
     public @NotNull JComponent getComponent() {
-        return getFile().getProcessor().getComponent();
+        return panel;
     }
 
     @Override
     public @Nullable JComponent getPreferredFocusedComponent() {
-        return null;
+        return panel.getPreferredFocusedComponent();
     }
 
     @Override
     public @Nls(capitalization = Nls.Capitalization.Title) @NotNull String getName() {
-        return "Object Delta";
+        return NAME;
     }
 
     @Override
-    public void setState(@NotNull FileEditorState state) {
-        // todo implement
+    public void setState(@NotNull FileEditorState fileEditorState) {
     }
 
     @Override
     public boolean isModified() {
         // todo implement
-        return false;
+        return true;
     }
 
     @Override
@@ -49,6 +60,6 @@ public class DiffEditor extends FileEditorBase<DiffVirtualFile> {
 
     @Override
     public void dispose() {
-        // todo implement
+
     }
 }
