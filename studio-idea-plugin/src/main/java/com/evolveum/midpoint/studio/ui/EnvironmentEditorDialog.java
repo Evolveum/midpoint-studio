@@ -179,7 +179,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         environment.setUseHttp2(useHttp2.isSelected());
 
         environment.setProxyServerHost(proxyHost.getText());
-        String port = proxyPort.getToolTipText();
+        String port = proxyPort.getText();
         if (StringUtils.isNumeric(port)) {
             environment.setProxyServerPort(Integer.parseInt(proxyPort.getText()));
         }
