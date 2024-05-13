@@ -5,9 +5,11 @@ import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationSession;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.messages.MessageDialog;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import com.intellij.util.ui.tree.TreeUtil;
@@ -90,6 +92,14 @@ public class SynchronizationPanel extends BorderLayoutPanel {
     }
 
     private void refreshPerformed() {
+        int result = MidPointUtils.showConfirmationDialog(
+                project, null, "Refreshing synchronization will discard all unsaved changes. Do you want to continue?",
+                "Confirm remove", "Refresh", "Cancel");
+
+        if (result != MessageDialog.OK_EXIT_CODE) {
+            return;
+        }
+
         Object[] userObjects = tree.getCheckedNodes(Object.class, null);
 
         List<SynchronizationObjectItem> items = computeCheckedObjectItems(userObjects);

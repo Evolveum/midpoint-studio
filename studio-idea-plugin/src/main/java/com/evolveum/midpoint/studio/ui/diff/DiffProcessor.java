@@ -1,13 +1,10 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
-import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
-import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
@@ -28,8 +25,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,11 +38,8 @@ public class DiffProcessor<O extends ObjectType> {
 
     private final Project project;
 
-    private final DiffSource leftSource;
-    private final DiffSource rightSource;
-
-    private PrismObject<O> leftObject;
-    private PrismObject<O> rightObject;
+    private final DiffSource<O> leftSource;
+    private final DiffSource<O> rightSource;
 
     private ObjectDelta<O> delta;
 
@@ -57,7 +49,7 @@ public class DiffProcessor<O extends ObjectType> {
 
     private DiffStrategy strategy = DiffStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS; // todo use natural keys by default
 
-    public DiffProcessor(@NotNull Project project, @NotNull DiffSource left, @NotNull DiffSource right) {
+    public DiffProcessor(@NotNull Project project, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right) {
         this.project = project;
 
         this.leftSource = left;
@@ -70,20 +62,12 @@ public class DiffProcessor<O extends ObjectType> {
         return direction;
     }
 
-    public PrismObject<O> getLeftObject() {
-        return leftObject;
+    public DiffSource<O> getLeftSource() {
+        return leftSource;
     }
 
-    public PrismObject<O> getRightObject() {
-        return rightObject;
-    }
-
-    public DiffSourceType getLeftDiffSourceType() {
-        return leftSource.type();
-    }
-
-    public DiffSourceType getRightDiffSourceType() {
-        return rightSource.type();
+    public DiffSource<O> getRightSource() {
+        return rightSource;
     }
 
     private DiffPanel<O> initPanel() {
@@ -108,9 +92,6 @@ public class DiffProcessor<O extends ObjectType> {
 
     public void initialize() {
         try {
-            leftObject = parseObject(leftSource);
-            rightObject = parseObject(rightSource);
-
             recomputeDelta();
         } catch (Exception ex) {
             throw new RuntimeException("Couldn't parse object", ex);
@@ -118,15 +99,31 @@ public class DiffProcessor<O extends ObjectType> {
     }
 
     private void recomputeDelta() {
-        DiffSource toSource = direction == Direction.LEFT_TO_RIGHT ? rightSource : leftSource;
+        DiffSource<O> targetSource = getTargetSource();
 
-        PrismObject<O> from = direction == Direction.LEFT_TO_RIGHT ? rightObject : leftObject;
-        PrismObject<O> to = direction == Direction.LEFT_TO_RIGHT ? leftObject : rightObject;
+        PrismObject<O> target = targetSource.object();
+        PrismObject<O> source = getSourceObject();
 
-        delta = from.diff(to, strategy.getStrategy());
+        delta = target.diff(source, strategy.getStrategy());
 
-        panel.setTargetName(toSource.file().getName() + " (" + toSource.type() + ")");
+        panel.setTargetName(targetSource.name() + " (" + targetSource.type() + ")");
         panel.setDelta(delta);
+    }
+
+    public DiffSource<O> getTargetSource() {
+        return direction == Direction.LEFT_TO_RIGHT ? rightSource : leftSource;
+    }
+
+    public DiffSource<O> getSourceSource() {
+        return direction == Direction.LEFT_TO_RIGHT ? leftSource : rightSource;
+    }
+
+    public PrismObject<O> getTargetObject() {
+        return getTargetSource().object();
+    }
+
+    public PrismObject<O> getSourceObject() {
+        return getSourceSource().object();
     }
 
     private void onTreeSelectionChanged(List<DefaultMutableTreeNode> selected) {
@@ -190,20 +187,6 @@ public class DiffProcessor<O extends ObjectType> {
         return direction == Direction.LEFT_TO_RIGHT ? AllIcons.Diff.ArrowRight : AllIcons.Diff.Arrow;
     }
 
-    private <T extends ObjectType> PrismObject<T> parseObject(DiffSource source) throws SchemaException, IOException {
-        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
-        try (InputStream is = source.file().getInputStream()) {
-            PrismParser parser = ClientUtils.createParser(ctx, is);
-            return parser.parse();
-        }
-    }
-
-    private String buildTextDiffFileName(DiffSource source, boolean result) {
-        String resultLabel = result ? "Result: " : "Source: ";
-
-        return resultLabel + source.file().getName() + " (" + source.type() + ")";
-    }
-
     public String getName() {
         return leftSource.getName();
     }
@@ -222,9 +205,9 @@ public class DiffProcessor<O extends ObjectType> {
         try {
             List<DefaultMutableTreeNode> selected = panel.getSelectedNodes();
 
-            PrismObject<O> object = direction == Direction.LEFT_TO_RIGHT ? rightObject : leftObject;
+            PrismObject<O> target = getTargetObject();
 
-            applyDeltaNodesToObject(object, selected);
+            applyDeltaNodesToObject(target, selected);
 
             panel.removeNodes(selected);
         } catch (Exception ex) {
@@ -264,7 +247,7 @@ public class DiffProcessor<O extends ObjectType> {
             }
 
             if (delta != null) {
-                delta.applyTo(leftObject);
+                delta.applyTo(object);
             }
         }
     }
@@ -298,8 +281,8 @@ public class DiffProcessor<O extends ObjectType> {
         ObjectCleaner processor = cs.createCleanupProcessor();
         processor.setListener(new StudioCleanupListener(project, client, MidPointUtils.DEFAULT_PRISM_CONTEXT));
 
-        processor.process(leftObject);
-        processor.process(rightObject);
+        processor.process(leftSource.object());
+        processor.process(rightSource.object());
 
         recomputeDelta();
     }

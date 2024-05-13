@@ -12,7 +12,6 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.CheckboxTree;
 import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.DoubleClickListener;
@@ -90,16 +89,16 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         }
     }
 
-    private void openSynchronizationEditor(SynchronizationObjectItem object) {
+    private <O extends ObjectType> void openSynchronizationEditor(SynchronizationObjectItem object) {
         MidPointObject leftObject = object.getLocal();
         MidPointObject rightObject = object.getRemote();
 
         VirtualFile leftRealFile = object.getFileItem().getFile();
-        LightVirtualFile leftFile = new LightVirtualFile(leftRealFile.getName(), leftObject.getContent());
-        LightVirtualFile rightFile = new LightVirtualFile(rightObject.getName() + ".xml", rightObject.getContent());
 
-        DiffSource left = new DiffSource(null, leftFile, DiffSourceType.LOCAL);
-        DiffSource right = new DiffSource(null, rightFile, DiffSourceType.REMOTE);
+        DiffSource<O> left = new DiffSource(
+                leftRealFile.getName(), DiffSourceType.LOCAL, object.getLocalObject().getCurrent());
+        DiffSource<O> right = new DiffSource(
+                rightObject.getName() + ".xml", DiffSourceType.REMOTE, object.getRemoteObject().getCurrent());
 
         DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(project, left, right) {
 
@@ -116,14 +115,13 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         MidPointUtils.openFile(project, file);
     }
 
-    private void updateSynchronizationState(
-            DiffProcessor<?> processor, SynchronizationObjectItem object, DiffProcessor.Direction direction) {
+    private <O extends ObjectType> void updateSynchronizationState(
+            DiffProcessor<O> processor, SynchronizationObjectItem object, DiffProcessor.Direction direction) {
         try {
-            PrismObjectStateful<?> statefulPrismObject =
+            PrismObjectStateful statefulPrismObject =
                     direction == DiffProcessor.Direction.LEFT_TO_RIGHT ? object.getRemoteObject() : object.getLocalObject();
 
-            PrismObject prismObject =
-                    direction == DiffProcessor.Direction.LEFT_TO_RIGHT ? processor.getRightObject() : processor.getLeftObject();
+            PrismObject<O> prismObject = processor.getTargetObject();
 
             statefulPrismObject.setCurrent(prismObject.clone());
 
@@ -148,8 +146,8 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
     }
 
     /**
-     * @return Array of user objects from checked nodes
      * @param <T>
+     * @return Array of user objects from checked nodes
      */
     @Override
     public <T> T[] getCheckedNodes(Class<? extends T> nodeType, @Nullable Tree.NodeFilter<? super T> filter) {

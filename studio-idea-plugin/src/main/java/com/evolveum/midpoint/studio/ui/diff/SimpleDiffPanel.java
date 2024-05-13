@@ -4,7 +4,6 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
-import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.ui.CustomComboBoxAction;
 import com.evolveum.midpoint.studio.ui.delta.ObjectDeltaEditor;
@@ -33,28 +32,21 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
 
     private CustomComboBoxAction<DiffStrategy> strategyAction;
 
-    private PrismObject<O> left;
+    private DiffSource<O> leftSource;
 
-    private PrismObject<O> right;
+    private DiffSource<O> rightSource;
 
     private LightVirtualFile leftFile;
 
-    private DiffSourceType leftSourceType;
-
     private LightVirtualFile rightFile;
 
-    private DiffSourceType rightSourceType;
-
-    //    private CacheDiffRequestChainProcessor processor;
     private SimpleDiffRequestProcessor processor;
 
-    public SimpleDiffPanel(@NotNull Project project, PrismObject<O> left, DiffSourceType leftSourceType, PrismObject<O> right, DiffSourceType rightSourceType) {
+    public SimpleDiffPanel(@NotNull Project project, DiffSource<O> leftSource, DiffSource<O> rightSource) {
         this.project = project;
 
-        this.left = left;
-        this.leftSourceType = leftSourceType;
-        this.right = right;
-        this.rightSourceType = rightSourceType;
+        this.leftSource = leftSource;
+        this.rightSource = rightSource;
 
         initLayout();
 
@@ -63,22 +55,6 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
 
     public JComponent getPreferredFocusedComponent() {
         return processor.getComponent();
-    }
-
-    public PrismObject<O> getRight() {
-        return right;
-    }
-
-    public void setRight(PrismObject<O> right) {
-        this.right = right;
-    }
-
-    public PrismObject<O> getLeft() {
-        return left;
-    }
-
-    public void setLeft(PrismObject<O> left) {
-        this.left = left;
     }
 
     @Override
@@ -97,8 +73,8 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
             }
         };
 
-        leftFile = new LightVirtualFile(getName(left, leftSourceType), "");
-        rightFile = new LightVirtualFile(getName(right, rightSourceType), "");
+        leftFile = new LightVirtualFile(getName(leftSource), "");
+        rightFile = new LightVirtualFile(getName(rightSource), "");
 
         processor = new SimpleDiffRequestProcessor(project) {
 
@@ -131,6 +107,9 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
                 strategy.getStrategy() : ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION;
 
         try {
+            PrismObject<O> left = leftSource.object().clone();
+            PrismObject<O> right = rightSource.object().clone();
+
             PrismObject o1 = left;
             PrismObject o2 = right.clone();
 
@@ -148,14 +127,16 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
         }
     }
 
-    private String getName(PrismObject<O> object, DiffSourceType type) {
-        if (object == null) {
+    private String getName(DiffSource<O> source) {
+        if (source == null) {
             return "undefined";
         }
 
-        PolyString name = object.getName();
-        String fullName = name != null ? name.getOrig() : "undefined";
+        String name = MidPointUtils.getName(source.object());
+        if (name == null) {
+            name = "undefined";
+        }
 
-        return fullName + " (" + type + ")";
+        return name + " (" + source.type() + ")";
     }
 }

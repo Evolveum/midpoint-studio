@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.ui.diff.SynchronizationPanel;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -38,7 +39,6 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
 
     public void close() {
         this.closed = true;
-        // todo notify ui/tree
     }
 
     public boolean isClosed() {
@@ -81,15 +81,21 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         });
     }
 
-    private void writeLocally(List<SynchronizationObjectItem> objectItems) {
-        Map<SynchronizationFileItem, List<SynchronizationObjectItem>> updates = new HashMap<>();
+    private Map<SynchronizationFileItem<?>, List<SynchronizationObjectItem>> createFileMap(
+            List<SynchronizationObjectItem> objectItems) {
+
+        Map<SynchronizationFileItem<?>, List<SynchronizationObjectItem>> map = new HashMap<>();
         objectItems.forEach(i -> {
-            List<SynchronizationObjectItem> objects = updates.getOrDefault(i.getFileItem(), new ArrayList<>());
+            List<SynchronizationObjectItem> objects = map.getOrDefault(i.getFileItem(), new ArrayList<>());
             objects.add(i);
-            updates.put(i.getFileItem(), objects);
+            map.put(i.getFileItem(), objects);
         });
 
-        // todo something
+        return map;
+    }
+
+    private void writeLocally(List<SynchronizationObjectItem> objectItems) {
+        Map<SynchronizationFileItem<?>, List<SynchronizationObjectItem>> updates = createFileMap(objectItems);
 
         for (SynchronizationFileItem fileItem : updates.keySet()) {
             try {

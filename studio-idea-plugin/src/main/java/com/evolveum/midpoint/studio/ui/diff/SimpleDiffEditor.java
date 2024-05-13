@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.ui.FileEditorBase;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.project.Project;
@@ -21,10 +20,7 @@ public class SimpleDiffEditor extends FileEditorBase<DiffVirtualFile> {
 
         DiffProcessor processor = file.getProcessor();
 
-        PrismObject left = processor.getLeftObject();
-        PrismObject right = processor.getRightObject();
-
-        panel = new SimpleDiffPanel<>(project, left, processor.getLeftDiffSourceType(), right, processor.getRightDiffSourceType());
+        panel = new SimpleDiffPanel<>(project, processor.getLeftSource(), processor.getRightSource());
     }
 
     @Override

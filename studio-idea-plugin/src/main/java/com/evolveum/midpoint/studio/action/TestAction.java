@@ -11,10 +11,8 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 
@@ -63,18 +61,9 @@ public class TestAction extends AnAction {
             PrismObject<?> previousInitial = parse(previousInitialFile);
             PrismObject<?> currentInitial = parse(currentInitialFile);
             PrismObject<?> currentObject = parse(currentObjectFile);
-//
-//            InitialObjectDiffProcessor processor = new InitialObjectDiffProcessor(
-//                    project, previousInitial, currentInitial, currentObject);
-//
-//            ThreeWayMergeVirtualFile file = new ThreeWayMergeVirtualFile(processor);
-//            MidPointUtils.openFile(project, file);
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
 
-            DiffSource left = new DiffSource("System configuration", currentObjectFile, DiffSourceType.LOCAL);
-            DiffSource right = new DiffSource("System configuration", previousInitialFile, DiffSourceType.REMOTE);
+            DiffSource left = new DiffSource("System configuration", DiffSourceType.LOCAL, currentObject);
+            DiffSource right = new DiffSource("System configuration", DiffSourceType.REMOTE, previousInitial);
 
             DiffProcessor processor = new DiffProcessor(project, left, right);
             processor.initialize();
@@ -91,15 +80,5 @@ public class TestAction extends AnAction {
                         MidPointUtils.DEFAULT_PRISM_CONTEXT,
                         new ByteArrayInputStream(file.contentsToByteArray()))
                 .parse();
-    }
-
-    private static abstract class Dialog extends DialogWrapper {
-
-        public Dialog(@Nullable Project project) {
-            super(project, false);
-
-            setSize(800, 600);
-            init();
-        }
     }
 }
