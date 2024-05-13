@@ -30,7 +30,8 @@ public class TaskUpgradeAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        Task task = new TaskUpgradeTask(e);
+        Task task = new TaskUpgradeTask(e.getProject(), e::getDataContext);
+
         ProgressManager.getInstance().run(task);
     }
 }

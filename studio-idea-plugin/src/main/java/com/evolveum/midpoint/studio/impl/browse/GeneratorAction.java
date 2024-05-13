@@ -34,7 +34,7 @@ public class GeneratorAction extends AsyncAction<GeneratorTask> {
 
     @Override
     protected GeneratorTask createTask(AnActionEvent e, Environment env) {
-        GeneratorTask task = new GeneratorTask(e, generator, options, objects, execute);
+        GeneratorTask task = new GeneratorTask(e.getProject(), e::getDataContext, generator, options, objects, execute);
         task.setEnvironment(env);
 
         return task;

@@ -5,7 +5,6 @@ import com.intellij.diff.requests.DiffRequest;
 import com.intellij.diff.requests.NoDiffRequest;
 import com.intellij.diff.util.DiffUserDataKeysEx;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.concurrency.ThreadingAssertions;
 import com.intellij.util.concurrency.annotations.RequiresEdt;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +25,6 @@ public class SimpleDiffRequestProcessor extends DiffRequestProcessor {
 
         UIUtil.invokeLaterIfNeeded(() -> {
             this.updateRequest();
-            System.out.println();
         });
     }
 
@@ -34,7 +32,6 @@ public class SimpleDiffRequestProcessor extends DiffRequestProcessor {
     public synchronized void updateRequest(
             boolean force, @Nullable DiffUserDataKeysEx.@Nullable ScrollToPolicy scrollToChangePolicy) {
 
-        ThreadingAssertions.assertEventDispatchThread();
         this.applyRequest(this.request, force, scrollToChangePolicy);
     }
 }

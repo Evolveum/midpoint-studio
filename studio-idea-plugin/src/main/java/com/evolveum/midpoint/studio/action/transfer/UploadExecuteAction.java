@@ -18,6 +18,6 @@ public class UploadExecuteAction extends AsyncObjectsAction {
 
     @Override
     protected UploadExecuteTask createObjectsTask(AnActionEvent e, Environment env) {
-        return new UploadExecuteTask(e, env);
+        return new UploadExecuteTask(e.getProject(), e::getDataContext, env);
     }
 }

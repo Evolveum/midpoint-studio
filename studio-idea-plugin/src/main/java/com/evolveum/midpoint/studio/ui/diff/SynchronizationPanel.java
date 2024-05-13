@@ -93,7 +93,7 @@ public class SynchronizationPanel extends BorderLayoutPanel {
 
     private void refreshPerformed() {
         int result = MidPointUtils.showConfirmationDialog(
-                project, null, "Refreshing synchronization will discard all unsaved changes. Do you want to continue?",
+                project, "Refreshing synchronization will discard all unsaved changes. Do you want to continue?",
                 "Confirm remove", "Refresh", "Cancel");
 
         if (result != MessageDialog.OK_EXIT_CODE) {

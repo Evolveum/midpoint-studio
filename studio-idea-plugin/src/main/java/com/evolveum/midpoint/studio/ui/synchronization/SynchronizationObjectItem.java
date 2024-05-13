@@ -21,8 +21,8 @@ public class SynchronizationObjectItem extends SynchronizationItem {
     private MidPointObject local;
     private MidPointObject remote;
 
-    private PrismObjectStateful<?> localObject = new PrismObjectStateful<>();
-    private PrismObjectStateful<?> remoteObject = new PrismObjectStateful<>();
+    private PrismObjectHolder<?> localObject = new PrismObjectHolder<>();
+    private PrismObjectHolder<?> remoteObject = new PrismObjectHolder<>();
 
     public SynchronizationObjectItem(
             @NotNull SynchronizationFileItem<?> fileItem, @NotNull String oid, @NotNull String name,
@@ -43,7 +43,7 @@ public class SynchronizationObjectItem extends SynchronizationItem {
         setupPrismStatefulObject(remote, remoteObject);
     }
 
-    private void setupPrismStatefulObject(MidPointObject object, PrismObjectStateful<?> prismObjectStateful)
+    private void setupPrismStatefulObject(MidPointObject object, PrismObjectHolder<?> prismObjectStateful)
             throws SchemaException, IOException {
 
         if (object == null) {
@@ -89,7 +89,7 @@ public class SynchronizationObjectItem extends SynchronizationItem {
         return remote;
     }
 
-    public PrismObjectStateful<?> getLocalObject() {
+    public PrismObjectHolder<?> getLocalObject() {
         return localObject;
     }
 
@@ -97,7 +97,7 @@ public class SynchronizationObjectItem extends SynchronizationItem {
         return oid;
     }
 
-    public PrismObjectStateful<?> getRemoteObject() {
+    public PrismObjectHolder<?> getRemoteObject() {
         return remoteObject;
     }
 

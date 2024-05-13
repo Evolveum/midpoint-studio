@@ -67,6 +67,9 @@ public abstract class AsyncAction<T extends BackgroundableTask> extends AnAction
         Environment env = em.getSelected();
 
         T task = createTask(e, env);
+        if (task == null) {
+            return;
+        }
 
         ProgressManager.getInstance().run(task);
     }

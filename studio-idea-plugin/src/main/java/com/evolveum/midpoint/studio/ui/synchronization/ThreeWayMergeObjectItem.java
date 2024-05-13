@@ -7,7 +7,7 @@ public class ThreeWayMergeObjectItem extends SynchronizationObjectItem {
 
     private MidPointObject base;
 
-    private PrismObjectStateful baseObject;
+    private PrismObjectHolder baseObject;
 
     public ThreeWayMergeObjectItem(SynchronizationFileItem<?> fileItem, String oid, String name, ObjectTypes type,
                                    MidPointObject local, MidPointObject remote, MidPointObject base) {

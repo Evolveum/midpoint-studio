@@ -76,7 +76,7 @@ public class RefreshTask extends Task.Backgroundable {
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         int result = MidPointUtils.showConfirmationDialog(
-                getProject(), event, "Are you sure you want to reload " + toProcess.size()
+                getProject(), "Are you sure you want to reload " + toProcess.size()
                         + " file(s) from the server '" + env.getName() + "'?", "Confirm action", "Refresh", "Cancel");
 
         if (result == Messages.NO) {

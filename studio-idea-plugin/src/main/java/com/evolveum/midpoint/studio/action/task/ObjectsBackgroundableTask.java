@@ -13,6 +13,7 @@ import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -35,6 +36,7 @@ import com.intellij.util.LineSeparator;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -44,6 +46,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -89,8 +92,11 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
 
     protected S state = createNewState();
 
-    public ObjectsBackgroundableTask(@NotNull Project project, @NotNull String title, @NotNull String notificationKey) {
-        super(project, title, notificationKey);
+    public ObjectsBackgroundableTask(
+            @NotNull Project project, @Nullable Supplier<DataContext> dataContextSupplier, @NotNull String title,
+            @NotNull String notificationKey) {
+
+        super(project, dataContextSupplier, title, notificationKey);
     }
 
     public String getNotificationKey() {
@@ -123,7 +129,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
 
     private int showConfirmationDialog(int filesCount, ConfirmationUnit unit) {
         return MidPointUtils.showConfirmationDialog(
-                getProject(), event, getConfirmationMessage(filesCount, unit), "Confirm action",
+                getProject(), getConfirmationMessage(filesCount, unit), "Confirm action",
                 getConfirmationYesActionText(), "Cancel");
     }
 
@@ -163,7 +169,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
         if (oids != null && !oids.isEmpty()) {
             executed = processOidsList(indicator);
         } else {
-            Editor editor = UIUtil.invokeAndWaitIfNeeded(() -> event != null ? event.getData(PlatformDataKeys.EDITOR) : null);
+            Editor editor = UIUtil.invokeAndWaitIfNeeded(() -> getData(PlatformDataKeys.EDITOR));
             if (editor != null) {
                 executed = processEditor(indicator, editor);
             } else {
@@ -229,7 +235,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
             return editor.getDocument().getText();
         });
 
-        VirtualFile file = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE));
+        VirtualFile file = UIUtil.invokeAndWaitIfNeeded(() -> getData(PlatformDataKeys.VIRTUAL_FILE));
 
         if (!StringUtils.isEmpty(text)) {
             return processEditorText(indicator, editor, text, file);
@@ -270,7 +276,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
     }
 
     private boolean processFiles(ProgressIndicator indicator) {
-        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {

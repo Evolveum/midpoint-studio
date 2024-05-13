@@ -18,6 +18,6 @@ public class UploadRecomputeAction extends AsyncObjectsAction {
 
     @Override
     protected UploadRecomputeTask createObjectsTask(AnActionEvent e, Environment env) {
-        return new UploadRecomputeTask(e, env);
+        return new UploadRecomputeTask(e.getProject(), e::getDataContext, env);
     }
 }

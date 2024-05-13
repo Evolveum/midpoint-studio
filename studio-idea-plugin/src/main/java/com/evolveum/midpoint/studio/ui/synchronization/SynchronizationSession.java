@@ -2,6 +2,8 @@ package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.studio.action.task.SynchronizeObjectsTask;
+import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.ui.diff.SynchronizationPanel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -9,6 +11,7 @@ import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -69,6 +72,12 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
             return;
         }
 
+        UploadFullProcessingTask task = new UploadFullProcessingTask(project, null, environment);
+        // todo set objects
+        task.setEnvironment(environment);
+
+        ProgressManager.getInstance().run(task);
+
         // todo implement
     }
 
@@ -108,7 +117,7 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
     private void writeLocally(List<SynchronizationObjectItem> objectItems) {
         Map<SynchronizationFileItem<?>, List<SynchronizationObjectItem>> updates = createFileMap(objectItems);
 
-        for (SynchronizationFileItem fileItem : updates.keySet()) {
+        for (SynchronizationFileItem<?> fileItem : updates.keySet()) {
             try {
                 List<SynchronizationObjectItem> fileObjects = updates.get(fileItem);
 
@@ -133,7 +142,7 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
 
         List<PrismObject<?>> objects = new ArrayList<>();
         for (SynchronizationObjectItem soi : fileItem.getObjects()) {
-            PrismObjectStateful<?> localObjectStateful = soi.getLocalObject();
+            PrismObjectHolder<?> localObjectStateful = soi.getLocalObject();
 
             PrismObject<?> localObject = toUpdate.contains(soi) ? localObjectStateful.getCurrent() : localObjectStateful.getOriginal();
 

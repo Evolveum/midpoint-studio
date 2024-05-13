@@ -3,7 +3,7 @@ package com.evolveum.midpoint.studio.action.task;
 import com.evolveum.midpoint.studio.action.logging.ModelLogger;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ClassLoggerConfigurationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LoggingLevelType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -16,8 +16,8 @@ public class SetModelLoggerTask extends SetLoggerTask {
 
     private ModelLogger logger;
 
-    public SetModelLoggerTask(@NotNull AnActionEvent event, @NotNull ModelLogger logger) {
-        super(event, "Set to " + logger.getLabel(), "Set to " + logger.getLabel());
+    public SetModelLoggerTask(@NotNull Project project, @NotNull ModelLogger logger) {
+        super(project, "Set to " + logger.getLabel(), "Set to " + logger.getLabel());
 
         this.logger = logger;
     }

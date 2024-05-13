@@ -47,7 +47,7 @@ public class StudioCleanupListener extends DefaultCleanupListener {
     @Override
     public boolean onConfirmOptionalCleanup(CleanupEvent<Item<?, ?>> event) {
         int result = MidPointUtils.showConfirmationDialog(
-                project, null, "Do you really want to remove item " + event.path() + "?",
+                project, "Do you really want to remove item " + event.path() + "?",
                 "Confirm remove", "Remove", "Skip");
 
         return result == MessageDialog.OK_EXIT_CODE;

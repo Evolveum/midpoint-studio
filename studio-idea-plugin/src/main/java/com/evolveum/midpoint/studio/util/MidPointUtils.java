@@ -1144,16 +1144,12 @@ public class MidPointUtils {
     }
 
     public static int showConfirmationDialog(
-            Project project, AnActionEvent event, String message, String title, String yesText, String noText) {
+            Project project, String message, String title, String yesText, String noText) {
 
         AtomicInteger result = new AtomicInteger(0);
 
         ApplicationManager.getApplication().invokeAndWait(() -> {
-            Component comp = event != null ? event.getInputEvent().getComponent() : null;
-
-            if (comp == null) {
-                comp = WindowManager.getInstance().suggestParentWindow(project);
-            }
+            Component comp = WindowManager.getInstance().suggestParentWindow(project);
 
             JComponent source;
             if (comp instanceof JComponent) {

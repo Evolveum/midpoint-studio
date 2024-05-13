@@ -9,7 +9,11 @@ import com.evolveum.midpoint.studio.impl.browse.ActionGenerator;
 import com.evolveum.midpoint.studio.impl.browse.GeneratorOptions;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -20,8 +24,10 @@ public class UploadTestValidateResourceTask extends UploadTestResourceTask {
 
     public static final String NOTIFICATION_KEY = TITLE;
 
-    public UploadTestValidateResourceTask(AnActionEvent event, Environment environment) {
-        super(event, environment, TITLE, NOTIFICATION_KEY);
+    public UploadTestValidateResourceTask(
+            @NotNull Project project, Supplier<DataContext> dataContextSupplier, Environment environment) {
+
+        super(project, dataContextSupplier, environment, TITLE, NOTIFICATION_KEY);
     }
 
     @Override

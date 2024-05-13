@@ -27,6 +27,6 @@ public class CleanupFileAction extends AsyncAction<CleanupFileTask> {
 
     @Override
     public CleanupFileTask createTask(@NotNull AnActionEvent event, Environment environment) {
-        return new CleanupFileTask(event, environment);
+        return new CleanupFileTask(event.getProject(), event::getDataContext, environment);
     }
 }

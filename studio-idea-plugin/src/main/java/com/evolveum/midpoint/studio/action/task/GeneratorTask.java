@@ -13,7 +13,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -25,12 +25,14 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -51,10 +53,11 @@ public class GeneratorTask extends SimpleBackgroundableTask {
 
     private boolean execute;
 
-    public GeneratorTask(@NotNull AnActionEvent event, Generator generator, GeneratorOptions options, List<ObjectType> objects, boolean execute) {
-        super(event.getProject(), TITLE, NOTIFICATION_KEY);
+    public GeneratorTask(
+            @NotNull Project project, @Nullable Supplier<DataContext> dataContextSupplier, Generator generator,
+            GeneratorOptions options, List<ObjectType> objects, boolean execute) {
 
-        setEvent(event);
+        super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
 
         this.generator = generator;
         this.options = options;

@@ -12,14 +12,16 @@ import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -32,10 +34,8 @@ public class DownloadSelectedTypesTask extends SimpleBackgroundableTask {
 
     public static String NOTIFICATION_KEY = TITLE;
 
-    public DownloadSelectedTypesTask(@NotNull AnActionEvent event) {
-        super(event.getProject(), TITLE, NOTIFICATION_KEY);
-
-        setEvent(event);
+    public DownloadSelectedTypesTask(@NotNull Project project, Supplier<DataContext> dataContextSupplier) {
+        super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
     }
 
     @Override

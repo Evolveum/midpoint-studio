@@ -60,8 +60,8 @@ public class DownloadTask extends SimpleBackgroundableTask {
     public DownloadTask(
             @NotNull Project project, List<Pair<String, ObjectTypes>> oids, ObjectTypes type, ObjectQuery query,
             boolean showOnly, boolean raw, boolean overwrite) {
-        
-        super(project, TITLE, NOTIFICATION_KEY);
+
+        super(project, null, TITLE, NOTIFICATION_KEY);
 
         this.oids = oids;
         this.type = type;

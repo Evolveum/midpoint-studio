@@ -24,7 +24,7 @@ public class SetBasicLoggerAction extends SetLoggerAction {
 
     @Override
     protected SetLoggerTask createTask(AnActionEvent e, Environment env) {
-        SetLoggerTask task = new SetBasicLoggerTask(e, logger, level);
+        SetLoggerTask task = new SetBasicLoggerTask(e.getProject(), logger, level);
         task.setEnvironment(env);
 
         return task;

@@ -279,7 +279,8 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
             @Override
             protected BackgroundableTask createTask(AnActionEvent e, Environment env) {
-                return new BackgroundableTask(e.getProject(), "Searching objects", "Searching objects") {
+                return new BackgroundableTask(
+                        e.getProject(), e::getDataContext, "Searching objects", "Searching objects") {
 
                     @Override
                     protected void doRun(ProgressIndicator indicator) {

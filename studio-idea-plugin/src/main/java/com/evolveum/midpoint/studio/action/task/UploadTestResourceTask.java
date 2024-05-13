@@ -5,7 +5,11 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -18,12 +22,17 @@ public class UploadTestResourceTask extends UploadExecuteTask {
 
     public static final String OPERATION_TEST_CONNECTION = "test connection";
 
-    public UploadTestResourceTask(AnActionEvent event, Environment environment) {
-        this(event, environment, TITLE, NOTIFICATION_KEY);
+    public UploadTestResourceTask(
+            @NotNull Project project, Supplier<DataContext> dataContextSupplier, Environment environment) {
+
+        this(project, dataContextSupplier, environment, TITLE, NOTIFICATION_KEY);
     }
 
-    protected UploadTestResourceTask(AnActionEvent event, Environment environment, String title, String notificationKey) {
-        super(event, environment, title, notificationKey);
+    protected UploadTestResourceTask(
+            @NotNull Project project, Supplier<DataContext> dataContextSupplier, Environment environment, String title,
+            String notificationKey) {
+
+        super(project, dataContextSupplier, environment, title, notificationKey);
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.evolveum.midpoint.studio.action.logging.ModelLogger;
 import com.evolveum.midpoint.studio.action.logging.ModuleLogger;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ClassLoggerConfigurationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LoggingLevelType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -20,8 +20,8 @@ public class SetAllToInfoTask extends SetLoggerTask {
 
     public static final String NOTIFICATION_KEY = "Set all to INFO task";
 
-    public SetAllToInfoTask(@NotNull AnActionEvent event) {
-        super(event, TITLE, NOTIFICATION_KEY);
+    public SetAllToInfoTask(@NotNull Project project) {
+        super(project, TITLE, NOTIFICATION_KEY);
     }
 
     @Override

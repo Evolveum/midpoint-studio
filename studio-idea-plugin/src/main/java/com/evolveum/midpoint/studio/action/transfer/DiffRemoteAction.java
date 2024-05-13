@@ -29,7 +29,7 @@ public class DiffRemoteAction extends AsyncAction<DiffRemoteTask> {
 
     @Override
     protected DiffRemoteTask createTask(AnActionEvent e, Environment env) {
-        DiffRemoteTask task = new DiffRemoteTask(e);
+        DiffRemoteTask task = new DiffRemoteTask(e.getProject(), e::getDataContext);
         task.setEnvironment(env);
 
         return task;

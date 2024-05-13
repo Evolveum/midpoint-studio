@@ -4,8 +4,8 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.SearchResult;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.MidscribeLogListener;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType;
@@ -13,9 +13,10 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midscribe.generator.GenerateOptions;
 import com.evolveum.midscribe.generator.Generator;
 import com.evolveum.midscribe.generator.InMemoryObjectStore;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.project.Project;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.ResourceManagerImpl;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -36,12 +38,12 @@ public class DocumentationTask extends SimpleBackgroundableTask {
 
     public static String NOTIFICATION_KEY = TITLE;
 
-    private GenerateOptions options;
+    private final GenerateOptions options;
 
-    public DocumentationTask(@NotNull AnActionEvent event, @NotNull GenerateOptions options) {
-        super(event.getProject(), TITLE, NOTIFICATION_KEY);
+    public DocumentationTask(
+            @NotNull Project project, Supplier<DataContext> dataContextSupplier, @NotNull GenerateOptions options) {
 
-        setEvent(event);
+        super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
 
         this.options = options;
     }

@@ -19,6 +19,6 @@ public class TestResource extends AsyncObjectsAction {
 
     @Override
     protected ObjectsBackgroundableTask createObjectsTask(AnActionEvent e, Environment env) {
-        return new TestResourceTask(e, env);
+        return new TestResourceTask(e.getProject(), e::getDataContext, env);
     }
 }

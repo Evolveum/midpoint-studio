@@ -19,6 +19,6 @@ public class UploadTestResourceAction extends AsyncObjectsAction {
 
     @Override
     protected UploadExecuteTask createObjectsTask(AnActionEvent e, Environment env) {
-        return new UploadTestResourceTask(e, env);
+        return new UploadTestResourceTask(e.getProject(), e::getDataContext, env);
     }
 }

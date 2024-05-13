@@ -19,6 +19,6 @@ public class RecomputeAction extends AsyncObjectsAction {
 
     @Override
     protected ObjectsBackgroundableTask createObjectsTask(AnActionEvent e, Environment env) {
-        return new RecomputeTask(e, env);
+        return new RecomputeTask(e.getProject(), e::getDataContext, env);
     }
 }

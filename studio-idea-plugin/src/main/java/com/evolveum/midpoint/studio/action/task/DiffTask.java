@@ -9,8 +9,8 @@ import com.evolveum.midpoint.studio.impl.xml.LocationType;
 import com.evolveum.midpoint.studio.impl.xml.ObjectsDiffFactory;
 import com.evolveum.midpoint.studio.util.FileUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,22 +18,21 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public abstract class DiffTask extends SimpleBackgroundableTask {
 
-    private static final Logger LOG = Logger.getInstance(DiffTask.class);
-
     public static final String DIFF_XML_PREFIX = "<diffList>";
 
     public static final String DIFF_XML_SUFFIX = "</diffList>\n";
 
-    public DiffTask(@NotNull AnActionEvent event, String title, String notificationKey) {
-        super(event.getProject(), title, notificationKey);
+    public DiffTask(
+            @NotNull Project project, Supplier<DataContext> dataContextSupplier, String title, String notificationKey) {
 
-        setEvent(event);
+        super(project, dataContextSupplier, title, notificationKey);
     }
 
     protected String createDiffXml(MidPointObject first, VirtualFile firstFile, LocationType firstLocation,
@@ -41,8 +40,8 @@ public abstract class DiffTask extends SimpleBackgroundableTask {
 
         ExpanderOptions opts = new ExpanderOptions().expandEncrypted(false);
 
-        PrismObject firstObject = client.parseObject(first.getContent(), firstFile, opts);
-        PrismObject secondObject = client.parseObject(second.getContent(), opts);
+        PrismObject<?> firstObject = client.parseObject(first.getContent(), firstFile, opts);
+        PrismObject<?> secondObject = client.parseObject(second.getContent(), opts);
 
         DiffType objectsDiff = new DiffType();
 
@@ -80,7 +79,7 @@ public abstract class DiffTask extends SimpleBackgroundableTask {
         return vf;
     }
 
-    private DiffObjectType createDiffObject(VirtualFile file, LocationType location, PrismObject prismObject) {
+    private DiffObjectType createDiffObject(VirtualFile file, LocationType location, PrismObject<?> prismObject) {
         DiffObjectType object = new DiffObjectType();
         if (file != null) {
             object.setFileName(file.getName());

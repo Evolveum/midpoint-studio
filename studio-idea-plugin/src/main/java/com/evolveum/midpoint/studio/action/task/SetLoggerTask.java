@@ -10,9 +10,9 @@ import com.evolveum.midpoint.studio.impl.UploadResponse;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -32,14 +32,12 @@ public class SetLoggerTask extends SimpleBackgroundableTask {
 
     public static final String NOTIFICATION_KEY = "Set logger task";
 
-    public SetLoggerTask(@NotNull AnActionEvent event) {
-        this(event, TITLE, NOTIFICATION_KEY);
+    public SetLoggerTask(@NotNull Project project) {
+        this(project, TITLE, NOTIFICATION_KEY);
     }
 
-    protected SetLoggerTask(@NotNull AnActionEvent event, @NotNull String title, @NotNull String notificationKey) {
-        super(event.getProject(), title, notificationKey);
-
-        this.event = event;
+    protected SetLoggerTask(@NotNull Project project, @NotNull String title, @NotNull String notificationKey) {
+        super(project, null, title, notificationKey);
     }
 
     @Override

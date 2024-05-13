@@ -3,8 +3,8 @@ package com.evolveum.midpoint.studio.action;
 import com.evolveum.midpoint.studio.action.task.DocumentationTask;
 import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.DocumentationDialog;
 import com.evolveum.midscribe.generator.GenerateOptions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -52,7 +52,7 @@ public class DocumentationAction extends AsyncAction<DocumentationTask> {
 
     @Override
     protected DocumentationTask createTask(AnActionEvent e, Environment env) {
-        DocumentationTask task = new DocumentationTask(e, options);
+        DocumentationTask task = new DocumentationTask(e.getProject(), e::getDataContext, options);
         task.setEnvironment(env);
 
         return task;

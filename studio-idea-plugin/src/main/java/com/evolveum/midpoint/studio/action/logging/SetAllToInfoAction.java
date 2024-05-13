@@ -20,7 +20,7 @@ public class SetAllToInfoAction extends SetLoggerAction {
 
     @Override
     protected SetLoggerTask createTask(AnActionEvent e, Environment env) {
-        SetLoggerTask task = new SetAllToInfoTask(e);
+        SetLoggerTask task = new SetAllToInfoTask(e.getProject());
         task.setEnvironment(env);
 
         return task;

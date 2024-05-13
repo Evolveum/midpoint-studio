@@ -7,11 +7,12 @@ import com.evolveum.midpoint.studio.impl.xml.LocationType;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
 import org.apache.commons.io.IOUtils;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -35,8 +37,8 @@ public class DiffRemoteTask extends DiffTask {
 
     public static String NOTIFICATION_KEY = TITLE;
 
-    public DiffRemoteTask(@NotNull AnActionEvent event) {
-        super(event, TITLE, NOTIFICATION_KEY);
+    public DiffRemoteTask(@NotNull Project project, Supplier<DataContext> dataContextSupplier) {
+        super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class DiffRemoteTask extends DiffTask {
 
         indicator.setIndeterminate(false);
 
-        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> event.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
 
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 

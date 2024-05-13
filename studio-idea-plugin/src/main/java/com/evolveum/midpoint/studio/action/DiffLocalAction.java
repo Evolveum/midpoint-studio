@@ -51,7 +51,7 @@ public class DiffLocalAction extends AsyncAction<DiffLocalTask> {
 
     @Override
     protected DiffLocalTask createTask(AnActionEvent e, Environment env) {
-        DiffLocalTask task = new DiffLocalTask(e);
+        DiffLocalTask task = new DiffLocalTask(e.getProject(), e::getDataContext);
         task.setEnvironment(env);
 
         return task;

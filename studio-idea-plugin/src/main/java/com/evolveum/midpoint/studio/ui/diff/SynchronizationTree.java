@@ -3,7 +3,7 @@ package com.evolveum.midpoint.studio.ui.diff;
 import com.evolveum.midpoint.prism.ModificationType;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.ui.synchronization.PrismObjectStateful;
+import com.evolveum.midpoint.studio.ui.synchronization.PrismObjectHolder;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
@@ -116,7 +116,7 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
     private <O extends ObjectType> void updateSynchronizationState(
             DiffProcessor<O> processor, SynchronizationObjectItem object, DiffProcessor.Direction direction) {
         try {
-            PrismObjectStateful statefulPrismObject =
+            PrismObjectHolder statefulPrismObject =
                     direction == DiffProcessor.Direction.LEFT_TO_RIGHT ? object.getRemoteObject() : object.getLocalObject();
 
             PrismObject<O> prismObject = processor.getTargetObject();

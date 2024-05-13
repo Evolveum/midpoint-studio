@@ -8,11 +8,13 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ModelExecuteOptionsType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class UploadFullProcessingTask extends ClientBackgroundableTask<TaskState> {
 
@@ -24,16 +26,17 @@ public class UploadFullProcessingTask extends ClientBackgroundableTask<TaskState
     private static final String OPERATION_RECOMPUTE = "recompute";
     private static final String OPERATION_TEST_CONNECTION = "test connection";
 
-    public UploadFullProcessingTask(AnActionEvent event, Environment environment) {
-        this(event, environment, TITLE, NOTIFICATION_KEY);
+    public UploadFullProcessingTask(
+            @NotNull Project project, Supplier<DataContext> dataContextSupplier, Environment environment) {
+        this(project, dataContextSupplier, environment, TITLE, NOTIFICATION_KEY);
     }
 
     protected UploadFullProcessingTask(
-            AnActionEvent event, Environment environment, String title, String notificationKey) {
+            @NotNull Project project, Supplier<DataContext> dataContextSupplier, Environment environment, String title,
+            String notificationKey) {
 
-        super(event.getProject(), title, notificationKey);
+        super(project, dataContextSupplier, title, notificationKey);
 
-        setEvent(event);
         setEnvironment(environment);
     }
 

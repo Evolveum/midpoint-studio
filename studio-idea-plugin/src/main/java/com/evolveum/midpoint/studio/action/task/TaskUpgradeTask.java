@@ -5,8 +5,12 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -19,10 +23,8 @@ public class TaskUpgradeTask extends ObjectsBackgroundableTask<TaskState> {
 
     private static final Logger LOG = Logger.getInstance(TaskUpgradeTask.class);
 
-    public TaskUpgradeTask(@NotNull AnActionEvent event) {
-        super(event.getProject(), TITLE, NOTIFICATION_KEY);
-
-        setEvent(event);
+    public TaskUpgradeTask(@NotNull Project project, Supplier<DataContext> dataContextSupplier) {
+        super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
     }
 
     @Override

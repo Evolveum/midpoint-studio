@@ -30,9 +30,10 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -64,10 +66,9 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
 
     private MissingRefAction defaultAction;
 
-    public CleanupFileTask(@NotNull AnActionEvent event, Environment environment) {
-        super(event.getProject(), TITLE, NOTIFICATION_KEY);
+    public CleanupFileTask(@NotNull Project project, Supplier<DataContext> dataContextSupplier, Environment environment) {
+        super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
 
-        setEvent(event);
         setEnvironment(environment);
     }
 
@@ -116,11 +117,6 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
     @Override
     protected boolean isUpdateObjectAfterProcessing() {
         return true;
-    }
-
-    @Override
-    public ProcessObjectResult processObjectOid(ObjectTypes type, String oid) {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     private String cleanupObject(MidPointObject object) {

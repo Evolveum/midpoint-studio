@@ -35,7 +35,7 @@ public class CleanupReloadNamesTask extends SimpleBackgroundableTask {
     private final MissingRefObjectsTable table;
 
     public CleanupReloadNamesTask(@NotNull Project project, MissingRefObjectsTable table) {
-        super(project, TITLE, NOTIFICATION_KEY);
+        super(project, null, TITLE, NOTIFICATION_KEY);
 
         this.table = table;
     }

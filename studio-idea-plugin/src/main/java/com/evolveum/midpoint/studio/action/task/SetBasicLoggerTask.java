@@ -3,7 +3,7 @@ package com.evolveum.midpoint.studio.action.task;
 import com.evolveum.midpoint.studio.action.logging.ModuleLogger;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ClassLoggerConfigurationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LoggingLevelType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -18,8 +18,8 @@ public class SetBasicLoggerTask extends SetLoggerTask {
 
     private LoggingLevelType level;
 
-    public SetBasicLoggerTask(@NotNull AnActionEvent event, @NotNull ModuleLogger logger, @NotNull LoggingLevelType level) {
-        super(event, "Set to " + level.value(), "Set to " + level.value());
+    public SetBasicLoggerTask(@NotNull Project project, @NotNull ModuleLogger logger, @NotNull LoggingLevelType level) {
+        super(project, "Set to " + level.value(), "Set to " + level.value());
 
         this.logger = logger;
         this.level = level;

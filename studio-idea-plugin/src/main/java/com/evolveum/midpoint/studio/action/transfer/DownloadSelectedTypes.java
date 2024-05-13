@@ -27,7 +27,7 @@ public class DownloadSelectedTypes extends AsyncAction<DownloadSelectedTypesTask
 
     @Override
     protected DownloadSelectedTypesTask createTask(AnActionEvent e, Environment env) {
-        DownloadSelectedTypesTask task = new DownloadSelectedTypesTask(e);
+        DownloadSelectedTypesTask task = new DownloadSelectedTypesTask(e.getProject(), e::getDataContext);
         task.setEnvironment(env);
 
         return task;

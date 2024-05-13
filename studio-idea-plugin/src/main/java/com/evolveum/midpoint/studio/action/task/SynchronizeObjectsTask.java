@@ -34,7 +34,7 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
 
     public SynchronizeObjectsTask(
             @NotNull Project project, @NotNull List<VirtualFile> files, @NotNull SynchronizationSession session) {
-        super(project, TITLE, NOTIFICATION_KEY);
+        super(project, null, TITLE, NOTIFICATION_KEY);
 
         this.files = files;
         this.session = session;

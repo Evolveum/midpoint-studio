@@ -7,16 +7,19 @@ import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.Holder;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -27,24 +30,32 @@ public abstract class BackgroundableTask extends Task.Backgroundable {
 
     protected MidPointService midPointService;
 
-    // TODO remove this, tasks should't be aware of UI directly probably - not on this level (maybe some concrete ones)
-    @Deprecated
-    protected AnActionEvent event;
+    protected Supplier<DataContext> dataContextSupplier;
 
     protected String notificationKey;
 
     private Environment environment;
 
-    public BackgroundableTask(@NotNull Project project, @NotNull String title, @NotNull String notificationKey) {
+    public BackgroundableTask(
+            @NotNull Project project, @Nullable Supplier<DataContext> dataContextSupplier, @NotNull String title,
+            @NotNull String notificationKey) {
+
         super(project, title, true);
+
+        this.dataContextSupplier = dataContextSupplier;
 
         this.midPointService = MidPointService.get(project);
 
         this.notificationKey = notificationKey;
     }
 
-    public void setEvent(AnActionEvent event) {
-        this.event = event;
+    protected <T> T getData(DataKey<T> key) {
+        if (dataContextSupplier == null) {
+            return null;
+        }
+
+        DataContext ctx = dataContextSupplier.get();
+        return ctx != null ? ctx.getData(key) : null;
     }
 
     public Environment getEnvironment() {

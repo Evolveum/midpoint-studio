@@ -24,7 +24,7 @@ public class SetModelLoggerAction extends SetLoggerAction {
 
     @Override
     protected SetLoggerTask createTask(AnActionEvent e, Environment env) {
-        SetLoggerTask task = new SetModelLoggerTask(e, logger);
+        SetLoggerTask task = new SetModelLoggerTask(e.getProject(), logger);
         task.setEnvironment(env);
 
         return task;

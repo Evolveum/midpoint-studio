@@ -6,6 +6,7 @@ import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.tree.TreePathUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -40,7 +41,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
 
         super.setData(new ArrayList<>());
 
-        CheckedTreeNode root = new CheckedTreeNode(NODE_ROOT);
+        CheckedTreeNode root = createNode(NODE_ROOT);
         setRoot(root);
 
         addTreeNodes(root, data);
@@ -75,13 +76,13 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
                 continue;
             }
 
-            CheckedTreeNode node = new CheckedTreeNode(item);
+            CheckedTreeNode node = createNode(item);
 
             if (objects.size() > 1) {
                 List<CheckedTreeNode> children = new ArrayList<>();
 
                 for (SynchronizationObjectItem object : objects) {
-                    children.add(new CheckedTreeNode(object));
+                    children.add(createNode(object));
                 }
 
                 children.sort(Comparator.comparing(o -> convertValueToText(o.getUserObject())));
@@ -97,12 +98,35 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         return nodes;
     }
 
+    private CheckedTreeNode createNode(Object userObject) {
+        CheckedTreeNode node = new CheckedTreeNode(userObject);
+        node.setChecked(false);
+
+        return node;
+    }
+
     public String convertValueToText(Object userObject) {
-        if (userObject instanceof SynchronizationItem si) {
-            return si.getName();
+        if (userObject == null) {
+            return "<<null>>";
         }
 
-        return userObject != null ? userObject.toString() : "<<null>>";
+        if (!(userObject instanceof SynchronizationItem si)) {
+            return userObject.toString();
+        }
+
+        List<String> parts = new ArrayList<>();
+        if (si.hasLocalChanges()) {
+            parts.add("Local");
+        }
+        if (si.hasRemoteChanges()) {
+            parts.add("Remote");
+        }
+        String changes = "";
+        if (!parts.isEmpty()) {
+            changes = " (" + StringUtils.join(parts, "/") + ")";
+        }
+
+        return si.getName() + changes;
     }
 
     public void nodesRemoved(Object[] userObjects) {
