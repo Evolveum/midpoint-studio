@@ -100,16 +100,7 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
         leftFile = new LightVirtualFile(getName(left, leftSourceType), "");
         rightFile = new LightVirtualFile(getName(right, rightSourceType), "");
 
-//        processor.addListener(new DiffEditorViewerListener() {
-//
-//            @Override
-//            public void onActiveFileChanged() {
-//                System.out.println();
-//            }
-//        }, this);
         processor = new SimpleDiffRequestProcessor(project) {
-
-//        processor = new CacheDiffRequestChainProcessor(project, new SimpleDiffRequestChain(request)) {
 
             @Override
             protected @org.jetbrains.annotations.NotNull List<AnAction> getNavigationActions() {
