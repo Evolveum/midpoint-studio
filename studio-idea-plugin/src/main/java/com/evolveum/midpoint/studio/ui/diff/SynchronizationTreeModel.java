@@ -12,9 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class SynchronizationTreeModel extends DefaultTreeModel<List<SynchronizationFileItem>> {
 
@@ -107,14 +105,26 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         return userObject != null ? userObject.toString() : "<<null>>";
     }
 
-    public void nodesChanged(Object[] nodes) {
-        for (Object node : nodes) {
-            if (!(node instanceof DefaultMutableTreeNode tn)) {
-                continue;
-            }
+    public void nodesChanged(Object[] userObjects) {
+        Set<Object> set = new HashSet<>();
+        set.addAll(Arrays.asList(userObjects));
 
-            TreeNode parent = tn.getParent();
-            treeNodesChanged(TreePathUtil.toTreePath(parent), new int[]{parent.getIndex(tn)}, new Object[]{node});
+        nodeChanged(getRoot(), set);
+    }
+
+    private void nodeChanged(DefaultMutableTreeNode node, Set<Object> changedUserObjects) {
+        if (node == null) {
+            return;
+        }
+
+        if (changedUserObjects.contains(node.getUserObject())) {
+            TreeNode parent = node.getParent();
+            treeNodesChanged(TreePathUtil.toTreePath(parent), new int[]{parent.getIndex(node)}, new Object[]{node});
+        }
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
+            nodeChanged(child, changedUserObjects);
         }
     }
 }

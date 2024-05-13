@@ -14,7 +14,6 @@ import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,22 +90,20 @@ public class SynchronizationPanel extends BorderLayoutPanel {
     }
 
     private void refreshPerformed() {
-        Object[] checked = tree.getCheckedNodes(Object.class, null);
+        Object[] userObjects = tree.getCheckedNodes(Object.class, null);
 
-        List<SynchronizationObjectItem> items = computeCheckedObjectItems(checked);
+        List<SynchronizationObjectItem> items = computeCheckedObjectItems(userObjects);
 
         SynchronizationSession<?> session = getSession();
         session.refresh(items);
 
-        getModel().nodesChanged(checked);
+        getModel().nodesChanged(userObjects);
     }
 
-    private List<SynchronizationObjectItem> computeCheckedObjectItems(Object[] nodes) {
+    private List<SynchronizationObjectItem> computeCheckedObjectItems(Object[] userObjects) {
         List<SynchronizationObjectItem> objects = new ArrayList<>();
 
-        for (Object node : nodes) {
-            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
-            Object userObject = treeNode.getUserObject();
+        for (Object userObject : userObjects) {
             if (userObject instanceof SynchronizationFileItem<?> sfi) {
                 sfi.getObjects().stream()
                         .filter(o -> !objects.contains(o))
@@ -122,15 +119,15 @@ public class SynchronizationPanel extends BorderLayoutPanel {
     }
 
     private void saveLocallyPerformed() {
-        Object[] checked = tree.getCheckedNodes(Object.class, null);
+        Object[] userObjects = tree.getCheckedNodes(Object.class, null);
 
-        List<SynchronizationObjectItem> items = computeCheckedObjectItems(checked);
+        List<SynchronizationObjectItem> items = computeCheckedObjectItems(userObjects);
 
         SynchronizationSession<?> session = getSession();
         session.saveLocally(items);
 
         // todo we have to refresh all file nodes related to this save
-        getModel().nodesChanged(checked);
+        getModel().nodesChanged(userObjects);
     }
 
     private SynchronizationSession<?> getSession() {
@@ -139,13 +136,13 @@ public class SynchronizationPanel extends BorderLayoutPanel {
     }
 
     private void updateRemotePerformed() {
-        Object[] checked = tree.getCheckedNodes(Object.class, null);
+        Object[] userObjects = tree.getCheckedNodes(Object.class, null);
 
-        List<SynchronizationObjectItem> items = computeCheckedObjectItems(checked);
+        List<SynchronizationObjectItem> items = computeCheckedObjectItems(userObjects);
 
         SynchronizationSession<?> session = getSession();
         session.updateRemote(items);
 
-        getModel().nodesChanged(checked);
+        getModel().nodesChanged(userObjects);
     }
 }

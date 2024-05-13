@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import org.jetbrains.annotations.NotNull;
 
 // todo rename
 public class PrismObjectStateful<O extends ObjectType> {
@@ -11,9 +10,13 @@ public class PrismObjectStateful<O extends ObjectType> {
 
     private PrismObject<O> current;
 
-    public PrismObjectStateful(@NotNull PrismObject<O> original) {
+    public PrismObjectStateful() {
+        this(null);
+    }
+
+    public PrismObjectStateful(PrismObject<O> original) {
         this.original = original;
-        this.current = original.clone();
+        this.current = original != null ? original.clone() : null;
     }
 
     public PrismObject<O> getCurrent() {
@@ -29,14 +32,22 @@ public class PrismObjectStateful<O extends ObjectType> {
     }
 
     public boolean isChanged() {
-        return original.equivalent(current);
+        if (original == null) {
+            return current != null;
+        }
+
+        return !original.equivalent(current);
     }
 
     public void revert() {
-        setCurrent(original.clone());
+        PrismObject<O> newCurrent = original != null ? original.clone() : null;
+
+        setCurrent(newCurrent);
     }
 
     public void commit() {
-        original = current.clone();
+        PrismObject<O> newOriginal = current != null ? current.clone() : null;
+
+        original = newOriginal;
     }
 }

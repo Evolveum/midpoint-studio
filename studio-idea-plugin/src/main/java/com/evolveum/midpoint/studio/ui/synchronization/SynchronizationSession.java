@@ -1,9 +1,11 @@
 package com.evolveum.midpoint.studio.ui.synchronization;
 
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.ui.diff.SynchronizationPanel;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -102,19 +104,18 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         }
     }
 
-    private String prepareContent(SynchronizationFileItem fileItem, List<SynchronizationObjectItem> toUpdate) {
-        List<SynchronizationObjectItem> objectItems = fileItem.getObjects();
+    private String prepareContent(SynchronizationFileItem<?> fileItem, List<SynchronizationObjectItem> toUpdate)
+            throws SchemaException {
 
         List<PrismObject<?>> objects = new ArrayList<>();
+        for (SynchronizationObjectItem soi : fileItem.getObjects()) {
+            objects.add(soi.getLocalObject().getCurrent());
+        }
 
-        // todo implement
-
-        return null;
+        return serializeObjects(objects);
     }
 
-    private String serializeObjects() {
-        // todo implement
-
-        return null;
+    private String serializeObjects(List<PrismObject<?>> objects) throws SchemaException {
+        return PrismContext.get().xmlSerializer().serializeObjects(objects);
     }
 }

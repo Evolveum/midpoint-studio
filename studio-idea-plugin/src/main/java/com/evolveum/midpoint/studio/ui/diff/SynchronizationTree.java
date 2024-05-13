@@ -2,8 +2,8 @@ package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.prism.ModificationType;
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.ui.synchronization.PrismObjectStateful;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -11,6 +11,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.CheckboxTree;
 import com.intellij.ui.CheckedTreeNode;
@@ -93,11 +94,12 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         MidPointObject leftObject = object.getLocal();
         MidPointObject rightObject = object.getRemote();
 
-        LightVirtualFile leftFile = new LightVirtualFile(leftObject.getName() + ".xml", leftObject.getContent());
+        VirtualFile leftRealFile = object.getFileItem().getFile();
+        LightVirtualFile leftFile = new LightVirtualFile(leftRealFile.getName(), leftObject.getContent());
         LightVirtualFile rightFile = new LightVirtualFile(rightObject.getName() + ".xml", rightObject.getContent());
 
-        DiffSource left = new DiffSource(leftFile.getName(), leftFile, DiffSourceType.LOCAL);
-        DiffSource right = new DiffSource(rightFile.getName(), rightFile, DiffSourceType.REMOTE);
+        DiffSource left = new DiffSource(null, leftFile, DiffSourceType.LOCAL);
+        DiffSource right = new DiffSource(null, rightFile, DiffSourceType.REMOTE);
 
         DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(project, left, right) {
 
@@ -105,7 +107,7 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
             protected void acceptPerformed() {
                 super.acceptPerformed();
 
-                updateSynchronizationState(this, object);
+                updateSynchronizationState(this, object, getDirection());
             }
         };
         processor.initialize();
@@ -114,17 +116,19 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         MidPointUtils.openFile(project, file);
     }
 
-    private void updateSynchronizationState(DiffProcessor<?> processor, SynchronizationObjectItem object) {
+    private void updateSynchronizationState(
+            DiffProcessor<?> processor, SynchronizationObjectItem object, DiffProcessor.Direction direction) {
         try {
-            PrismObject<? extends ObjectType> result = processor.getLeftObject();
-            // todo implement, this is bad
-            PrismObject<? extends ObjectType> leftInitial =
-                    ClientUtils.createParser(
-                            MidPointUtils.DEFAULT_PRISM_CONTEXT, object.getLocal().getContent()).parse();
+            PrismObjectStateful<?> statefulPrismObject =
+                    direction == DiffProcessor.Direction.LEFT_TO_RIGHT ? object.getRemoteObject() : object.getLocalObject();
 
-            if (!result.equivalent(leftInitial)) {
-                object.setModificationType(ModificationType.REPLACE);
-            }
+            PrismObject prismObject =
+                    direction == DiffProcessor.Direction.LEFT_TO_RIGHT ? processor.getRightObject() : processor.getLeftObject();
+
+            statefulPrismObject.setCurrent(prismObject.clone());
+
+            ModificationType modification = statefulPrismObject.isChanged() ? null : ModificationType.REPLACE;
+            object.setModificationType(modification);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -143,6 +147,10 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
     }
 
+    /**
+     * @return Array of user objects from checked nodes
+     * @param <T>
+     */
     @Override
     public <T> T[] getCheckedNodes(Class<? extends T> nodeType, @Nullable Tree.NodeFilter<? super T> filter) {
         if (getModel().getRoot() == null) {

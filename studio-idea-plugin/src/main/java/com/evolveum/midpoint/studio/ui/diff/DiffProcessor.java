@@ -37,7 +37,7 @@ public class DiffProcessor<O extends ObjectType> {
 
     private static final Logger LOG = Logger.getInstance(DiffProcessor.class);
 
-    private enum Direction {
+    public enum Direction {
         LEFT_TO_RIGHT, RIGHT_TO_LEFT
     }
 
@@ -64,6 +64,10 @@ public class DiffProcessor<O extends ObjectType> {
         this.rightSource = right;
 
         panel = initPanel();
+    }
+
+    public Direction getDirection() {
+        return direction;
     }
 
     public PrismObject<O> getLeftObject() {
@@ -135,11 +139,6 @@ public class DiffProcessor<O extends ObjectType> {
         actions.add(new Separator());
 
         actions.add(new DiffStrategyComboAction(DiffStrategy.NATURAL_KEYS) {
-
-            @Override
-            public DiffStrategy getDefaultItem() {
-                return super.getDefaultItem();
-            }
 
             @Override
             public void setSelected(DiffStrategy selected) {

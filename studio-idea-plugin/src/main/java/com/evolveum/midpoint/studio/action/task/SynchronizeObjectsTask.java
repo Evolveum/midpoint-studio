@@ -103,9 +103,10 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
                         continue;
                     }
 
-                    item.getObjects().add(
-                            new SynchronizationObjectItem(
-                                    item, object.getOid(), object.getName(), object.getType(), object, newObject));
+                    SynchronizationObjectItem objectItem = new SynchronizationObjectItem(
+                            item, object.getOid(), object.getName(), object.getType(), object, newObject);
+                    objectItem.initialize();
+                    item.getObjects().add(objectItem);
 
                     diffed.incrementAndGet();
                 } catch (Exception ex) {
