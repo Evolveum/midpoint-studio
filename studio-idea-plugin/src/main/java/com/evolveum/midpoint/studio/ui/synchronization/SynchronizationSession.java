@@ -2,12 +2,14 @@ package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.ui.diff.SynchronizationPanel;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +21,12 @@ import java.util.Map;
 
 public class SynchronizationSession<T extends SynchronizationObjectItem> {
 
+    private static final Logger LOG = Logger.getInstance(SynchronizationSession.class);
+
+    private static final String NOTIFICATION_KEY = "Synchronization Session";
+
+    private final Project project;
+
     private final Environment environment;
 
     private final SynchronizationPanel panel;
@@ -27,7 +35,10 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
 
     private final List<SynchronizationFileItem<T>> items = new ArrayList<>();
 
-    public SynchronizationSession(@NotNull Environment environment, @NotNull SynchronizationPanel panel) {
+    public SynchronizationSession(
+            @NotNull Project project, @NotNull Environment environment, @NotNull SynchronizationPanel panel) {
+
+        this.project = project;
         this.environment = environment;
 
         this.panel = panel;
@@ -99,13 +110,20 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
 
         for (SynchronizationFileItem fileItem : updates.keySet()) {
             try {
-                String content = prepareContent(fileItem, updates.get(fileItem));
+                List<SynchronizationObjectItem> fileObjects = updates.get(fileItem);
+
+                String content = prepareContent(fileItem, fileObjects);
 
                 VirtualFile file = fileItem.getFile();
                 VfsUtil.saveText(file, content);
+
+                fileObjects.forEach(o -> o.getLocalObject().commit());
             } catch (Exception ex) {
-                // todo handle
-                ex.printStackTrace();
+                LOG.debug("Couldn't save local changes to file: " + fileItem.getFile().getName(), ex);
+
+                MidPointUtils.publishExceptionNotification(
+                        project, environment, SynchronizationSession.class, NOTIFICATION_KEY,
+                        "Couldn't save local changes to file: " + fileItem.getFile().getName(), ex);
             }
         }
     }
@@ -115,7 +133,11 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
 
         List<PrismObject<?>> objects = new ArrayList<>();
         for (SynchronizationObjectItem soi : fileItem.getObjects()) {
-            objects.add(soi.getLocalObject().getCurrent());
+            PrismObjectStateful<?> localObjectStateful = soi.getLocalObject();
+
+            PrismObject<?> localObject = toUpdate.contains(soi) ? localObjectStateful.getCurrent() : localObjectStateful.getOriginal();
+
+            objects.add(localObject);
         }
 
         return serializeObjects(objects);

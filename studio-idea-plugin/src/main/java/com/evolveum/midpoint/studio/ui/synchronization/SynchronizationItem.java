@@ -6,32 +6,8 @@ public abstract class SynchronizationItem {
 
     private SynchronizationItemType type;
 
-    private boolean visible = true;
-
-    private boolean localChanges;
-
-    private boolean remoteChanges;
-
     public SynchronizationItem(@NotNull SynchronizationItemType type) {
         this.type = type;
-    }
-
-    public abstract String getName();
-
-    public boolean isLocalChanges() {
-        return localChanges;
-    }
-
-    public void setLocalChanges(boolean localChanges) {
-        this.localChanges = localChanges;
-    }
-
-    public boolean isRemoteChanges() {
-        return remoteChanges;
-    }
-
-    public void setRemoteChanges(boolean remoteChanges) {
-        this.remoteChanges = remoteChanges;
     }
 
     @NotNull
@@ -39,11 +15,11 @@ public abstract class SynchronizationItem {
         return type;
     }
 
-    public boolean isVisible() {
-        return visible;
-    }
+    public abstract String getName();
 
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
+    public abstract boolean isVisible();
+
+    public abstract boolean hasLocalChanges();
+
+    public abstract boolean hasRemoteChanges();
 }

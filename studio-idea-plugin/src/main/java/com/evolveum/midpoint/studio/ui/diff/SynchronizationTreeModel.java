@@ -105,6 +105,10 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         return userObject != null ? userObject.toString() : "<<null>>";
     }
 
+    public void nodesRemoved(Object[] userObjects) {
+        // todo implement
+    }
+
     public void nodesChanged(Object[] userObjects) {
         Set<Object> set = new HashSet<>();
         set.addAll(Arrays.asList(userObjects));
@@ -117,7 +121,19 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
             return;
         }
 
+        boolean fireChange = false;
+
+        Object userObject = node.getUserObject();
         if (changedUserObjects.contains(node.getUserObject())) {
+            fireChange = true;
+        } else if (userObject instanceof SynchronizationFileItem file) {
+            List<SynchronizationObjectItem> objects = file.getObjects();
+            if (objects.size() == 1 && changedUserObjects.contains(objects.get(0))) {
+                fireChange = true;
+            }
+        }
+
+        if (fireChange) {
             TreeNode parent = node.getParent();
             treeNodesChanged(TreePathUtil.toTreePath(parent), new int[]{parent.getIndex(node)}, new Object[]{node});
         }

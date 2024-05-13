@@ -110,6 +110,13 @@ public class DiffProcessor<O extends ObjectType> {
         panel.setDelta(delta);
     }
 
+    public boolean hasChanges() {
+        PrismObject<O> target = getTargetObject();
+        PrismObject<O> source = getSourceObject();
+
+        return target.equivalent(source);
+    }
+
     public DiffSource<O> getTargetSource() {
         return direction == Direction.LEFT_TO_RIGHT ? rightSource : leftSource;
     }

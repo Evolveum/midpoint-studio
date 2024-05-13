@@ -31,7 +31,7 @@ public class PrismObjectStateful<O extends ObjectType> {
         this.current = current;
     }
 
-    public boolean isChanged() {
+    public boolean hasChanges() {
         if (original == null) {
             return current != null;
         }
@@ -49,5 +49,21 @@ public class PrismObjectStateful<O extends ObjectType> {
         PrismObject<O> newOriginal = current != null ? current.clone() : null;
 
         original = newOriginal;
+    }
+
+    public boolean currentEquivalent(PrismObjectStateful<?> other) {
+        if (other == null) {
+            return false;
+        }
+
+        if (current == null && other.current == null) {
+            return true;
+        }
+
+        if (current == null || other.current == null) {
+            return false;
+        }
+
+        return current.equivalent(other.current);
     }
 }

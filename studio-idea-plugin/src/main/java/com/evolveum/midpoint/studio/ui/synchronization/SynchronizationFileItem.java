@@ -37,4 +37,19 @@ public class SynchronizationFileItem<T extends SynchronizationObjectItem> extend
     public List<T> getObjects() {
         return objects;
     }
+
+    @Override
+    public boolean hasLocalChanges() {
+        return objects.stream().anyMatch(SynchronizationObjectItem::hasLocalChanges);
+    }
+
+    @Override
+    public boolean hasRemoteChanges() {
+        return objects.stream().anyMatch(SynchronizationObjectItem::hasRemoteChanges);
+    }
+
+    @Override
+    public boolean isVisible() {
+        return objects.stream().anyMatch(SynchronizationObjectItem::isVisible);
+    }
 }

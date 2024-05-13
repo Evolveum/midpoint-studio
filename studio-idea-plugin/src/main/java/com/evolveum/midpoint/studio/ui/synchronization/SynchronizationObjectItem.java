@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.ui.synchronization;
 
-import com.evolveum.midpoint.prism.ModificationType;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
@@ -8,7 +7,6 @@ import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
@@ -22,8 +20,6 @@ public class SynchronizationObjectItem extends SynchronizationItem {
 
     private MidPointObject local;
     private MidPointObject remote;
-
-    private ModificationType modificationType;
 
     private PrismObjectStateful<?> localObject = new PrismObjectStateful<>();
     private PrismObjectStateful<?> remoteObject = new PrismObjectStateful<>();
@@ -59,6 +55,22 @@ public class SynchronizationObjectItem extends SynchronizationItem {
         prismObjectStateful.commit();
     }
 
+    @Override
+    public boolean hasLocalChanges() {
+        return localObject.hasChanges();
+    }
+
+    @Override
+    public boolean hasRemoteChanges() {
+        return remoteObject.hasChanges();
+    }
+
+    // todo not correct, don't compare local/remote current, check whether there are deltas still to be resolved (applied/ignored - both ways)
+    @Override
+    public boolean isVisible() {
+        return localObject.hasChanges() || remoteObject.hasChanges() || localObject.currentEquivalent(remoteObject);
+    }
+
     @NotNull
     public SynchronizationFileItem<?> getFileItem() {
         return fileItem;
@@ -75,14 +87,6 @@ public class SynchronizationObjectItem extends SynchronizationItem {
 
     public MidPointObject getRemote() {
         return remote;
-    }
-
-    public ModificationType getModificationType() {
-        return modificationType;
-    }
-
-    public void setModificationType(@Nullable ModificationType modificationType) {
-        this.modificationType = modificationType;
     }
 
     public PrismObjectStateful<?> getLocalObject() {

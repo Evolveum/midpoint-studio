@@ -44,7 +44,7 @@ public class SynchronizationManager {
 
         SynchronizationPanel panel = (SynchronizationPanel) ToolWindowManager.getInstance(project)
                 .getToolWindow("Synchronization").getContentManager().getContent(0).getComponent();
-        session = new SynchronizationSession<>(environment, panel);
+        session = new SynchronizationSession<>(project, environment, panel);
 
         RunnableUtils.invokeLaterIfNeeded(() -> {
             panel.getModel().setData(new ArrayList<>());

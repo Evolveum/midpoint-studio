@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.ui.synchronization.PrismObjectStateful;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -25,8 +26,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class SynchronizationTree extends CheckboxTree implements Disposable {
 
@@ -90,7 +89,6 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
     }
 
     private <O extends ObjectType> void openSynchronizationEditor(SynchronizationObjectItem object) {
-        MidPointObject leftObject = object.getLocal();
         MidPointObject rightObject = object.getRemote();
 
         VirtualFile leftRealFile = object.getFileItem().getFile();
@@ -125,11 +123,20 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
 
             statefulPrismObject.setCurrent(prismObject.clone());
 
-            ModificationType modification = statefulPrismObject.isChanged() ? null : ModificationType.REPLACE;
-            object.setModificationType(modification);
+            if (processor.hasChanges()) {
+                getTreeModel().nodesChanged(new Object[]{object});
+            } else {
+                // todo nodes should be removed - there's nothing we can do with them
+                //  figure out parent (file) if needed and hide, same check should happen after save local/remote
+            }
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private SynchronizationTreeModel getTreeModel() {
+        return (SynchronizationTreeModel) super.getModel();
     }
 
     @Override
@@ -140,7 +147,7 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
             return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
         }
 
-        value = ((SynchronizationTreeModel) getModel()).convertValueToText(node.getUserObject());
+        value = getTreeModel().convertValueToText(node.getUserObject());
 
         return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
     }
@@ -178,15 +185,12 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         }
 
         private Color computeColor(Object userObject) {
-            ModificationType modification = null;
-            if (userObject instanceof SynchronizationObjectItem object) {
-                modification = object.getModificationType();
-            } else if (userObject instanceof SynchronizationFileItem<?> file) {
-                Set<ModificationType> set = file.getObjects().stream()
-                        .map(o -> o.getModificationType())
-                        .collect(Collectors.toSet());
-                modification = SynchronizationUtil.getModificationType(set);
+            if (!(userObject instanceof SynchronizationItem si)) {
+                return null;
             }
+
+            ModificationType modification = si.hasLocalChanges() || si.hasRemoteChanges() ?
+                    ModificationType.REPLACE : null;
 
             return SynchronizationUtil.getColorForModificationType(modification);
         }
