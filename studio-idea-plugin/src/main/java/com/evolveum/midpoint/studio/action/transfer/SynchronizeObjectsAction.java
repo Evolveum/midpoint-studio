@@ -3,7 +3,7 @@ package com.evolveum.midpoint.studio.action.transfer;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.ui.diff.SynchronizationDirection;
-import com.evolveum.midpoint.studio.ui.diff.SynchronizationManager;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
@@ -75,6 +75,6 @@ public class SynchronizeObjectsAction extends AnAction implements DumbAware {
             return;
         }
 
-        SynchronizationManager.get(project).synchronize(toProcess, env, direction);
+        SynchronizationManager.get(project).synchronize(toProcess, env);
     }
 }

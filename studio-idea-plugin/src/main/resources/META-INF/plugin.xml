@@ -37,7 +37,7 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.trace.TraceService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.ui.diff.SynchronizationManager"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager"/>
 
         <projectConfigurable
                 parentId="language"

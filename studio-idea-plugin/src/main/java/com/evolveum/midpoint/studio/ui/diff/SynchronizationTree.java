@@ -4,6 +4,8 @@ import com.evolveum.midpoint.prism.ModificationType;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.Disposable;
@@ -78,18 +80,18 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
 
     private void doubleClickPerformed(DefaultMutableTreeNode node) {
         Object object = node.getUserObject();
-        if (object instanceof SyncFileItem file) {
+        if (object instanceof SynchronizationFileItem<?> file) {
             if (file.getObjects().size() == 1) {
                 openSynchronizationEditor(file.getObjects().get(0));
             }
-        } else if (object instanceof SyncObjecItem obj) {
+        } else if (object instanceof SynchronizationObjectItem obj) {
             openSynchronizationEditor(obj);
         }
     }
 
-    private void openSynchronizationEditor(SyncObjecItem object) {
-        MidPointObject leftObject = object.getItem().local();
-        MidPointObject rightObject = object.getItem().remote();
+    private void openSynchronizationEditor(SynchronizationObjectItem object) {
+        MidPointObject leftObject = object.getLocal();
+        MidPointObject rightObject = object.getRemote();
 
         LightVirtualFile leftFile = new LightVirtualFile(leftObject.getName() + ".xml", leftObject.getContent());
         LightVirtualFile rightFile = new LightVirtualFile(rightObject.getName() + ".xml", rightObject.getContent());
@@ -112,13 +114,13 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         MidPointUtils.openFile(project, file);
     }
 
-    private void updateSynchronizationState(DiffProcessor<?> processor, SyncObjecItem object) {
+    private void updateSynchronizationState(DiffProcessor<?> processor, SynchronizationObjectItem object) {
         try {
             PrismObject<? extends ObjectType> result = processor.getLeftObject();
             // todo implement, this is bad
             PrismObject<? extends ObjectType> leftInitial =
                     ClientUtils.createParser(
-                            MidPointUtils.DEFAULT_PRISM_CONTEXT, object.getLocalObject().getContent()).parse();
+                            MidPointUtils.DEFAULT_PRISM_CONTEXT, object.getLocal().getContent()).parse();
 
             if (!result.equivalent(leftInitial)) {
                 object.setModificationType(ModificationType.REPLACE);
@@ -171,9 +173,9 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
 
         private Color computeColor(Object userObject) {
             ModificationType modification = null;
-            if (userObject instanceof SyncObjecItem object) {
+            if (userObject instanceof SynchronizationObjectItem object) {
                 modification = object.getModificationType();
-            } else if (userObject instanceof SyncFileItem file) {
+            } else if (userObject instanceof SynchronizationFileItem<?> file) {
                 Set<ModificationType> set = file.getObjects().stream()
                         .map(o -> o.getModificationType())
                         .collect(Collectors.toSet());

@@ -1,6 +1,10 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationSession;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
@@ -10,7 +14,10 @@ import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SynchronizationPanel extends BorderLayoutPanel {
 
@@ -39,9 +46,14 @@ public class SynchronizationPanel extends BorderLayoutPanel {
     private JPanel initButtons() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        JButton saveFiles = new JButton("Save files");
-        saveFiles.addActionListener(e -> savePerformed());
+        JButton saveFiles = new JButton("Save local");
+        saveFiles.setDefaultCapable(true);
+        saveFiles.addActionListener(e -> saveLocallyPerformed());
         panel.add(saveFiles);
+
+        JButton updateRemote = new JButton("Update remote");
+        updateRemote.addActionListener(e -> updateRemotePerformed());
+        panel.add(updateRemote);
 
         return panel;
     }
@@ -50,9 +62,9 @@ public class SynchronizationPanel extends BorderLayoutPanel {
         DefaultActionGroup group = new DefaultActionGroup();
 
         group.add(new UiAction(
-                "Expand all", AllIcons.Actions.Expandall, e -> TreeUtil.expandAll(tree)));
+                "Expand All", AllIcons.Actions.Expandall, e -> TreeUtil.expandAll(tree)));
         group.add(new UiAction(
-                "Collapse all", AllIcons.Actions.Collapseall, e -> TreeUtil.collapseAll(tree, true, 1)));
+                "Collapse All", AllIcons.Actions.Collapseall, e -> TreeUtil.collapseAll(tree, true, 1)));
 
         group.add(new Separator());
 
@@ -81,12 +93,52 @@ public class SynchronizationPanel extends BorderLayoutPanel {
     private void refreshPerformed() {
         Object[] checked = tree.getCheckedNodes(Object.class, null);
 
-        // todo implement
+        List<SynchronizationObjectItem> items = computeCheckedObjectItems(checked);
+
+        SynchronizationSession<?> session = getSession();
+        session.refresh(items);
     }
 
-    private void savePerformed() {
+    private List<SynchronizationObjectItem> computeCheckedObjectItems(Object[] nodes) {
+        List<SynchronizationObjectItem> objects = new ArrayList<>();
+
+        for (Object node : nodes) {
+            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
+            Object userObject = treeNode.getUserObject();
+            if (userObject instanceof SynchronizationFileItem<?> sfi) {
+                sfi.getObjects().stream()
+                        .filter(o -> !objects.contains(o))
+                        .forEach(objects::add);
+            } else if (userObject instanceof SynchronizationObjectItem oi) {
+                if (!objects.contains(oi)) {
+                    objects.add(oi);
+                }
+            }
+        }
+
+        return objects;
+    }
+
+    private void saveLocallyPerformed() {
         Object[] checked = tree.getCheckedNodes(Object.class, null);
 
-        // todo implement
+        List<SynchronizationObjectItem> items = computeCheckedObjectItems(checked);
+
+        SynchronizationSession<?> session = getSession();
+        session.saveLocally(items);
+    }
+
+    private SynchronizationSession<?> getSession() {
+        SynchronizationManager sm = SynchronizationManager.get(project);
+        return sm.getSession();
+    }
+
+    private void updateRemotePerformed() {
+        Object[] checked = tree.getCheckedNodes(Object.class, null);
+
+        List<SynchronizationObjectItem> items = computeCheckedObjectItems(checked);
+
+        SynchronizationSession<?> session = getSession();
+        session.updateRemote(items);
     }
 }

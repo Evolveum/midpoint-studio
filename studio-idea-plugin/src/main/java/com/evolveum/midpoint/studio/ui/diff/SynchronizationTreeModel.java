@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationItem;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.tree.TreePathUtil;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class SynchronizationTreeModel extends DefaultTreeModel<List<SyncFileItem>> {
+public class SynchronizationTreeModel extends DefaultTreeModel<List<SynchronizationFileItem>> {
 
     private static final Object NODE_ROOT = "Root";
 
@@ -30,7 +33,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<SyncFileItem
     }
 
     @Override
-    public void setData(List<SyncFileItem> data) {
+    public void setData(List<SynchronizationFileItem> data) {
         if (data == null) {
             data = new ArrayList<>();
         }
@@ -45,7 +48,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<SyncFileItem
         treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
-    public void addData(@NotNull List<SyncFileItem> data) {
+    public void addFiles(@NotNull List<SynchronizationFileItem> data) {
         CheckedTreeNode root = (CheckedTreeNode) getRoot();
 
         List<CheckedTreeNode> nodes = addTreeNodes(root, data);
@@ -60,13 +63,13 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<SyncFileItem
         treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
-    private List<CheckedTreeNode> addTreeNodes(CheckedTreeNode root, List<SyncFileItem> items) {
+    private List<CheckedTreeNode> addTreeNodes(CheckedTreeNode root, List<SynchronizationFileItem> items) {
         List<CheckedTreeNode> nodes = new ArrayList<>();
 
-        for (SyncFileItem item : items) {
+        for (SynchronizationFileItem item : items) {
             getData().add(item);
 
-            List<SyncObjecItem> objects = item.getObjects();
+            List<SynchronizationObjectItem> objects = item.getObjects();
             if (objects.isEmpty()) {
                 continue;
             }
@@ -76,7 +79,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<SyncFileItem
             if (objects.size() > 1) {
                 List<CheckedTreeNode> children = new ArrayList<>();
 
-                for (SyncObjecItem object : objects) {
+                for (SynchronizationObjectItem object : objects) {
                     children.add(new CheckedTreeNode(object));
                 }
 
@@ -95,10 +98,9 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<SyncFileItem
 
     public String convertValueToText(Object userObject) {
         String value = null;
-        if (userObject instanceof SyncFileItem file) {
-            value = file.getItem().local().getName();
-        } else if (userObject instanceof SyncObjecItem object) {
-            value = object.getItem().name();
+
+        if (userObject instanceof SynchronizationItem si) {
+            return si.getName();
         }
 
         return value != null ? value.toString() : "<<null>>";

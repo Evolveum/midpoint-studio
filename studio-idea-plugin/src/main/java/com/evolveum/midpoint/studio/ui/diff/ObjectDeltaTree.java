@@ -57,6 +57,10 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
                     c.setForeground(color);
                 }
 
+                if (node.getUserObject() instanceof DeltaItem && c instanceof JComponent jc) {
+                    jc.setToolTipText(convertValueToText(value, selected, expanded, leaf, row, focused));
+                }
+
                 return c;
             }
         });

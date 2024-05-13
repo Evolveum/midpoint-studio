@@ -11,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class SynchronizationToolWindowFactory implements ToolWindowFactory, DumbAware {
 
+    private static final String TITLE = "Objects synchronization";
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         ContentManager contentManager = toolWindow.getContentManager();
@@ -22,8 +24,8 @@ public class SynchronizationToolWindowFactory implements ToolWindowFactory, Dumb
 
     @Override
     public void init(ToolWindow window) {
-        window.setStripeTitle("Synchronization to project");
-        window.setTitle("Synchronization to project");
+        window.setStripeTitle(TITLE);
+        window.setTitle(TITLE);
     }
 
     @Override
