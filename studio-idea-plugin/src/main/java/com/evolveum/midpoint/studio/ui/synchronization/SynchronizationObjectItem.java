@@ -5,7 +5,10 @@ import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.Expander;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -38,19 +41,26 @@ public class SynchronizationObjectItem extends SynchronizationItem {
         this.remote = remote;
     }
 
-    public void initialize() throws SchemaException, IOException {
-        setupPrismStatefulObject(local, localObject);
-        setupPrismStatefulObject(remote, remoteObject);
+    public void initialize(Expander expander) throws SchemaException, IOException {
+        setupPrismStatefulObject(local, localObject, expander);
+        setupPrismStatefulObject(remote, remoteObject, null);
     }
 
-    private void setupPrismStatefulObject(MidPointObject object, PrismObjectHolder<?> prismObjectStateful)
+    private void setupPrismStatefulObject(MidPointObject object, PrismObjectHolder<?> prismObjectStateful, Expander expander)
             throws SchemaException, IOException {
 
         if (object == null) {
             return;
         }
 
-        PrismObject prismObject = ClientUtils.createParser(PrismContext.get(), object.getContent()).parse();
+        String content = object.getContent();
+        if (expander != null) {
+            VirtualFile file = object.getFile() != null ? VfsUtil.findFileByIoFile(object.getFile(), true) : null;
+
+            content = expander.expand(object.getContent(), file);
+        }
+
+        PrismObject prismObject = ClientUtils.createParser(PrismContext.get(), content).parse();
         prismObjectStateful.setCurrent(prismObject);
         prismObjectStateful.commit();
     }

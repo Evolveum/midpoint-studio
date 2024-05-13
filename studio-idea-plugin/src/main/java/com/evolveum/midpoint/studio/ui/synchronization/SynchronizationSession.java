@@ -2,8 +2,9 @@ package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.studio.action.task.SynchronizeObjectsTask;
 import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
+import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.ui.diff.SynchronizationPanel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -17,10 +18,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SynchronizationSession<T extends SynchronizationObjectItem> {
 
@@ -72,8 +70,32 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
             return;
         }
 
+        List<MidPointObject> objects = objectItems.stream()
+                .map(item -> {
+                    try {
+                        MidPointObject object = item.getRemote().copy();
+
+                        PrismObject<?> remote = item.getRemoteObject().getCurrent();
+                        String xml = ClientUtils.serialize(PrismContext.get(), remote);
+                        object.setContent(xml);
+
+                        return object;
+                    } catch (Exception ex) {
+                        LOG.debug("Couldn't serialize remote object: " + item.getName(), ex);
+
+                        MidPointUtils.publishExceptionNotification(
+                                project, environment, SynchronizationSession.class, NOTIFICATION_KEY,
+                                "Couldn't serialize remote object: " + item.getRemote().getName(), ex);
+
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
         UploadFullProcessingTask task = new UploadFullProcessingTask(project, null, environment);
-        // todo set objects
+        // todo add listener for processed objects to commit changes into item (remote holder)
+        task.setObjects(objects);
         task.setEnvironment(environment);
 
         ProgressManager.getInstance().run(task);

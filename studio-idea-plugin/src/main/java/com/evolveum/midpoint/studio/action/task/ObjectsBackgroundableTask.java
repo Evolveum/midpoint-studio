@@ -90,6 +90,8 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
 
     protected List<Pair<String, ObjectTypes>> oids;
 
+    protected List<MidPointObject> objects;
+
     protected S state = createNewState();
 
     public ObjectsBackgroundableTask(
@@ -109,6 +111,14 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
 
     public void setOids(List<Pair<String, ObjectTypes>> oids) {
         this.oids = oids;
+    }
+
+    public List<MidPointObject> getObjects() {
+        return objects;
+    }
+
+    public void setObjects(List<MidPointObject> objects) {
+        this.objects = objects;
     }
 
     protected S createNewState() {
@@ -168,6 +178,8 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
         boolean executed;
         if (oids != null && !oids.isEmpty()) {
             executed = processOidsList(indicator);
+        } else if (objects != null && !objects.isEmpty()) {
+            executed = processObjects(indicator, objects);
         } else {
             Editor editor = UIUtil.invokeAndWaitIfNeeded(() -> getData(PlatformDataKeys.EDITOR));
             if (editor != null) {
@@ -188,6 +200,16 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
         mm.printToConsole(getEnvironment(), getClass(), msg + ". Reason: " + ex.getMessage());
 
         MidPointUtils.publishExceptionNotification(mm.getProject(), getEnvironment(), getClass(), notificationKey, msg, ex);
+    }
+
+    private boolean processObjects(ProgressIndicator indicator, List<MidPointObject> objects) {
+        if (!confirmedOperation(objects.size(), ConfirmationUnit.OBJECT)) {
+            return false;
+        }
+
+        processObjects(indicator, objects, null);
+
+        return true;
     }
 
     private boolean processOidsList(ProgressIndicator indicator) {
@@ -537,6 +559,8 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
                     return processObject(object);
                 }
             });
+
+            // todo processed object listener
 
             if (!result.shouldContinue()) {
                 state.setStopOnError();

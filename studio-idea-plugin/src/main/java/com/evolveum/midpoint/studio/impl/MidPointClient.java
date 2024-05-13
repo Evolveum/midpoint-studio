@@ -279,11 +279,8 @@ public class MidPointClient {
 
     private Expander createExpander() {
         EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        MidPointService ms = project != null ? MidPointService.get(project) : null;
 
-        boolean ignoreMissingKeys = ms != null ? ms.getSettings().isIgnoreMissingKeys() : false;
-
-        return new Expander(environment, cm, project, ignoreMissingKeys);
+        return new Expander(environment, cm, project);
     }
 
     public UploadResponse modify(MidPointObject obj, List<String> options, boolean expand, VirtualFile file)

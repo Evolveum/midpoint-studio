@@ -1,7 +1,9 @@
 package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.EncryptionService;
 import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.Expander;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
@@ -28,12 +30,12 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
 
     public static String NOTIFICATION_KEY = TITLE;
 
-    private List<VirtualFile> files;
+    private final List<VirtualFile> files;
 
-    private SynchronizationSession session;
+    private final SynchronizationSession<?> session;
 
     public SynchronizeObjectsTask(
-            @NotNull Project project, @NotNull List<VirtualFile> files, @NotNull SynchronizationSession session) {
+            @NotNull Project project, @NotNull List<VirtualFile> files, @NotNull SynchronizationSession<?> session) {
         super(project, null, TITLE, NOTIFICATION_KEY);
 
         this.files = files;
@@ -49,6 +51,12 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
         processFiles(indicator, files);
     }
 
+    private Expander createExpander() {
+        EncryptionService cm = EncryptionService.getInstance(getProject());
+
+        return new Expander(getEnvironment(), cm, getProject());
+    }
+
     private void processFiles(ProgressIndicator indicator, List<VirtualFile> files) {
         client.setSuppressConsole(true);
         client.setSuppressNotifications(true);
@@ -61,6 +69,8 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
         session.open();
 
         Environment env = getEnvironment();
+
+        Expander expander = createExpander();
 
         int current = 0;
         for (VirtualFile file : files) {
@@ -105,7 +115,8 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
 
                     SynchronizationObjectItem objectItem = new SynchronizationObjectItem(
                             item, object.getOid(), object.getName(), object.getType(), object, newObject);
-                    objectItem.initialize();
+                    objectItem.initialize(expander);
+
                     item.getObjects().add(objectItem);
 
                     diffed.incrementAndGet();

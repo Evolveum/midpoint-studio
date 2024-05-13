@@ -44,16 +44,16 @@ public class Expander {
 
     public Expander(Environment environment, Project project) {
         this(environment,
-                project != null ? EncryptionService.getInstance(project) : null, project,
-                project != null ? MidPointService.get(project).getSettings().isIgnoreMissingKeys() : false);
+                project != null ? EncryptionService.getInstance(project) : null, project);
     }
 
-    public Expander(Environment environment, EncryptionService encryptionService, Project project, boolean ignoreMissingKeys) {
+    public Expander(Environment environment, EncryptionService encryptionService, Project project) {
         this.environment = environment;
         this.encryptionService = encryptionService;
         this.environmentProperties = new EnvironmentProperties(project, environment);
 
-        this.ignoreMissingKeys = ignoreMissingKeys;
+        MidPointService ms = MidPointService.get(project);
+        this.ignoreMissingKeys = ms.getSettings().isIgnoreMissingKeys();
 
         initProjectProperties(project);
     }
