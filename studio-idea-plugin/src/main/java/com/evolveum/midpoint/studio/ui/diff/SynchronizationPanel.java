@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.studio.ui.UiAction;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager;
+import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationSession;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -97,6 +97,8 @@ public class SynchronizationPanel extends BorderLayoutPanel {
 
         SynchronizationSession<?> session = getSession();
         session.refresh(items);
+
+        getModel().nodesChanged(checked);
     }
 
     private List<SynchronizationObjectItem> computeCheckedObjectItems(Object[] nodes) {
@@ -126,6 +128,9 @@ public class SynchronizationPanel extends BorderLayoutPanel {
 
         SynchronizationSession<?> session = getSession();
         session.saveLocally(items);
+
+        // todo we have to refresh all file nodes related to this save
+        getModel().nodesChanged(checked);
     }
 
     private SynchronizationSession<?> getSession() {
@@ -140,5 +145,7 @@ public class SynchronizationPanel extends BorderLayoutPanel {
 
         SynchronizationSession<?> session = getSession();
         session.updateRemote(items);
+
+        getModel().nodesChanged(checked);
     }
 }

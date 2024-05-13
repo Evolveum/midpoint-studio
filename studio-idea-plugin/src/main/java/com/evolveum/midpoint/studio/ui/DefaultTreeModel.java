@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.diff;
+package com.evolveum.midpoint.studio.ui;
 
 import com.intellij.ui.tree.TreePathUtil;
 import com.intellij.util.ui.tree.AbstractTreeModel;

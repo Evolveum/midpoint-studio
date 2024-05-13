@@ -2,9 +2,9 @@ package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.ui.diff.SynchronizationDirection;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.intellij.icons.AllIcons;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -16,22 +16,14 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.util.List;
 
 public class SynchronizeObjectsAction extends AnAction implements DumbAware {
 
-    private final String actionName;
+    private static final String ACTION_NAME = "Synchronize Objects";
 
-    private final SynchronizationDirection direction;
-
-    public SynchronizeObjectsAction(
-            @NotNull String actionName, @NotNull Icon icon, @NotNull SynchronizationDirection direction) {
-
-        super(actionName, null, icon);
-
-        this.actionName = actionName;
-        this.direction = direction;
+    public SynchronizeObjectsAction() {
+        super(ACTION_NAME, null, AllIcons.Actions.Diff);
     }
 
     @Override
@@ -61,8 +53,8 @@ public class SynchronizeObjectsAction extends AnAction implements DumbAware {
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(project, actionName, actionName,
-                    "No files matched for " + actionName + " (xml)", NotificationType.WARNING);
+            MidPointUtils.publishNotification(project, ACTION_NAME, ACTION_NAME,
+                    "No files matched for " + ACTION_NAME + " (xml)", NotificationType.WARNING);
             return;
         }
 
@@ -70,7 +62,7 @@ public class SynchronizeObjectsAction extends AnAction implements DumbAware {
         Environment env = em.getSelected();
 
         if (env == null) {
-            MidPointUtils.publishNotification(project, actionName, actionName,
+            MidPointUtils.publishNotification(project, ACTION_NAME, ACTION_NAME,
                     "No environment selected", NotificationType.ERROR);
             return;
         }

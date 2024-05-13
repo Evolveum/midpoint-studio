@@ -7,12 +7,14 @@ import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationSession;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindowManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -116,6 +118,10 @@ public class SynchronizeObjectsTask extends SimpleBackgroundableTask {
 
             session.addItem(item);
         }
+
+        // todo not very nice "dependency"
+        RunnableUtils.invokeLaterIfNeeded(() -> ToolWindowManager.getInstance(getProject())
+                .getToolWindow("Synchronization").show());
 
         NotificationType type = missing > 0 || failed.get() > 0 || skipped > 0 ?
                 NotificationType.WARNING : NotificationType.INFORMATION;

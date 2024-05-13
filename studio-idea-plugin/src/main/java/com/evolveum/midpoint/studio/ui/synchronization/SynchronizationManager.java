@@ -11,6 +11,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +46,9 @@ public class SynchronizationManager {
                 .getToolWindow("Synchronization").getContentManager().getContent(0).getComponent();
         session = new SynchronizationSession<>(environment, panel);
 
-        // todo notify ui/tree
+        RunnableUtils.invokeLaterIfNeeded(() -> {
+            panel.getModel().setData(new ArrayList<>());
+        });
 
         return session;
     }

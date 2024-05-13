@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.evolveum.midpoint.studio.ui.DefaultTreeModel;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationItem;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
@@ -7,6 +8,7 @@ import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.tree.TreePathUtil;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -59,6 +61,7 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         }
 
         // todo this does not work
+
 //        treeNodesInserted(TreePathUtil.toTreePath(root), indices, nodes.toArray());
         treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
@@ -97,12 +100,21 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
     }
 
     public String convertValueToText(Object userObject) {
-        String value = null;
-
         if (userObject instanceof SynchronizationItem si) {
             return si.getName();
         }
 
-        return value != null ? value.toString() : "<<null>>";
+        return userObject != null ? userObject.toString() : "<<null>>";
+    }
+
+    public void nodesChanged(Object[] nodes) {
+        for (Object node : nodes) {
+            if (!(node instanceof DefaultMutableTreeNode tn)) {
+                continue;
+            }
+
+            TreeNode parent = tn.getParent();
+            treeNodesChanged(TreePathUtil.toTreePath(parent), new int[]{parent.getIndex(tn)}, new Object[]{node});
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.ui.diff.SynchronizationPanel;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -30,9 +31,7 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
     }
 
     public void open() {
-        RunnableUtils.invokeLaterIfNeeded(() -> {
-            panel.getModel().setData(new ArrayList<>());
-        });
+
     }
 
     public void close() {
@@ -46,8 +45,6 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
 
     public void addItem(@NotNull SynchronizationFileItem<T> item) {
         items.add(item);
-
-        // todo notify ui/tree
 
         RunnableUtils.invokeLaterIfNeeded(() -> {
             panel.getModel().addFiles(List.of(item));
@@ -75,8 +72,14 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
             return;
         }
 
-        // todo execute in write thread
+        RunnableUtils.invokeLaterIfNeeded(() -> {
+            WriteAction.run(() -> {
+                writeLocally(objectItems);
+            });
+        });
+    }
 
+    private void writeLocally(List<SynchronizationObjectItem> objectItems) {
         Map<SynchronizationFileItem, List<SynchronizationObjectItem>> updates = new HashMap<>();
         objectItems.forEach(i -> {
             List<SynchronizationObjectItem> objects = updates.getOrDefault(i.getFileItem(), new ArrayList<>());
