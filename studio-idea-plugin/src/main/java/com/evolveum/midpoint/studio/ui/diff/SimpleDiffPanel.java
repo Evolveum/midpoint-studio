@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.ui.CustomComboBoxAction;
+import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.studio.ui.delta.ObjectDeltaEditor;
 import com.evolveum.midpoint.studio.ui.delta.ObjectDeltaPanel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -63,7 +64,7 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
     }
 
     private void initLayout() {
-        strategyAction = new DiffStrategyComboAction(DiffStrategy.DEFAULT) {
+        strategyAction = new DiffStrategyComboAction(DiffStrategy.NATURAL_KEYS) {
 
             @Override
             public void setSelected(DiffStrategy selected) {
@@ -81,6 +82,9 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
             @Override
             protected @org.jetbrains.annotations.NotNull List<AnAction> getNavigationActions() {
                 List<AnAction> list = new ArrayList<>();
+                list.add(new UiAction("Refresh", e -> {
+                    leftFile.setContent(this, "a" + leftFile.getContent(), true);
+                }));
                 list.add(strategyAction);
                 list.add(new Separator());
 

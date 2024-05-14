@@ -359,10 +359,6 @@
                 text="Refresh From Server"
                 icon="AllIcons.Actions.BuildLoadChanges"/>
 
-        <action id="MidPoint.Action.DiffRemote"
-                class="com.evolveum.midpoint.studio.action.transfer.DiffRemoteAction"
-                text="Diff Remote"
-                icon="AllIcons.Actions.Diff"/>
         <action id="MidPoint.Action.SynchronizeObjects"
                 class="com.evolveum.midpoint.studio.action.transfer.SynchronizeObjectsAction"
                 text="Synchronize Objects"
@@ -477,7 +473,6 @@
 
                 <reference ref="MidPoint.Action.Refresh"/>
                 <reference ref="MidPoint.Action.DiffLocal"/>
-                <reference ref="MidPoint.Action.DiffRemote"/>
                 <reference ref="MidPoint.Action.SynchronizeObjects"/>
                 <reference ref="MidPoint.Action.CleanupFile"/>
                 <reference ref="MidPoint.Action.VerifyAction"/>
@@ -543,7 +538,6 @@
             <separator/>
 
             <reference ref="MidPoint.Action.Refresh"/>
-            <reference ref="MidPoint.Action.DiffRemote"/>
             <reference ref="MidPoint.Action.SynchronizeObjects"/>
 
             <separator/>
@@ -611,7 +605,6 @@
             <separator/>
 
             <reference ref="MidPoint.Action.Refresh"/>
-            <reference ref="MidPoint.Action.DiffRemote"/>
             <reference ref="MidPoint.Action.SynchronizeObjects"/>
 
             <separator/>
