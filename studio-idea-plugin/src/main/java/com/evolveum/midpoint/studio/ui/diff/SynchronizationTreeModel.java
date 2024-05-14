@@ -116,14 +116,14 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
 
         List<String> parts = new ArrayList<>();
         if (si.hasLocalChanges()) {
-            parts.add("Local");
+            parts.add("local");
         }
         if (si.hasRemoteChanges()) {
-            parts.add("Remote");
+            parts.add("remote");
         }
         String changes = "";
         if (!parts.isEmpty()) {
-            changes = " (" + StringUtils.join(parts, "/") + ")";
+            changes = " (Pending " + StringUtils.join(parts, "/") + ")";
         }
 
         return si.getName() + changes;

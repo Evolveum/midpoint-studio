@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
-import com.evolveum.midpoint.schema.merger.threeway.item.ThreeWayMerge;
+
+import com.evolveum.midpoint.schema.delta.ThreeWayMerge;
 import com.evolveum.midpoint.studio.ui.DefaultTreeModel;
 
 import javax.swing.tree.DefaultMutableTreeNode;
