@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.studio.action.task.SynchronizeObjectsTask;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.ui.diff.SynchronizationPanel;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;

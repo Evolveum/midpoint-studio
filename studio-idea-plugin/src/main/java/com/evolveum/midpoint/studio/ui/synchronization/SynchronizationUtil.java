@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.diff;
+package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.ModificationType;
 import com.intellij.openapi.editor.colors.ColorKey;

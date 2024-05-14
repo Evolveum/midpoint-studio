@@ -1,10 +1,13 @@
-package com.evolveum.midpoint.studio.ui.diff;
+package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.ModificationType;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.ui.synchronization.*;
+import com.evolveum.midpoint.studio.ui.diff.DiffProcessor;
+import com.evolveum.midpoint.studio.ui.diff.DiffSource;
+import com.evolveum.midpoint.studio.ui.diff.DiffSourceType;
+import com.evolveum.midpoint.studio.ui.diff.DiffVirtualFile;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;

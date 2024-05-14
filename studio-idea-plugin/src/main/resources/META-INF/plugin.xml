@@ -129,7 +129,7 @@
                           anchor="left"
                           order="last"
                           icon="AllIcons.Actions.Refresh"
-                          factoryClass="com.evolveum.midpoint.studio.ui.diff.SynchronizationToolWindowFactory"/>
+                          factoryClass="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationToolWindowFactory"/>
 
         <fileType
                 name="MPTrace"

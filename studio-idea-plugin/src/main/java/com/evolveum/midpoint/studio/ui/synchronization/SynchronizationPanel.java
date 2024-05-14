@@ -1,10 +1,6 @@
-package com.evolveum.midpoint.studio.ui.diff;
+package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.studio.ui.UiAction;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationSession;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;

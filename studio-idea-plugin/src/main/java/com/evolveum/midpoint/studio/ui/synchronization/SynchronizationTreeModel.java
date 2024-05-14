@@ -1,9 +1,6 @@
-package com.evolveum.midpoint.studio.ui.diff;
+package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.studio.ui.DefaultTreeModel;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationItem;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
 import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.tree.TreePathUtil;
 import org.apache.commons.lang3.StringUtils;

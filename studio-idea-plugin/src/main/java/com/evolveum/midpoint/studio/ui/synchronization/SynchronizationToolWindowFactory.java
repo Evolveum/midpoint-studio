@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.diff;
+package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
