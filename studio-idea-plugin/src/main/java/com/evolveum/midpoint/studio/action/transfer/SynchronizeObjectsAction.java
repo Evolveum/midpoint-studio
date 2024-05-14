@@ -37,8 +37,6 @@ public class SynchronizeObjectsAction extends AnAction implements DumbAware {
 
         boolean enabled = MidPointUtils.shouldEnableAction(evt);
         evt.getPresentation().setEnabled(enabled);
-
-        evt.getPresentation().setVisible(MidPointUtils.isDevelopmentMode(true));
     }
 
     @Override
