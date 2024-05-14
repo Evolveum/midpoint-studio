@@ -3,6 +3,8 @@ package com.evolveum.midpoint.studio.impl.configuration;
 import com.evolveum.midpoint.common.cleanup.CleanupPath;
 import com.evolveum.midpoint.common.cleanup.CleanupPathAction;
 import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
+import com.evolveum.midpoint.schema.validator.ObjectValidator;
+import com.evolveum.midpoint.schema.validator.ValidationItemType;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
@@ -58,5 +60,13 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
         processor.setRemoveContainerIds(isRemoveContainerIds());
 
         return processor;
+    }
+
+    public ObjectValidator createObjectValidator() {
+        ObjectValidator validator = new ObjectValidator();
+        validator.setAllWarnings();
+        validator.setTypeToCheck(ValidationItemType.MISSING_NATURAL_KEY, getSettings().isMissingNaturalKeys());
+
+        return validator;
     }
 }

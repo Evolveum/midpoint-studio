@@ -32,7 +32,7 @@ class CleanupConfigurable(val project: Project) :
 
     override fun isModified(): Boolean {
         val service = CleanupService.get(project)
-        
+
         return super.isModified() || !Objects.equals(configuration, service.settings)
     }
 
@@ -94,6 +94,16 @@ class CleanupConfigurable(val project: Project) :
                         .bindSelected(
                             { configuration.isWarnAboutMissingReferences },
                             { configuration.isWarnAboutMissingReferences = it }
+                        )
+                }
+            }
+            groupRowsRange(message("CleanupConfigurable.other")) {
+                row {
+                    checkBox(message("CleanupConfigurable.missingNaturalKeys"))
+                        .comment(message("CleanupConfigurable.missingNaturalKeys.comment"))
+                        .bindSelected(
+                            { configuration.isMissingNaturalKeys },
+                            { configuration.isMissingNaturalKeys = it }
                         )
                 }
                 // todo disabled for now since we have to decide on approach to PCV IDs and cleanup/storing in vcs

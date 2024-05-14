@@ -141,8 +141,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             ObjectCleaner processor = cs.createCleanupProcessor();
             processor.setListener(new StudioCleanupListener(getProject(), client, MidPointUtils.DEFAULT_PRISM_CONTEXT));
 
-            ObjectValidator validator = new ObjectValidator();
-            validator.setAllWarnings();
+            ObjectValidator validator = cs.createObjectValidator();
 
             String current = MavenUtils.getMidpointVersion(getProject());
             if (current == null) {

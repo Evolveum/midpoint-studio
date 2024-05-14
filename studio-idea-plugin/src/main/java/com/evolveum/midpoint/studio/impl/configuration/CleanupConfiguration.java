@@ -25,6 +25,8 @@ public class CleanupConfiguration implements Serializable {
 
     private boolean removeContainerIds;
 
+    private boolean missingNaturalKeys;
+
     private MissingRefObjects missingReferences;
 
     public @NotNull List<CleanupPathConfiguration> getCleanupPaths() {
@@ -90,6 +92,14 @@ public class CleanupConfiguration implements Serializable {
         this.missingReferences = missingReferences;
     }
 
+    public boolean isMissingNaturalKeys() {
+        return missingNaturalKeys;
+    }
+
+    public void setMissingNaturalKeys(boolean missingNaturalKeys) {
+        this.missingNaturalKeys = missingNaturalKeys;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -101,6 +111,7 @@ public class CleanupConfiguration implements Serializable {
                 && Objects.equals(cleanupPaths, that.cleanupPaths)
                 && askActionOverride == that.askActionOverride
                 && removeContainerIds == that.removeContainerIds
+                && missingNaturalKeys == that.missingNaturalKeys
                 && Objects.equals(missingReferences, that.missingReferences);
     }
 
@@ -108,7 +119,7 @@ public class CleanupConfiguration implements Serializable {
     public int hashCode() {
         return Objects.hash(
                 cleanupPaths, askActionOverride, cleanupConnectorReferences, replaceConnectorOidsWithFilter,
-                warnAboutMissingReferences, removeContainerIds, missingReferences);
+                warnAboutMissingReferences, removeContainerIds, missingNaturalKeys, missingReferences);
     }
 
     public void copyTo(@NotNull CleanupConfiguration configuration) {
@@ -123,6 +134,7 @@ public class CleanupConfiguration implements Serializable {
         configuration.setReplaceConnectorOidsWithFilter(replaceConnectorOidsWithFilter);
         configuration.setWarnAboutMissingReferences(warnAboutMissingReferences);
         configuration.setRemoveContainerIds(removeContainerIds);
+        configuration.setMissingNaturalKeys(missingNaturalKeys);
 
         if (missingReferences != null) {
             configuration.setMissingReferences(missingReferences.copy());
