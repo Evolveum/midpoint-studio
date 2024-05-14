@@ -2,13 +2,12 @@ package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.prism.ModificationType;
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.ui.synchronization.PrismObjectHolder;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationFileItem;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationItem;
-import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationObjectItem;
+import com.evolveum.midpoint.studio.ui.synchronization.*;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
@@ -181,7 +180,20 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
                 getTextRenderer().setForeground(foreground);
             }
 
+            Icon icon = computeIcon(node.getUserObject());
+            if (icon != null) {
+                getTextRenderer().setIcon(icon);
+            }
+
             getTextRenderer().append(text);
+        }
+
+        private Icon computeIcon(Object userObject) {
+            if (!(userObject instanceof SynchronizationItem si)) {
+                return null;
+            }
+
+            return si.getType() == SynchronizationItemType.FILE ? AllIcons.FileTypes.Xml : MidPointIcons.Midpoint;
         }
 
         private Color computeColor(Object userObject) {

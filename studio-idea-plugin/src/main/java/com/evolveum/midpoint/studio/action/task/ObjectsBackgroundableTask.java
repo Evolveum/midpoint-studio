@@ -53,6 +53,11 @@ import java.util.function.Supplier;
  */
 public class ObjectsBackgroundableTask<S extends TaskState> extends BackgroundableTask {
 
+    public interface TaskListener {
+
+        void objectProcessed(MidPointObject object, ProcessObjectResult result);
+    }
+
     enum ConfirmationUnit {
 
         OBJECT("object", "objects"),
@@ -88,6 +93,8 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
 
     private static final Logger LOG = Logger.getInstance(ObjectsBackgroundableTask.class);
 
+    private List<TaskListener> taskListeners = new ArrayList<>();
+
     protected List<Pair<String, ObjectTypes>> oids;
 
     protected List<MidPointObject> objects;
@@ -99,6 +106,14 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
             @NotNull String notificationKey) {
 
         super(project, dataContextSupplier, title, notificationKey);
+    }
+
+    public void addTaskListener(@NotNull TaskListener listener) {
+        taskListeners.add(listener);
+    }
+
+    public void removeTaskListener(@NotNull TaskListener listener) {
+        taskListeners.remove(listener);
     }
 
     public String getNotificationKey() {
@@ -560,7 +575,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
                 }
             });
 
-            // todo processed object listener
+            taskListeners.forEach(l -> l.objectProcessed(object, result));
 
             if (!result.shouldContinue()) {
                 state.setStopOnError();

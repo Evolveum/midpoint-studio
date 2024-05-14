@@ -2,7 +2,9 @@ package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.studio.action.task.ObjectsBackgroundableTask;
 import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
+import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
@@ -94,13 +96,11 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
                 .toList();
 
         UploadFullProcessingTask task = new UploadFullProcessingTask(project, null, environment);
-        // todo add listener for processed objects to commit changes into item (remote holder)
         task.setObjects(objects);
         task.setEnvironment(environment);
+        task.addTaskListener(new FullUploadTaskListener(objectItems));
 
         ProgressManager.getInstance().run(task);
-
-        // todo implement
     }
 
     public void refresh(List<SynchronizationObjectItem> objectItems) {
@@ -176,5 +176,30 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
 
     private String serializeObjects(List<PrismObject<?>> objects) throws SchemaException {
         return PrismContext.get().xmlSerializer().serializeObjects(objects);
+    }
+
+    private static class FullUploadTaskListener implements ObjectsBackgroundableTask.TaskListener {
+
+        private List<SynchronizationObjectItem> objectItems;
+
+        public FullUploadTaskListener(List<SynchronizationObjectItem> objectItems) {
+            this.objectItems = objectItems;
+        }
+
+        @Override
+        public void objectProcessed(MidPointObject object, ProcessObjectResult result) {
+            SynchronizationObjectItem objectItem = objectItems.stream()
+                    .filter(i -> Objects.equals(i.getOid(), object.getOid()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (objectItem == null) {
+                return;
+            }
+
+            if (!result.problem()) {
+                objectItem.getRemoteObject().commit();
+            }
+        }
     }
 }
