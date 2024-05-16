@@ -19,4 +19,8 @@ public record DiffSource<O extends ObjectType>(
 
         return MidPointUtils.getName(object);
     }
+
+    public String getFullName() {
+        return getName() + " (" + type() + ")";
+    }
 }

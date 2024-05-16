@@ -13,24 +13,18 @@ public class SimpleDiffEditor extends FileEditorBase<DiffVirtualFile> {
 
     private static final String NAME = "Text";
 
-    private SimpleDiffPanel panel;
-
     public SimpleDiffEditor(@NotNull Project project, @NotNull DiffVirtualFile file) {
         super(project, file);
-
-        DiffProcessor processor = file.getProcessor();
-
-        panel = new SimpleDiffPanel<>(project, processor.getLeftSource(), processor.getRightSource());
     }
 
     @Override
     public @NotNull JComponent getComponent() {
-        return panel;
+        return getFile().getProcessor().getSimpleDiffComponent();
     }
 
     @Override
     public @Nullable JComponent getPreferredFocusedComponent() {
-        return panel.getPreferredFocusedComponent();
+        return null;
     }
 
     @Override
@@ -50,12 +44,11 @@ public class SimpleDiffEditor extends FileEditorBase<DiffVirtualFile> {
 
     @Override
     public boolean isValid() {
-        // todo implement
         return true;
     }
 
     @Override
     public void dispose() {
-        // todo implement
+        // intentionally left empty
     }
 }

@@ -11,13 +11,15 @@ import javax.swing.*;
 
 public class DiffEditor extends FileEditorBase<DiffVirtualFile> {
 
+    private static final String NAME = "Object Delta";
+
     public DiffEditor(@NotNull Project project, @NotNull DiffVirtualFile file) {
         super(project, file);
     }
 
     @Override
     public @NotNull JComponent getComponent() {
-        return getFile().getProcessor().getComponent();
+        return getFile().getProcessor().getDiffComponent();
     }
 
     @Override
@@ -27,7 +29,7 @@ public class DiffEditor extends FileEditorBase<DiffVirtualFile> {
 
     @Override
     public @Nls(capitalization = Nls.Capitalization.Title) @NotNull String getName() {
-        return "Object Delta";
+        return NAME;
     }
 
     @Override
@@ -47,6 +49,6 @@ public class DiffEditor extends FileEditorBase<DiffVirtualFile> {
 
     @Override
     public void dispose() {
-        // todo implement
+        // intentionally left empty
     }
 }

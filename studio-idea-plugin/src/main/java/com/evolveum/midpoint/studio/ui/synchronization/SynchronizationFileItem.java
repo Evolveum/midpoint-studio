@@ -25,7 +25,11 @@ public class SynchronizationFileItem<T extends SynchronizationObjectItem> extend
 
     @Override
     public String getName() {
-        return file.getName();
+        if (objects.size() != 1) {
+            return file.getName();
+        }
+
+        return file.getName() + " (" + objects.get(0).getName() + ")";
     }
 
     @NotNull

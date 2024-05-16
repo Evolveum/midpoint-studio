@@ -51,11 +51,13 @@ public class DiffProcessor<O extends ObjectType> {
 
     private DiffPanel<O> diffPanel;
 
+    private SimpleDiffPanel<O> simpleDiffPanel;
+
     private Direction direction = Direction.RIGHT_TO_LEFT;
 
     private DiffStrategy strategy = DiffStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS; // todo use natural keys by default
 
-    private CacheDiffRequestChainProcessor processor;
+    private CacheDiffRequestChainProcessor diffProcessor;
 
     public DiffProcessor(@NotNull Project project, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right) {
         this.project = project;
@@ -65,7 +67,8 @@ public class DiffProcessor<O extends ObjectType> {
 
         refreshInternalDiffProcessor("", "");
 
-        diffPanel = initPanel();
+        diffPanel = initDiffPanel();
+        simpleDiffPanel = initSimpleDiffPanel();
     }
 
     public Direction getDirection() {
@@ -80,12 +83,20 @@ public class DiffProcessor<O extends ObjectType> {
         return rightSource;
     }
 
-    private DiffPanel<O> initPanel() {
+    public DiffStrategy getStrategy() {
+        return strategy;
+    }
+
+    public void setStrategy(DiffStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    private DiffPanel<O> initDiffPanel() {
         return new DiffPanel<>() {
 
             @Override
             protected JComponent createTextDiff() {
-                return processor.getComponent();
+                return diffProcessor.getComponent();
             }
 
             @Override
@@ -100,41 +111,35 @@ public class DiffProcessor<O extends ObjectType> {
         };
     }
 
-    private void refreshInternalDiffProcessor(String leftTextContent, String rightTextContent) {
-        if (processor != null) {
-            processor.dispose();
+    private SimpleDiffPanel<O> initSimpleDiffPanel() {
+        return new SimpleDiffPanel<>(project, this);
+    }
+
+    private void refreshInternalDiffProcessor(String leftContent, String rightContent) {
+        if (diffProcessor != null) {
+            diffProcessor.dispose();
         }
 
-        LightVirtualFile leftPreviewFile = new LightVirtualFile(
-                createName(leftSource),
-                XmlFileType.INSTANCE,
-                leftTextContent,
-                System.currentTimeMillis());
+        LightVirtualFile left = new LightVirtualFile(
+                leftSource.getFullName(), XmlFileType.INSTANCE, leftContent, System.currentTimeMillis());
 
         LightVirtualFile right = new LightVirtualFile(
-                createName(rightSource),
-                XmlFileType.INSTANCE,
-                rightTextContent,
-                System.currentTimeMillis());
+                rightSource.getFullName(), XmlFileType.INSTANCE, rightContent, System.currentTimeMillis());
 
-        ContentDiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, leftPreviewFile, right);
+        ContentDiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, left, right);
         DiffRequestChain chain = new SimpleDiffRequestChain(request);
 
-        processor = new CacheDiffRequestChainProcessor(project, chain);
-        processor.updateRequest();
+        diffProcessor = new CacheDiffRequestChainProcessor(project, chain);
+        diffProcessor.updateRequest();
 
         if (diffPanel != null) {
             diffPanel.reloadDiffEditor();
         }
     }
 
-    private String createName(DiffSource<O> source) {
-        return source.getName() + " (" + source.type() + ").xml";
-    }
-
     public void computeDelta() {
         try {
-            DiffSource<O> targetSource = getTargetSource();
+            DiffSource<O> targetSource = getTarget();
 
             PrismObject<O> target = targetSource.object();
             PrismObject<O> source = getSourceObject();
@@ -155,20 +160,28 @@ public class DiffProcessor<O extends ObjectType> {
         return target.equivalent(source);
     }
 
-    public DiffSource<O> getTargetSource() {
+    /**
+     * @return Returns {@link DiffSource} that represents target object based on current direction.
+     * Diff is always computed for specific direction.
+     */
+    public DiffSource<O> getTarget() {
         return direction == Direction.LEFT_TO_RIGHT ? rightSource : leftSource;
     }
 
-    public DiffSource<O> getSourceSource() {
+    /**
+     * @return Returns {@link DiffSource} that represents target object based on current direction.
+     * Diff is always computed for specific direction.
+     */
+    public DiffSource<O> getSource() {
         return direction == Direction.LEFT_TO_RIGHT ? leftSource : rightSource;
     }
 
     public PrismObject<O> getTargetObject() {
-        return getTargetSource().object();
+        return getTarget().object();
     }
 
     public PrismObject<O> getSourceObject() {
-        return getSourceSource().object();
+        return getSource().object();
     }
 
     private void onTreeSelectionChanged(List<DefaultMutableTreeNode> selected) {
@@ -238,8 +251,12 @@ public class DiffProcessor<O extends ObjectType> {
         return leftSource.getName();
     }
 
-    public JComponent getComponent() {
+    public JComponent getDiffComponent() {
         return diffPanel;
+    }
+
+    public JComponent getSimpleDiffComponent() {
+        return simpleDiffPanel;
     }
 
     private void diffStrategyChanged(@NotNull DiffStrategy strategy) {
