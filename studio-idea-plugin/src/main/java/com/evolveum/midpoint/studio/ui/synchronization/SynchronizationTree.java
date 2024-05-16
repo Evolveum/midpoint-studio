@@ -109,7 +109,7 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
                 updateSynchronizationState(this, object, getDirection());
             }
         };
-        processor.initialize();
+        processor.computeDelta();
         DiffVirtualFile file = new DiffVirtualFile(processor);
 
         MidPointUtils.openFile(project, file);

@@ -32,18 +32,16 @@ public class DiffEditor extends FileEditorBase<DiffVirtualFile> {
 
     @Override
     public void setState(@NotNull FileEditorState state) {
-        // todo implement
+        // intentionally left empty
     }
 
     @Override
     public boolean isModified() {
-        // todo implement
         return false;
     }
 
     @Override
     public boolean isValid() {
-        // todo implement
         return true;
     }
 

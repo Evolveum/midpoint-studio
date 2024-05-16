@@ -14,13 +14,19 @@ import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.diff.DiffRequestFactory;
+import com.intellij.diff.chains.DiffRequestChain;
+import com.intellij.diff.chains.SimpleDiffRequestChain;
+import com.intellij.diff.impl.CacheDiffRequestChainProcessor;
+import com.intellij.diff.requests.ContentDiffRequest;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.components.JBLabel;
+import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -43,11 +49,13 @@ public class DiffProcessor<O extends ObjectType> {
 
     private ObjectDelta<O> delta;
 
-    private DiffPanel<O> panel;
+    private DiffPanel<O> diffPanel;
 
     private Direction direction = Direction.RIGHT_TO_LEFT;
 
     private DiffStrategy strategy = DiffStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS; // todo use natural keys by default
+
+    private CacheDiffRequestChainProcessor processor;
 
     public DiffProcessor(@NotNull Project project, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right) {
         this.project = project;
@@ -55,7 +63,9 @@ public class DiffProcessor<O extends ObjectType> {
         this.leftSource = left;
         this.rightSource = right;
 
-        panel = initPanel();
+        refreshInternalDiffProcessor("", "");
+
+        diffPanel = initPanel();
     }
 
     public Direction getDirection() {
@@ -71,11 +81,11 @@ public class DiffProcessor<O extends ObjectType> {
     }
 
     private DiffPanel<O> initPanel() {
-        return new DiffPanel<>() {  // todo fix
+        return new DiffPanel<>() {
 
             @Override
             protected JComponent createTextDiff() {
-                return new JBLabel("todo implement"); // todo implement later
+                return processor.getComponent();
             }
 
             @Override
@@ -90,24 +100,52 @@ public class DiffProcessor<O extends ObjectType> {
         };
     }
 
-    public void initialize() {
-        try {
-            recomputeDelta();
-        } catch (Exception ex) {
-            throw new RuntimeException("Couldn't parse object", ex);
+    private void refreshInternalDiffProcessor(String leftTextContent, String rightTextContent) {
+        if (processor != null) {
+            processor.dispose();
+        }
+
+        LightVirtualFile leftPreviewFile = new LightVirtualFile(
+                createName(leftSource),
+                XmlFileType.INSTANCE,
+                leftTextContent,
+                System.currentTimeMillis());
+
+        LightVirtualFile right = new LightVirtualFile(
+                createName(rightSource),
+                XmlFileType.INSTANCE,
+                rightTextContent,
+                System.currentTimeMillis());
+
+        ContentDiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, leftPreviewFile, right);
+        DiffRequestChain chain = new SimpleDiffRequestChain(request);
+
+        processor = new CacheDiffRequestChainProcessor(project, chain);
+        processor.updateRequest();
+
+        if (diffPanel != null) {
+            diffPanel.reloadDiffEditor();
         }
     }
 
-    private void recomputeDelta() {
-        DiffSource<O> targetSource = getTargetSource();
+    private String createName(DiffSource<O> source) {
+        return source.getName() + " (" + source.type() + ").xml";
+    }
 
-        PrismObject<O> target = targetSource.object();
-        PrismObject<O> source = getSourceObject();
+    public void computeDelta() {
+        try {
+            DiffSource<O> targetSource = getTargetSource();
 
-        delta = target.diff(source, strategy.getStrategy());
+            PrismObject<O> target = targetSource.object();
+            PrismObject<O> source = getSourceObject();
 
-        panel.setTargetName(targetSource.name() + " (" + targetSource.type() + ")");
-        panel.setDelta(delta);
+            delta = target.diff(source, strategy.getStrategy());
+
+            diffPanel.setTargetName(targetSource.name() + " (" + targetSource.type() + ")");
+            diffPanel.setDelta(delta);
+        } catch (Exception ex) {
+            throw new RuntimeException("Couldn't parse object", ex);
+        }
     }
 
     public boolean hasChanges() {
@@ -135,6 +173,8 @@ public class DiffProcessor<O extends ObjectType> {
 
     private void onTreeSelectionChanged(List<DefaultMutableTreeNode> selected) {
         // todo implement
+
+        refreshInternalDiffProcessor(Double.toString(Math.random()), Double.toString(Math.random()));
     }
 
     private List<AnAction> createToolbarActions() {
@@ -172,7 +212,7 @@ public class DiffProcessor<O extends ObjectType> {
             public void update(@NotNull AnActionEvent e) {
                 super.update(e);
 
-                boolean enabled = !panel.getSelectedNodes().isEmpty();
+                boolean enabled = !diffPanel.getSelectedNodes().isEmpty();
                 e.getPresentation().setEnabled(enabled);
             }
         });
@@ -182,7 +222,7 @@ public class DiffProcessor<O extends ObjectType> {
             public void update(@NotNull AnActionEvent e) {
                 super.update(e);
 
-                boolean enabled = !panel.getSelectedNodes().isEmpty();
+                boolean enabled = !diffPanel.getSelectedNodes().isEmpty();
                 e.getPresentation().setEnabled(enabled);
             }
         });
@@ -199,24 +239,24 @@ public class DiffProcessor<O extends ObjectType> {
     }
 
     public JComponent getComponent() {
-        return panel;
+        return diffPanel;
     }
 
     private void diffStrategyChanged(@NotNull DiffStrategy strategy) {
         this.strategy = strategy;
 
-        initialize();
+        computeDelta();
     }
 
     protected void acceptPerformed() {
         try {
-            List<DefaultMutableTreeNode> selected = panel.getSelectedNodes();
+            List<DefaultMutableTreeNode> selected = diffPanel.getSelectedNodes();
 
             PrismObject<O> target = getTargetObject();
 
             applyDeltaNodesToObject(target, selected);
 
-            panel.removeNodes(selected);
+            diffPanel.removeNodes(selected);
         } catch (Exception ex) {
             throw new RuntimeException("Couldn't apply delta", ex);
         }
@@ -273,7 +313,7 @@ public class DiffProcessor<O extends ObjectType> {
     }
 
     private void ignorePerformed() {
-        panel.removeNodes(panel.getSelectedNodes());
+        diffPanel.removeNodes(diffPanel.getSelectedNodes());
     }
 
     private void cleanupPerformed() {
@@ -291,12 +331,12 @@ public class DiffProcessor<O extends ObjectType> {
         processor.process(leftSource.object());
         processor.process(rightSource.object());
 
-        recomputeDelta();
+        computeDelta();
     }
 
     private void switchSidesPerformed() {
         direction = direction == Direction.LEFT_TO_RIGHT ? Direction.RIGHT_TO_LEFT : Direction.LEFT_TO_RIGHT;
 
-        recomputeDelta();
+        computeDelta();
     }
 }

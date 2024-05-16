@@ -4,10 +4,12 @@ import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
@@ -28,6 +30,8 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
 
     private ObjectDeltaTree<O> deltaTree;
 
+    private JBSplitter splitter;
+
     public DiffPanel() {
         initLayout();
     }
@@ -47,16 +51,27 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
         JComponent mainToolbar = initMainToolbar(this);
         add(mainToolbar, BorderLayout.NORTH);
 
-//        JBSplitter splitter = new JBSplitter(true, 0.5f);
+        splitter = new JBSplitter(true, 0.5f);
 
         JBPanel<?> deltaPanel = createDeltaTablePanel();
         add(deltaPanel, BorderLayout.CENTER);
 
-//        splitter.setFirstComponent(deltaPanel);
+        splitter.setFirstComponent(deltaPanel);
 
-//        JComponent diffEditor = createTextDiff();
-//        splitter.setSecondComponent(diffEditor);
-//        add(splitter, BorderLayout.CENTER);
+        JComponent diffEditor = createTextDiff();
+        splitter.setSecondComponent(diffEditor);
+        add(splitter, BorderLayout.CENTER);
+    }
+
+    public void reloadDiffEditor() {
+        JComponent diffEditor = createTextDiff();
+
+        JComponent component = splitter.getSecondComponent();
+        if (component instanceof Disposable disposable) {
+            disposable.dispose();
+        }
+
+        splitter.setSecondComponent(diffEditor);
     }
 
     private JBPanel<?> createDeltaTablePanel() {

@@ -40,12 +40,12 @@ public class SimpleDiffEditor extends FileEditorBase<DiffVirtualFile> {
 
     @Override
     public void setState(@NotNull FileEditorState fileEditorState) {
+        // intentionally left empty
     }
 
     @Override
     public boolean isModified() {
-        // todo implement
-        return true;
+        return false;
     }
 
     @Override
@@ -56,6 +56,6 @@ public class SimpleDiffEditor extends FileEditorBase<DiffVirtualFile> {
 
     @Override
     public void dispose() {
-
+        // todo implement
     }
 }
