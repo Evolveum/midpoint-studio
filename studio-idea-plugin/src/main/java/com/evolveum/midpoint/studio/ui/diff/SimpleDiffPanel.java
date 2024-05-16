@@ -31,9 +31,9 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
 
     private final Project project;
 
-    private CustomComboBoxAction<DiffStrategy> strategyAction;
+    private final CustomComboBoxAction<DiffStrategy> strategyAction;
 
-    private DiffProcessor<O> processor;
+    private final DiffProcessor<O> processor;
 
     private SimpleDiffRequestProcessor diffRequestProcessor;
 
@@ -47,7 +47,14 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
             public void setSelected(DiffStrategy selected) {
                 super.setSelected(selected);
 
+                processor.setStrategy(selected);
+
                 refreshInternalDiffRequestProcessor();
+            }
+
+            @Override
+            public DiffStrategy getSelected() {
+                return processor.getStrategy();
             }
         };
 
@@ -119,18 +126,5 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
         super.addNotify();
 
         diffRequestProcessor.updateRequest();
-    }
-
-    private String getName(DiffSource<O> source) {
-        if (source == null) {
-            return "undefined";
-        }
-
-        String name = MidPointUtils.getName(source.object());
-        if (name == null) {
-            name = "undefined";
-        }
-
-        return name + " (" + source.type() + ")";
     }
 }

@@ -14,19 +14,12 @@ import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.diff.DiffRequestFactory;
-import com.intellij.diff.chains.DiffRequestChain;
-import com.intellij.diff.chains.SimpleDiffRequestChain;
-import com.intellij.diff.impl.CacheDiffRequestChainProcessor;
-import com.intellij.diff.requests.ContentDiffRequest;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -47,25 +40,23 @@ public class DiffProcessor<O extends ObjectType> {
     private final DiffSource<O> leftSource;
     private final DiffSource<O> rightSource;
 
+    private final DiffPanel<O> diffPanel;
+
+    private final SimpleDiffPanel<O> simpleDiffPanel;
+
     private ObjectDelta<O> delta;
-
-    private DiffPanel<O> diffPanel;
-
-    private SimpleDiffPanel<O> simpleDiffPanel;
 
     private Direction direction = Direction.RIGHT_TO_LEFT;
 
-    private DiffStrategy strategy = DiffStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS; // todo use natural keys by default
+    private DiffStrategy strategy = DiffStrategy.NATURAL_KEYS;
 
-    private CacheDiffRequestChainProcessor diffProcessor;
+    private DiffStrategyComboAction strategyAction;
 
     public DiffProcessor(@NotNull Project project, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right) {
         this.project = project;
 
         this.leftSource = left;
         this.rightSource = right;
-
-        refreshInternalDiffProcessor("", "");
 
         diffPanel = initDiffPanel();
         simpleDiffPanel = initSimpleDiffPanel();
@@ -89,15 +80,12 @@ public class DiffProcessor<O extends ObjectType> {
 
     public void setStrategy(DiffStrategy strategy) {
         this.strategy = strategy;
+
+        computeDelta();
     }
 
     private DiffPanel<O> initDiffPanel() {
-        return new DiffPanel<>() {
-
-            @Override
-            protected JComponent createTextDiff() {
-                return diffProcessor.getComponent();
-            }
+        return new DiffPanel<>(project, this) {
 
             @Override
             protected @NotNull List<AnAction> createToolbarActions() {
@@ -113,28 +101,6 @@ public class DiffProcessor<O extends ObjectType> {
 
     private SimpleDiffPanel<O> initSimpleDiffPanel() {
         return new SimpleDiffPanel<>(project, this);
-    }
-
-    private void refreshInternalDiffProcessor(String leftContent, String rightContent) {
-        if (diffProcessor != null) {
-            diffProcessor.dispose();
-        }
-
-        LightVirtualFile left = new LightVirtualFile(
-                leftSource.getFullName(), XmlFileType.INSTANCE, leftContent, System.currentTimeMillis());
-
-        LightVirtualFile right = new LightVirtualFile(
-                rightSource.getFullName(), XmlFileType.INSTANCE, rightContent, System.currentTimeMillis());
-
-        ContentDiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, left, right);
-        DiffRequestChain chain = new SimpleDiffRequestChain(request);
-
-        diffProcessor = new CacheDiffRequestChainProcessor(project, chain);
-        diffProcessor.updateRequest();
-
-        if (diffPanel != null) {
-            diffPanel.reloadDiffEditor();
-        }
     }
 
     public void computeDelta() {
@@ -187,7 +153,7 @@ public class DiffProcessor<O extends ObjectType> {
     private void onTreeSelectionChanged(List<DefaultMutableTreeNode> selected) {
         // todo implement
 
-        refreshInternalDiffProcessor(Double.toString(Math.random()), Double.toString(Math.random()));
+        diffPanel.refreshInternalDiffRequestProcessor(Double.toString(Math.random()), Double.toString(Math.random()));
     }
 
     private List<AnAction> createToolbarActions() {
@@ -195,7 +161,7 @@ public class DiffProcessor<O extends ObjectType> {
 
         actions.add(new Separator());
 
-        actions.add(new DiffStrategyComboAction(DiffStrategy.NATURAL_KEYS) {
+        strategyAction = new DiffStrategyComboAction(strategy) {
 
             @Override
             public void setSelected(DiffStrategy selected) {
@@ -203,7 +169,13 @@ public class DiffProcessor<O extends ObjectType> {
 
                 diffStrategyChanged(selected);
             }
-        });
+
+            @Override
+            public DiffStrategy getSelected() {
+                return strategy;
+            }
+        };
+        actions.add(strategyAction);
 
         actions.add(new UiAction("Cleanup", AllIcons.General.InspectionsEye, e -> cleanupPerformed()));
 
@@ -263,6 +235,8 @@ public class DiffProcessor<O extends ObjectType> {
         this.strategy = strategy;
 
         computeDelta();
+
+        simpleDiffPanel.refreshInternalDiffRequestProcessor();
     }
 
     protected void acceptPerformed() {

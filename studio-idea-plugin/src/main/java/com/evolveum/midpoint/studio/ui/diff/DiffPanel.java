@@ -3,12 +3,20 @@ package com.evolveum.midpoint.studio.ui.diff;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.intellij.diff.DiffRequestFactory;
+import com.intellij.diff.chains.DiffRequestChain;
+import com.intellij.diff.chains.SimpleDiffRequestChain;
+import com.intellij.diff.impl.CacheDiffRequestChainProcessor;
+import com.intellij.diff.requests.ContentDiffRequest;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.project.Project;
+import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBLabel;
@@ -26,18 +34,61 @@ import java.util.List;
 
 public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel {
 
+    private final Project project;
+
+    private final DiffProcessor<O> processor;
+
     private JBLabel label;
 
     private ObjectDeltaTree<O> deltaTree;
 
     private JBSplitter splitter;
 
-    public DiffPanel() {
+    private CacheDiffRequestChainProcessor diffRequestProcessor;
+
+    public DiffPanel(@NotNull Project project, @NotNull DiffProcessor<O> processor) {
+        this.project = project;
+        this.processor = processor;
+
         initLayout();
+
+        refreshInternalDiffRequestProcessor();
     }
 
     public void setTargetName(@NotNull String targetName) {
         label.setText("Select changes to be applied to '" + targetName + "' object:");
+    }
+
+    public void refreshInternalDiffRequestProcessor() {
+        refreshInternalDiffRequestProcessor("", "");
+    }
+
+    public void refreshInternalDiffRequestProcessor(String leftTextContent, String rightTextContent) {
+        if (diffRequestProcessor != null) {
+            diffRequestProcessor.dispose();
+        }
+
+        DiffSource<O> leftSource = processor.getLeftSource();
+        DiffSource<O> rightSource = processor.getRightSource();
+
+        LightVirtualFile left = new LightVirtualFile(
+                leftSource.getFullName(), XmlFileType.INSTANCE, leftTextContent, System.currentTimeMillis());
+
+        LightVirtualFile right = new LightVirtualFile(
+                rightSource.getFullName(), XmlFileType.INSTANCE, rightTextContent, System.currentTimeMillis());
+
+        ContentDiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, left, right);
+        DiffRequestChain chain = new SimpleDiffRequestChain(request);
+
+        diffRequestProcessor = new CacheDiffRequestChainProcessor(project, chain);
+        diffRequestProcessor.updateRequest();
+
+        JComponent component = splitter.getSecondComponent();
+        if (component instanceof Disposable disposable) {
+            disposable.dispose();
+        }
+
+        splitter.setSecondComponent(diffRequestProcessor.getComponent());
     }
 
     public void setDelta(@NotNull ObjectDelta<O> delta) {
@@ -57,21 +108,7 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
         add(deltaPanel, BorderLayout.CENTER);
 
         splitter.setFirstComponent(deltaPanel);
-
-        JComponent diffEditor = createTextDiff();
-        splitter.setSecondComponent(diffEditor);
         add(splitter, BorderLayout.CENTER);
-    }
-
-    public void reloadDiffEditor() {
-        JComponent diffEditor = createTextDiff();
-
-        JComponent component = splitter.getSecondComponent();
-        if (component instanceof Disposable disposable) {
-            disposable.dispose();
-        }
-
-        splitter.setSecondComponent(diffEditor);
     }
 
     private JBPanel<?> createDeltaTablePanel() {
@@ -90,8 +127,6 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
 
         return treePanel;
     }
-
-    protected abstract JComponent createTextDiff();
 
     private JComponent initMainToolbar(JComponent parent) {
         DefaultActionGroup group = new DefaultActionGroup();
