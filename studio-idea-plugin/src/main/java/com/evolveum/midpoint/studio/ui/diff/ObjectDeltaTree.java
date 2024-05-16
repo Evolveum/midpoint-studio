@@ -6,9 +6,11 @@ import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationUtil;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
+import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.render.LabelBasedRenderer;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.UIUtil;
@@ -25,6 +27,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Disposable {
+
+    private static final Logger LOG = Logger.getInstance(ObjectDeltaTree.class);
 
     public ObjectDeltaTree(@NotNull ObjectDeltaTreeModel<O> model) {
         super(model);
@@ -56,10 +60,6 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
                 Color color = computeColor(node.getUserObject());
                 if (color != null) {
                     c.setForeground(color);
-                }
-
-                if (node.getUserObject() instanceof DeltaItem && c instanceof JComponent jc) {
-                    jc.setToolTipText(convertValueToText(value, selected, expanded, leaf, row, focused));
                 }
 
                 return c;
@@ -127,7 +127,7 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
 
             PrismValue prismValue = di.value();
             if (prismValue instanceof PrismPropertyValue<?> property) {
-                value = property.getRealValue();
+                value = PrettyPrinter.prettyPrint(property.getRealValue());
             } else if (prismValue instanceof PrismReferenceValue ref) {
                 QName relation = ref.getRelation();
                 String relationStr = relation != null ? QNameUtil.prettyPrint(relation) : "";
@@ -137,7 +137,12 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
 
                 value = ref.getOid() + " (" + StringUtils.joinWith(", ", typeStr, relationStr) + ")";
             } else if (prismValue instanceof PrismContainerValue<?> container) {
-                return container.debugDump();
+                try {
+                    value = PrismContext.get().xmlSerializer().serialize(container);
+                } catch (Exception ex) {
+                    LOG.error("Couldn't serialize container value", ex);
+                    value = container.debugDump();
+                }
             }
 
             value = prefix + value;
