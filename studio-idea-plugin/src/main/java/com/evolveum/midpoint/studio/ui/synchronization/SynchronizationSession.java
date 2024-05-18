@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -46,6 +47,10 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         this.panel = panel;
     }
 
+    public Environment getEnvironment() {
+        return environment;
+    }
+
     public void open() {
 
     }
@@ -58,11 +63,47 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         return closed;
     }
 
-    public void addItem(@NotNull SynchronizationFileItem<T> item) {
+    public void addFileItem(@NotNull SynchronizationFileItem<T> item) {
         items.add(item);
 
         RunnableUtils.invokeLaterIfNeeded(() -> {
             panel.getModel().addFiles(List.of(item));
+        });
+    }
+
+    public void replaceFileItem(
+            @NotNull SynchronizationFileItem<T> oldItem, @Nullable SynchronizationFileItem<T> newItem) {
+
+        if (newItem != null) {
+            items.add(items.indexOf(oldItem), newItem);
+        }
+        items.remove(oldItem);
+
+        // todo close related editors when removing item from session
+
+        RunnableUtils.invokeLaterIfNeeded(() -> {
+            panel.getModel().setData((List) items);
+            // todo improve
+//            panel.getModel().replaceFiles(List.of(newItem));
+        });
+    }
+
+    public void replaceObjectItem(
+            @NotNull SynchronizationObjectItem oldItem, @Nullable SynchronizationObjectItem newItem) {
+
+        SynchronizationFileItem fileItem = oldItem.getFileItem();
+        List<T> objectItems = fileItem.getObjects();
+        if (newItem != null) {
+            objectItems.add(objectItems.indexOf(oldItem), (T) newItem);
+        }
+        objectItems.remove(oldItem);
+
+        // todo close related editors when removing item from session
+
+        RunnableUtils.invokeLaterIfNeeded(() -> {
+            panel.getModel().setData((List) items);
+//            todo improve
+//            panel.getModel().replaceObjects(List.of(newItem));
         });
     }
 
@@ -100,14 +141,6 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         task.addTaskListener(new FullUploadTaskListener(objectItems));
 
         ProgressManager.getInstance().run(task);
-    }
-
-    public void refresh(List<SynchronizationObjectItem> objectItems) {
-        if (objectItems.isEmpty()) {
-            return;
-        }
-
-        // todo implement
     }
 
     public void saveLocally(List<SynchronizationObjectItem> objectItems) {

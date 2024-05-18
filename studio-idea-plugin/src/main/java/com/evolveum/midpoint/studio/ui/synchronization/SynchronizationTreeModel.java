@@ -62,6 +62,14 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         treeStructureChanged(TreePathUtil.toTreePath(root), new int[]{0}, new Object[]{root});
     }
 
+    public void replaceFiles(@NotNull List<SynchronizationFileItem> items) {
+        // todo implement
+    }
+
+    public void replaceObjects(@NotNull List<SynchronizationObjectItem> items) {
+        // todo implement
+    }
+
     private List<CheckedTreeNode> addTreeNodes(CheckedTreeNode root, List<SynchronizationFileItem> items) {
         List<CheckedTreeNode> nodes = new ArrayList<>();
 

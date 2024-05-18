@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.ui.synchronization;
 
-import com.evolveum.midpoint.studio.action.task.SynchronizeObjectsTask;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.openapi.progress.ProgressManager;
@@ -62,7 +61,7 @@ public class SynchronizationManager {
 
         SynchronizationSession<?> session = createSession(environment);
 
-        SynchronizeObjectsTask task = new SynchronizeObjectsTask(project, files, session);
+        SynchronizeObjectsTask task = new SynchronizeObjectsTask(project, session, files);
         task.setEnvironment(environment);
 
         ProgressManager.getInstance().run(task);

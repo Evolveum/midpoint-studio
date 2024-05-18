@@ -1,6 +1,8 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
+import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
@@ -45,6 +47,10 @@ public class DiffProcessor<O extends ObjectType> {
     private final SimpleDiffPanel<O> simpleDiffPanel;
 
     private ObjectDelta<O> delta;
+
+    private final List<Object> leftIgnoredDelta = new ArrayList<>();
+
+    private final List<Object> rightIgnoredDelta = new ArrayList<>();
 
     private Direction direction = Direction.RIGHT_TO_LEFT;
 
@@ -146,14 +152,35 @@ public class DiffProcessor<O extends ObjectType> {
         return getTarget().object();
     }
 
+    public List<Object> getTargetIgnoredDelta() {
+        return direction == Direction.LEFT_TO_RIGHT ? rightIgnoredDelta : leftIgnoredDelta;
+    }
+
     public PrismObject<O> getSourceObject() {
         return getSource().object();
     }
 
     private void onTreeSelectionChanged(List<DefaultMutableTreeNode> selected) {
+        if (selected.isEmpty()) {
+            diffPanel.refreshInternalDiffRequestProcessor();
+            return;
+        }
+
+        DefaultMutableTreeNode node = selected.get(0);
+        Object userObject = node.getUserObject();
+
+        String xml = "";
+        if (userObject instanceof DeltaItem di) {
+            try {
+                xml = PrismContext.get().xmlSerializer().serialize(di.value());
+            } catch (Exception ex) {
+                LOG.debug("Couldn't serialize prism value", ex);
+                xml = di.value().debugDump();
+            }
+        }
         // todo implement
 
-        diffPanel.refreshInternalDiffRequestProcessor(Double.toString(Math.random()), Double.toString(Math.random()));
+        diffPanel.refreshInternalDiffRequestProcessor(xml, Double.toString(Math.random()));
     }
 
     private List<AnAction> createToolbarActions() {
@@ -303,8 +330,23 @@ public class DiffProcessor<O extends ObjectType> {
         return hasParentSelected(parent, selected);
     }
 
+    // todo ignored list should be cleared when strategy changes
     private void ignorePerformed() {
-        diffPanel.removeNodes(diffPanel.getSelectedNodes());
+        try {
+            List<DefaultMutableTreeNode> selected = diffPanel.getSelectedNodes();
+
+            for (DefaultMutableTreeNode node : selected) {
+                if (hasParentSelected(node, selected)) {
+                    continue;
+                }
+
+                getTargetIgnoredDelta().add(node.getUserObject());
+            }
+
+            diffPanel.removeNodes(selected);
+        } catch (Exception ex) {
+            throw new RuntimeException("Couldn't apply delta", ex);
+        }
     }
 
     private void cleanupPerformed() {

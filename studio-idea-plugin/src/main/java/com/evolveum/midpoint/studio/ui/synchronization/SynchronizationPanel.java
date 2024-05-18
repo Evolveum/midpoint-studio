@@ -4,6 +4,7 @@ import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.messages.MessageDialog;
 import com.intellij.ui.ScrollPaneFactory;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SynchronizationPanel extends BorderLayoutPanel {
@@ -96,12 +98,14 @@ public class SynchronizationPanel extends BorderLayoutPanel {
             return;
         }
 
-        Object[] userObjects = tree.getCheckedNodes(Object.class, null);
-
-        List<SynchronizationObjectItem> items = computeCheckedObjectItems(userObjects);
+        SynchronizationItem[] userObjects = tree.getCheckedNodes(SynchronizationItem.class, null);
+        List<SynchronizationItem> items = Arrays.asList(userObjects);
 
         SynchronizationSession<?> session = getSession();
-        session.refresh(items);
+
+        SynchronizationRefreshTask task = new SynchronizationRefreshTask(project, session, items);
+        task.setEnvironment(session.getEnvironment());
+        ProgressManager.getInstance().run(task);
 
         getModel().nodesChanged(userObjects);
     }
