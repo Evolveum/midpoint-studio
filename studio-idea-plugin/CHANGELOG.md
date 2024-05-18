@@ -1,14 +1,13 @@
 # MidPoint Studio
 
 ## [4.8.2]
-### Added
-
 ### Changed
 - Improved references inlay, annotators
 
 ### Fixed
 - MID-5901 missing prefix "t" in bulk action
 - MID-9481 fixed translation for role cluster/session types
+- MID-9503 fixed expander processing in xml attributes
 
 ## [4.8.1]
 ### Added
