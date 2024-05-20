@@ -207,6 +207,10 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
     }
 
     private String serializeObjects(List<PrismObject<?>> objects) throws SchemaException {
+        if (objects.size() == 1) {
+            return PrismContext.get().xmlSerializer().serialize(objects.get(0));
+        }
+
         return PrismContext.get().xmlSerializer().serializeObjects(objects);
     }
 
