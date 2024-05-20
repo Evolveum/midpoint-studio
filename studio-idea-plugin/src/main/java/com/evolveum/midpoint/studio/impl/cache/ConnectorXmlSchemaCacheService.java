@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.impl.match.MatchingRuleRegistryFactory;
+import com.evolveum.midpoint.prism.impl.xml.GlobalDynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
@@ -86,6 +87,9 @@ public class ConnectorXmlSchemaCacheService {
                 try {
                     PrismObject<?> prismObject = client.parseObject(object.getContent());
                     ConnectorType connectorType = (ConnectorType) prismObject.asObjectable();
+
+                    GlobalDynamicNamespacePrefixMapper.registerPrefixGlobal(
+                            connectorType.getNamespace(), SchemaConstants.CONNECTOR_CONFIGURATION_PREFIX);
 
                     cache.put(connectorType, new CacheValue(connectorType, buildIcfSchema(object), buildConnectorSchema(object)));
                 } catch (Exception ex) {
