@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
-import com.evolveum.midpoint.schema.delta.ThreeWayMerge;
+import com.evolveum.midpoint.schema.delta.ThreeWayMergeOperation;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.ui.diff.ThreeWayMergeTree;
 import com.evolveum.midpoint.studio.ui.diff.ThreeWayMergeTreeModel;
@@ -66,12 +66,12 @@ public class TestAction extends AnAction {
             PrismObject currentInitial = parse(currentInitialFile);
             PrismObject currentObject = parse(currentObjectFile);
 
-            ThreeWayMerge merge = new ThreeWayMerge(
+            ThreeWayMergeOperation operation = new ThreeWayMergeOperation(
                     currentInitial, currentObject, previousInitial, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS);
 
             ApplicationManager.getApplication().invokeAndWait(() -> {
                 ThreeWayMergeTreeModel model = new ThreeWayMergeTreeModel();
-                model.setData(merge);
+                model.setData(operation);
                 JComponent panel = new ThreeWayMergeTree(model);
                 DialogBuilder db = new DialogBuilder();
                 db.centerPanel(ScrollPaneFactory.createScrollPane(panel));

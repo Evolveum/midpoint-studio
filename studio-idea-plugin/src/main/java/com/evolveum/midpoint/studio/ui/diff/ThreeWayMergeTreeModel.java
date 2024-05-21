@@ -11,12 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ThreeWayMergeTreeModel<O extends ObjectType> extends DefaultTreeModel<ThreeWayMerge<O>> {
+public class ThreeWayMergeTreeModel<O extends ObjectType> extends DefaultTreeModel<ThreeWayMergeOperation<O>> {
 
     private static final Object NODE_ROOT = new Object();
 
     @Override
-    public void setData(ThreeWayMerge<O> data) {
+    public void setData(ThreeWayMergeOperation<O> data) {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(NODE_ROOT);
 
         // todo implement
