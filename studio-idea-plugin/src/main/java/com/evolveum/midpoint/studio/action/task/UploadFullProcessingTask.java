@@ -31,7 +31,7 @@ public class UploadFullProcessingTask extends ClientBackgroundableTask<TaskState
         this(project, dataContextSupplier, environment, TITLE, NOTIFICATION_KEY);
     }
 
-    protected UploadFullProcessingTask(
+    private UploadFullProcessingTask(
             @NotNull Project project, Supplier<DataContext> dataContextSupplier, Environment environment, String title,
             String notificationKey) {
 
@@ -71,7 +71,7 @@ public class UploadFullProcessingTask extends ClientBackgroundableTask<TaskState
         return por;
     }
 
-    public static List<String> buildUploadOptions(Project project, MidPointObject object) {
+    private List<String> buildUploadOptions(Project project, MidPointObject object) {
         List<String> options = new ArrayList<>();
         options.add(ModelExecuteOptionsType.F_IS_IMPORT.getLocalPart());
 

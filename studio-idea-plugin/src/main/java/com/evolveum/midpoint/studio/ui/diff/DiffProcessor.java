@@ -1,10 +1,10 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
-import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismValue;
+import com.evolveum.midpoint.prism.delta.ChangeType;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.studio.impl.Environment;
@@ -117,7 +117,12 @@ public class DiffProcessor<O extends ObjectType> {
             PrismObject<O> target = targetSource.object();
             PrismObject<O> source = getSourceObject();
 
-            delta = target.diff(source, strategy.getStrategy());
+            if (target == null || source == null) {
+                Class<O> type = target != null ? target.getCompileTimeClass() : source.getCompileTimeClass();
+                delta = PrismContext.get().deltaFactory().object().create(type, ChangeType.MODIFY);
+            } else {
+                delta = target.diff(source, strategy.getStrategy());
+            }
 
             diffPanel.setTargetName(targetSource.name() + " (" + targetSource.type() + ")");
             diffPanel.setDelta(delta);

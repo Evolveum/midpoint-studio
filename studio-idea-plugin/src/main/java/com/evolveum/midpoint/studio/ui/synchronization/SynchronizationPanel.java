@@ -78,6 +78,17 @@ public class SynchronizationPanel extends BorderLayoutPanel {
             }
         });
 
+        group.add(new UiAction("Upload (Full Processing)", AllIcons.Actions.Upload, e -> uploadPerformed()) {
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                super.update(e);
+
+                boolean enabled = tree.getCheckedNodes(Object.class, null).length != 0;
+                e.getPresentation().setEnabled(enabled);
+            }
+        });
+
         ActionToolbar toolbar = ActionManager.getInstance()
                 .createActionToolbar("diff-panel-toolbar", group, true);
         toolbar.setTargetComponent(parent);
@@ -87,6 +98,25 @@ public class SynchronizationPanel extends BorderLayoutPanel {
 
     public SynchronizationTreeModel getModel() {
         return (SynchronizationTreeModel) tree.getModel();
+    }
+
+    private void uploadPerformed() {
+        int result = MidPointUtils.showConfirmationDialog(
+                project, "Full upload will upload current objects as they are stored in file. Do you want to continue?",
+                "Confirm upload", "Upload", "Cancel");
+
+        if (result != MessageDialog.OK_EXIT_CODE) {
+            return;
+        }
+
+        SynchronizationItem[] userObjects = tree.getCheckedNodes(SynchronizationItem.class, null);
+        List<SynchronizationItem> items = Arrays.asList(userObjects);
+
+        SynchronizationSession<?> session = getSession();
+
+        SynchronizationUploadTask task = new SynchronizationUploadTask(project, session, items);
+        task.setEnvironment(session.getEnvironment());
+        ProgressManager.getInstance().run(task);
     }
 
     private void refreshPerformed() {
@@ -107,7 +137,7 @@ public class SynchronizationPanel extends BorderLayoutPanel {
         task.setEnvironment(session.getEnvironment());
         ProgressManager.getInstance().run(task);
 
-        getModel().nodesChanged(userObjects);
+        // todo refresh editors
     }
 
     private List<SynchronizationObjectItem> computeCheckedObjectItems(Object[] userObjects) {
