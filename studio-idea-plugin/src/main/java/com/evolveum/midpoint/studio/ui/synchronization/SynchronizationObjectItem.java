@@ -75,6 +75,11 @@ public class SynchronizationObjectItem extends SynchronizationItem {
         return remoteObject.hasChanges();
     }
 
+    @Override
+    public boolean isNew() {
+        return remoteObject.getOriginal() == null;
+    }
+
     // todo not correct, don't compare local/remote current, check whether there are deltas still to be resolved (applied/ignored - both ways)
     @Override
     public boolean isVisible() {

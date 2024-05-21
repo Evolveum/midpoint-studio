@@ -97,8 +97,6 @@ public class SynchronizationTask extends SimpleBackgroundableTask {
 
                 midPointService.printToConsole(env, SynchronizeObjectsTask.class, "Couldn't find object "
                         + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
-
-                return null;
             }
 
             SynchronizationObjectItem objectItem = new SynchronizationObjectItem(

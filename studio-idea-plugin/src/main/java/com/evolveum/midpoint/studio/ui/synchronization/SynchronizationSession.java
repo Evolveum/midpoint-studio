@@ -113,8 +113,10 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         }
 
         List<MidPointObject> objects = objectItems.stream()
+                .filter(i -> i.getRemote() != null)
                 .map(item -> {
                     try {
+//                        if (item.getRemote() != null) {
                         MidPointObject object = item.getRemote().copy();
 
                         PrismObject<?> remote = item.getRemoteObject().getCurrent();
@@ -122,6 +124,14 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
                         object.setContent(xml);
 
                         return object;
+//                        } else {
+//                            // remote doesn't exist yet...
+//                            PrismObject<?> local = item.getLocalObject().getCurrent();
+//                            String xml = ClientUtils.serialize(PrismContext.get(), local);
+//
+//                            return new MidPointObject(
+//                                    xml, ObjectTypes.getObjectTypeFromTypeQName(local.getDefinition().getTypeName()), false);
+//                        }
                     } catch (Exception ex) {
                         LOG.debug("Couldn't serialize remote object: " + item.getName(), ex);
 

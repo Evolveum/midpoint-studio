@@ -128,7 +128,11 @@ public class SynchronizationTreeModel extends DefaultTreeModel<List<Synchronizat
         }
         String changes = "";
         if (!parts.isEmpty()) {
-            changes = " (Pending " + StringUtils.join(parts, "/") + ")";
+            changes = " (Pending: " + StringUtils.join(parts, "/") + ")";
+        }
+
+        if (si.isNew()) {
+            changes = StringUtils.joinWith(" ", changes, "New");
         }
 
         return si.getName() + changes;

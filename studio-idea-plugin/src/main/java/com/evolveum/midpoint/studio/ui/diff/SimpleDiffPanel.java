@@ -80,15 +80,24 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
             PrismObject<O> left = leftSource.object();
             PrismObject<O> right = rightSource.object();
 
-            ObjectDelta<O> delta = left.diff(right, strategyAction.getSelected().getStrategy());
+            String leftContent = "";
+            String rightContent = "";
 
-            PrismObject<O> o1 = left.clone();
-            PrismObject<O> o2 = left.clone();
+            // left should always be not null (read from file used to fetch right one from remote location)
+            if (right != null) {
+                ObjectDelta<O> delta = left.diff(right, strategyAction.getSelected().getStrategy());
 
-            delta.applyTo(o2);
+                PrismObject<O> o1 = left.clone();
+                PrismObject<O> o2 = left.clone();
 
-            String leftContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, o1);
-            String rightContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, o2);
+                delta.applyTo(o2);
+
+                leftContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, o1);
+                rightContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, o2);
+            } else {
+                leftContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, left);
+            }
+
 
             LightVirtualFile leftFile = new LightVirtualFile(
                     leftSource.getFullName(), XmlFileType.INSTANCE, leftContent, System.currentTimeMillis());

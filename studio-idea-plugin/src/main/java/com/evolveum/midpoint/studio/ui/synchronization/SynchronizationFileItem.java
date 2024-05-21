@@ -53,6 +53,11 @@ public class SynchronizationFileItem<T extends SynchronizationObjectItem> extend
     }
 
     @Override
+    public boolean isNew() {
+        return objects.stream().anyMatch(SynchronizationObjectItem::isNew);
+    }
+
+    @Override
     public boolean isVisible() {
         return objects.stream().anyMatch(SynchronizationObjectItem::isVisible);
     }

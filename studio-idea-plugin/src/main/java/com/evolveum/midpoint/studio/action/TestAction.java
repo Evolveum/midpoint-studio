@@ -1,10 +1,11 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.schema.delta.ThreeWayMerge;
-import com.evolveum.midpoint.schema.delta.TreeDeltaUtils;
 import com.evolveum.midpoint.studio.client.ClientUtils;
-import com.evolveum.midpoint.studio.ui.diff.*;
+import com.evolveum.midpoint.studio.ui.diff.ThreeWayMergeTree;
+import com.evolveum.midpoint.studio.ui.diff.ThreeWayMergeTreeModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -12,14 +13,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
-import com.intellij.openapi.ui.DialogPanel;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.ScrollPaneFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 
 /**
@@ -68,29 +66,28 @@ public class TestAction extends AnAction {
             PrismObject currentInitial = parse(currentInitialFile);
             PrismObject currentObject = parse(currentObjectFile);
 
-            ThreeWayMerge merge = TreeDeltaUtils.createThreeWayMerge(previousInitial, currentInitial, currentObject);
-
-
+            ThreeWayMerge merge = new ThreeWayMerge(
+                    currentInitial, currentObject, previousInitial, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS);
 
             ApplicationManager.getApplication().invokeAndWait(() -> {
                 ThreeWayMergeTreeModel model = new ThreeWayMergeTreeModel();
                 model.setData(merge);
                 JComponent panel = new ThreeWayMergeTree(model);
                 DialogBuilder db = new DialogBuilder();
-                db.centerPanel(panel);
+                db.centerPanel(ScrollPaneFactory.createScrollPane(panel));
 
                 db.showAndGet();
             });
 
 
-            DiffSource left = new DiffSource("System configuration", DiffSourceType.LOCAL, currentObject);
-            DiffSource right = new DiffSource("System configuration", DiffSourceType.REMOTE, previousInitial);
-
-            DiffProcessor processor = new DiffProcessor(project, left, right);
-            processor.computeDelta();
-            DiffVirtualFile file = new DiffVirtualFile(processor);
-
-            MidPointUtils.openFile(project, file);
+//            DiffSource left = new DiffSource("System configuration", DiffSourceType.LOCAL, currentObject);
+//            DiffSource right = new DiffSource("System configuration", DiffSourceType.REMOTE, previousInitial);
+//
+//            DiffProcessor processor = new DiffProcessor(project, left, right);
+//            processor.computeDelta();
+//            DiffVirtualFile file = new DiffVirtualFile(processor);
+//
+//            MidPointUtils.openFile(project, file);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

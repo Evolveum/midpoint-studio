@@ -28,6 +28,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DiffProcessor<O extends ObjectType> {
 
@@ -371,5 +372,18 @@ public class DiffProcessor<O extends ObjectType> {
         direction = direction == Direction.LEFT_TO_RIGHT ? Direction.RIGHT_TO_LEFT : Direction.LEFT_TO_RIGHT;
 
         computeDelta();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DiffProcessor<?> processor = (DiffProcessor<?>) o;
+        return Objects.equals(project, processor.project) && Objects.equals(leftSource, processor.leftSource) && Objects.equals(rightSource, processor.rightSource);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(project, leftSource, rightSource);
     }
 }

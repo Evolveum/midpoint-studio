@@ -10,11 +10,17 @@ import org.jetbrains.annotations.Nullable;
 public record DiffSource<O extends ObjectType>(
         @Nullable String name,
         @NotNull DiffSourceType type,
-        @NotNull PrismObject<O> object) {
+        @Nullable PrismObject<O> object) {
+
+    public static final String NON_EXISTING_NAME = "Non-existing";
 
     public String getName() {
         if (StringUtils.isNotEmpty(name)) {
             return name;
+        }
+
+        if (object == null) {
+            return NON_EXISTING_NAME;
         }
 
         return MidPointUtils.getName(object);

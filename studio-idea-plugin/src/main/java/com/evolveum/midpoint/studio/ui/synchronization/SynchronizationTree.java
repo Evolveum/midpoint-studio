@@ -91,14 +91,14 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
     }
 
     private <O extends ObjectType> void openSynchronizationEditor(SynchronizationObjectItem object) {
-        MidPointObject rightObject = object.getRemote();
-
         VirtualFile leftRealFile = object.getFileItem().getFile();
+        String leftName = leftRealFile.getName();
 
-        DiffSource<O> left = new DiffSource(
-                leftRealFile.getName(), DiffSourceType.LOCAL, object.getLocalObject().getCurrent());
-        DiffSource<O> right = new DiffSource(
-                rightObject.getName() + ".xml", DiffSourceType.REMOTE, object.getRemoteObject().getCurrent());
+        MidPointObject rightObject = object.getRemote();
+        String rightName = rightObject != null ? rightObject.getName() + ".xml" : DiffSource.NON_EXISTING_NAME;
+
+        DiffSource<O> left = new DiffSource(leftName, DiffSourceType.LOCAL, object.getLocalObject().getCurrent());
+        DiffSource<O> right = new DiffSource(rightName, DiffSourceType.REMOTE, object.getRemoteObject().getCurrent());
 
         DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(project, left, right) {
 
