@@ -534,9 +534,6 @@
             <reference ref="MidPoint.Action.TestAction"/>
 
             <reference ref="MidPoint.Action.UploadFullProcessing"/>
-
-            <separator/>
-
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.SynchronizeObjects"/>
 
@@ -601,9 +598,6 @@
             <reference ref="MidPoint.Action.TestAction"/>
 
             <reference ref="MidPoint.Action.UploadFullProcessing"/>
-
-            <separator/>
-
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.SynchronizeObjects"/>
 

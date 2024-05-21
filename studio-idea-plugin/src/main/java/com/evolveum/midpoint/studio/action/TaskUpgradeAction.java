@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.action;
 import com.evolveum.midpoint.studio.action.task.TaskUpgradeTask;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressManager;
@@ -18,6 +19,11 @@ public class TaskUpgradeAction extends AnAction {
 
     public TaskUpgradeAction() {
         super(ACTION_NAME, ACTION_NAME, AllIcons.Actions.Annotate);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
     }
 
     @Override
