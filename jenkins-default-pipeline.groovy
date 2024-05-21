@@ -38,7 +38,7 @@ podTemplate(
                         resourceRequestMemory: '1Gi',
                         resourceLimitMemory: '1Gi'),
                 containerTemplate(name: 'jdk',
-                        image: "${params.BUILDER_IMAGE ?: 'maven:3.8.5-openjdk-17'}",
+                        image: "${params.BUILDER_IMAGE ?: 'maven:3.8.5-eclipse-temurin-17'}",
                         runAsUser: '0',
                         ttyEnabled: true,
                         command: 'cat',
