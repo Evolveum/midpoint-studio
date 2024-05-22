@@ -1,5 +1,11 @@
 # MidPoint Studio
 
+## [4.8.3]
+### Changed
+
+### Fixed
+
+
 ## [4.8.2]
 ### Changed
 - Improved references inlay, annotators
