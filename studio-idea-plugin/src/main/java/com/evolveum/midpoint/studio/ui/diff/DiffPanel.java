@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -25,6 +26,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -91,9 +93,9 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
         splitter.setSecondComponent(diffRequestProcessor.getComponent());
     }
 
-    public void setDelta(@NotNull ObjectDelta<O> delta) {
+    public void setDelta(@NotNull PrismObject<O> target, @NotNull ObjectDelta<O> delta) {
         ObjectDeltaTreeModel<O> model = getTreeModel();
-        model.setData(delta);
+        model.setData(new ObjectDeltaTreeData<>(target, delta));
 
         expandAllPerformed();
     }

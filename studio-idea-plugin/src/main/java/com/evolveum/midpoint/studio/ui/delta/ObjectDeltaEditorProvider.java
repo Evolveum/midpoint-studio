@@ -22,6 +22,7 @@ import javax.xml.namespace.QName;
 /**
  * Created by Viliam Repan (lazyman).
  */
+@Deprecated
 public class ObjectDeltaEditorProvider implements FileEditorProvider, DumbAware {
 
     private static final String EDITOR_TYPE_ID = "object-delta-ui";

@@ -3,6 +3,9 @@ package com.evolveum.midpoint.studio.ui.diff;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.path.ItemPathSegment;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationUtil;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
@@ -22,8 +25,8 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.xml.namespace.QName;
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Disposable {
@@ -77,8 +80,8 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
         ModificationType type = null;
         if (userObject instanceof DeltaItem di) {
             type = di.modificationType();
-        } else if (userObject instanceof ItemDelta<?, ?> id) {
-            type = getModificationType(id);
+        } else if (userObject instanceof ObjectDeltaTreeNode itemDeltaNode) {
+            type = getModificationType(itemDeltaNode.delta());
         } else if (userObject instanceof ObjectDelta<?> od) {
             type = getModificationType(od);
         }
@@ -138,7 +141,8 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
                 value = ref.getOid() + " (" + StringUtils.joinWith(", ", typeStr, relationStr) + ")";
             } else if (prismValue instanceof PrismContainerValue<?> container) {
                 try {
-                    value = PrismContext.get().xmlSerializer().serialize(container);
+                    String xml = PrismContext.get().xmlSerializer().serialize(container);
+                    value = StringUtils.abbreviate(xml, 200);
                 } catch (Exception ex) {
                     LOG.error("Couldn't serialize container value", ex);
                     value = container.debugDump();
@@ -146,10 +150,86 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
             }
 
             value = prefix + value;
-        } else if (node.getUserObject() instanceof ItemDelta<?, ?> id) {
-            value = id.getPath().toString();
+        } else if (node.getUserObject() instanceof ObjectDeltaTreeNode itemDeltaNode) {
+            value = createReadablePath(itemDeltaNode);
         }
 
         return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
+    }
+
+    private String createReadablePath(ObjectDeltaTreeNode itemDeltaNode) {
+        Item<?, ?> targetItem = itemDeltaNode.targetItem();
+        PrismObject<?> object = getObject(targetItem);
+
+
+        ItemPath path = itemDeltaNode.delta().getPath();
+
+        List<String> segments = new ArrayList<>();
+
+        ItemPath partial = ItemPath.EMPTY_PATH;
+        for (Object segment : path.getSegments()) {
+            if (segment instanceof Long id) {
+                String suffix = createNaturalKeySuffix(object, partial, id);
+                if (suffix != null) {
+                    segments.add(id + suffix);
+                }
+            } else {
+                segments.add(ItemPathSegment.toString(segment));
+            }
+
+            partial = partial.append(segment);
+        }
+
+        return StringUtils.join(segments, "/");
+    }
+
+    private String createNaturalKeySuffix(PrismObject<?> object, ItemPath path, Long id) {
+        String naturalKey = getNaturalKey(object, path, id);
+
+        return naturalKey == null ? null : " (" + naturalKey + ")";
+    }
+
+    private String getNaturalKey(PrismObject<?> object, ItemPath path, Long id) {
+        if (object == null) {
+            return null;
+        }
+        PrismContainer<?> item = object.findContainer(path);
+        if (item == null) {
+            return null;
+        }
+
+        NaturalKeyDefinition def = item.getDefinition().getNaturalKeyInstance();
+        if (def == null) {
+            return null;
+        }
+
+        PrismContainerValue<?> value = item.findValue(id);
+        Collection<Item<?, ?>> items = def.getConstituents(value);
+        if (items == null) {
+            return null;
+        }
+
+        String key = items.stream()
+                .map(i -> i.getElementName().getLocalPart() + ": " + StringUtils.join(i.getRealValues(), ", "))
+                .collect(Collectors.joining("; "));
+
+        return StringUtils.abbreviate(key, 200);
+    }
+
+    private PrismObject<?> getObject(Item<?, ?> item) {
+        if (item == null) {
+            return null;
+        }
+
+        if (item instanceof PrismObject<?> o) {
+            return o;
+        }
+
+        PrismContainerValue parentValue = item.getParent();
+        if (parentValue != null) {
+            return getObject((Item) parentValue.getParent());
+        }
+
+        return null;
     }
 }

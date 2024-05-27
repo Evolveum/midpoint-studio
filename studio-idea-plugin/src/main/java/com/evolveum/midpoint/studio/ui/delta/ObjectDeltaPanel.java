@@ -42,6 +42,7 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
+@Deprecated
 public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
     private static final Logger LOG = Logger.getInstance(ObjectDeltaPanel.class);

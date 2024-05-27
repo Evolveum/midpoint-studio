@@ -125,7 +125,7 @@ public class DiffProcessor<O extends ObjectType> {
             }
 
             diffPanel.setTargetName(targetSource.name() + " (" + targetSource.type() + ")");
-            diffPanel.setDelta(delta);
+            diffPanel.setDelta(target, delta);
         } catch (Exception ex) {
             throw new RuntimeException("Couldn't parse object", ex);
         }
@@ -186,7 +186,7 @@ public class DiffProcessor<O extends ObjectType> {
         }
         // todo implement
 
-        diffPanel.refreshInternalDiffRequestProcessor(xml, Double.toString(Math.random()));
+        diffPanel.refreshInternalDiffRequestProcessor(xml, "");
     }
 
     private List<AnAction> createToolbarActions() {
@@ -299,9 +299,9 @@ public class DiffProcessor<O extends ObjectType> {
             Object userObject = node.getUserObject();
             if (userObject instanceof ObjectDelta<?> od) {
                 delta = (ObjectDelta<O>) od;
-            } else if (userObject instanceof ItemDelta<?, ?> id) {
+            } else if (userObject instanceof ObjectDeltaTreeNode itemDeltaNode) {
                 delta = object.createModifyDelta();
-                delta.addModification(id.clone());
+                delta.addModification(itemDeltaNode.delta().clone());
             } else if (userObject instanceof DeltaItem di) {
                 PrismValue cloned = di.value().clone();
 

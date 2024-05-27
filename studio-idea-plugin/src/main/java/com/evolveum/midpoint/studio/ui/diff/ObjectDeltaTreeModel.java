@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.prism.ModificationType;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
@@ -12,7 +13,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.util.Collection;
 
-public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel<ObjectDelta<O>> {
+public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel<ObjectDeltaTreeData<O>> {
 
     private static final Object NODE_ROOT = "";
 
@@ -21,19 +22,25 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel
     }
 
     @Override
-    public void setData(@NotNull ObjectDelta<O> delta) {
+    public void setData(@NotNull ObjectDeltaTreeData<O> data) {
+        PrismObject<O> target = data.target();
+
+        ObjectDelta<O> delta = data.delta();
+
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(NODE_ROOT);
 
         if (delta.isEmpty()) {
             return;
         }
 
-        DefaultMutableTreeNode all = new DefaultMutableTreeNode(delta);
+        DefaultMutableTreeNode all = new DefaultMutableTreeNode(data);
         root.add(all);
 
         Collection<? extends ItemDelta<?, ?>> modifications = delta.getModifications();
         for (ItemDelta<?, ?> modification : modifications) {
-            DefaultMutableTreeNode itemDeltaNode = new DefaultMutableTreeNode(modification);
+            DefaultMutableTreeNode itemDeltaNode =
+                    new DefaultMutableTreeNode(
+                            new ObjectDeltaTreeNode(modification, target.findItem(modification.getPath())));
             all.add(itemDeltaNode);
 
             addValues(itemDeltaNode, modification, ModificationType.ADD, modification.getValuesToAdd());
@@ -41,7 +48,7 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel
             addValues(itemDeltaNode, modification, ModificationType.REPLACE, modification.getValuesToReplace());
         }
 
-        super.setData(delta);
+        super.setData(data);
 
         setRoot(root);
     }
