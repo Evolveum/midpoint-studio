@@ -1,9 +1,8 @@
 package com.evolveum.midpoint.studio.action.task;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.SearchOptions;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.xml.LocationType;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -61,6 +60,15 @@ public class DiffRemoteTask extends DiffTask {
         processFiles(indicator, toProcess);
     }
 
+    private Expander createExpander() {
+        EncryptionService cm = EncryptionService.getInstance(getProject());
+
+        MidPointService ms = MidPointService.getInstance(getProject());
+        boolean ignoreMissingKeys = ms.getSettings().isIgnoreMissingKeys();
+
+        return new Expander(getEnvironment(), cm, getProject(), ignoreMissingKeys);
+    }
+
     private void processFiles(ProgressIndicator indicator, List<VirtualFile> files) {
         Environment env = getEnvironment();
 
@@ -68,6 +76,8 @@ public class DiffRemoteTask extends DiffTask {
         int missing = 0;
         AtomicInteger diffed = new AtomicInteger(0);
         AtomicInteger failed = new AtomicInteger(0);
+
+        Expander expander = createExpander();
 
         int current = 0;
         for (VirtualFile file : files) {
@@ -78,7 +88,10 @@ public class DiffRemoteTask extends DiffTask {
 
             List<MidPointObject> objects;
             try {
-                objects = loadObjectsFromFile(file);
+                List<MidPointObject> rawObjects = loadObjectsFromFile(file);
+                objects = rawObjects.stream()
+                        .map(o -> MidPointUtils.expand(o, expander))
+                        .toList();
             } catch (Exception ex) {
                 failed.incrementAndGet();
                 midPointService.printToConsole(env, DiffRemoteTask.class, "Couldn't load objects from file " + file.getPath(), ex);
@@ -96,13 +109,16 @@ public class DiffRemoteTask extends DiffTask {
             for (MidPointObject object : objects) {
                 ProgressManager.checkCanceled();
 
+                String oid = object.getOid();
+                ObjectTypes type = object.getType();
+
                 try {
-                    MidPointObject newObject = client.get(object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+                    MidPointObject newObject = client.get(type.getClassDefinition(), oid, new SearchOptions().raw(true));
                     if (newObject == null) {
                         missing++;
 
                         midPointService.printToConsole(env, DiffRemoteTask.class, "Couldn't find object "
-                                + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+                                + type.getTypeQName().getLocalPart() + "(" + oid + ").");
 
                         continue;
                     }
@@ -116,7 +132,7 @@ public class DiffRemoteTask extends DiffTask {
                     failed.incrementAndGet();
 
                     midPointService.printToConsole(env, DiffRemoteTask.class, "Error getting object"
-                            + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
+                            + type.getTypeQName().getLocalPart() + "(" + oid + ")", ex);
                 }
             }
 

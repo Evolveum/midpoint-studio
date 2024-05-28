@@ -1119,4 +1119,11 @@ public class MidPointUtils {
 
         return new ColorIcon(24, 14, 24, 14, color, true);
     }
+
+    public static MidPointObject expand(MidPointObject object, Expander expander) {
+        VirtualFile file = object.getFile() != null ? VfsUtil.findFileByIoFile(object.getFile(), true) : null;
+        String content = expander.expand(object.getContent(), file);
+
+        return ClientUtils.parseText(content, object.getFile()).get(0);
+    }
 }
