@@ -6,10 +6,13 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.ShowConsoleNotificationAction;
 import com.evolveum.midpoint.studio.impl.UploadResponse;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -18,8 +21,11 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ModelExecuteOptionsT
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.model.scripting_3.*;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
+import com.intellij.notification.NotificationType;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.vcsUtil.VcsUtil;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +36,27 @@ public interface UploadTaskMixin {
 
     record UploadExecuteResult(OperationResult result, String consoleOutput) {
 
+    }
+
+    static void showConsoleOutputNotification(
+            Project project, Environment environment, Class caller, String notificationKey, MidPointObject object,
+            UploadExecuteResult result) {
+
+        if (result == null || result.consoleOutput() == null) {
+            return;
+        }
+
+        String name = object.isExecutable() ? "action" : object.getName();
+        String content = result.consoleOutput();
+
+        MidPointService ms = MidPointService.get(project);
+        ms.printToConsole(environment, caller, "Console output for " + name + ":\n" + content + "\n");
+
+        MidPointUtils.publishNotification(
+                project,
+                notificationKey, "Action output", StringUtils.abbreviate(content, 100),
+                NotificationType.WARNING,
+                new ShowConsoleNotificationAction(project));
     }
 
     static List<String> buildUploadOptions(MidPointObject object) {
