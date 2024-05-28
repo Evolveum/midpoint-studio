@@ -36,7 +36,7 @@ public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
 
     @Override
     public ProcessObjectResult processObject(MidPointObject obj) throws Exception {
-        OperationResult result = UploadTaskMixin.uploadExecute(client, obj);
+        OperationResult result = UploadTaskMixin.uploadExecute(client, obj).result();
 
         return validateOperationResult("upload", result, obj.getName());
     }

@@ -16,10 +16,7 @@ import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResp
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AssignmentHolderType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ModelExecuteOptionsType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
-import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ActionExpressionType;
-import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ExpressionPipelineType;
-import com.evolveum.midpoint.xml.ns._public.model.scripting_3.ObjectFactory;
-import com.evolveum.midpoint.xml.ns._public.model.scripting_3.SearchExpressionType;
+import com.evolveum.midpoint.xml.ns._public.model.scripting_3.*;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.vcsUtil.VcsUtil;
@@ -30,6 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface UploadTaskMixin {
+
+    record UploadExecuteResult(OperationResult result, String consoleOutput) {
+
+    }
 
     static List<String> buildUploadOptions(MidPointObject object) {
         List<String> options = new ArrayList<>();
@@ -43,22 +44,28 @@ public interface UploadTaskMixin {
         return options;
     }
 
-    static OperationResult uploadExecute(MidPointClient client, MidPointObject obj)
+    static UploadExecuteResult uploadExecute(MidPointClient client, MidPointObject obj)
             throws AuthenticationException, IOException, SchemaException {
 
         return uploadExecute(client, obj, buildUploadOptions(obj));
     }
 
-    static OperationResult uploadExecute(MidPointClient client, MidPointObject obj, List<String> options)
+    static UploadExecuteResult uploadExecute(MidPointClient client, MidPointObject obj, List<String> options)
             throws AuthenticationException, IOException, SchemaException {
 
         OperationResult result = null;
+        String consoleOutput = null;
         if (obj.isExecutable()) {
             ExecuteScriptResponseType response = client.execute(obj.getContent());
 
             if (response != null) {
                 OperationResultType res = response.getResult();
                 result = OperationResult.createOperationResult(res);
+
+                ExecuteScriptOutputType output = response.getOutput();
+                if (output != null && output.getConsoleOutput() != null) {
+                    consoleOutput = output.getConsoleOutput();
+                }
             }
         } else {
             File file = obj.getFile();
@@ -82,7 +89,7 @@ public interface UploadTaskMixin {
             }
         }
 
-        return result;
+        return new UploadExecuteResult(result, consoleOutput);
     }
 
     static OperationResult recompute(MidPointClient client, MidPointObject object)

@@ -4,10 +4,16 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.ConsoleService;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ModelExecuteOptionsType;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationAction;
+import com.intellij.notification.NotificationType;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +48,32 @@ public class UploadFullProcessingTask extends ClientBackgroundableTask<TaskState
 
     @Override
     protected ProcessObjectResult processObject(MidPointObject object) throws Exception {
-        OperationResult result = UploadTaskMixin.uploadExecute(client, object, buildUploadOptions(getProject(), object));
+        UploadTaskMixin.UploadExecuteResult uploadExecuteResult =
+                UploadTaskMixin.uploadExecute(client, object, buildUploadOptions(getProject(), object));
+        OperationResult result = uploadExecuteResult.result();
+
+        if (uploadExecuteResult.consoleOutput() != null) {
+            String name = object.isExecutable() ? "action" : object.getName();
+            String content = uploadExecuteResult.consoleOutput();
+            if (!content.endsWith("\n")) {
+                content += "\n";
+            }
+
+            midPointService.printToConsole(
+                    getEnvironment(), getClass(), "Console output for " + name + ":\n" + content + "\n");
+
+            MidPointUtils.publishNotification(
+                    getProject(),
+                    NOTIFICATION_KEY, "Warning", "Console output was not empty",
+                    NotificationType.WARNING,
+                    new NotificationAction("Show console") {
+
+                        @Override
+                        public void actionPerformed(@NotNull AnActionEvent evt, @NotNull Notification notification) {
+                            ConsoleService.get(getProject()).focusConsole();
+                        }
+                    });
+        }
 
         ProcessObjectResult por = validateOperationResult(OPERATION_UPLOAD, result, object.getName());
 
