@@ -1192,4 +1192,11 @@ public class MidPointUtils {
 
         return enabled && internal;
     }
+
+    public static MidPointObject expand(MidPointObject object, Expander expander) {
+        VirtualFile file = object.getFile() != null ? VfsUtil.findFileByIoFile(object.getFile(), true) : null;
+        String content = expander.expand(object.getContent(), file);
+
+        return ClientUtils.parseText(content, object.getFile()).get(0);
+    }
 }
