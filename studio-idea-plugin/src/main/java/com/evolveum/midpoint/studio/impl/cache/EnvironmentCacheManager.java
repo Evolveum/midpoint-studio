@@ -10,6 +10,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SystemConfigurationType;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +20,19 @@ import java.util.function.Consumer;
 
 public class EnvironmentCacheManager {
 
+    public static class CacheKey<C extends Cache> {
+
+        private final Class cacheType;
+
+        public CacheKey(Class cacheType) {
+            this.cacheType = cacheType;
+        }
+    }
+
     public static final CacheKey<ObjectCache<SchemaType>> KEY_SCHEMA = new CacheKey<>(ObjectCache.class);
     public static final CacheKey<ObjectCache<SystemConfigurationType>> KEY_SYSTEM_CONFIGURATION = new CacheKey<>(ObjectCache.class);
     public static final CacheKey<ConnectorCache> KEY_CONNECTOR = new CacheKey<>(ConnectorCache.class);
-
-    public record CacheKey<C extends Cache>(Class cacheType) {
-    }
+    public static final CacheKey<EnvironmentPropertiesCache> KEY_PROPERTIES = new CacheKey<>(EnvironmentPropertiesCache.class);
 
     private static class ManagerState {
 
@@ -53,11 +61,15 @@ public class EnvironmentCacheManager {
         return project.getService(EnvironmentCacheManager.class);
     }
 
+    public static <C extends Cache> C getCache(Project project, CacheKey<C> cache) {
+        return get(project).getCache(cache);
+    }
+
     private void init() {
         caches.put(KEY_SCHEMA, new ObjectCache<>(project, SchemaType.class));
         caches.put(KEY_SYSTEM_CONFIGURATION, new ObjectCache<>(project, SystemConfigurationType.class));
-
         caches.put(KEY_CONNECTOR, new ConnectorCache(project));
+        caches.put(KEY_PROPERTIES, new EnvironmentPropertiesCache(project));
 
         MidPointService ms = MidPointService.get(project);
         MidPointConfiguration config = ms.getSettings();
@@ -103,6 +115,16 @@ public class EnvironmentCacheManager {
     }
 
     public void reload() {
+        AppExecutorUtil.getAppExecutorService().submit(() -> reloadInternal());
+    }
+
+    public void reloadInternal() {
+        try {
+            Thread.sleep(10000L);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
         MidPointClient client = new MidPointClient(project, environment, true, true);
         TestConnectionResult testConnection = client.testConnection();
         LOG.debug("Test connection: {}", testConnection.success() ? "success" : "failed");

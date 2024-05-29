@@ -59,8 +59,7 @@ public class ConnectorXmlSchemaProvider extends XmlSchemaProvider {
             return null;
         }
 
-        EnvironmentCacheManager ecm = EnvironmentCacheManager.get(project);
-        ConnectorCache cache = ecm.getCache(EnvironmentCacheManager.KEY_CONNECTOR);
+        ConnectorCache cache = EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_CONNECTOR);
         return cache.getSchema(url, (XmlFile) baseFile);
     }
 }

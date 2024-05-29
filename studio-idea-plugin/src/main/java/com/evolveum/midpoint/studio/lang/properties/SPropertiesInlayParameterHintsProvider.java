@@ -1,7 +1,8 @@
 package com.evolveum.midpoint.studio.lang.properties;
 
 import com.evolveum.midpoint.studio.impl.Expander;
-import com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService;
+import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
+import com.evolveum.midpoint.studio.impl.cache.EnvironmentPropertiesCache;
 import com.intellij.codeInsight.hints.InlayInfo;
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider;
 import com.intellij.openapi.project.Project;
@@ -36,7 +37,7 @@ public class SPropertiesInlayParameterHintsProvider implements InlayParameterHin
             return Collections.emptyList();
         }
 
-        PropertiesInlayCacheService cache = project.getService(PropertiesInlayCacheService.class);
+        EnvironmentPropertiesCache cache = EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_PROPERTIES);
 
         List<InlayInfo> result = new ArrayList<>();
 

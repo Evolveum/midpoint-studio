@@ -21,9 +21,11 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.XmlSchemaType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.ControlFlowException;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
@@ -129,7 +131,15 @@ public class ConnectorCache extends ObjectCache<ConnectorType> {
 
         String xsd = DOMUtil.serializeDOMToString(doc);
 
-        return (XmlFile) PsiFileFactory.getInstance(getProject()).createFileFromText("connector-" + oid + "-schema.xsd", XMLLanguage.INSTANCE, xsd);
+        return createXmlFile("connector-" + oid + "-schema.xsd", xsd);
+    }
+
+    private XmlFile createXmlFile(String name, String content) {
+        return ApplicationManager.getApplication()
+                .runReadAction(
+                        (Computable<? extends XmlFile>)
+                                () -> (XmlFile) PsiFileFactory.getInstance(getProject())
+                                        .createFileFromText(name, XMLLanguage.INSTANCE, content));
     }
 
     private QName xsdElement(String name) {
@@ -172,7 +182,7 @@ public class ConnectorCache extends ObjectCache<ConnectorType> {
 
         String xsd = DOMUtil.serializeDOMToString(xsdSchema);
 
-        return (XmlFile) PsiFileFactory.getInstance(getProject()).createFileFromText("connector-" + oid + "-schema-modified.xsd", XMLLanguage.INSTANCE, xsd);
+        return createXmlFile("connector-" + oid + "-schema-modified.xsd", xsd);
     }
 
     private Element getXsdSchema(String connector) {

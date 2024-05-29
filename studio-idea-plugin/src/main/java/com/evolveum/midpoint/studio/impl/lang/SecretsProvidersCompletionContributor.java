@@ -44,8 +44,8 @@ public class SecretsProvidersCompletionContributor extends MidPointCompletionCon
                 @NotNull ProcessingContext context,
                 @NotNull CompletionResultSet result) {
 
-            EnvironmentCacheManager ecm = EnvironmentCacheManager.get(parameters.getPosition().getProject());
-            ObjectCache<SystemConfigurationType> cache = ecm.getCache(EnvironmentCacheManager.KEY_SYSTEM_CONFIGURATION);
+            ObjectCache<SystemConfigurationType> cache = EnvironmentCacheManager.getCache(
+                    parameters.getPosition().getProject(), EnvironmentCacheManager.KEY_SYSTEM_CONFIGURATION);
             SystemConfigurationType config = cache.get(SystemObjectsType.SYSTEM_CONFIGURATION.value());
 
             SecretsProvidersType providers = config.getSecretsProviders();
@@ -54,11 +54,11 @@ public class SecretsProvidersCompletionContributor extends MidPointCompletionCon
             }
 
             List<SecretsProviderItem> items = new ArrayList<>();
-            items.addAll(createSecretProviderItems(List.of(providers.getDocker()), "Docker"));
-            items.addAll(createSecretProviderItems(providers.getFile(), "File"));
-            items.addAll(createSecretProviderItems(providers.getCustom(), "Custom"));
-            items.addAll(createSecretProviderItems(providers.getProperties(), "Properties"));
-            items.addAll(createSecretProviderItems(providers.getEnvironmentVariables(), "Environment Variables"));
+            items.addAll(createSecretProviderItems(List.of(providers.getDocker()), "Docker Secrets"));
+            items.addAll(createSecretProviderItems(providers.getFile(), "File Secrets"));
+            items.addAll(createSecretProviderItems(providers.getCustom(), "Custom Secrets"));
+            items.addAll(createSecretProviderItems(providers.getProperties(), "Properties Secrets"));
+            items.addAll(createSecretProviderItems(providers.getEnvironmentVariables(), "Environment Variables Secrets"));
 
             items.sort(Comparator.comparing(SecretsProviderItem::id));
 

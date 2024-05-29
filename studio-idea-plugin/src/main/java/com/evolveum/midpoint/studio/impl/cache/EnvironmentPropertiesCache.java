@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.impl.cache;
 
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.Expander;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.codeInsight.hints.ParameterHintsPassFactory;
 import com.intellij.openapi.diagnostic.Logger;
@@ -10,7 +11,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
-import com.intellij.util.messages.MessageBus;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,25 +22,14 @@ import java.util.Set;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class PropertiesInlayCacheService {
+public class EnvironmentPropertiesCache extends Cache {
 
-    private static final Logger LOG = Logger.getInstance(PropertiesInlayCacheService.class);
-
-    private Project project;
+    private static final Logger LOG = Logger.getInstance(EnvironmentPropertiesCache.class);
 
     private Expander expander;
 
-    public PropertiesInlayCacheService(Project project) {
-        this.project = project;
-
-        MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
-
-            @Override
-            public void environmentChanged(Environment oldEnv, Environment newEnv) {
-                refresh(newEnv);
-            }
-        });
+    public EnvironmentPropertiesCache(Project project) {
+        super(project);
 
         project.getMessageBus().connect().subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
 
@@ -71,28 +60,26 @@ public class PropertiesInlayCacheService {
                 }
 
                 if (refresh) {
-                    refresh(env);
+                    reload();
                 }
             }
         });
-
-        EnvironmentService env = project.getService(EnvironmentService.class);
-        refresh(env.getSelected());
     }
 
-    private void refresh(Environment environment) {
+    @Override
+    void reload() {
         LOG.info("Starting refresh");
 
-        if (environment == null) {
+        if (getEnvironment() == null) {
             expander = null;
             return;
         }
 
-        expander = new Expander(environment, project);
+        expander = new Expander(getEnvironment(), getProject());
 
         // force re-highlight editors, this probably shouldn't be here, but right now no better place
         ParameterHintsPassFactory.forceHintsUpdateOnNextPass();
-        DaemonCodeAnalyzer dca = DaemonCodeAnalyzer.getInstance(project);
+        DaemonCodeAnalyzer dca = DaemonCodeAnalyzer.getInstance(getProject());
         dca.restart();
 
         LOG.info("Refresh finished");
@@ -116,7 +103,7 @@ public class PropertiesInlayCacheService {
 
     public Set<String> getKeys() {
         if (expander == null) {
-            return new HashSet();
+            return new HashSet<>();
         }
 
         return expander.getKeys();

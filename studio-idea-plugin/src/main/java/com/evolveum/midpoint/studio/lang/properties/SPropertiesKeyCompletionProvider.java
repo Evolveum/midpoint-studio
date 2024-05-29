@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.lang.properties;
 
-import com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService;
+import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
+import com.evolveum.midpoint.studio.impl.cache.EnvironmentPropertiesCache;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -32,7 +33,7 @@ public class SPropertiesKeyCompletionProvider extends CompletionProvider<Complet
             return;
         }
 
-        PropertiesInlayCacheService cache = project.getService(PropertiesInlayCacheService.class);
+        EnvironmentPropertiesCache cache = EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_PROPERTIES);
         Set<String> keys = cache.getKeys();
 
         List<String> sorted = new ArrayList<>(keys);
