@@ -72,6 +72,14 @@ open class MidPointConfigurable(val project: Project) :
                         )
                         .comment(message("MidPointConfigurable.updateOnUpload.comment"))
                 }
+                row {
+                    checkBox(message("MidPointConfigurable.ignoreMissingKeys"))
+                        .bindSelected(
+                            { configuration.isIgnoreMissingKeys },
+                            { configuration.isIgnoreMissingKeys = it }
+                        )
+                        .comment(message("MidPointConfigurable.ignoreMissingKeys.comment"))
+                }
             }
             groupRowsRange(message("MidPointConfigurable.restClient.title")) {
                 row(message("MidPointConfigurable.restClient.downloadFilePattern")) {
