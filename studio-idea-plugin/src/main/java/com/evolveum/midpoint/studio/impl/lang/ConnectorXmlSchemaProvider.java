@@ -1,7 +1,8 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
-import com.evolveum.midpoint.studio.impl.cache.ConnectorXmlSchemaCacheService;
+import com.evolveum.midpoint.studio.impl.cache.ConnectorCache;
+import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.intellij.openapi.module.Module;
@@ -58,7 +59,8 @@ public class ConnectorXmlSchemaProvider extends XmlSchemaProvider {
             return null;
         }
 
-        ConnectorXmlSchemaCacheService cache = project.getService(ConnectorXmlSchemaCacheService.class);
+        EnvironmentCacheManager ecm = EnvironmentCacheManager.get(project);
+        ConnectorCache cache = ecm.getCache(EnvironmentCacheManager.KEY_CONNECTOR);
         return cache.getSchema(url, (XmlFile) baseFile);
     }
 }

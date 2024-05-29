@@ -13,9 +13,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.ConsoleService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ConnectorXmlSchemaCacheService"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ExtensionSchemaCacheService"/>
 
@@ -605,6 +605,8 @@
 
             <reference ref="MidPoint.Action.ComboEnvironmentAction"/>
 
+            <reference ref="MidPoint.Action.TestConnection"/>
+
             <group id="MidPoint.ExpUI.Toolbar.Others"
                    text="Other Actions"
                    popup="true"
@@ -642,7 +644,6 @@
                 <reference ref="MidPoint.Action.ExtractLocalizationPropertiesAction"/>
                 <reference ref="MidPoint.Group.Menu.ServerLog"/>
                 <reference ref="MidPoint.Action.GenerateRandomOid"/>
-                <reference ref="MidPoint.Action.TestConnection"/>
                 <reference ref="MidPoint.Action.Documentation"/>
 
             </group>

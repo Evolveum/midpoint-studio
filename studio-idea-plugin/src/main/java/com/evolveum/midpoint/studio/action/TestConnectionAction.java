@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.ShowExceptionNotificationAction;
 import com.evolveum.midpoint.studio.client.TestConnectionResult;
+import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationAction;
@@ -68,6 +69,9 @@ public class TestConnectionAction extends AnAction {
                     @Override
                     public void runWithPluginClassLoader() {
                         testConnection(project, selected);
+
+                        EnvironmentCacheManager ecm = EnvironmentCacheManager.get(project);
+                        ecm.reload();
                     }
                 }.run();
             }

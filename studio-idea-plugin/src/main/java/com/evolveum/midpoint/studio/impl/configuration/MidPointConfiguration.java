@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.configuration;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
+import com.evolveum.midpoint.studio.impl.cache.Cache;
 import com.evolveum.midpoint.studio.util.ObjectTypesListConverter;
 import com.intellij.util.xmlb.annotations.OptionTag;
 
@@ -61,6 +62,8 @@ public class MidPointConfiguration implements Serializable {
     private String midpointVersion;
 
     private boolean updateOnUpload;
+
+    private long cacheTTL;
 
     public MidPointConfiguration() {
     }
@@ -191,6 +194,14 @@ public class MidPointConfiguration implements Serializable {
         this.updateOnUpload = updateOnUpload;
     }
 
+    public long getCacheTTL() {
+        return cacheTTL;
+    }
+
+    public void setCacheTTL(long cacheTTL) {
+        this.cacheTTL = cacheTTL;
+    }
+
     public MidPointConfiguration copy() {
         MidPointConfiguration other = new MidPointConfiguration();
         other.projectId = projectId;
@@ -207,6 +218,7 @@ public class MidPointConfiguration implements Serializable {
         other.downloadFilePattern = downloadFilePattern;
         other.midpointVersion = midpointVersion;
         other.updateOnUpload = updateOnUpload;
+        other.cacheTTL = cacheTTL;
         // todo copy doc generator options
 
         return other;
@@ -231,7 +243,8 @@ public class MidPointConfiguration implements Serializable {
                 && Objects.equals(downloadTypesExclude, that.downloadTypesExclude)
                 && Objects.equals(downloadFilePattern, that.downloadFilePattern)
                 && Objects.equals(midpointVersion, that.midpointVersion)
-                && Objects.equals(updateOnUpload, that.updateOnUpload);
+                && Objects.equals(updateOnUpload, that.updateOnUpload)
+                && Objects.equals(cacheTTL, that.cacheTTL);
     }
 
     @Override
@@ -240,7 +253,7 @@ public class MidPointConfiguration implements Serializable {
                 projectId, dowloadFilePattern, generatedFilePattern, printRestCommunicationToConsole, docGeneratorOptions,
                 askToAddMidpointFacet, askToValidateEnvironmentCredentials, ignoreMissingKeys, downloadTypesInclude,
                 downloadTypesExclude, typesToDownloadLimit, restResponseTimeout, downloadFilePattern, midpointVersion,
-                updateOnUpload);
+                updateOnUpload, cacheTTL);
     }
 
     @Override
@@ -263,6 +276,7 @@ public class MidPointConfiguration implements Serializable {
         settings.askToAddMidpointFacet = true;
         settings.askToValidateEnvironmentCredentials = true;
         settings.restResponseTimeout = 60;
+        settings.cacheTTL = Cache.DEFAULT_CACHE_TTL;
 
         return settings;
     }
