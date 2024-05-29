@@ -2,13 +2,24 @@ package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
-import com.intellij.codeInsight.completion.*;
+import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
+import com.evolveum.midpoint.studio.util.PsiUtils;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionProvider;
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlText;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,30 +31,58 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class AxiomQueryCompletionContributor extends CompletionContributor implements AxiomQueryHints {
-    final AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(PrismContext.get());
-    final List<LookupElement> suggestions = new ArrayList<>();
+public class AxiomQueryCompletionContributor extends CompletionContributorBase implements AxiomQueryHints {
+
+    private final AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(PrismContext.get());
 
     public AxiomQueryCompletionContributor() {
         extend(null,
                 PlatformPatterns.psiElement(),
                 new CompletionProvider<>() {
+
+                    @Override
                     public void addCompletions(@NotNull CompletionParameters parameters,
                                                @NotNull ProcessingContext context,
                                                @NotNull CompletionResultSet resultSet) {
-                        suggestions.clear();
 
-                        ItemDefinition<?> def = getObjectDefinitionFromHint(parameters.getEditor());
+                        PsiElement element = parameters.getPosition();
 
-                        axiomQueryLangService.queryCompletion(def,
-                                parameters.getOriginalFile().getText().substring(0, parameters.getPosition().getTextOffset())
-                        ).forEach((filterName, alias) -> {
-                            suggestions.add(build(filterName, alias));
-                        });
+                        ItemDefinition<?> def = null;
 
-                        if (!suggestions.isEmpty()) {
-                            resultSet.addAllElements(suggestions);
+                        PsiElement outer = PsiUtils.getOuterPsiElement(element);
+                        if (outer instanceof XmlText xmlText) {
+                            // we have axiom query embedded in xml
+
+                            XmlTag parentTag = xmlText.getParentTag();
+                            ItemPath path = PsiUtils.createItemPath(parentTag);
+
+                            ItemName first = path.firstToName();
+                            if (first != null) {
+                                PrismObjectDefinition<?> objectDefinition = PrismContext.get().getSchemaRegistry()
+                                        .findObjectDefinitionByElementName(first);
+                                if (objectDefinition != null) {
+                                    // we want to find definition parent element of filter, we're in <text>
+                                    // e.g. for "connectorRef/filter/text" -> we're searching definition for "connectoRef"
+                                    ItemPath rest = path.rest().allExceptLast().allExceptLast();
+
+                                    def = objectDefinition.findItemDefinition(rest);
+                                }
+                            }
                         }
+
+                        if (def == null) {
+                            def = getObjectDefinitionFromHint(parameters.getEditor());
+                        }
+
+                        List<LookupElement> suggestions = new ArrayList<>();
+
+                        String contentUpToCursor = parameters.getOriginalFile().getText()
+                                .substring(0, parameters.getPosition().getTextOffset());
+
+                        axiomQueryLangService.queryCompletion(def, contentUpToCursor)
+                                .forEach((filterName, alias) -> suggestions.add(build(filterName, alias)));
+
+                        resultSet.addAllElements(suggestions);
                     }
                 }
         );
