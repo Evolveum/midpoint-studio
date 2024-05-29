@@ -4,7 +4,6 @@ import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.ExceptionUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,8 +36,6 @@ public class ShowExceptionNotificationAction extends NotificationAction {
             sb.append(message).append('\n');
         }
         sb.append(ExceptionUtil.getThrowableText(exception));
-
-        Logger.getInstance(clazz).error(message, exception);
 
         MidPointService mm = MidPointService.get(evt.getProject());
         mm.printToConsole(environment, clazz, sb.toString());
