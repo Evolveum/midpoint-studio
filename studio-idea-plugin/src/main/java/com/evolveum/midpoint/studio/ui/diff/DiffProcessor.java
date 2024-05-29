@@ -1,9 +1,7 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismValue;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ChangeType;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
@@ -177,18 +175,44 @@ public class DiffProcessor<O extends ObjectType> {
         DefaultMutableTreeNode node = selected.get(0);
         Object userObject = node.getUserObject();
 
-        String xml = "";
-        if (userObject instanceof DeltaItem di) {
-            try {
-                xml = PrismContext.get().xmlSerializer().serialize(di.value());
-            } catch (Exception ex) {
-                LOG.debug("Couldn't serialize prism value", ex);
-                xml = di.value().debugDump();
+        String before = "";
+        String after = "";
+        try {
+            if (userObject instanceof DeltaItem di) {
+                before = PrismContext.get().xmlSerializer().serialize(di.value());
+
+            } else if (userObject instanceof ObjectDeltaTreeNode odtn) {
+                Item<?, ?> targetItem = odtn.targetItem() != null ?
+                        odtn.targetItem().clone() : odtn.delta().getDefinition().instantiate();
+
+                before = serializeItem(targetItem);
+
+                Item item = targetItem.clone();
+                odtn.delta().applyTo(item);
+
+                after = serializeItem(item);
             }
+        } catch (Exception ex) {
+            LOG.debug("Couldn't serialize prism value", ex);
         }
         // todo implement
 
-        diffPanel.refreshInternalDiffRequestProcessor(xml, "");
+        diffPanel.refreshInternalDiffRequestProcessor(before, after);
+    }
+
+    private String serializeItem(Item<?, ?> item) throws SchemaException {
+        if (item == null || item.getValues() == null) {
+            return "";
+        }
+        List<PrismValue> values = (List) item.getValues();
+        PrismSerializer<String> serializer = PrismContext.get().xmlSerializer();
+
+        StringBuilder sb = new StringBuilder();
+        for (PrismValue value : values) {
+            sb.append(serializer.serialize(value));
+        }
+
+        return sb.toString();
     }
 
     private List<AnAction> createToolbarActions() {

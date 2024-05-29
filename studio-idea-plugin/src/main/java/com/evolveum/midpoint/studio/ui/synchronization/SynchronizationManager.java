@@ -7,23 +7,26 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
+import com.intellij.ui.content.ContentManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class SynchronizationManager {
 
     private final Project project;
 
-    private final Set<ToolWindow> toolWindows = new HashSet<>();
+    private final SynchronizationPanel panel;
 
     private SynchronizationSession<?> session;
 
     public SynchronizationManager(@NotNull Project project) {
         this.project = project;
+
+        panel = new SynchronizationPanel(project);
     }
 
     public static SynchronizationManager get(Project project) {
@@ -31,7 +34,10 @@ public class SynchronizationManager {
     }
 
     public void attachToolWindow(@NotNull ToolWindow toolWindow) {
-        // todo implement
+        ContentManager contentManager = toolWindow.getContentManager();
+
+        Content content = ContentFactory.getInstance().createContent(panel, null, false);
+        contentManager.addContent(content);
     }
 
     private synchronized SynchronizationSession<?> createSession(Environment environment) {
@@ -39,7 +45,6 @@ public class SynchronizationManager {
             session.close();
         }
 
-        SynchronizationPanel panel = getSynchronizationPanel();
         session = new SynchronizationSession<>(project, environment, panel);
 
         RunnableUtils.invokeLaterIfNeeded(() -> {
@@ -69,17 +74,11 @@ public class SynchronizationManager {
         return ToolWindowManager.getInstance(project).getToolWindow("Synchronization");
     }
 
-    private SynchronizationPanel getSynchronizationPanel() {
-        return (SynchronizationPanel) getSynchronizationToolWindow()
-                .getContentManager().getContent(0).getComponent();
-    }
-
     public void showSynchronizationToolWindow(boolean expand) {
         RunnableUtils.invokeLaterIfNeeded(() -> {
             getSynchronizationToolWindow().show();
 
             if (expand) {
-                SynchronizationPanel panel = getSynchronizationPanel();
                 panel.expandTree();
             }
         });

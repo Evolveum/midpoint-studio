@@ -161,7 +161,6 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
         Item<?, ?> targetItem = itemDeltaNode.targetItem();
         PrismObject<?> object = getObject(targetItem);
 
-
         ItemPath path = itemDeltaNode.delta().getPath();
 
         List<String> segments = new ArrayList<>();

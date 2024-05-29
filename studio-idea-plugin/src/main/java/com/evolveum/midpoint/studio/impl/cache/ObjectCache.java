@@ -51,7 +51,7 @@ public class ObjectCache<O extends ObjectType> extends Cache {
     }
 
     public synchronized void reload() {
-        MidPointClient client = new MidPointClient(null, getEnvironment(), false, false);
+        MidPointClient client = new MidPointClient(null, getEnvironment(), true, true);
 
         SearchResult result = client.search(type, null, false);
         cacheObjects(result.getObjects());
