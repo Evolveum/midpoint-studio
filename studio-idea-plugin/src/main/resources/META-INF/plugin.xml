@@ -234,6 +234,9 @@
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>
 
+        <completion.contributor language="XML"
+                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.EnumerationRefCompletionContributor"/>
+
         <xml.tagNameProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
 

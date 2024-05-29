@@ -7,6 +7,7 @@ import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SystemConfigurationType;
 import com.intellij.openapi.project.Project;
@@ -29,9 +30,14 @@ public class EnvironmentCacheManager {
         }
     }
 
+    public static final CacheKey<ObjectCache<LookupTableType>> KEY_LOOKUP_TABLE = new CacheKey<>(ObjectCache.class);
+
     public static final CacheKey<ObjectCache<SchemaType>> KEY_SCHEMA = new CacheKey<>(ObjectCache.class);
+
     public static final CacheKey<ObjectCache<SystemConfigurationType>> KEY_SYSTEM_CONFIGURATION = new CacheKey<>(ObjectCache.class);
+
     public static final CacheKey<ConnectorCache> KEY_CONNECTOR = new CacheKey<>(ConnectorCache.class);
+
     public static final CacheKey<EnvironmentPropertiesCache> KEY_PROPERTIES = new CacheKey<>(EnvironmentPropertiesCache.class);
 
     private static class ManagerState {
@@ -66,6 +72,7 @@ public class EnvironmentCacheManager {
     }
 
     private void init() {
+        caches.put(KEY_LOOKUP_TABLE, new ObjectCache<>(project, LookupTableType.class));
         caches.put(KEY_SCHEMA, new ObjectCache<>(project, SchemaType.class));
         caches.put(KEY_SYSTEM_CONFIGURATION, new ObjectCache<>(project, SystemConfigurationType.class));
         caches.put(KEY_CONNECTOR, new ConnectorCache(project));

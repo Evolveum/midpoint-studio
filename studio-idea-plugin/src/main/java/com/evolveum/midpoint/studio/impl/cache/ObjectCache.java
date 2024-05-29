@@ -3,10 +3,15 @@ package com.evolveum.midpoint.studio.impl.cache;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
+import com.evolveum.midpoint.prism.path.UniformItemPath;
+import com.evolveum.midpoint.schema.GetOperationOptions;
+import com.evolveum.midpoint.schema.RetrieveOption;
+import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.SearchResult;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
@@ -14,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +59,13 @@ public class ObjectCache<O extends ObjectType> extends Cache {
     public synchronized void reload() {
         MidPointClient client = new MidPointClient(null, getEnvironment(), true, true);
 
-        SearchResult result = client.search(type, null, false);
+        Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
+        if (LookupTableType.class.equals(type)) {
+            options.add(SelectorOptions.create(UniformItemPath.create(LookupTableType.F_ROW),
+                    GetOperationOptions.createRetrieve(RetrieveOption.INCLUDE)));
+        }
+
+        SearchResult result = client.search(type, null, options);
         cacheObjects(result.getObjects());
 
         lastReloadTime = System.currentTimeMillis();
