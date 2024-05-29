@@ -57,6 +57,10 @@ public class SynchronizationPanel extends BorderLayoutPanel {
         return panel;
     }
 
+    public void expandTree() {
+        TreeUtil.expandAll(tree);
+    }
+
     private JComponent initMainToolbar(JComponent parent) {
         DefaultActionGroup group = new DefaultActionGroup();
 

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class SynchronizationManager {
 
@@ -40,8 +39,7 @@ public class SynchronizationManager {
             session.close();
         }
 
-        SynchronizationPanel panel = (SynchronizationPanel) ToolWindowManager.getInstance(project)
-                .getToolWindow("Synchronization").getContentManager().getContent(0).getComponent();
+        SynchronizationPanel panel = getSynchronizationPanel();
         session = new SynchronizationSession<>(project, environment, panel);
 
         RunnableUtils.invokeLaterIfNeeded(() -> {
@@ -67,12 +65,23 @@ public class SynchronizationManager {
         ProgressManager.getInstance().run(task);
     }
 
-    @Deprecated
-    private void updateSynchronizationToolWindow(Consumer<SynchronizationPanel> consumer) {
+    private ToolWindow getSynchronizationToolWindow() {
+        return ToolWindowManager.getInstance(project).getToolWindow("Synchronization");
+    }
+
+    private SynchronizationPanel getSynchronizationPanel() {
+        return (SynchronizationPanel) getSynchronizationToolWindow()
+                .getContentManager().getContent(0).getComponent();
+    }
+
+    public void showSynchronizationToolWindow(boolean expand) {
         RunnableUtils.invokeLaterIfNeeded(() -> {
-            SynchronizationPanel panel = (SynchronizationPanel) ToolWindowManager.getInstance(project)
-                    .getToolWindow("Synchronization").getContentManager().getContent(0).getComponent();
-            consumer.accept(panel);
+            getSynchronizationToolWindow().show();
+
+            if (expand) {
+                SynchronizationPanel panel = getSynchronizationPanel();
+                panel.expandTree();
+            }
         });
     }
 }

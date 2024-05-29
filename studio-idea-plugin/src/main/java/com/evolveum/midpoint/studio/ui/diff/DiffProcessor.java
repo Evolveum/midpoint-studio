@@ -126,6 +126,8 @@ public class DiffProcessor<O extends ObjectType> {
 
             diffPanel.setTargetName(targetSource.name() + " (" + targetSource.type() + ")");
             diffPanel.setDelta(target, delta);
+
+            diffPanel.refreshInternalDiffRequestProcessor();
         } catch (Exception ex) {
             throw new RuntimeException("Couldn't parse object", ex);
         }
