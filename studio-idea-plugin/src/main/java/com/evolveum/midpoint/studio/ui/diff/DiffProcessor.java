@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ChangeType;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
@@ -187,15 +188,16 @@ public class DiffProcessor<O extends ObjectType> {
 
                 before = serializeItem(targetItem);
 
+                ItemDelta<?, ?> delta = odtn.delta().cloneWithChangedParentPath(ItemPath.EMPTY_PATH);
+
                 Item item = targetItem.clone();
-                odtn.delta().applyTo(item);
+                delta.applyTo(item);
 
                 after = serializeItem(item);
             }
         } catch (Exception ex) {
             LOG.debug("Couldn't serialize prism value", ex);
         }
-        // todo implement
 
         diffPanel.refreshInternalDiffRequestProcessor(before, after);
     }
