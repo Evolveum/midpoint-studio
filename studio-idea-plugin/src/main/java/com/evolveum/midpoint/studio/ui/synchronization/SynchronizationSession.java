@@ -79,13 +79,17 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         }
         items.remove(oldItem);
 
-        // todo close related editors when removing item from session
-
         RunnableUtils.invokeLaterIfNeeded(() -> {
             panel.getModel().setData((List) items);
             // todo improve
 //            panel.getModel().replaceFiles(List.of(newItem));
         });
+
+        List<String> ids = oldItem.getObjects().stream()
+                .map(o -> o.getId())
+                .toList();
+
+        SynchronizationUtil.closeDiffEditors(project, ids);
     }
 
     public void replaceObjectItem(
@@ -98,13 +102,13 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         }
         objectItems.remove(oldItem);
 
-        // todo close related editors when removing item from session
-
         RunnableUtils.invokeLaterIfNeeded(() -> {
             panel.getModel().setData((List) items);
 //            todo improve
 //            panel.getModel().replaceObjects(List.of(newItem));
         });
+
+        SynchronizationUtil.closeDiffEditors(project, List.of(oldItem.getId()));
     }
 
     public void updateRemote(List<SynchronizationObjectItem> objectItems) {

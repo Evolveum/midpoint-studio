@@ -247,7 +247,7 @@ public class DiffProcessor<O extends ObjectType> {
         };
         actions.add(strategyAction);
 
-        actions.add(new UiAction("Cleanup", AllIcons.General.InspectionsEye, e -> cleanupPerformed()));
+        actions.add(new UiAction("Cleanup", AllIcons.Actions.ToggleVisibility, e -> cleanupPerformed()));
 
         actions.add(new Separator());
 

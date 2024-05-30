@@ -1,11 +1,18 @@
 package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.ModificationType;
+import com.evolveum.midpoint.studio.ui.diff.DiffEditor;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.openapi.editor.colors.ColorKey;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.Project;
 
 import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class SynchronizationUtil {
@@ -43,5 +50,18 @@ public class SynchronizationUtil {
         }
 
         return null;
+    }
+
+    public static void closeDiffEditors(Project project, List<String> ids) {
+        RunnableUtils.invokeLaterIfNeeded(() -> {
+            FileEditorManager fem = FileEditorManager.getInstance(project);
+            List<DiffEditor> editors = Arrays.stream(fem.getAllEditors())
+                    .filter(e -> e instanceof DiffEditor)
+                    .map(e -> (DiffEditor) e)
+                    .filter(e -> ids.contains(e.getFile().getProcessor().getId()))
+                    .toList();
+
+            editors.forEach(e -> fem.closeFile(e.getFile()));
+        });
     }
 }
