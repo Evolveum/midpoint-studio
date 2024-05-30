@@ -82,8 +82,6 @@ public class SynchronizationUploadTask extends SynchronizationTask {
         };
         uploadTask.setObjects(objects);
         ProgressManager.getInstance().run(uploadTask);
-
-        // todo refresh editors
     }
 
     private void processFile(Counter counter, SynchronizationFileItem<SynchronizationObjectItem> fileItem, List<MidPointObject> result) {

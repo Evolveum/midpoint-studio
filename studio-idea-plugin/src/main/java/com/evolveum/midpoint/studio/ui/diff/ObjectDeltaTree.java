@@ -119,7 +119,7 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
     public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 
-        if (node.getUserObject() instanceof ObjectDelta<?> od) {
+        if (node.getUserObject() instanceof ObjectDeltaTreeData<?>) {
             return "All";
         } else if (node.getUserObject() instanceof DeltaItem di) {
             ModificationType modificationType = getModificationType(node.getUserObject());
