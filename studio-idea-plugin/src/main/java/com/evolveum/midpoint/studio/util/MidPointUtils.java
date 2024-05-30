@@ -801,11 +801,19 @@ public class MidPointUtils {
     }
 
     public static boolean shouldEnableAction(AnActionEvent evt) {
-        if (!isVisibleWithMidPointFacet(evt)) {
-            return false;
-        }
+        Computable<Boolean> computable = () -> {
+            if (!isVisibleWithMidPointFacet(evt)) {
+                return false;
+            }
 
-        return isEnvironmentAndFileSelected(evt);
+            return isEnvironmentAndFileSelected(evt);
+        };
+
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            return computable.compute();
+        } else {
+            return ApplicationManager.getApplication().runReadAction(computable);
+        }
     }
 
     public static boolean isMidpointFile(PsiFile file) {
