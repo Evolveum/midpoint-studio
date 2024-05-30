@@ -2,7 +2,11 @@ package com.evolveum.midpoint.studio.ui.synchronization;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+
 public abstract class SynchronizationItem {
+
+    private String id = UUID.randomUUID().toString();
 
     private SynchronizationItemType type;
 
@@ -13,6 +17,10 @@ public abstract class SynchronizationItem {
     @NotNull
     public SynchronizationItemType getType() {
         return type;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public abstract String getName();

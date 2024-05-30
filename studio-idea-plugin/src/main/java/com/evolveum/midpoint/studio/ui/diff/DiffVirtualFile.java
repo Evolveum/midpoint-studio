@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
-import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.vfs.VirtualFileWithoutContent;
 import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -19,11 +18,6 @@ public class DiffVirtualFile extends LightVirtualFile implements VirtualFileWith
 
     public DiffProcessor getProcessor() {
         return processor;
-    }
-
-    @Override
-    public @NlsSafe @NotNull String getName() {
-        return super.getName();
     }
 
     @Override

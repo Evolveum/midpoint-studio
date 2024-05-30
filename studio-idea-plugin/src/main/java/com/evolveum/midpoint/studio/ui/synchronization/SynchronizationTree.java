@@ -100,7 +100,7 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
         DiffSource<O> left = new DiffSource(leftName, DiffSourceType.LOCAL, object.getLocalObject().getCurrent());
         DiffSource<O> right = new DiffSource(rightName, DiffSourceType.REMOTE, object.getRemoteObject().getCurrent());
 
-        DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(project, left, right) {
+        DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(project, object.getId(), left, right) {
 
             @Override
             protected void acceptPerformed() {

@@ -1,12 +1,16 @@
 package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.ui.diff.DiffEditor;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -93,5 +97,17 @@ public class SynchronizationRefreshTask extends SynchronizationTask {
                 createSynchronizationObjectItem(counter, objectItem.getFileItem(), local);
 
         getSession().replaceObjectItem(objectItem, newObjectItem);
+
+        // close diff editors for this object
+        RunnableUtils.invokeLaterIfNeeded(() -> {
+            FileEditorManager fem = FileEditorManager.getInstance(getProject());
+            List<DiffEditor> editors = Arrays.stream(fem.getAllEditors())
+                    .filter(e -> e instanceof DiffEditor)
+                    .map(e -> (DiffEditor) e)
+                    .filter(e -> Objects.equals(objectItem.getId(), e.getFile().getProcessor().getId()))
+                    .toList();
+
+            editors.forEach(e -> fem.closeFile(e.getFile()));
+        });
     }
 }

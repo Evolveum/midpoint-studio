@@ -22,6 +22,7 @@ import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -38,6 +39,8 @@ public class DiffProcessor<O extends ObjectType> {
     }
 
     private final Project project;
+
+    private String id;
 
     private final DiffSource<O> leftSource;
     private final DiffSource<O> rightSource;
@@ -58,14 +61,20 @@ public class DiffProcessor<O extends ObjectType> {
 
     private DiffStrategyComboAction strategyAction;
 
-    public DiffProcessor(@NotNull Project project, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right) {
+    public DiffProcessor(@NotNull Project project, @Nullable String id, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right) {
         this.project = project;
+
+        this.id = id;
 
         this.leftSource = left;
         this.rightSource = right;
 
         diffPanel = initDiffPanel();
         simpleDiffPanel = initSimpleDiffPanel();
+    }
+
+    public String getId() {
+        return id;
     }
 
     public Direction getDirection() {
