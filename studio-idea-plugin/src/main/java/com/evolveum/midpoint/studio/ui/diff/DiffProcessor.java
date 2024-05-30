@@ -6,9 +6,6 @@ import com.evolveum.midpoint.prism.delta.ChangeType;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.StudioCleanupListener;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
 import com.evolveum.midpoint.studio.ui.UiAction;
@@ -395,14 +392,8 @@ public class DiffProcessor<O extends ObjectType> {
     private void cleanupPerformed() {
         CleanupService cs = CleanupService.get(project);
 
-        MidPointClient client = null;
-        Environment environment = EnvironmentService.getInstance(project).getSelected();
-        if (environment != null) {
-            client = new MidPointClient(project, environment, false, false);
-        }
-
         ObjectCleaner processor = cs.createCleanupProcessor();
-        processor.setListener(new StudioCleanupListener(project, client, MidPointUtils.DEFAULT_PRISM_CONTEXT));
+        processor.setListener(new StudioCleanupListener(project, MidPointUtils.DEFAULT_PRISM_CONTEXT));
 
         processor.process(leftSource.object());
         processor.process(rightSource.object());
