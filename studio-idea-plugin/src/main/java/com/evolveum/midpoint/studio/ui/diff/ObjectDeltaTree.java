@@ -2,7 +2,9 @@ package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
+import com.evolveum.midpoint.prism.delta.ItemMerger;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
+import com.evolveum.midpoint.prism.impl.binding.AbstractPlainStructured;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.ItemPathSegment;
@@ -11,6 +13,7 @@ import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationUtil;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.QNameUtil;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ExpressionType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
@@ -130,7 +133,22 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
 
             PrismValue prismValue = di.value();
             if (prismValue instanceof PrismPropertyValue<?> property) {
-                value = PrettyPrinter.prettyPrint(property.getRealValue());
+                Object realValue = property.getRealValue();
+                if (realValue instanceof ExpressionType expression) {
+                    return "Expression: " + expression.getExpressionEvaluator().stream()
+                            .map(e -> e.getValue().getClass().getSimpleName())
+                            .collect(Collectors.joining(", "));
+                } else if (realValue instanceof AbstractPlainStructured) {
+                    try {
+                        String xml = PrismContext.get().xmlSerializer().serialize(property);
+                        value = StringUtils.abbreviate(xml, 200);
+                    } catch (Exception ex) {
+                        LOG.error("Couldn't serialize property value", ex);
+                        value = property.debugDump();
+                    }
+                } else {
+                    value = PrettyPrinter.prettyPrint(property.getRealValue());
+                }
             } else if (prismValue instanceof PrismReferenceValue ref) {
                 QName relation = ref.getRelation();
                 String relationStr = relation != null ? QNameUtil.prettyPrint(relation) : "";
@@ -138,7 +156,16 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
                 ObjectTypes type = ObjectTypes.getObjectTypeFromTypeQNameIfKnown(ref.getTargetType());
                 String typeStr = type != null ? StudioLocalization.get().translateEnum(type) : "";
 
-                value = ref.getOid() + " (" + StringUtils.joinWith(", ", typeStr, relationStr) + ")";
+                String oid = ref.getOid();
+                if (oid == null) {
+                    oid = ref.getFilter() != null ? "Filter defined" : "Undefined oid";
+                }
+
+                String details = List.of(typeStr, relationStr).stream()
+                        .filter(StringUtils::isNotBlank)
+                        .collect(Collectors.joining(", "));
+
+                value = oid + " (" + details + ")";
             } else if (prismValue instanceof PrismContainerValue<?> container) {
                 try {
                     String xml = PrismContext.get().xmlSerializer().serialize(container);
@@ -172,6 +199,7 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
                 if (suffix != null) {
                     segments.add(id + suffix);
                 }
+                segments.add(id.toString());
             } else {
                 segments.add(ItemPathSegment.toString(segment));
             }
@@ -197,7 +225,15 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
             return null;
         }
 
-        NaturalKeyDefinition def = item.getDefinition().getNaturalKeyInstance();
+        ItemDefinition<?> itemDefinition = item.getDefinition();
+        NaturalKeyDefinition def = itemDefinition.getNaturalKeyInstance();
+        if (def == null) {
+            ItemMerger merger = itemDefinition.getMergerInstance(MergeStrategy.FULL, null);
+            if (merger != null) {
+                def = merger.getNaturalKey();
+            }
+        }
+
         if (def == null) {
             return null;
         }

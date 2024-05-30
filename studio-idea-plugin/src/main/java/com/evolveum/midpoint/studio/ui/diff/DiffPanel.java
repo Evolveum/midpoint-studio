@@ -26,6 +26,7 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import com.intellij.util.ui.tree.TreeUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -74,7 +75,9 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
 
         String name = "";
         if (targetSource.object() != null) {
-            name = MidPointUtils.getName(targetSource.object());
+            name = StringUtils.wrap(
+                    MidPointUtils.getName(targetSource.object()), "\""
+            );
         }
         name += "; " + targetSource.getFullName();
 
