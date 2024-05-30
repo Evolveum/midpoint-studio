@@ -59,6 +59,13 @@ public class ConnectorCache extends ObjectCache<ConnectorType> {
     }
 
     @Override
+    void clear() {
+        schemaCache.clear();
+
+        super.clear();
+    }
+
+    @Override
     protected void cacheObjects(Collection<MidPointObject> objects) {
         schemaCache.clear();
 

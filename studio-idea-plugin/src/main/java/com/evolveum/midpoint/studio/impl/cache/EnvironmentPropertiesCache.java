@@ -67,8 +67,17 @@ public class EnvironmentPropertiesCache extends Cache {
     }
 
     @Override
+    void clear() {
+        LOG.debug("Clearing cache for {}", getClass().getSimpleName());
+
+        expander = null;
+
+        LOG.debug("Cache cleared for {}", getClass().getSimpleName());
+    }
+
+    @Override
     void reload() {
-        LOG.info("Starting refresh");
+        LOG.debug("Refreshing cache for {}", getClass().getSimpleName());
 
         if (getEnvironment() == null) {
             expander = null;
@@ -82,7 +91,7 @@ public class EnvironmentPropertiesCache extends Cache {
         DaemonCodeAnalyzer dca = DaemonCodeAnalyzer.getInstance(getProject());
         dca.restart();
 
-        LOG.info("Refresh finished");
+        LOG.debug("Refresh finished for {}", getClass().getSimpleName());
     }
 
     public String expandKeyForInlay(String key, VirtualFile file) {

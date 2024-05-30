@@ -46,5 +46,7 @@ public abstract class Cache {
         this.ttl = ttl > 0 ? ttl : DEFAULT_CACHE_TTL;
     }
 
+    abstract void clear();
+
     abstract void reload();
 }

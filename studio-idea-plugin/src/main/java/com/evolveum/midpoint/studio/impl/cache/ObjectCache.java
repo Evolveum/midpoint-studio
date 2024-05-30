@@ -56,7 +56,18 @@ public class ObjectCache<O extends ObjectType> extends Cache {
         return cache.values();
     }
 
+    @Override
+    void clear() {
+        LOG.debug("Clearing cache for {}", getClass().getSimpleName());
+
+        cache.clear();
+
+        LOG.debug("Cache cleared for {}", getClass().getSimpleName());
+    }
+
     public synchronized void reload() {
+        LOG.debug("Reloading cache for {}", getClass().getSimpleName());
+
         MidPointClient client = new MidPointClient(null, getEnvironment(), true, true);
 
         Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
@@ -69,6 +80,8 @@ public class ObjectCache<O extends ObjectType> extends Cache {
         cacheObjects(result.getObjects());
 
         lastReloadTime = System.currentTimeMillis();
+
+        LOG.debug("Cache reloaded for {}", getClass().getSimpleName());
     }
 
     protected void cacheObjects(Collection<MidPointObject> objects) {

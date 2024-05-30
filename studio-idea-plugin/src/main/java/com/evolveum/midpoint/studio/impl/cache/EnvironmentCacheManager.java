@@ -10,6 +10,7 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SystemConfigurationType;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import org.slf4j.Logger;
@@ -40,13 +41,6 @@ public class EnvironmentCacheManager {
 
     public static final CacheKey<EnvironmentPropertiesCache> KEY_PROPERTIES = new CacheKey<>(EnvironmentPropertiesCache.class);
 
-    private static class ManagerState {
-
-        boolean environmentAvailable;
-
-        boolean showNotification;
-    }
-
     private static final Logger LOG = LoggerFactory.getLogger(EnvironmentCacheManager.class);
 
     private final Project project;
@@ -54,8 +48,6 @@ public class EnvironmentCacheManager {
     private final Map<CacheKey<?>, Cache> caches = new HashMap<>();
 
     private Environment environment;
-
-    private ManagerState state;
 
     public EnvironmentCacheManager(Project project) {
         this.project = project;
@@ -87,17 +79,12 @@ public class EnvironmentCacheManager {
         EnvironmentService es = EnvironmentService.getInstance(project);
         setEnvironment(es.getSelected());
 
-        reload();
-
         MidPointUtils.subscribeToEnvironmentChange(project, e -> {
-            LOG.info(
-                    "Environment changed to {}, reloading cache for {}",
-                    (e != null ? e.getName() : "null"),
-                    getClass().getSimpleName());
+            LOG.info("Environment changed to {}, reloading caches", (e != null ? e.getName() : "null"));
 
             setEnvironment(e);
 
-            reload();
+            reload(true, true);
         });
     }
 
@@ -113,48 +100,45 @@ public class EnvironmentCacheManager {
         this.environment = environment;
 
         updateCachesConfiguration(c -> c.setEnvironment(environment));
-
-        state = new ManagerState();
     }
 
     public void setCacheTTL(long cacheTTL) {
         updateCachesConfiguration(c -> c.setTtl(cacheTTL));
     }
 
-    public void reload() {
-        AppExecutorUtil.getAppExecutorService().submit(() -> reloadInternal());
+    /**
+     * Reloads caches.
+     *
+     * @param forceClear     If true, caches will be cleared before attempt to reload.
+     * @param testConnection If true, connection to the environment will be tested before reload.
+     */
+    public void reload(boolean forceClear, boolean testConnection) {
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            AppExecutorUtil.getAppExecutorService().submit(() -> reloadInternal(forceClear, testConnection));
+        } else {
+            reloadInternal(forceClear, testConnection);
+        }
     }
 
-    public void reloadInternal() {
-        try {
-            Thread.sleep(10000L);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    public void reloadInternal(boolean forceClear, boolean testConnection) {
+        LOG.debug("Reloading caches (forceClear={}, testConnection={})", forceClear, testConnection);
+
+        if (forceClear) {
+            for (Cache cache : caches.values()) {
+                cache.clear();
+            }
         }
 
-        MidPointClient client = new MidPointClient(project, environment, true, true);
-        TestConnectionResult testConnection = client.testConnection();
-        LOG.debug("Test connection: {}", testConnection.success() ? "success" : "failed");
+        if (testConnection) {
+            MidPointClient client = new MidPointClient(project, environment, true, true);
+            TestConnectionResult result = client.testConnection();
+            LOG.debug("Test connection: {}", result.success() ? "success" : "failed");
 
-        if (!testConnection.success()) {
-            state.environmentAvailable = false;
-
-//            if (state.showNotification) {
-//                state.showNotification = false;
-//
-//                MidPointUtils.publishNotification(
-//                        project,
-//                        "Environment is not available",
-//                        "Environment is not available, configuration couldn't be cached");
-//            }
-
-            LOG.debug("Skipping cache reload");
-            return;
-        } else {
-            state.environmentAvailable = true;
+            if (!result.success()) {
+                LOG.debug("Skipping cache reload");
+                return;
+            }
         }
-
-        LOG.debug("Reloading caches");
 
         for (Cache cache : caches.values()) {
             try {
@@ -163,5 +147,7 @@ public class EnvironmentCacheManager {
                 LOG.error("Error reloading cache: {}", ex.getMessage(), ex);
             }
         }
+
+        LOG.debug("Caches reload finished");
     }
 }
