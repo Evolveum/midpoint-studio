@@ -1,6 +1,12 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObjectDefinition;
+import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
@@ -260,5 +266,30 @@ public class PsiUtils {
         }
 
         return ItemPath.create(components);
+    }
+
+    public static ItemDefinition<?> findItemDefinitionForTag(XmlTag tag) {
+        if (tag == null) {
+            return null;
+        }
+
+        ItemPath path = createItemPath(tag);
+        if (path.isEmpty()) {
+            return null;
+        }
+
+        ItemName object = path.firstToName();
+        if (SchemaConstants.C_OBJECTS.equals(object)) {
+            path = path.rest();
+            object = path.firstToName();
+        }
+
+        SchemaRegistry registry = PrismContext.get().getSchemaRegistry();
+        PrismObjectDefinition<?> objectDefinition = registry.findObjectDefinitionByElementName(object);
+        if (objectDefinition == null) {
+            return null;
+        }
+
+        return objectDefinition.findItemDefinition(path.rest().namedSegmentsOnly());
     }
 }

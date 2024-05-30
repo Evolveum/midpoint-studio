@@ -2,10 +2,7 @@ package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
-import com.evolveum.midpoint.prism.path.ItemName;
-import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
 import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
 import com.evolveum.midpoint.studio.util.PsiUtils;
@@ -54,20 +51,7 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                             // we have axiom query embedded in xml
 
                             XmlTag parentTag = xmlText.getParentTag();
-                            ItemPath path = PsiUtils.createItemPath(parentTag);
-
-                            ItemName first = path.firstToName();
-                            if (first != null) {
-                                PrismObjectDefinition<?> objectDefinition = PrismContext.get().getSchemaRegistry()
-                                        .findObjectDefinitionByElementName(first);
-                                if (objectDefinition != null) {
-                                    // we want to find definition parent element of filter, we're in <text>
-                                    // e.g. for "connectorRef/filter/text" -> we're searching definition for "connectoRef"
-                                    ItemPath rest = path.rest().allExceptLast().allExceptLast();
-
-                                    def = objectDefinition.findItemDefinition(rest);
-                                }
-                            }
+                            def = PsiUtils.findItemDefinitionForTag(parentTag);
                         }
 
                         if (def == null) {

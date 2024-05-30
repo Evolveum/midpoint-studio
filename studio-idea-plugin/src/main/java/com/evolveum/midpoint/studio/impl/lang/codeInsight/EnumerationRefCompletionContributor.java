@@ -1,11 +1,7 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
 import com.evolveum.midpoint.studio.impl.cache.ObjectCache;
 import com.evolveum.midpoint.studio.impl.lang.MidPointCompletionContributor;
@@ -32,6 +28,8 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  * Support for <a:valueEnumerationRef> annotation (MID-9345)
  * <p>
  * Example: <a:valueEnumerationRef oid="00000000-0000-0000-0000-000000000230" type="tns:LookupTableType"/>
+ *
+ * Such annotation is read not through XSD types and PSI references, but via prism schema registry.
  */
 public class EnumerationRefCompletionContributor extends MidPointCompletionContributor {
 
@@ -59,18 +57,7 @@ public class EnumerationRefCompletionContributor extends MidPointCompletionContr
             }
 
             XmlTag tag = text.getParentTag();
-            ItemPath path = PsiUtils.createItemPath(tag);
-            if (path.isEmpty()) {
-                return;
-            }
-
-            SchemaRegistry registry = PrismContext.get().getSchemaRegistry();
-            PrismObjectDefinition<?> objectDefinition = registry.findObjectDefinitionByElementName(path.firstToName());
-            if (objectDefinition == null) {
-                return;
-            }
-
-            ItemDefinition<?> itemDefinition = objectDefinition.findItemDefinition(path.rest().namedSegmentsOnly());
+            ItemDefinition<?> itemDefinition = PsiUtils.findItemDefinitionForTag(tag);
             if (itemDefinition == null) {
                 return;
             }
