@@ -2,8 +2,6 @@ package com.evolveum.midpoint.studio.impl.cache;
 
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.Expander;
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
-import com.intellij.codeInsight.hints.ParameterHintsPassFactory;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -85,11 +83,6 @@ public class EnvironmentPropertiesCache extends Cache {
         }
 
         expander = new Expander(getEnvironment(), getProject());
-
-        // force re-highlight editors, this probably shouldn't be here, but right now no better place
-        ParameterHintsPassFactory.forceHintsUpdateOnNextPass();
-        DaemonCodeAnalyzer dca = DaemonCodeAnalyzer.getInstance(getProject());
-        dca.restart();
 
         LOG.debug("Refresh finished for {}", getClass().getSimpleName());
     }

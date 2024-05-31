@@ -10,6 +10,8 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SystemConfigurationType;
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
+import com.intellij.codeInsight.hints.ParameterHintsPassFactory;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.concurrency.AppExecutorUtil;
@@ -136,6 +138,8 @@ public class EnvironmentCacheManager {
 
             if (!result.success()) {
                 LOG.debug("Skipping cache reload");
+                restartHighlightInEditors();
+
                 return;
             }
         }
@@ -148,6 +152,15 @@ public class EnvironmentCacheManager {
             }
         }
 
+        restartHighlightInEditors();
+
         LOG.debug("Caches reload finished");
+    }
+
+    private void restartHighlightInEditors() {
+        // force re-highlight editors, this probably shouldn't be here, but right now no better place
+        ParameterHintsPassFactory.forceHintsUpdateOnNextPass();
+        DaemonCodeAnalyzer dca = DaemonCodeAnalyzer.getInstance(project);
+        dca.restart();
     }
 }
