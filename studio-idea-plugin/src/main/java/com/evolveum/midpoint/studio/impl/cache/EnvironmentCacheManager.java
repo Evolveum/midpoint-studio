@@ -75,7 +75,7 @@ public class EnvironmentCacheManager {
         MidPointService ms = MidPointService.get(project);
         MidPointConfiguration config = ms.getSettings();
 
-        long cacheTTL = config.getCacheTTL();
+        int cacheTTL = config.getCacheTTL();
         setCacheTTL(cacheTTL);
 
         EnvironmentService es = EnvironmentService.getInstance(project);
@@ -104,7 +104,7 @@ public class EnvironmentCacheManager {
         updateCachesConfiguration(c -> c.setEnvironment(environment));
     }
 
-    public void setCacheTTL(long cacheTTL) {
+    public void setCacheTTL(int cacheTTL) {
         updateCachesConfiguration(c -> c.setTtl(cacheTTL));
     }
 

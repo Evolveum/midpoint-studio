@@ -80,6 +80,13 @@ open class MidPointConfigurable(val project: Project) :
                         )
                         .comment(message("MidPointConfigurable.ignoreMissingKeys.comment"))
                 }
+                row(message("MidPointConfigurable.cacheTTL")) {
+                    intTextField(IntRange(0, 60 * 60 * 24), 5)
+                        .bindIntText(
+                            { configuration.cacheTTL },
+                            { configuration.cacheTTL = it }
+                        )
+                }.comment(message("MidPointConfigurable.cacheTTL.comment"))
             }
             groupRowsRange(message("MidPointConfigurable.restClient.title")) {
                 row(message("MidPointConfigurable.restClient.downloadFilePattern")) {

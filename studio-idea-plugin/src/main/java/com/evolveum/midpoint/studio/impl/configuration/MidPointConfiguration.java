@@ -63,7 +63,7 @@ public class MidPointConfiguration implements Serializable {
 
     private boolean updateOnUpload;
 
-    private long cacheTTL;
+    private int cacheTTL = Cache.DEFAULT_CACHE_TTL;
 
     public MidPointConfiguration() {
     }
@@ -194,11 +194,11 @@ public class MidPointConfiguration implements Serializable {
         this.updateOnUpload = updateOnUpload;
     }
 
-    public long getCacheTTL() {
+    public int getCacheTTL() {
         return cacheTTL;
     }
 
-    public void setCacheTTL(long cacheTTL) {
+    public void setCacheTTL(int cacheTTL) {
         this.cacheTTL = cacheTTL;
     }
 

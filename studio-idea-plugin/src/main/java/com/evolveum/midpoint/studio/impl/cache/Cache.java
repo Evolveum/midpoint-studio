@@ -8,12 +8,12 @@ public abstract class Cache {
     /**
      * Default cache TTL 10 minutes.
      */
-    public static final long DEFAULT_CACHE_TTL = 10 * 60;
+    public static final int DEFAULT_CACHE_TTL = 10 * 60;
 
     /**
      * Time to live in seconds.
      */
-    private long ttl;
+    private int ttl;
 
     private final Project project;
 
@@ -38,11 +38,11 @@ public abstract class Cache {
     /**
      * @return time to live in seconds.
      */
-    public long getTtl() {
+    public int getTtl() {
         return ttl;
     }
 
-    public void setTtl(long ttl) {
+    public void setTtl(int ttl) {
         this.ttl = ttl > 0 ? ttl : DEFAULT_CACHE_TTL;
     }
 
