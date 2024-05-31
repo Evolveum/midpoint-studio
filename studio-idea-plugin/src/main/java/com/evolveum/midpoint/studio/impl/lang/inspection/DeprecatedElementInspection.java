@@ -5,8 +5,6 @@ import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.lang.annotation.AnnotationHolder;
-import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.xml.XmlElement;
@@ -58,13 +56,5 @@ public class DeprecatedElementInspection extends LocalInspectionTool implements 
                 }
             }
         };
-    }
-
-    private void createNewAnnotation(XmlElement element, AnnotationHolder holder, String msg, String tooltip) {
-        holder.newAnnotation(HighlightSeverity.WARNING, msg)
-                .range(element.getTextRange())
-                .tooltip(tooltip)
-                .highlightType(ProblemHighlightType.LIKE_DEPRECATED)
-                .create();
     }
 }

@@ -271,6 +271,11 @@
                          groupKey="MidpointInspectionGroup.title"
                          key="DeprecatedElementInspection.title"
                          implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.DeprecatedElementInspection"/>
+        <localInspection language="XML"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="EnumerationRefInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.EnumerationRefInspection"/>
 
         <intentionAction>
             <className>com.evolveum.midpoint.studio.impl.lang.intention.DownloadObjectIntention</className>

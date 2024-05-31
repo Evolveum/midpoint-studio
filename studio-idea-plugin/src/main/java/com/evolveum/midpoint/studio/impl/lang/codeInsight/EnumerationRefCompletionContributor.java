@@ -12,7 +12,6 @@ import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.project.Project;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
@@ -28,7 +27,7 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  * Support for <a:valueEnumerationRef> annotation (MID-9345)
  * <p>
  * Example: <a:valueEnumerationRef oid="00000000-0000-0000-0000-000000000230" type="tns:LookupTableType"/>
- *
+ * <p>
  * Such annotation is read not through XSD types and PSI references, but via prism schema registry.
  */
 public class EnumerationRefCompletionContributor extends MidPointCompletionContributor {
@@ -57,19 +56,7 @@ public class EnumerationRefCompletionContributor extends MidPointCompletionContr
             }
 
             XmlTag tag = text.getParentTag();
-            ItemDefinition<?> itemDefinition = PsiUtils.findItemDefinitionForTag(tag);
-            if (itemDefinition == null) {
-                return;
-            }
-
-            PrismReferenceValue ref = itemDefinition.getValueEnumerationRef();
-            if (ref == null) {
-                return;
-            }
-
-            Project project = position.getProject();
-            ObjectCache<LookupTableType> cache = EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_LOOKUP_TABLE);
-            LookupTableType table = cache.get(ref.getOid());
+            LookupTableType table = getLookupTableForTag(tag);
             if (table == null) {
                 return;
             }
@@ -96,5 +83,24 @@ public class EnumerationRefCompletionContributor extends MidPointCompletionContr
 
             return PrioritizedLookupElement.withPriority(element, 200);
         }
+    }
+
+    public static LookupTableType getLookupTableForTag(XmlTag tag) {
+        if (tag == null) {
+            return null;
+        }
+
+        ItemDefinition<?> itemDefinition = PsiUtils.findItemDefinitionForTag(tag);
+        if (itemDefinition == null) {
+            return null;
+        }
+
+        PrismReferenceValue ref = itemDefinition.getValueEnumerationRef();
+        if (ref == null) {
+            return null;
+        }
+
+        ObjectCache<LookupTableType> cache = EnvironmentCacheManager.getCache(tag.getProject(), EnvironmentCacheManager.KEY_LOOKUP_TABLE);
+        return cache.get(ref.getOid());
     }
 }
