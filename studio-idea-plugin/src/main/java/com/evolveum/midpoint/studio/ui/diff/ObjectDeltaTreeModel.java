@@ -30,6 +30,9 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(NODE_ROOT);
 
         if (delta.isEmpty()) {
+            super.setData(data);
+
+            setRoot(root);
             return;
         }
 
