@@ -81,7 +81,7 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
 
     private ModificationType getModificationType(Object userObject) {
         ModificationType type = null;
-        if (userObject instanceof DeltaItem di) {
+        if (userObject instanceof ItemDeltaNode di) {
             type = di.modificationType();
         } else if (userObject instanceof ObjectDeltaTreeNode itemDeltaNode) {
             type = getModificationType(itemDeltaNode.delta());
@@ -121,7 +121,7 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
 
         if (node.getUserObject() instanceof ObjectDeltaTreeData<?>) {
             return "All";
-        } else if (node.getUserObject() instanceof DeltaItem di) {
+        } else if (node.getUserObject() instanceof ItemDeltaNode di) {
             ModificationType modificationType = getModificationType(node.getUserObject());
             String prefix = modificationType == null ?
                     "" :

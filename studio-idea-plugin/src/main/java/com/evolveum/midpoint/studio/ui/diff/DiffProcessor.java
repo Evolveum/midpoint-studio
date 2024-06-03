@@ -185,7 +185,7 @@ public class DiffProcessor<O extends ObjectType> {
         String before = "";
         String after = "";
         try {
-            if (userObject instanceof DeltaItem di) {
+            if (userObject instanceof ItemDeltaNode di) {
                 before = PrismContext.get().xmlSerializer().serialize(di.value());
 
             } else if (userObject instanceof ObjectDeltaTreeNode odtn) {
@@ -336,7 +336,7 @@ public class DiffProcessor<O extends ObjectType> {
             } else if (userObject instanceof ObjectDeltaTreeNode itemDeltaNode) {
                 delta = object.createModifyDelta();
                 delta.addModification(itemDeltaNode.delta().clone());
-            } else if (userObject instanceof DeltaItem di) {
+            } else if (userObject instanceof ItemDeltaNode di) {
                 PrismValue cloned = di.value().clone();
 
                 ItemDelta itemDelta = di.parent().clone();

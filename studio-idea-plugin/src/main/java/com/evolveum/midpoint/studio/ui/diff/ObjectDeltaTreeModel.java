@@ -64,7 +64,7 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel
             return;
         }
 
-        values.forEach(v -> parent.add(new DefaultMutableTreeNode(new DeltaItem(itemDelta, modificationType, v))));
+        values.forEach(v -> parent.add(new DefaultMutableTreeNode(new ItemDeltaNode(itemDelta, modificationType, v))));
     }
 
 
