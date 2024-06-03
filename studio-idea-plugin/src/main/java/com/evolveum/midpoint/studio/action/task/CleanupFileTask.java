@@ -119,7 +119,9 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
         }
 
         try {
-            PrismParser parser = ClientUtils.createParser(MidPointUtils.DEFAULT_PRISM_CONTEXT, content);
+            PrismParser parser = ClientUtils.createParser(MidPointUtils.DEFAULT_PRISM_CONTEXT, content)
+                    .preserveNamespaceContext();
+
             List<PrismObject<? extends ObjectType>> objects = (List) parser.parseObjects();
             if (objects.isEmpty()) {
                 return content;
