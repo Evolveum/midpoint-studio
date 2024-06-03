@@ -5,7 +5,9 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
 import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
+import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -20,9 +22,11 @@ import com.intellij.psi.xml.XmlText;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -50,8 +54,10 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                         if (outer instanceof XmlText xmlText) {
                             // we have axiom query embedded in xml
 
-                            XmlTag parentTag = xmlText.getParentTag();
-                            def = PsiUtils.findItemDefinitionForTag(parentTag);
+                            XmlTag itemTag = findItemTag(xmlText);
+                            if (itemTag != null) {
+                                def = PsiUtils.findItemDefinitionForTag(itemTag);
+                            }
                         }
 
                         if (def == null) {
@@ -70,6 +76,22 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                     }
                 }
         );
+    }
+
+    /**
+     * returns for filter (SearchFilterType) tag if possible, otherwise returns tag which is parent of xml text.
+     */
+    private XmlTag findItemTag(XmlText xmlText) {
+        XmlTag parentTag = xmlText.getParentTag();
+        if (Objects.equals(MidPointUtils.createQName(parentTag), SearchFilterType.F_TEXT)) {
+            XmlTag qTextParent = parentTag.getParentTag();
+            QName qTextParentType = PsiUtils.getTagXsdType(qTextParent);
+            if (SearchFilterType.COMPLEX_TYPE.equals(qTextParentType)) {
+                return qTextParent.getParentTag();
+            }
+        }
+
+        return parentTag;
     }
 
     private LookupElement build(String key, String alias) {

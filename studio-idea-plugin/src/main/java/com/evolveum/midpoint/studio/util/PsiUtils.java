@@ -284,6 +284,8 @@ public class PsiUtils {
             object = path.firstToName();
         }
 
+        // todo figure out xsi:type if path.first() is <c:object>
+
         SchemaRegistry registry = PrismContext.get().getSchemaRegistry();
         PrismObjectDefinition<?> objectDefinition = registry.findObjectDefinitionByElementName(object);
         if (objectDefinition == null) {
