@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
@@ -22,8 +23,17 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.xml.namespace.QName;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PsiUtils {
+
+    private static Set<QName> OBJECT_TYPES;
+
+    static {
+        OBJECT_TYPES = Arrays.stream(ObjectTypes.values())
+                .map(ObjectTypes::getElementName)
+                .collect(Collectors.toSet());
+    }
 
     public static boolean isXmlElement(PsiElement element) {
         Project project = element.getProject();
@@ -253,6 +263,10 @@ public class PsiUtils {
 
         Collections.reverse(tags);
 
+        return createItemPath(tags);
+    }
+
+    public static ItemPath createItemPath(List<XmlTag> tags) {
         List<Object> components = new ArrayList<>();
         for (XmlTag t : tags) {
             QName name = MidPointUtils.createQName(t);
