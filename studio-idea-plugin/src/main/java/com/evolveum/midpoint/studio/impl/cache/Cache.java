@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl.cache;
 
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class Cache {
 
@@ -19,7 +20,7 @@ public abstract class Cache {
 
     private Environment environment;
 
-    public Cache(Project project) {
+    public Cache(@NotNull Project project) {
         this.project = project;
     }
 

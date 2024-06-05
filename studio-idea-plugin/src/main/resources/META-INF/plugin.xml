@@ -17,8 +17,6 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ExtensionSchemaCacheService"/>
-
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ItemPathCacheService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PanelTypeCacheService"/>

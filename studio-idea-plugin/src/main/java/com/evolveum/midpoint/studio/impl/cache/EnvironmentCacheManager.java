@@ -26,22 +26,21 @@ public class EnvironmentCacheManager {
 
     public static class CacheKey<C extends Cache> {
 
-        private final Class cacheType;
-
-        public CacheKey(Class cacheType) {
-            this.cacheType = cacheType;
+        public CacheKey() {
         }
     }
 
-    public static final CacheKey<ObjectCache<LookupTableType>> KEY_LOOKUP_TABLE = new CacheKey<>(ObjectCache.class);
+    public static final CacheKey<ObjectCache<LookupTableType>> KEY_LOOKUP_TABLE = new CacheKey<>();
 
-    public static final CacheKey<ObjectCache<SchemaType>> KEY_SCHEMA = new CacheKey<>(ObjectCache.class);
+    public static final CacheKey<ObjectCache<SchemaType>> KEY_SCHEMA = new CacheKey<>();
 
-    public static final CacheKey<ObjectCache<SystemConfigurationType>> KEY_SYSTEM_CONFIGURATION = new CacheKey<>(ObjectCache.class);
+    public static final CacheKey<ObjectCache<SystemConfigurationType>> KEY_SYSTEM_CONFIGURATION = new CacheKey<>();
 
-    public static final CacheKey<ConnectorCache> KEY_CONNECTOR = new CacheKey<>(ConnectorCache.class);
+    public static final CacheKey<ConnectorCache> KEY_CONNECTOR = new CacheKey<>();
 
-    public static final CacheKey<EnvironmentPropertiesCache> KEY_PROPERTIES = new CacheKey<>(EnvironmentPropertiesCache.class);
+    public static final CacheKey<EnvironmentPropertiesCache> KEY_PROPERTIES = new CacheKey<>();
+
+    public static final CacheKey<ExtensionSchemaCache> KEY_EXTENSION_SCHEMA = new CacheKey<>();
 
     private static final Logger LOG = LoggerFactory.getLogger(EnvironmentCacheManager.class);
 
@@ -71,6 +70,7 @@ public class EnvironmentCacheManager {
         caches.put(KEY_SYSTEM_CONFIGURATION, new ObjectCache<>(project, SystemConfigurationType.class));
         caches.put(KEY_CONNECTOR, new ConnectorCache(project));
         caches.put(KEY_PROPERTIES, new EnvironmentPropertiesCache(project));
+        caches.put(KEY_EXTENSION_SCHEMA, new ExtensionSchemaCache(project));
 
         MidPointService ms = MidPointService.get(project);
         MidPointConfiguration config = ms.getSettings();
