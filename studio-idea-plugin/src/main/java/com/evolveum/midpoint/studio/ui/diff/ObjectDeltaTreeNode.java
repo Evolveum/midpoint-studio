@@ -23,6 +23,8 @@ public abstract class ObjectDeltaTreeNode<T> {
 
     abstract ModificationType getModificationType();
 
+    abstract ApplicableDelta<?> getApplicableDelta();
+
     protected ModificationType getModificationType(ItemDelta<?, ?> delta) {
         Set<ModificationType> modifications = new HashSet<>();
         if (delta.getValuesToAdd() != null && !delta.getValuesToAdd().isEmpty()) {

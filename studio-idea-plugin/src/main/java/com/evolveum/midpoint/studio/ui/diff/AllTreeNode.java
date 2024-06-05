@@ -27,4 +27,9 @@ public class AllTreeNode<O extends ObjectType> extends ObjectDeltaTreeNode<Objec
 
         return SynchronizationUtil.getModificationType(set);
     }
+
+    @Override
+    ApplicableDelta<?> getApplicableDelta() {
+        return new ApplicableObjectDelta<>(getValue().delta());
+    }
 }

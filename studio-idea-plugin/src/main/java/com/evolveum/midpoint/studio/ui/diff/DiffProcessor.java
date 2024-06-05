@@ -328,29 +328,12 @@ public class DiffProcessor<O extends ObjectType> {
                 continue;
             }
 
-            ObjectDelta<O> delta = null;
-
             Object userObject = node.getUserObject();
-            if (userObject instanceof ObjectDelta<?> od) {
-                delta = (ObjectDelta<O>) od;
-            } else if (userObject instanceof ItemDeltaTreeNode idtn) {
-                delta = object.createModifyDelta();
-                delta.addModification(idtn.getValue().clone());
-            } else if (userObject instanceof ItemDeltaValueTreeNode idvtn) {
-                PrismValue cloned = idvtn.getValue().clone();
-
-                ItemDelta itemDelta = idvtn.getItemDelta().clone();
-                itemDelta.clear();
-                switch (idvtn.getModificationType()) {
-                    case REPLACE -> itemDelta.addValueToReplace(cloned);
-                    case ADD -> itemDelta.addValueToAdd(cloned);
-                    case DELETE -> itemDelta.addValueToDelete(cloned);
-                }
-
-                delta = object.createModifyDelta();
-                delta.addModification(itemDelta);
+            if (!(userObject instanceof ObjectDeltaTreeNode odt)) {
+                continue;
             }
 
+            ObjectDelta<O> delta = odt.getApplicableDelta().getDelta(object);
             if (delta != null) {
                 delta.applyTo(object);
             }

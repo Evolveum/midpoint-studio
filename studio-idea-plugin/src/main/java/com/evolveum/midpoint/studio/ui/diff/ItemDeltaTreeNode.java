@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
 
-    private Item<?, ?> targetItem;
+    private final Item<?, ?> targetItem;
 
     public ItemDeltaTreeNode(ItemDelta<?, ?> value, Item<?, ?> targetItem) {
         super(value);
@@ -37,6 +37,11 @@ public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
         ItemDelta<?, ?> delta = getValue();
 
         return getModificationType(delta);
+    }
+
+    @Override
+    ApplicableDelta<?> getApplicableDelta() {
+        return new ApplicableItemDelta<>(getValue());
     }
 
     private String createReadablePath() {
@@ -64,7 +69,6 @@ public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
 
         return StringUtils.join(segments, "/");
     }
-
 
     private String createNaturalKeySuffix(PrismObject<?> object, ItemPath path, Long id) {
         String naturalKey = getNaturalKey(object, path, id);
@@ -116,9 +120,9 @@ public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
             return o;
         }
 
-        PrismContainerValue parentValue = item.getParent();
+        PrismContainerValue<?> parentValue = item.getParent();
         if (parentValue != null) {
-            return getObject((Item) parentValue.getParent());
+            return getObject((Item<?, ?>) parentValue.getParent());
         }
 
         return null;

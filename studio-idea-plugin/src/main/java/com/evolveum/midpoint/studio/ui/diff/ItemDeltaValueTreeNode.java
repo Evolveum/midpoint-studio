@@ -39,6 +39,11 @@ public class ItemDeltaValueTreeNode extends ObjectDeltaTreeNode<PrismValue> {
     }
 
     @Override
+    ApplicableDelta<?> getApplicableDelta() {
+        return new ApplicableItemValueDelta<>(itemDelta, modificationType, getValue());
+    }
+
+    @Override
     String getText() {
         String value = "";
 
