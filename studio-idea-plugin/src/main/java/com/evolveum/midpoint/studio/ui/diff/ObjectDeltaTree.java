@@ -1,11 +1,9 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.prism.ModificationType;
-import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.studio.ui.synchronization.SynchronizationUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.render.LabelBasedRenderer;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.UIUtil;
@@ -17,8 +15,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 
 public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Disposable {
-
-    private static final Logger LOG = Logger.getInstance(ObjectDeltaTree.class);
 
     public ObjectDeltaTree(@NotNull ObjectDeltaTreeModel<O> model) {
         super(model);
@@ -65,19 +61,6 @@ public class ObjectDeltaTree<O extends ObjectType> extends Tree implements Dispo
         ModificationType type = odt.getModificationType();
 
         return SynchronizationUtil.getColorForModificationType(type);
-    }
-
-    private ModificationType getModificationType(Object userObject) {
-        ModificationType type = null;
-        if (userObject instanceof ItemDeltaValueTreeNode idvtn) {
-            type = idvtn.getModificationType();
-        } else if (userObject instanceof ItemDeltaTreeNode idtn) {
-            type = getModificationType(idtn.getValue());
-        } else if (userObject instanceof ObjectDelta<?> od) {
-            type = getModificationType(od);
-        }
-
-        return type;
     }
 
     @Override
