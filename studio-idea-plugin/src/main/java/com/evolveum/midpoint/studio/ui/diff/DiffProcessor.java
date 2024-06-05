@@ -185,16 +185,16 @@ public class DiffProcessor<O extends ObjectType> {
         String before = "";
         String after = "";
         try {
-            if (userObject instanceof ItemDeltaNode di) {
-                before = PrismContext.get().xmlSerializer().serialize(di.value());
+            if (userObject instanceof ItemDeltaValueTreeNode idvtn) {
+                before = PrismContext.get().xmlSerializer().serialize(idvtn.getValue());
 
-            } else if (userObject instanceof ObjectDeltaTreeNode odtn) {
-                Item<?, ?> targetItem = odtn.targetItem() != null ?
-                        odtn.targetItem().clone() : odtn.delta().getDefinition().instantiate();
+            } else if (userObject instanceof ItemDeltaTreeNode idt) {
+                Item<?, ?> targetItem = idt.getTargetItem() != null ?
+                        idt.getTargetItem().clone() : idt.getValue().getDefinition().instantiate();
 
                 before = serializeItem(targetItem);
 
-                ItemDelta<?, ?> delta = odtn.delta().cloneWithChangedParentPath(ItemPath.EMPTY_PATH);
+                ItemDelta<?, ?> delta = idt.getValue().cloneWithChangedParentPath(ItemPath.EMPTY_PATH);
 
                 Item item = targetItem.clone();
                 delta.applyTo(item);
@@ -333,15 +333,15 @@ public class DiffProcessor<O extends ObjectType> {
             Object userObject = node.getUserObject();
             if (userObject instanceof ObjectDelta<?> od) {
                 delta = (ObjectDelta<O>) od;
-            } else if (userObject instanceof ObjectDeltaTreeNode itemDeltaNode) {
+            } else if (userObject instanceof ItemDeltaTreeNode idtn) {
                 delta = object.createModifyDelta();
-                delta.addModification(itemDeltaNode.delta().clone());
-            } else if (userObject instanceof ItemDeltaNode di) {
-                PrismValue cloned = di.value().clone();
+                delta.addModification(idtn.getValue().clone());
+            } else if (userObject instanceof ItemDeltaValueTreeNode idvtn) {
+                PrismValue cloned = idvtn.getValue().clone();
 
-                ItemDelta itemDelta = di.parent().clone();
+                ItemDelta itemDelta = idvtn.getItemDelta().clone();
                 itemDelta.clear();
-                switch (di.modificationType()) {
+                switch (idvtn.getModificationType()) {
                     case REPLACE -> itemDelta.addValueToReplace(cloned);
                     case ADD -> itemDelta.addValueToAdd(cloned);
                     case DELETE -> itemDelta.addValueToDelete(cloned);

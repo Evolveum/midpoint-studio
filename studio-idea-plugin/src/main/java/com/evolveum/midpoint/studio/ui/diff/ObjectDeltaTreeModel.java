@@ -36,14 +36,14 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel
             return;
         }
 
-        DefaultMutableTreeNode all = new DefaultMutableTreeNode(data);
+        DefaultMutableTreeNode all = new DefaultMutableTreeNode(new AllTreeNode<>(data));
         root.add(all);
 
         Collection<? extends ItemDelta<?, ?>> modifications = delta.getModifications();
         for (ItemDelta<?, ?> modification : modifications) {
             DefaultMutableTreeNode itemDeltaNode =
                     new DefaultMutableTreeNode(
-                            new ObjectDeltaTreeNode(modification, target.findItem(modification.getPath())));
+                            new ItemDeltaTreeNode(modification, target.findItem(modification.getPath())));
             all.add(itemDeltaNode);
 
             addValues(itemDeltaNode, modification, ModificationType.ADD, modification.getValuesToAdd());
@@ -64,7 +64,7 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel
             return;
         }
 
-        values.forEach(v -> parent.add(new DefaultMutableTreeNode(new ItemDeltaNode(itemDelta, modificationType, v))));
+        values.forEach(v -> parent.add(new DefaultMutableTreeNode(new ItemDeltaValueTreeNode(itemDelta, modificationType, v))));
     }
 
 
