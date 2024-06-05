@@ -15,14 +15,12 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.xml.XmlFile;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class StudioPrismContextService {
 
@@ -76,32 +74,34 @@ public class StudioPrismContextService {
     private void registerSchemaObjects(SchemaRegistryImpl schemaRegistry) {
         ObjectCache<SchemaType> cache = EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_SCHEMA);
 
-        for (SchemaType schema : cache.list()) {
-            String description = "extension schema object '" + schema.getNamespace() + "'";
+        Map<String, Element> schemas = cache.list().stream()
+                .collect(
+                        Collectors.toMap(
+                                s -> "extension schema object '" + s.getNamespace() + "'",
+                                s -> s.getDefinition().getSchema())
+                );
 
-            Element element = schema.getDefinition().getSchema();
-            String content = DOMUtil.serializeDOMToString(element);
-
-            registerExtensionSchema(schemaRegistry, content, description);
+        try {
+            schemaRegistry.registerDynamicSchemaExtensions(schemas);
+        } catch (Exception ex) {
+            LOG.debug("Couldn't register schema objects", ex);
         }
     }
 
     private void registerSchemaFiles(SchemaRegistryImpl schemaRegistry) {
         ExtensionSchemaCache cache = EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_EXTENSION_SCHEMA);
 
-        for (Map.Entry<String, XmlFile> entry : cache.getFiles().entrySet()) {
-            String description = "extension schema file '" + entry.getKey() + "'";
-            String content = entry.getValue().getText();
+        Map<String, Element> schemas = cache.getFiles().entrySet().stream()
+                .collect(
+                        Collectors.toMap(
+                                e -> "extension schema object '" + e.getKey() + "'",
+                                e -> DOMUtil.parseDocument(e.getValue().getText()).getDocumentElement())
+                );
 
-            registerExtensionSchema(schemaRegistry, content, description);
-        }
-    }
-
-    private void registerExtensionSchema(SchemaRegistryImpl registry, String content, String description) {
-        try (InputStream is = new ByteArrayInputStream(content.getBytes())) {
-            registry.registerPrismSchema(is, description);
+        try {
+            schemaRegistry.registerDynamicSchemaExtensions(schemas);
         } catch (Exception ex) {
-            LOG.debug("Couldn't register " + description, ex);
+            LOG.debug("Couldn't register schema files", ex);
         }
     }
 }
