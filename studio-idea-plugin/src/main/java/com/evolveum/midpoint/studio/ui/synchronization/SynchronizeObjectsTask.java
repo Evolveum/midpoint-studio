@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SynchronizeObjectsTask extends SynchronizationTask {
@@ -45,6 +46,8 @@ public class SynchronizeObjectsTask extends SynchronizationTask {
 
         getSession().open();
 
+        List<SynchronizationObjectItem> objectItems = new ArrayList<>();
+
         int current = 0;
         for (VirtualFile file : files) {
             ProgressManager.checkCanceled();
@@ -57,11 +60,16 @@ public class SynchronizeObjectsTask extends SynchronizationTask {
                 continue;
             }
 
+            objectItems.addAll(fileItem.getObjects());
+
             getSession().addFileItem((SynchronizationFileItem) fileItem);
         }
 
-
         SynchronizationManager.get(getProject()).showSynchronizationToolWindow(true);
+        if (objectItems.size() == 1) {
+            SynchronizationObjectItem objectItem = objectItems.get(0);
+            getSession().openSynchronizationEditor(objectItem);
+        }
 
         NotificationType type = counter.missing > 0 || counter.failed > 0 || counter.skipped > 0 ?
                 NotificationType.WARNING : NotificationType.INFORMATION;

@@ -1,20 +1,11 @@
 package com.evolveum.midpoint.studio.ui.synchronization;
 
 import com.evolveum.midpoint.prism.ModificationType;
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.studio.MidPointIcons;
-import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.ui.diff.DiffProcessor;
-import com.evolveum.midpoint.studio.ui.diff.DiffSource;
-import com.evolveum.midpoint.studio.ui.diff.DiffSourceType;
-import com.evolveum.midpoint.studio.ui.diff.DiffVirtualFile;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.CheckboxTree;
 import com.intellij.ui.CheckedTreeNode;
 import com.intellij.ui.DoubleClickListener;
@@ -81,60 +72,17 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
 
     private void doubleClickPerformed(DefaultMutableTreeNode node) {
         Object object = node.getUserObject();
+        SynchronizationObjectItem item = null;
         if (object instanceof SynchronizationFileItem<?> file) {
             if (file.getObjects().size() == 1) {
-                openSynchronizationEditor(file.getObjects().get(0));
+                item = file.getObjects().get(0);
             }
         } else if (object instanceof SynchronizationObjectItem obj) {
-            openSynchronizationEditor(obj);
+            item = obj;
         }
-    }
 
-    private <O extends ObjectType> void openSynchronizationEditor(SynchronizationObjectItem object) {
-        VirtualFile leftRealFile = object.getFileItem().getFile();
-        String leftName = leftRealFile.getName();
-
-        MidPointObject rightObject = object.getRemote();
-        String rightName = rightObject != null ? rightObject.getName() + ".xml" : DiffSource.NON_EXISTING_NAME;
-
-        DiffSource<O> left = new DiffSource(leftName, DiffSourceType.LOCAL, object.getLocalObject().getCurrent());
-        DiffSource<O> right = new DiffSource(rightName, DiffSourceType.REMOTE, object.getRemoteObject().getCurrent());
-
-        DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(
-                project, object.getId(), left, right, object.getIgnoredLocalDeltas(), object.getIgnoredRemoteDeltas()) {
-
-            @Override
-            protected void acceptPerformed() {
-                super.acceptPerformed();
-
-                updateSynchronizationState(this, object, getDirection());
-            }
-        };
-        processor.computeDelta();
-        DiffVirtualFile file = new DiffVirtualFile(processor);
-
-        MidPointUtils.openFile(project, file);
-    }
-
-    private <O extends ObjectType> void updateSynchronizationState(
-            DiffProcessor<O> processor, SynchronizationObjectItem object, DiffProcessor.Direction direction) {
-        try {
-            PrismObjectHolder statefulPrismObject =
-                    direction == DiffProcessor.Direction.LEFT_TO_RIGHT ? object.getRemoteObject() : object.getLocalObject();
-
-            PrismObject<O> prismObject = processor.getTargetObject();
-
-            statefulPrismObject.setCurrent(prismObject.clone());
-
-            if (processor.hasChanges()) {
-                getTreeModel().nodesChanged(new Object[]{object});
-            } else {
-                // todo nodes should be removed - there's nothing we can do with them
-                //  figure out parent (file) if needed and hide, same check should happen after save local/remote
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        if (item != null) {
+            SynchronizationManager.get(project).getSession().openSynchronizationEditor(item);
         }
     }
 

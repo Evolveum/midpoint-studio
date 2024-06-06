@@ -321,6 +321,8 @@ public class DiffProcessor<O extends ObjectType> {
             applyDeltaNodesToObject(target, selected);
 
             diffPanel.removeNodes(selected);
+
+            simpleDiffPanel.refreshInternalDiffRequestProcessor();
         } catch (Exception ex) {
             throw new RuntimeException("Couldn't apply delta", ex);
         }
