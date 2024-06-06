@@ -153,6 +153,10 @@ public class SynchronizationTree extends CheckboxTree implements Disposable {
                 return null;
             }
 
+            if (si.isNew()) {
+                return SynchronizationUtil.getColorForModificationType(ModificationType.ADD);
+            }
+
             ModificationType modification = si.hasLocalChanges() || si.hasRemoteChanges() ?
                     ModificationType.REPLACE : null;
 
