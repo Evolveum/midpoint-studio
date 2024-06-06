@@ -5,10 +5,13 @@ import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.ui.diff.ApplicableDelta;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SynchronizationObjectItem extends SynchronizationItem {
 
@@ -23,6 +26,9 @@ public class SynchronizationObjectItem extends SynchronizationItem {
 
     private PrismObjectHolder<?> localObject = new PrismObjectHolder<>();
     private PrismObjectHolder<?> remoteObject = new PrismObjectHolder<>();
+
+    private List<ApplicableDelta<?>> ignoredLocalDeltas = new ArrayList<>();
+    private List<ApplicableDelta<?>> ignoredRemoteDeltas = new ArrayList<>();
 
     public SynchronizationObjectItem(
             @NotNull SynchronizationFileItem<?> fileItem, @NotNull String oid, @NotNull String name,
@@ -111,5 +117,13 @@ public class SynchronizationObjectItem extends SynchronizationItem {
     @NotNull
     public ObjectTypes getObjectType() {
         return objectType;
+    }
+
+    public List<ApplicableDelta<?>> getIgnoredLocalDeltas() {
+        return ignoredLocalDeltas;
+    }
+
+    public List<ApplicableDelta<?>> getIgnoredRemoteDeltas() {
+        return ignoredRemoteDeltas;
     }
 }

@@ -48,9 +48,9 @@ public class DiffProcessor<O extends ObjectType> {
 
     private ObjectDelta<O> delta;
 
-    private final List<Object> leftIgnoredDelta = new ArrayList<>();
+    private final List<ApplicableDelta<?>> leftIgnoredDelta;
 
-    private final List<Object> rightIgnoredDelta = new ArrayList<>();
+    private final List<ApplicableDelta<?>> rightIgnoredDelta;
 
     private Direction direction = Direction.RIGHT_TO_LEFT;
 
@@ -58,13 +58,19 @@ public class DiffProcessor<O extends ObjectType> {
 
     private DiffStrategyComboAction strategyAction;
 
-    public DiffProcessor(@NotNull Project project, @Nullable String id, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right) {
+    public DiffProcessor(
+            @NotNull Project project, @Nullable String id, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right,
+            @NotNull List<ApplicableDelta<?>> leftIgnoredDelta, @NotNull List<ApplicableDelta<?>> rightIgnoredDelta) {
+
         this.project = project;
 
         this.id = id;
 
         this.leftSource = left;
         this.rightSource = right;
+
+        this.leftIgnoredDelta = leftIgnoredDelta;
+        this.rightIgnoredDelta = rightIgnoredDelta;
 
         diffPanel = initDiffPanel();
         simpleDiffPanel = initSimpleDiffPanel();
@@ -165,7 +171,7 @@ public class DiffProcessor<O extends ObjectType> {
         return getTarget().object();
     }
 
-    public List<Object> getTargetIgnoredDelta() {
+    public List<ApplicableDelta<?>> getTargetIgnoredDelta() {
         return direction == Direction.LEFT_TO_RIGHT ? rightIgnoredDelta : leftIgnoredDelta;
     }
 
@@ -353,7 +359,6 @@ public class DiffProcessor<O extends ObjectType> {
         return hasParentSelected(parent, selected);
     }
 
-    // todo ignored list should be cleared when strategy changes
     private void ignorePerformed() {
         try {
             List<DefaultMutableTreeNode> selected = diffPanel.getSelectedNodes();
@@ -363,7 +368,14 @@ public class DiffProcessor<O extends ObjectType> {
                     continue;
                 }
 
-                getTargetIgnoredDelta().add(node.getUserObject());
+                // todo somehow update synchronization object item - add ignored items
+                //  add equals/hashcode do applicable delta classes
+
+                if (!(node.getUserObject() instanceof ObjectDeltaTreeNode<?> odt)) {
+                    continue;
+                }
+
+                getTargetIgnoredDelta().add(odt.getApplicableDelta());
             }
 
             diffPanel.removeNodes(selected);
