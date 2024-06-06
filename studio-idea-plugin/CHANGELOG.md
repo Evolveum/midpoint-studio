@@ -6,13 +6,19 @@
 - Improvements and configuration options for cleanup task
 - Replace association shadowRef annotation/intention
 - Added annotation/intention support for protected strings that aren't using secret providers
+- Objects synchronization UI
+- Enumerated values via valueEnumerationRef annotation are added as suggestions in autocompletion/inspections
 ### Changed
 - Renamed occurrences Axiom query to MidPoint query
 - Improved references handling (inlays, download/show intent, etc.)
+- Improved UI for project configuration
+- Improved caching for objects loaded from environment
+- MID-9691 bulk actions execution now prints notification if there was console output on server
 ### Fixed
 - MID-9282 Properties host injector
 - MID-9383 Fixed groovy-all dependency in pom.xml in project template
 - MID-9501 Missing "t" prefix in actions fixed
+- MID-8404 Fixed expansion of properties in objects
 - Fixed browser panel UI issues
 
 ## [4.8.0]
