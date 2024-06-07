@@ -8,6 +8,7 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.ItemPathSegment;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -105,10 +106,26 @@ public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
         }
 
         String key = items.stream()
-                .map(i -> i.getElementName().getLocalPart() + ": " + StringUtils.join(i.getRealValues(), ", "))
+                .map(i -> i.getElementName().getLocalPart() + ": " + StringUtils.join(getPresentableRealValues(i.getRealValues()), ", "))
                 .collect(Collectors.joining("; "));
 
         return StringUtils.abbreviate(key, 200);
+    }
+
+    private Collection<?> getPresentableRealValues(Collection<?> values) {
+        if (values == null) {
+            return List.of();
+        }
+
+        return values.stream()
+                .map(v -> {
+                    if (v instanceof QName qname) {
+                        return qname.getLocalPart();
+                    }
+
+                    return v;
+                })
+                .toList();
     }
 
     private PrismObject<?> getObject(Item<?, ?> item) {
