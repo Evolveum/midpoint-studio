@@ -77,7 +77,7 @@ public class StudioPrismContextService {
         Map<String, Element> schemas = cache.list().stream()
                 .collect(
                         Collectors.toMap(
-                                s -> "extension schema object '" + s.getNamespace() + "'",
+                                s -> "extension schema object '" + s.getName() + "'",
                                 s -> s.getDefinition().getSchema())
                 );
 

@@ -192,8 +192,11 @@ public class DiffProcessor<O extends ObjectType> {
         String after = "";
         try {
             if (userObject instanceof ItemDeltaValueTreeNode idvtn) {
-                before = PrismContext.get().xmlSerializer().serialize(idvtn.getValue());
-
+                String content =PrismContext.get().xmlSerializer().serialize(idvtn.getValue());
+                switch (idvtn.getModificationType()) {
+                    case ADD, REPLACE -> after = content;
+                    case DELETE -> before = content;
+                }
             } else if (userObject instanceof ItemDeltaTreeNode idt) {
                 Item<?, ?> targetItem = idt.getTargetItem() != null ?
                         idt.getTargetItem().clone() : idt.getValue().getDefinition().instantiate();

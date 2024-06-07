@@ -4,7 +4,6 @@ import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
