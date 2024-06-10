@@ -60,8 +60,14 @@ public class MissingMappingNameInspection extends StudioInspection {
             return;
         }
 
+        String id = tag.getAttributeValue("id");
+        String suffix = "";
+        if (id != null) {
+            suffix = " with id='" + id + "'";
+        }
+
         registerTagProblems(tag, holder, ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-                "Missing mapping name for " + def.getItemName().getLocalPart());
+                "Missing mapping name for " + def.getItemName().getLocalPart() + suffix);
     }
 
     private List<QName> toQNames(List<XmlTag> tags) {
