@@ -61,7 +61,7 @@ public class ExpanderTest extends StudioActionTest {
         Project project = getProject();
         EnvironmentService es = EnvironmentService.getInstance(project);
         MidPointService ms = MidPointService.get(project);
-        Expander expander = new Expander(es.getSelected(), null, project, ms.getSettings().isIgnoreMissingKeys());
+        Expander expander = new Expander(es.getSelected(), null, project);
 
         PsiFile psiFile = myFixture.configureByFile("mid-7781/functionalLibraries/lib.xml");
         VirtualFile file = psiFile.getVirtualFile();
