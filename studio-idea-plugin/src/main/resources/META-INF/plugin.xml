@@ -260,20 +260,29 @@
         <customizableActionGroupProvider implementation="com.evolveum.midpoint.studio.action.ExpUiActionGroupProvider"/>
 
         <localInspection language="XML"
+                         enabledByDefault="true"
                          groupBundle="messages.MidPointStudio"
                          groupKey="MidpointInspectionGroup.title"
                          key="MissingNaturalKeyInspection.title"
                          implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.MissingNaturalKeyInspection"/>
         <localInspection language="XML"
+                         enabledByDefault="true"
                          groupBundle="messages.MidPointStudio"
                          groupKey="MidpointInspectionGroup.title"
                          key="DeprecatedElementInspection.title"
                          implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.DeprecatedElementInspection"/>
         <localInspection language="XML"
+                         enabledByDefault="true"
                          groupBundle="messages.MidPointStudio"
                          groupKey="MidpointInspectionGroup.title"
                          key="EnumerationRefInspection.title"
                          implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.EnumerationRefInspection"/>
+        <localInspection language="XML"
+                         enabledByDefault="true"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="MissingMappingNameInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.MissingMappingNameInspection"/>
 
         <intentionAction>
             <className>com.evolveum.midpoint.studio.impl.lang.intention.DownloadObjectIntention</className>

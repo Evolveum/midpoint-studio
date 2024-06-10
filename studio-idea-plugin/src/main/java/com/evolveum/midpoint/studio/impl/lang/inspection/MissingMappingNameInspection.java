@@ -1,13 +1,13 @@
 package com.evolveum.midpoint.studio.impl.lang.inspection;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismContainerDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.MappingType;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElement;
@@ -18,7 +18,10 @@ import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MissingNaturalKeyInspection extends StudioInspection {
+/**
+ * Inspection done on top of prism definitions. XSD references to obtain type are not used.
+ */
+public class MissingMappingNameInspection extends StudioInspection {
 
     @Override
     void visitElement(@NotNull ProblemsHolder holder, boolean isOnTheFly, @NotNull PsiElement element) {
@@ -48,22 +51,17 @@ public class MissingNaturalKeyInspection extends StudioInspection {
 
         List<QName> path = toQNames(tags.subList(1, tags.size()));
         ItemDefinition def = objectDefinition.findItemDefinition(ItemPath.create(path));
-        if (def == null || !def.isMultiValue() || !(def instanceof PrismContainerDefinition<?>)) {
+        if (def == null || def.getTypeClass() == null || !MappingType.class.isAssignableFrom(def.getTypeClass())) {
             return;
         }
 
-        List<QName> naturalKeys = def.getNaturalKeyConstituents();
-        if (naturalKeys == null || naturalKeys.isEmpty()) {
+        XmlTag nameTag = MidPointUtils.findSubTag(tag, MappingType.F_NAME);
+        if (nameTag != null && !nameTag.getValue().getText().isEmpty()) {
             return;
         }
 
-        for (QName key : naturalKeys) {
-            XmlTag subTag = MidPointUtils.findSubTag(tag, key);
-            if (subTag == null) {
-                registerTagProblems(tag, holder, ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
-                        "Missing key natural key constituent: " + key.getLocalPart());
-            }
-        }
+        registerTagProblems(tag, holder, ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+                "Missing mapping name for " + def.getItemName().getLocalPart());
     }
 
     private List<QName> toQNames(List<XmlTag> tags) {
