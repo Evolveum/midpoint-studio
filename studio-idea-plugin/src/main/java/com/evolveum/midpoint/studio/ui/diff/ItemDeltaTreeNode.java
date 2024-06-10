@@ -1,11 +1,15 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.binding.TypeSafeEnum;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ItemMerger;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.ItemPathSegment;
+import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectTypeDefinitionType;
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.namespace.QName;
@@ -16,16 +20,20 @@ import java.util.stream.Collectors;
 
 public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
 
-    private final Item<?, ?> targetItem;
+    private final PrismObject<?> target;
 
-    public ItemDeltaTreeNode(ItemDelta<?, ?> value, Item<?, ?> targetItem) {
+    public ItemDeltaTreeNode(ItemDelta<?, ?> value, PrismObject<?> target) {
         super(value);
 
-        this.targetItem = targetItem;
+        this.target = target;
     }
 
     public Item<?, ?> getTargetItem() {
-        return targetItem;
+        if (getValue() == null) {
+            return null;
+        }
+
+        return target.findItem(getValue().getPath());
     }
 
     @Override
@@ -46,8 +54,6 @@ public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
     }
 
     private String createReadablePath() {
-        PrismObject<?> object = getObject(targetItem);
-
         ItemPath path = getValue().getPath();
 
         List<String> segments = new ArrayList<>();
@@ -55,9 +61,9 @@ public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
         ItemPath partial = ItemPath.EMPTY_PATH;
         for (Object segment : path.getSegments()) {
             if (segment instanceof Long id) {
-                String suffix = createNaturalKeySuffix(object, partial, id);
+                String suffix = createReadableDescription(target, partial, id);
                 if (suffix != null) {
-                    segments.add(id + suffix);
+                    segments.add(id + " (" + suffix + ")");
                 } else {
                     segments.add(id.toString());
                 }
@@ -71,16 +77,53 @@ public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
         return StringUtils.join(segments, "/");
     }
 
-    private String createNaturalKeySuffix(PrismObject<?> object, ItemPath path, Long id) {
-        String naturalKey = getNaturalKey(object, path, id);
+    private String createReadableDescription(PrismObject<?> object, ItemPath path, Long id) {
+        String description = getDisplayName(target, path, id);
+        if (description != null) {
+            return description;
+        }
 
-        return naturalKey == null ? null : " (" + naturalKey + ")";
+        return getNaturalKey(object, path, id);
+    }
+
+    private String getDisplayName(PrismObject<?> object, ItemPath path, Long id) {
+        if (object == null) {
+            return null;
+        }
+
+        PrismContainer<?> item = object.findContainer(path);
+        if (item == null) {
+            return null;
+        }
+
+        PrismContainerValue<?> value = null;
+        if (id != null) {
+            value = item.findValue(id);
+        } else if (item.isSingleValue()) {
+            value = item.getValue();
+        }
+
+        if (value == null) {
+            return null;
+        }
+
+        Object displayName = value.getPropertyRealValue(ResourceObjectTypeDefinitionType.F_DISPLAY_NAME, Object.class);
+        if (displayName instanceof String s) {
+            return s;
+        } else if (displayName instanceof PolyString poly) {
+            return poly.getOrig();
+        } else if (displayName instanceof PolyStringType poly) {
+            return poly.getOrig();
+        }
+
+        return null;
     }
 
     private String getNaturalKey(PrismObject<?> object, ItemPath path, Long id) {
         if (object == null) {
             return null;
         }
+
         PrismContainer<?> item = object.findContainer(path);
         if (item == null) {
             return null;
@@ -123,25 +166,12 @@ public class ItemDeltaTreeNode extends ObjectDeltaTreeNode<ItemDelta<?, ?>> {
                         return qname.getLocalPart();
                     }
 
+                    if (v instanceof TypeSafeEnum tse) {
+                        return tse.value();
+                    }
+
                     return v;
                 })
                 .toList();
-    }
-
-    private PrismObject<?> getObject(Item<?, ?> item) {
-        if (item == null) {
-            return null;
-        }
-
-        if (item instanceof PrismObject<?> o) {
-            return o;
-        }
-
-        PrismContainerValue<?> parentValue = item.getParent();
-        if (parentValue != null) {
-            return getObject((Item<?, ?>) parentValue.getParent());
-        }
-
-        return null;
     }
 }

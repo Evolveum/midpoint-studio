@@ -42,8 +42,7 @@ public class ObjectDeltaTreeModel<O extends ObjectType> extends DefaultTreeModel
         Collection<? extends ItemDelta<?, ?>> modifications = delta.getModifications();
         for (ItemDelta<?, ?> modification : modifications) {
             DefaultMutableTreeNode itemDeltaNode =
-                    new DefaultMutableTreeNode(
-                            new ItemDeltaTreeNode(modification, target.findItem(modification.getPath())));
+                    new DefaultMutableTreeNode(new ItemDeltaTreeNode(modification, target));
             all.add(itemDeltaNode);
 
             addValues(itemDeltaNode, modification, ModificationType.ADD, modification.getValuesToAdd());
