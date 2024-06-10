@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  */
 public class UploadTestValidateResourceTask extends UploadTestResourceTask {
 
-    public static String TITLE = "Upload/Test/Validate resource task";
+    public static String TITLE = "Upload/Test/Validate Resource";
 
     public static final String NOTIFICATION_KEY = TITLE;
 

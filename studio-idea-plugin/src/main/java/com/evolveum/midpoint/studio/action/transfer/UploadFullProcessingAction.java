@@ -10,10 +10,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class UploadFullProcessingAction extends AsyncObjectsAction {
 
-    public static final String ACTION_NAME = "Upload (Full Processing)";
-
     public UploadFullProcessingAction() {
-        super(ACTION_NAME);
+        super(UploadFullProcessingTask.TITLE);
     }
 
     @Override

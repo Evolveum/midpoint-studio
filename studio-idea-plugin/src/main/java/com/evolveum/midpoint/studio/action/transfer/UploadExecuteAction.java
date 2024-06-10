@@ -10,10 +10,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class UploadExecuteAction extends AsyncObjectsAction {
 
-    public static final String ACTION_NAME = "Upload/execute";
-
     public UploadExecuteAction() {
-        super(ACTION_NAME);
+        super(UploadExecuteTask.TITLE);
     }
 
     @Override

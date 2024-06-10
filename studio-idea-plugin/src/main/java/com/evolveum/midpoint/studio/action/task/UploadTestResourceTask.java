@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  */
 public class UploadTestResourceTask extends UploadExecuteTask {
 
-    public static String TITLE = "Upload/Test resource task";
+    public static String TITLE = "Upload/Test Resource";
 
     public static final String NOTIFICATION_KEY = TITLE;
 

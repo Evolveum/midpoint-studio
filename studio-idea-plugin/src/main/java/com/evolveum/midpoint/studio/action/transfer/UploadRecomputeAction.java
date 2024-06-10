@@ -10,10 +10,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class UploadRecomputeAction extends AsyncObjectsAction {
 
-    public static final String ACTION_NAME = "Upload/recompute";
-
     public UploadRecomputeAction() {
-        super(ACTION_NAME);
+        super(UploadRecomputeTask.TITLE);
     }
 
     @Override

@@ -11,10 +11,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class TestResource extends AsyncObjectsAction {
 
-    public static final String ACTION_NAME = "Test Resource";
-
     public TestResource() {
-        super(ACTION_NAME);
+        super(TestResourceTask.TITLE);
     }
 
     @Override

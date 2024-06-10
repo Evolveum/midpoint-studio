@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  */
 public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
 
-    public static String TITLE = "Upload/Execute task";
+    public static String TITLE = "Upload/Execute (raw)";
 
     public static final String NOTIFICATION_KEY = TITLE;
 

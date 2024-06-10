@@ -11,10 +11,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class UploadExecuteStopOnErrorAction extends AsyncObjectsAction {
 
-    public static final String ACTION_NAME = "Upload/execute (stop on error)";
-
     public UploadExecuteStopOnErrorAction() {
-        super(ACTION_NAME);
+        super(UploadExecuteStopOnErrorTask.TITLE);
     }
 
     @Override

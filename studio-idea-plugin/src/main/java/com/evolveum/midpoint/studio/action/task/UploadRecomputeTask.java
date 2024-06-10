@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  */
 public class UploadRecomputeTask extends UploadExecuteTask {
 
-    public static String TITLE = "Upload/Recompute task";
+    public static String TITLE = "Upload/Recompute";
 
     public static final String NOTIFICATION_KEY = TITLE;
 
