@@ -99,7 +99,6 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             combo.setSelected(type);
-            combo.update(e);
         }
 
         @Override
