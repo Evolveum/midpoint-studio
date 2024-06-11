@@ -30,6 +30,14 @@ public class SynchronizationObjectItem extends SynchronizationItem {
     private List<ApplicableDelta<?>> ignoredLocalDeltas = new ArrayList<>();
     private List<ApplicableDelta<?>> ignoredRemoteDeltas = new ArrayList<>();
 
+    /**
+     * Hash codes and boolean flag which indicates whether the objects are the same.
+     * It's cached, so we don't have to calculate delta/diff every time tree node is rendered.
+     */
+    private int currentLocalObjectHash;
+    private int currentRemoteObjectHash;
+    private boolean currentIsUnchanged;
+
     public SynchronizationObjectItem(
             @NotNull SynchronizationFileItem<?> fileItem, @NotNull String oid, @NotNull String name,
             @NotNull ObjectTypes type, MidPointObject local, MidPointObject remote) {
@@ -76,6 +84,27 @@ public class SynchronizationObjectItem extends SynchronizationItem {
     @Override
     public boolean isNew() {
         return remoteObject.getOriginal() == null;
+    }
+
+    @Override
+    public boolean isUnchanged() {
+        if (localObject == null || remoteObject == null) {
+            return false;
+        }
+
+        PrismObject<?> local = localObject.getCurrent();
+        PrismObject remote = remoteObject.getCurrent();
+
+        if (currentLocalObjectHash == local.hashCode() && currentRemoteObjectHash == remote.hashCode()) {
+            return currentIsUnchanged;
+        }
+
+        currentLocalObjectHash = local.hashCode();
+        currentRemoteObjectHash = remote.hashCode();
+
+        currentIsUnchanged = local.diff(remote).isEmpty();
+
+        return currentIsUnchanged;
     }
 
     // todo not correct, don't compare local/remote current, check whether there are deltas still to be resolved (applied/ignored - both ways)

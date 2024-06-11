@@ -32,4 +32,6 @@ public abstract class SynchronizationItem {
     public abstract boolean hasRemoteChanges();
 
     public abstract boolean isNew();
+
+    public abstract boolean isUnchanged();
 }

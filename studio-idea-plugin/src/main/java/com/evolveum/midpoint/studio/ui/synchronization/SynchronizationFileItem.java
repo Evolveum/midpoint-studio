@@ -61,4 +61,9 @@ public class SynchronizationFileItem<T extends SynchronizationObjectItem> extend
     public boolean isVisible() {
         return objects.stream().anyMatch(SynchronizationObjectItem::isVisible);
     }
+
+    @Override
+    public boolean isUnchanged() {
+        return objects.stream().allMatch(SynchronizationObjectItem::isUnchanged);
+    }
 }

@@ -23,6 +23,17 @@ public class SynchronizationUtil {
 
     public static final ColorKey MODIFIED = ColorKey.createColorKey("FILESTATUS_MODIFIED");
 
+    public static final ColorKey IGNORED = ColorKey.createColorKey("FILESTATUS_IDEA_FILESTATUS_IGNORED");
+
+    public static Color getColor(ColorKey key) {
+        if (key == null) {
+            return null;
+        }
+
+        EditorColorsScheme scheme = EditorColorsManager.getInstance().getSchemeForCurrentUITheme();
+        return scheme.getColor(key);
+    }
+
     public static Color getColorForModificationType(ModificationType modificationType) {
         if (modificationType == null) {
             return null;
