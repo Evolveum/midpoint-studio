@@ -4,17 +4,28 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
+        // proxied gradlePluginPortal()
         maven("https://nexus.evolveum.com/nexus/repository/gradle-plugins/")
+
+        // proxied https://oss.sonatype.org/content/repositories/snapshots/
+        maven("https://nexus.evolveum.com/nexus/repository/sonatype-snapshots/")
     }
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
+            version("kotlin", "1.9.23")
+            version("changelog", "2.2.0")
+            version("intelliJPlatform", "2.0.0-beta6")
+            version("kover", "0.7.6")
+            version("qodana", "2023.3.2")
+
+            version("annotations", "24.1.0")
             version("asciidoctorj-tabbed-code", "0.3")
             version("commons-io", "2.11.0")
             version("commons-lang", "3.10")
@@ -35,6 +46,13 @@ dependencyResolutionManagement {
             version("jruby", "9.2.19.0")
             version("antlr", "4.10.1")
 
+            plugin("changelog", "org.jetbrains.changelog").versionRef("changelog")
+            plugin("intelliJPlatform", "org.jetbrains.intellij.platform").versionRef("intelliJPlatform")
+            plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
+            plugin("kover", "org.jetbrains.kotlinx.kover").versionRef("kover")
+            plugin("qodana", "org.jetbrains.qodana").versionRef("qodana")
+
+            library("annotations", "org.jetbrains", "annotations").versionRef("annotations")
             library("asciidoctorj", "org.asciidoctor", "asciidoctorj").versionRef("asciidoctorj")
             library("asciidoctorj-pdf", "org.asciidoctor", "asciidoctorj-pdf").versionRef("asciidoctorj-pdf")
             library(
