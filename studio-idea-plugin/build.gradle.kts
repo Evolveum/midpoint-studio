@@ -30,23 +30,11 @@ if (publishChannel == "stable") {
     publishChannel = "default"
 }
 
-val defaultMidpointVersion =
-    IOUtils.readLines(
-        project.file("src/main/java/com/evolveum/midpoint/studio/MidPointConstants.java").inputStream(),
-        StandardCharsets.UTF_8
-    ).stream()
-        .filter({ it.contains("DEFAULT_MIDPOINT_VERSION") })
-        .findFirst()
-        .orElse(null)
-
-println("Default midpoint version: $defaultMidpointVersion")
-
 if (gradle.startParameter.taskNames.contains("publishPlugin")) {
     if (publishChannel != "default"
         && publishChannel != "snapshot"
         && publishChannel != "support"
     ) {
-
         throw GradleException("Invalid publish channel: $publishChannel")
     }
 
@@ -61,6 +49,8 @@ if (gradle.startParameter.taskNames.contains("publishPlugin")) {
             .findFirst()
             .orElse(null)
     }
+
+    println("Default midpoint version: $defaultMidpointVersion")
 
     if (publishChannel == "default"
         && (defaultMidpointVersion == null || defaultMidpointVersion.contains("SNAPSHOT"))) {
@@ -269,7 +259,7 @@ tasks {
     runIde {
         jvmArgs("--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED")
         systemProperties(
-            "idea.log.debug.categories" to "#com.evolveum.midpoint.studio:all",
+            "idea.log.debug.categories" to "com.evolveum.midpoint.studio",
         )
     }
 
@@ -283,7 +273,7 @@ tasks {
     }
 
     downloadRobotServerPlugin {
-        version.set("0.11.7")
+        version.set("0.11.23")
     }
 
     generateGrammarSource {
