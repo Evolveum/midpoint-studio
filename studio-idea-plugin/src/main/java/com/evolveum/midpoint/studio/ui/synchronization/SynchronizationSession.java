@@ -8,9 +8,14 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.ui.diff.DiffProcessor;
+import com.evolveum.midpoint.studio.ui.diff.DiffSource;
+import com.evolveum.midpoint.studio.ui.diff.DiffSourceType;
+import com.evolveum.midpoint.studio.ui.diff.DiffVirtualFile;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
@@ -79,13 +84,17 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         }
         items.remove(oldItem);
 
-        // todo close related editors when removing item from session
-
         RunnableUtils.invokeLaterIfNeeded(() -> {
             panel.getModel().setData((List) items);
             // todo improve
 //            panel.getModel().replaceFiles(List.of(newItem));
         });
+
+        List<String> ids = oldItem.getObjects().stream()
+                .map(o -> o.getId())
+                .toList();
+
+        SynchronizationUtil.closeDiffEditors(project, ids);
     }
 
     public void replaceObjectItem(
@@ -98,13 +107,13 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         }
         objectItems.remove(oldItem);
 
-        // todo close related editors when removing item from session
-
         RunnableUtils.invokeLaterIfNeeded(() -> {
             panel.getModel().setData((List) items);
 //            todo improve
 //            panel.getModel().replaceObjects(List.of(newItem));
         });
+
+        SynchronizationUtil.closeDiffEditors(project, List.of(oldItem.getId()));
     }
 
     public void updateRemote(List<SynchronizationObjectItem> objectItems) {
@@ -222,6 +231,56 @@ public class SynchronizationSession<T extends SynchronizationObjectItem> {
         }
 
         return PrismContext.get().xmlSerializer().serializeObjects(objects);
+    }
+
+    public <O extends ObjectType> void openSynchronizationEditor(SynchronizationObjectItem object) {
+        RunnableUtils.invokeLaterIfNeeded(() -> {
+
+            VirtualFile leftRealFile = object.getFileItem().getFile();
+            String leftName = leftRealFile.getName();
+
+            MidPointObject rightObject = object.getRemote();
+            String rightName = rightObject != null ? rightObject.getName() + ".xml" : DiffSource.NON_EXISTING_NAME;
+
+            DiffSource<O> left = new DiffSource(leftName, DiffSourceType.LOCAL, object.getLocalObject().getCurrent());
+            DiffSource<O> right = new DiffSource(rightName, DiffSourceType.REMOTE, object.getRemoteObject().getCurrent());
+
+            DiffProcessor<? extends ObjectType> processor = new DiffProcessor<>(
+                    project, object.getId(), left, right, object.getIgnoredLocalDeltas(), object.getIgnoredRemoteDeltas()) {
+
+                @Override
+                protected void acceptPerformed() {
+                    super.acceptPerformed();
+
+                    updateSynchronizationState(this, object, getDirection());
+                }
+            };
+            processor.computeDelta();
+            DiffVirtualFile file = new DiffVirtualFile(processor);
+
+            MidPointUtils.openFile(project, file);
+        });
+    }
+
+    private <O extends ObjectType> void updateSynchronizationState(
+            DiffProcessor<O> processor, SynchronizationObjectItem object, DiffProcessor.Direction direction) {
+        try {
+            PrismObjectHolder statefulPrismObject =
+                    direction == DiffProcessor.Direction.LEFT_TO_RIGHT ? object.getRemoteObject() : object.getLocalObject();
+
+            PrismObject<O> prismObject = processor.getTargetObject();
+
+            statefulPrismObject.setCurrent(prismObject.clone());
+
+            if (processor.hasChanges()) {
+                panel.getModel().nodesChanged(new Object[]{object});
+            } else {
+                // todo nodes should be removed - there's nothing we can do with them
+                //  figure out parent (file) if needed and hide, same check should happen after save local/remote
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static class FullUploadTaskListener implements ObjectsBackgroundableTask.TaskListener {

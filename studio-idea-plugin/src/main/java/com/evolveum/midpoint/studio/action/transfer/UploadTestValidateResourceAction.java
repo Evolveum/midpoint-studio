@@ -11,10 +11,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
  */
 public class UploadTestValidateResourceAction extends AsyncObjectsAction {
 
-    public static final String ACTION_NAME = "Upload/Test/Validate Resource";
-
     public UploadTestValidateResourceAction() {
-        super(ACTION_NAME);
+        super(UploadTestValidateResourceTask.TITLE);
     }
 
     @Override

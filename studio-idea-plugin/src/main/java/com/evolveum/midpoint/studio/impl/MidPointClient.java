@@ -164,8 +164,8 @@ public class MidPointClient {
         return options;
     }
 
-    public <O extends ObjectType> SearchResult search(Class<O> type, ObjectQuery query, boolean raw) {
-        Collection<SelectorOptions<GetOperationOptions>> options = buildSearchSelectorOptions(raw);
+    public <O extends ObjectType> SearchResult search(
+            Class<O> type, ObjectQuery query, Collection<SelectorOptions<GetOperationOptions>> options) {
 
         printToConsole("Starting objects search for " + type.getSimpleName() + ", " + options);
 
@@ -179,6 +179,12 @@ public class MidPointClient {
         }
 
         return result;
+    }
+
+    public <O extends ObjectType> SearchResult search(Class<O> type, ObjectQuery query, boolean raw) {
+        Collection<SelectorOptions<GetOperationOptions>> options = buildSearchSelectorOptions(raw);
+
+        return search(type, query, options);
     }
 
     /**

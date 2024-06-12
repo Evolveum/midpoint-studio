@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.action.task;
 
-import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
@@ -15,7 +14,7 @@ import java.util.function.Supplier;
  */
 public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
 
-    public static String TITLE = "Upload/Execute task";
+    public static String TITLE = "Upload/Execute (raw)";
 
     public static final String NOTIFICATION_KEY = TITLE;
 
@@ -36,8 +35,11 @@ public class UploadExecuteTask extends ClientBackgroundableTask<TaskState> {
 
     @Override
     public ProcessObjectResult processObject(MidPointObject obj) throws Exception {
-        OperationResult result = UploadTaskMixin.uploadExecute(client, obj);
+        UploadTaskMixin.UploadExecuteResult uploadExecuteResult = UploadTaskMixin.uploadExecute(client, obj);
 
-        return validateOperationResult("upload", result, obj.getName());
+        UploadTaskMixin.showConsoleOutputNotification(
+                getProject(), getEnvironment(), getClass(), NOTIFICATION_KEY, obj, uploadExecuteResult);
+
+        return validateOperationResult("upload", uploadExecuteResult.result(), obj.getName());
     }
 }

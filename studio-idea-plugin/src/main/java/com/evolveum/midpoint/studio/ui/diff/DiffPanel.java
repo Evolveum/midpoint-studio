@@ -1,7 +1,9 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.diff.DiffRequestFactory;
 import com.intellij.diff.chains.DiffRequestChain;
@@ -24,6 +26,7 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import com.intellij.util.ui.tree.TreeUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -68,14 +71,21 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
             diffRequestProcessor.dispose();
         }
 
-        DiffSource<O> leftSource = processor.getLeftSource();
-        DiffSource<O> rightSource = processor.getRightSource();
+        DiffSource<O> targetSource = processor.getTarget();
+
+        String name = "";
+        if (targetSource.object() != null) {
+            name = StringUtils.wrap(
+                    MidPointUtils.getName(targetSource.object()), "\""
+            );
+        }
+        name += "; " + targetSource.getFullName();
 
         LightVirtualFile left = new LightVirtualFile(
-                leftSource.getFullName(), XmlFileType.INSTANCE, leftTextContent, System.currentTimeMillis());
+                "Before: " + name, XmlFileType.INSTANCE, leftTextContent, System.currentTimeMillis());
 
         LightVirtualFile right = new LightVirtualFile(
-                rightSource.getFullName(), XmlFileType.INSTANCE, rightTextContent, System.currentTimeMillis());
+                "After: " + name, XmlFileType.INSTANCE, rightTextContent, System.currentTimeMillis());
 
         ContentDiffRequest request = DiffRequestFactory.getInstance().createFromFiles(project, left, right);
         DiffRequestChain chain = new SimpleDiffRequestChain(request);
@@ -91,9 +101,9 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
         splitter.setSecondComponent(diffRequestProcessor.getComponent());
     }
 
-    public void setDelta(@NotNull ObjectDelta<O> delta) {
+    public void setDelta(@NotNull PrismObject<O> target, @NotNull ObjectDelta<O> delta) {
         ObjectDeltaTreeModel<O> model = getTreeModel();
-        model.setData(delta);
+        model.setData(new ObjectDeltaTreeData<>(target, delta));
 
         expandAllPerformed();
     }

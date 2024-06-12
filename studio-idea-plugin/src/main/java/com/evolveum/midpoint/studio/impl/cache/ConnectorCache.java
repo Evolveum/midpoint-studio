@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.impl.cache;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.impl.match.MatchingRuleRegistryFactory;
 import com.evolveum.midpoint.prism.impl.xml.GlobalDynamicNamespacePrefixMapper;
@@ -12,9 +11,6 @@ import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.client.SearchResult;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -25,89 +21,70 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.XmlSchemaType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.ControlFlowException;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.util.concurrency.AppExecutorUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Created by Viliam Repan (lazyman).
- */
-public class ConnectorXmlSchemaCacheService {
+public class ConnectorCache extends ObjectCache<ConnectorType> {
 
-    private static final Logger LOG = Logger.getInstance(ConnectorXmlSchemaCacheService.class);
+    private static final Logger LOG = Logger.getInstance(ConnectorCache.class);
 
     private static final String ICF_NS_PREFIX = "http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/";
 
-    private final Project project;
-
-    private final ConcurrentHashMap<ConnectorType, CacheValue> cache = new ConcurrentHashMap<>();
-
     private static final MatchingRuleRegistry MATCHING_REGISTRY = MatchingRuleRegistryFactory.createRegistry();
 
-    public ConnectorXmlSchemaCacheService(Project project) {
-        this.project = project;
+    private record CacheValue(ConnectorType connector, XmlFile icfConnectorSchema, XmlFile connectorSchema) {
 
-        MidPointUtils.subscribeToEnvironmentChange(project, e -> refresh(e));
     }
 
-    private void refresh(Environment env) {
-        LOG.info("Invoking refresh");
+    private final Map<String, CacheValue> schemaCache = new HashMap<>();
 
-        RunnableUtils.submitNonBlockingReadAction(() -> {
-
-            LOG.info("Refreshing");
-
-            cache.clear();
-
-            if (env == null) {
-                LOG.info("Refresh skipped, no environment selected");
-                return;
-            }
-
-            MidPointClient client = new MidPointClient(project, env, true, true);
-            SearchResult result = client.search(ConnectorType.class, null, true);
-            for (MidPointObject object : result.getObjects()) {
-                try {
-                    PrismObject<?> prismObject = client.parseObject(object.getContent());
-                    ConnectorType connectorType = (ConnectorType) prismObject.asObjectable();
-
-                    GlobalDynamicNamespacePrefixMapper.registerPrefixGlobal(
-                            connectorType.getNamespace(), SchemaConstants.CONNECTOR_CONFIGURATION_PREFIX);
-
-                    cache.put(connectorType, new CacheValue(connectorType, buildIcfSchema(object), buildConnectorSchema(object)));
-                } catch (Exception ex) {
-                    if (ex instanceof ProcessCanceledException) {
-                        throw (ProcessCanceledException) ex;
-                    }
-                    LOG.error("Couldn't parse connector object", ex);
-                }
-            }
-
-            LOG.info("Refresh finished, " + cache.size() + " objects in cache");
-        }, AppExecutorUtil.getAppExecutorService());
-
-        LOG.info("Invoke done");
+    public ConnectorCache(@NotNull Project project) {
+        super(project, ConnectorType.class);
     }
 
-    private XmlFile buildIcfSchema(MidPointObject object) {
-        String connector = object.getContent();
+    @Override
+    void clear() {
+        schemaCache.clear();
+
+        super.clear();
+    }
+
+    @Override
+    protected void cacheObjects(Collection<MidPointObject> objects) {
+        schemaCache.clear();
+
+        super.cacheObjects(objects);
+
+        for (ConnectorType connector : list()) {
+            GlobalDynamicNamespacePrefixMapper.registerPrefixGlobal(
+                    connector.getNamespace(), SchemaConstants.CONNECTOR_CONFIGURATION_PREFIX);
+
+            try {
+                String xml = ClientUtils.serialize(PrismContext.get(), connector);
+                schemaCache.put(connector.getOid(), new CacheValue(connector, buildIcfSchema(connector.getOid(), xml), buildConnectorSchema(connector.getOid(), xml)));
+            } catch (SchemaException ex) {
+                LOG.error("Couldn't serialize connector to xml", ex);
+            }
+        }
+    }
+
+    private XmlFile buildIcfSchema(String oid, String connector) {
         Element xsdSchema = getXsdSchema(connector);
 
         List<Element> complexTypes = DOMUtil.getChildElements(xsdSchema, new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "complexType"));
@@ -161,15 +138,22 @@ public class ConnectorXmlSchemaCacheService {
 
         String xsd = DOMUtil.serializeDOMToString(doc);
 
-        return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-" + object.getOid() + "-schema.xsd", XMLLanguage.INSTANCE, xsd);
+        return createXmlFile("connector-" + oid + "-schema.xsd", xsd);
+    }
+
+    private XmlFile createXmlFile(String name, String content) {
+        return ApplicationManager.getApplication()
+                .runReadAction(
+                        (Computable<? extends XmlFile>)
+                                () -> (XmlFile) PsiFileFactory.getInstance(getProject())
+                                        .createFileFromText(name, XMLLanguage.INSTANCE, content));
     }
 
     private QName xsdElement(String name) {
         return new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, name, "xsd");
     }
 
-    private XmlFile buildConnectorSchema(MidPointObject object) {
-        String connector = object.getContent();
+    private XmlFile buildConnectorSchema(String oid, String connector) {
         Element xsdSchema = getXsdSchema(connector);
 
         if (StringUtils.isBlank(xsdSchema.getAttribute("xmlns:t"))) {
@@ -205,7 +189,7 @@ public class ConnectorXmlSchemaCacheService {
 
         String xsd = DOMUtil.serializeDOMToString(xsdSchema);
 
-        return (XmlFile) PsiFileFactory.getInstance(project).createFileFromText("connector-" + object.getOid() + "-schema-modified.xsd", XMLLanguage.INSTANCE, xsd);
+        return createXmlFile("connector-" + oid + "-schema-modified.xsd", xsd);
     }
 
     private Element getXsdSchema(String connector) {
@@ -224,7 +208,7 @@ public class ConnectorXmlSchemaCacheService {
     }
 
     private XmlFile getSchema(String url, String connectorOid) {
-        List<CacheValue> values = cache.values().stream().filter(c -> connectorOid.equals(c.connector.getOid())).collect(Collectors.toList());
+        List<CacheValue> values = schemaCache.values().stream().filter(c -> connectorOid.equals(c.connector.getOid())).collect(Collectors.toList());
         if (values.size() != 1) {
             return null;
         }
@@ -270,12 +254,10 @@ public class ConnectorXmlSchemaCacheService {
 
         String oid = connectorRef.getAttributeValue("oid", SchemaConstantsGenerated.NS_COMMON);
         if (oid != null) {
-            List<ConnectorType> keys = cache.keySet().stream().filter(c -> oid.equals(c.getOid())).collect(Collectors.toList());
-            if (keys.size() != 1) {
+            CacheValue value = schemaCache.get(oid);
+            if (value == null) {
                 return null;
             }
-
-            CacheValue value = cache.get(keys.get(0));
             return getSchema(url, value);
         }
 
@@ -303,9 +285,9 @@ public class ConnectorXmlSchemaCacheService {
                 }
 
                 // todo check if this for-cycle returns more than one result -> more connector matches filter, throw some error
-                for (Map.Entry<ConnectorType, CacheValue> e : cache.entrySet()) {
+                for (CacheValue cacheValue : schemaCache.values()) {
                     try {
-                        boolean match = ObjectQuery.match(e.getKey(), of, MATCHING_REGISTRY);
+                        boolean match = ObjectQuery.match(cacheValue.connector(), of, MATCHING_REGISTRY);
                         if (!match) {
                             continue;
                         }
@@ -313,7 +295,7 @@ public class ConnectorXmlSchemaCacheService {
                         LOG.error("Couldn't match connector with connectorRef filter defined in resource", ex);
                     }
 
-                    return getSchema(url, e.getValue());
+                    return getSchema(url, cacheValue);
                 }
 
                 return null;
@@ -389,20 +371,5 @@ public class ConnectorXmlSchemaCacheService {
         }
 
         return value.connectorSchema;
-    }
-
-    private static class CacheValue {
-
-        ConnectorType connector;
-
-        XmlFile icfConnectorSchema;
-
-        XmlFile connectorSchema;
-
-        public CacheValue(ConnectorType connector, XmlFile icfConnectorSchema, XmlFile connectorSchema) {
-            this.connector = connector;
-            this.icfConnectorSchema = icfConnectorSchema;
-            this.connectorSchema = connectorSchema;
-        }
     }
 }

@@ -13,13 +13,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.ConsoleService"/>
 
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager"/>
+
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>
-
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ConnectorXmlSchemaCacheService"/>
-
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ExtensionSchemaCacheService"/>
-
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ItemPathCacheService"/>
 
@@ -236,6 +232,9 @@
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>
 
+        <completion.contributor language="XML"
+                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.EnumerationRefCompletionContributor"/>
+
         <xml.tagNameProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
 
@@ -261,15 +260,29 @@
         <customizableActionGroupProvider implementation="com.evolveum.midpoint.studio.action.ExpUiActionGroupProvider"/>
 
         <localInspection language="XML"
+                         enabledByDefault="true"
                          groupBundle="messages.MidPointStudio"
                          groupKey="MidpointInspectionGroup.title"
                          key="MissingNaturalKeyInspection.title"
                          implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.MissingNaturalKeyInspection"/>
         <localInspection language="XML"
+                         enabledByDefault="true"
                          groupBundle="messages.MidPointStudio"
                          groupKey="MidpointInspectionGroup.title"
                          key="DeprecatedElementInspection.title"
                          implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.DeprecatedElementInspection"/>
+        <localInspection language="XML"
+                         enabledByDefault="true"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="EnumerationRefInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.EnumerationRefInspection"/>
+        <localInspection language="XML"
+                         enabledByDefault="true"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="MissingMappingNameInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.MissingMappingNameInspection"/>
 
         <intentionAction>
             <className>com.evolveum.midpoint.studio.impl.lang.intention.DownloadObjectIntention</className>
@@ -605,6 +618,8 @@
 
             <reference ref="MidPoint.Action.ComboEnvironmentAction"/>
 
+            <reference ref="MidPoint.Action.TestConnection"/>
+
             <group id="MidPoint.ExpUI.Toolbar.Others"
                    text="Other Actions"
                    popup="true"
@@ -642,7 +657,6 @@
                 <reference ref="MidPoint.Action.ExtractLocalizationPropertiesAction"/>
                 <reference ref="MidPoint.Group.Menu.ServerLog"/>
                 <reference ref="MidPoint.Action.GenerateRandomOid"/>
-                <reference ref="MidPoint.Action.TestConnection"/>
                 <reference ref="MidPoint.Action.Documentation"/>
 
             </group>

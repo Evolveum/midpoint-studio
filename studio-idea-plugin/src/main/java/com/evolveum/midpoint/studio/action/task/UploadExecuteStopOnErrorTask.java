@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  */
 public class UploadExecuteStopOnErrorTask extends UploadExecuteTask {
 
-    public static String TITLE = "Upload/Execute (stop on error) task";
+    public static String TITLE = "Upload/Execute (raw, stop on error)";
 
     public static final String NOTIFICATION_KEY = TITLE;
 

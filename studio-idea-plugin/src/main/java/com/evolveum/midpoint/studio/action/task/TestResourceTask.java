@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  */
 public class TestResourceTask extends ClientBackgroundableTask<TaskState> {
 
-    public static String TITLE = "Test resource task";
+    public static String TITLE = "Test Resource";
 
     public static final String NOTIFICATION_KEY = "Test resource task";
 

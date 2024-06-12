@@ -801,11 +801,19 @@ public class MidPointUtils {
     }
 
     public static boolean shouldEnableAction(AnActionEvent evt) {
-        if (!isVisibleWithMidPointFacet(evt)) {
-            return false;
-        }
+        Computable<Boolean> computable = () -> {
+            if (!isVisibleWithMidPointFacet(evt)) {
+                return false;
+            }
 
-        return isEnvironmentAndFileSelected(evt);
+            return isEnvironmentAndFileSelected(evt);
+        };
+
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            return computable.compute();
+        } else {
+            return ApplicationManager.getApplication().runReadAction(computable);
+        }
     }
 
     public static boolean isMidpointFile(PsiFile file) {
@@ -1191,5 +1199,12 @@ public class MidPointUtils {
         boolean internal = ApplicationManager.getApplication().isInternal();
 
         return enabled && internal;
+    }
+
+    public static MidPointObject expand(MidPointObject object, Expander expander) {
+        VirtualFile file = object.getFile() != null ? VfsUtil.findFileByIoFile(object.getFile(), true) : null;
+        String content = expander.expand(object.getContent(), file);
+
+        return ClientUtils.parseText(content, object.getFile()).get(0);
     }
 }

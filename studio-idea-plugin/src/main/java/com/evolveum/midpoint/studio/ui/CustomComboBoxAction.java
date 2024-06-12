@@ -119,7 +119,6 @@ public class CustomComboBoxAction<T> extends ComboBoxAction {
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
             combo.setSelected(item);
-            combo.update(e);
         }
 
         protected String createLabel(T item) {

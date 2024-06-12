@@ -1,15 +1,11 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismValue;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ChangeType;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.studio.impl.StudioCleanupListener;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
 import com.evolveum.midpoint.studio.ui.UiAction;
@@ -23,6 +19,7 @@ import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -40,6 +37,8 @@ public class DiffProcessor<O extends ObjectType> {
 
     private final Project project;
 
+    private String id;
+
     private final DiffSource<O> leftSource;
     private final DiffSource<O> rightSource;
 
@@ -49,9 +48,9 @@ public class DiffProcessor<O extends ObjectType> {
 
     private ObjectDelta<O> delta;
 
-    private final List<Object> leftIgnoredDelta = new ArrayList<>();
+    private final List<ApplicableDelta<?>> leftIgnoredDelta;
 
-    private final List<Object> rightIgnoredDelta = new ArrayList<>();
+    private final List<ApplicableDelta<?>> rightIgnoredDelta;
 
     private Direction direction = Direction.RIGHT_TO_LEFT;
 
@@ -59,14 +58,26 @@ public class DiffProcessor<O extends ObjectType> {
 
     private DiffStrategyComboAction strategyAction;
 
-    public DiffProcessor(@NotNull Project project, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right) {
+    public DiffProcessor(
+            @NotNull Project project, @Nullable String id, @NotNull DiffSource<O> left, @NotNull DiffSource<O> right,
+            @NotNull List<ApplicableDelta<?>> leftIgnoredDelta, @NotNull List<ApplicableDelta<?>> rightIgnoredDelta) {
+
         this.project = project;
+
+        this.id = id;
 
         this.leftSource = left;
         this.rightSource = right;
 
+        this.leftIgnoredDelta = leftIgnoredDelta;
+        this.rightIgnoredDelta = rightIgnoredDelta;
+
         diffPanel = initDiffPanel();
         simpleDiffPanel = initSimpleDiffPanel();
+    }
+
+    public String getId() {
+        return id;
     }
 
     public Direction getDirection() {
@@ -125,7 +136,9 @@ public class DiffProcessor<O extends ObjectType> {
             }
 
             diffPanel.setTargetName(targetSource.name() + " (" + targetSource.type() + ")");
-            diffPanel.setDelta(delta);
+            diffPanel.setDelta(target, delta);
+
+            diffPanel.refreshInternalDiffRequestProcessor();
         } catch (Exception ex) {
             throw new RuntimeException("Couldn't parse object", ex);
         }
@@ -158,7 +171,7 @@ public class DiffProcessor<O extends ObjectType> {
         return getTarget().object();
     }
 
-    public List<Object> getTargetIgnoredDelta() {
+    public List<ApplicableDelta<?>> getTargetIgnoredDelta() {
         return direction == Direction.LEFT_TO_RIGHT ? rightIgnoredDelta : leftIgnoredDelta;
     }
 
@@ -175,18 +188,48 @@ public class DiffProcessor<O extends ObjectType> {
         DefaultMutableTreeNode node = selected.get(0);
         Object userObject = node.getUserObject();
 
-        String xml = "";
-        if (userObject instanceof DeltaItem di) {
-            try {
-                xml = PrismContext.get().xmlSerializer().serialize(di.value());
-            } catch (Exception ex) {
-                LOG.debug("Couldn't serialize prism value", ex);
-                xml = di.value().debugDump();
-            }
-        }
-        // todo implement
+        String before = "";
+        String after = "";
+        try {
+            if (userObject instanceof ItemDeltaValueTreeNode idvtn) {
+                String content =PrismContext.get().xmlSerializer().serialize(idvtn.getValue());
+                switch (idvtn.getModificationType()) {
+                    case ADD, REPLACE -> after = content;
+                    case DELETE -> before = content;
+                }
+            } else if (userObject instanceof ItemDeltaTreeNode idt) {
+                Item<?, ?> targetItem = idt.getTargetItem() != null ?
+                        idt.getTargetItem().clone() : idt.getValue().getDefinition().instantiate();
 
-        diffPanel.refreshInternalDiffRequestProcessor(xml, Double.toString(Math.random()));
+                before = serializeItem(targetItem);
+
+                ItemDelta<?, ?> delta = idt.getValue().cloneWithChangedParentPath(ItemPath.EMPTY_PATH);
+
+                Item item = targetItem.clone();
+                delta.applyTo(item);
+
+                after = serializeItem(item);
+            }
+        } catch (Exception ex) {
+            LOG.debug("Couldn't serialize prism value", ex);
+        }
+
+        diffPanel.refreshInternalDiffRequestProcessor(before, after);
+    }
+
+    private String serializeItem(Item<?, ?> item) throws SchemaException {
+        if (item == null || item.getValues() == null) {
+            return "";
+        }
+        List<PrismValue> values = (List) item.getValues();
+        PrismSerializer<String> serializer = PrismContext.get().xmlSerializer();
+
+        StringBuilder sb = new StringBuilder();
+        for (PrismValue value : values) {
+            sb.append(serializer.serialize(value));
+        }
+
+        return sb.toString();
     }
 
     private List<AnAction> createToolbarActions() {
@@ -210,7 +253,7 @@ public class DiffProcessor<O extends ObjectType> {
         };
         actions.add(strategyAction);
 
-        actions.add(new UiAction("Cleanup", AllIcons.General.InspectionsEye, e -> cleanupPerformed()));
+        actions.add(new UiAction("Cleanup", AllIcons.Actions.ToggleVisibility, e -> cleanupPerformed()));
 
         actions.add(new Separator());
 
@@ -281,6 +324,8 @@ public class DiffProcessor<O extends ObjectType> {
             applyDeltaNodesToObject(target, selected);
 
             diffPanel.removeNodes(selected);
+
+            simpleDiffPanel.refreshInternalDiffRequestProcessor();
         } catch (Exception ex) {
             throw new RuntimeException("Couldn't apply delta", ex);
         }
@@ -294,29 +339,12 @@ public class DiffProcessor<O extends ObjectType> {
                 continue;
             }
 
-            ObjectDelta<O> delta = null;
-
             Object userObject = node.getUserObject();
-            if (userObject instanceof ObjectDelta<?> od) {
-                delta = (ObjectDelta<O>) od;
-            } else if (userObject instanceof ItemDelta<?, ?> id) {
-                delta = object.createModifyDelta();
-                delta.addModification(id.clone());
-            } else if (userObject instanceof DeltaItem di) {
-                PrismValue cloned = di.value().clone();
-
-                ItemDelta itemDelta = di.parent().clone();
-                itemDelta.clear();
-                switch (di.modificationType()) {
-                    case REPLACE -> itemDelta.addValueToReplace(cloned);
-                    case ADD -> itemDelta.addValueToAdd(cloned);
-                    case DELETE -> itemDelta.addValueToDelete(cloned);
-                }
-
-                delta = object.createModifyDelta();
-                delta.addModification(itemDelta);
+            if (!(userObject instanceof ObjectDeltaTreeNode odt)) {
+                continue;
             }
 
+            ObjectDelta<O> delta = odt.getApplicableDelta().getDelta(object);
             if (delta != null) {
                 delta.applyTo(object);
             }
@@ -336,7 +364,6 @@ public class DiffProcessor<O extends ObjectType> {
         return hasParentSelected(parent, selected);
     }
 
-    // todo ignored list should be cleared when strategy changes
     private void ignorePerformed() {
         try {
             List<DefaultMutableTreeNode> selected = diffPanel.getSelectedNodes();
@@ -346,7 +373,14 @@ public class DiffProcessor<O extends ObjectType> {
                     continue;
                 }
 
-                getTargetIgnoredDelta().add(node.getUserObject());
+                // todo somehow update synchronization object item - add ignored items
+                //  add equals/hashcode do applicable delta classes
+
+                if (!(node.getUserObject() instanceof ObjectDeltaTreeNode<?> odt)) {
+                    continue;
+                }
+
+                getTargetIgnoredDelta().add(odt.getApplicableDelta());
             }
 
             diffPanel.removeNodes(selected);
@@ -358,14 +392,8 @@ public class DiffProcessor<O extends ObjectType> {
     private void cleanupPerformed() {
         CleanupService cs = CleanupService.get(project);
 
-        MidPointClient client = null;
-        Environment environment = EnvironmentService.getInstance(project).getSelected();
-        if (environment != null) {
-            client = new MidPointClient(project, environment, false, false);
-        }
-
         ObjectCleaner processor = cs.createCleanupProcessor();
-        processor.setListener(new StudioCleanupListener(project, client, MidPointUtils.DEFAULT_PRISM_CONTEXT));
+        processor.setListener(new StudioCleanupListener(project, MidPointUtils.DEFAULT_PRISM_CONTEXT));
 
         processor.process(leftSource.object());
         processor.process(rightSource.object());

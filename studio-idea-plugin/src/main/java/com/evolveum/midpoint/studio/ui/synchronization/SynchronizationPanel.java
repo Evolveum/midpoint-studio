@@ -57,6 +57,10 @@ public class SynchronizationPanel extends BorderLayoutPanel {
         return panel;
     }
 
+    public void expandTree() {
+        TreeUtil.expandAll(tree);
+    }
+
     private JComponent initMainToolbar(JComponent parent) {
         DefaultActionGroup group = new DefaultActionGroup();
 
@@ -136,8 +140,6 @@ public class SynchronizationPanel extends BorderLayoutPanel {
         SynchronizationRefreshTask task = new SynchronizationRefreshTask(project, session, items);
         task.setEnvironment(session.getEnvironment());
         ProgressManager.getInstance().run(task);
-
-        // todo refresh editors
     }
 
     private List<SynchronizationObjectItem> computeCheckedObjectItems(Object[] userObjects) {

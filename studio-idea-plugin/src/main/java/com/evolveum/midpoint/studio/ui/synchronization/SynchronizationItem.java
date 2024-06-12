@@ -2,7 +2,11 @@ package com.evolveum.midpoint.studio.ui.synchronization;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+
 public abstract class SynchronizationItem {
+
+    private String id = UUID.randomUUID().toString();
 
     private SynchronizationItemType type;
 
@@ -15,6 +19,10 @@ public abstract class SynchronizationItem {
         return type;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public abstract String getName();
 
     public abstract boolean isVisible();
@@ -24,4 +32,6 @@ public abstract class SynchronizationItem {
     public abstract boolean hasRemoteChanges();
 
     public abstract boolean isNew();
+
+    public abstract boolean isUnchanged();
 }

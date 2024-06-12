@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
+public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
 
     public static final String TITLE = "Cleanup File";
 
@@ -70,13 +70,6 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
 
         setEnvironment(environment);
-    }
-
-    @Override
-    protected MidPointClient setupMidpointClient() {
-        Environment env = getEnvironment();
-
-        return new MidPointClient(getProject(), env, true, true);
     }
 
     @Override
@@ -126,7 +119,9 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
         }
 
         try {
-            PrismParser parser = ClientUtils.createParser(MidPointUtils.DEFAULT_PRISM_CONTEXT, content);
+            PrismParser parser = ClientUtils.createParser(MidPointUtils.DEFAULT_PRISM_CONTEXT, content)
+                    .preserveNamespaceContext();
+
             List<PrismObject<? extends ObjectType>> objects = (List) parser.parseObjects();
             if (objects.isEmpty()) {
                 return content;
@@ -139,7 +134,7 @@ public class CleanupFileTask extends ClientBackgroundableTask<TaskState> {
             CleanupService cs = CleanupService.get(getProject());
 
             ObjectCleaner processor = cs.createCleanupProcessor();
-            processor.setListener(new StudioCleanupListener(getProject(), client, MidPointUtils.DEFAULT_PRISM_CONTEXT));
+            processor.setListener(new StudioCleanupListener(getProject(), MidPointUtils.DEFAULT_PRISM_CONTEXT));
 
             ObjectValidator validator = cs.createObjectValidator();
 

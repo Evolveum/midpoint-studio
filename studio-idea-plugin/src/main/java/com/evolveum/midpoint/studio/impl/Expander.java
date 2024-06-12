@@ -276,7 +276,7 @@ public class Expander {
             if (ignoreMissingKeys) {
                 return null;
             }
-            throw new IllegalStateException("Couldn't translate key '" + key + "'");
+            throw new ExpanderException("Couldn't translate key '" + key + "'");
         }
 
         return value;

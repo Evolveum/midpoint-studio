@@ -1,52 +1,227 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
-import com.intellij.codeInsight.completion.*;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.PsiUtils;
+import com.evolveum.midpoint.util.QNameUtil;
+import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionProvider;
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlText;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import javax.xml.namespace.QName;
+import java.util.*;
 
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class AxiomQueryCompletionContributor extends CompletionContributor implements AxiomQueryHints {
-    final AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(PrismContext.get());
-    final List<LookupElement> suggestions = new ArrayList<>();
+public class AxiomQueryCompletionContributor extends CompletionContributorBase implements AxiomQueryHints {
+
+    private static final Logger LOG = Logger.getInstance(AxiomQueryCompletionContributor.class);
+
+    private final AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(PrismContext.get());
 
     public AxiomQueryCompletionContributor() {
         extend(null,
                 PlatformPatterns.psiElement(),
                 new CompletionProvider<>() {
+
+                    @Override
                     public void addCompletions(@NotNull CompletionParameters parameters,
                                                @NotNull ProcessingContext context,
                                                @NotNull CompletionResultSet resultSet) {
-                        suggestions.clear();
 
-                        ItemDefinition<?> def = getObjectDefinitionFromHint(parameters.getEditor());
+                        PsiElement element = parameters.getPosition();
 
-                        axiomQueryLangService.queryCompletion(def,
-                                parameters.getOriginalFile().getText().substring(0, parameters.getPosition().getTextOffset())
-                        ).forEach((filterName, alias) -> {
-                            suggestions.add(build(filterName, alias));
-                        });
+                        String contentUpToCursor = parameters.getOriginalFile().getText()
+                                .substring(0, parameters.getPosition().getTextOffset());
 
-                        if (!suggestions.isEmpty()) {
-                            resultSet.addAllElements(suggestions);
+                        PsiElement outer = PsiUtils.getOuterPsiElement(element);
+                        if (!(outer instanceof XmlText xmlText)) {
+                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+                            return;
                         }
+
+                        // we have axiom query embedded in xml
+                        XmlTag tag = xmlText.getParentTag();
+                        if (tag == null) {
+                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+                            return;
+                        }
+
+                        PrismValue value = null;
+                        try {
+                            value = getPrismValue(tag);
+                        } catch (Exception ex) {
+                            LOG.trace("Couldn't get prism value from xml tag, reason: " + ex.getMessage());
+                        }
+
+                        if (value == null) {
+                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+                            return;
+                        }
+
+                        SchemaContext schemaContext = value.getSchemaContext();
+                        if (schemaContext == null) {
+                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+                            return;
+                        }
+
+                        ItemDefinition<?> def = schemaContext.getItemDefinition();
+                        if (def == null) {
+                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+                            return;
+                        }
+
+                        addSuggestions(def, contentUpToCursor, resultSet);
                     }
                 }
         );
+    }
+
+    private PrismValue getPrismValue(XmlTag tag) {
+        if (tag == null) {
+            return null;
+        }
+
+        List<XmlTag> parentTags = getParentTags(tag);
+        parentTags = getObjectFullPath(parentTags);
+
+        if (parentTags.isEmpty()) {
+            return null;
+        }
+
+        XmlTag objectTag = parentTags.get(0);
+        PrismObject<?> object = parseObject(objectTag);
+
+        // rest of the path
+        List<XmlTag> tagItemPath = parentTags.subList(1, parentTags.size());
+
+        // this item path might be too long -> it's created from xml tags, might point to complex property value, etc.
+        return findValue(object.getValue(), tagItemPath, object.getValue());
+    }
+
+    private PrismValue findValue(PrismContainerValue container, List<XmlTag> path, PrismValue lastFound) {
+        if (container == null || path.isEmpty()) {
+            return lastFound;
+        }
+
+        XmlTag tag = path.get(0);
+
+        String idStr = tag.getAttributeValue("id");
+        Long id = idStr != null ? Long.parseLong(idStr) : null;
+
+        QName name = MidPointUtils.createQName(tag);
+
+        Item<?, ?> item = container.findItem(ItemPath.create(name));
+        if (item instanceof PrismContainer<?> pc) {
+            // todo what if id is null but it's multi-value
+            PrismContainerValue pcv = id != null ? pc.findValue(id) : pc.getValue();
+            return findValue(pcv, path.subList(1, path.size()), pcv);
+        } else if (item != null) {
+            return item.getValue();
+        }
+
+        return lastFound;
+    }
+
+    private PrismObject<?> parseObject(XmlTag tag) {
+        if (tag == null) {
+            return null;
+        }
+
+        String xml = tag.getText();
+        if (xml == null) {
+            return null;
+        }
+
+        try {
+            return PrismContext.get().parserFor(xml).parse();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private List<XmlTag> getObjectFullPath(List<XmlTag> wholePath) {
+        if (wholePath.isEmpty()) {
+            return wholePath;
+        }
+
+        XmlTag tag = wholePath.get(0);
+        if (QNameUtil.match(SchemaConstants.C_OBJECT, MidPointUtils.createQName(tag))) {
+            return wholePath.subList(1, wholePath.size());
+        }
+
+        return wholePath;
+    }
+
+    private List<XmlTag> getParentTags(XmlTag tag) {
+        List<XmlTag> tags = new ArrayList<>();
+
+        XmlTag t = tag;
+        while (t != null) {
+            tags.add(t);
+
+            t = t.getParentTag();
+        }
+
+        Collections.reverse(tags);
+
+        return tags;
+    }
+
+    private void addSuggestionsFromEditorHint(Editor editor, String contentUpToCursor, CompletionResultSet resultSet) {
+        ItemDefinition<?> def = getObjectDefinitionFromHint(editor);
+
+        addSuggestions(def, contentUpToCursor, resultSet);
+    }
+
+    private void addSuggestions(ItemDefinition<?> def, String contentUpToCursor, CompletionResultSet resultSet) {
+        if (def == null) {
+            return;
+        }
+
+        List<LookupElement> suggestions = new ArrayList<>();
+
+        axiomQueryLangService.queryCompletion(def, contentUpToCursor)
+                .forEach((filterName, alias) -> suggestions.add(build(filterName, alias)));
+
+        resultSet.addAllElements(suggestions);
+    }
+
+    /**
+     * returns for filter (SearchFilterType) tag if possible, otherwise returns tag which is parent of xml text.
+     */
+    private XmlTag findItemTag(XmlText xmlText) {
+        XmlTag parentTag = xmlText.getParentTag();
+        if (Objects.equals(MidPointUtils.createQName(parentTag), SearchFilterType.F_TEXT)) {
+            XmlTag qTextParent = parentTag.getParentTag();
+            QName qTextParentType = PsiUtils.getTagXsdType(qTextParent);
+            if (SearchFilterType.COMPLEX_TYPE.equals(qTextParentType)) {
+                return qTextParent.getParentTag();
+            }
+        }
+
+        return parentTag;
     }
 
     private LookupElement build(String key, String alias) {

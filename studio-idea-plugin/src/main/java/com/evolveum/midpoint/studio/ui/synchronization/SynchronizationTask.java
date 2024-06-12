@@ -1,11 +1,13 @@
 package com.evolveum.midpoint.studio.ui.synchronization;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.task.SimpleBackgroundableTask;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.EncryptionService;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.Expander;
 import com.evolveum.midpoint.studio.impl.SearchOptions;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -89,19 +91,26 @@ public class SynchronizationTask extends SimpleBackgroundableTask {
         Environment env = getEnvironment();
         Expander expander = createExpander();
 
+        String oid = object.getOid();
+        String name = object.getName();
         try {
-            MidPointObject newObject = client.get(
-                    object.getType().getClassDefinition(), object.getOid(), new SearchOptions().raw(true));
+            MidPointObject expandedLocal = MidPointUtils.expand(object, expander);
+
+            oid = expandedLocal.getOid();
+            ObjectTypes type = expandedLocal.getType();
+            name = expandedLocal.getName();
+
+            MidPointObject newObject = client.get(type.getClassDefinition(), oid, new SearchOptions().raw(true));
             if (newObject == null) {
                 counter.missing++;
 
-                midPointService.printToConsole(env, SynchronizeObjectsTask.class, "Couldn't find object "
-                        + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ").");
+                midPointService.printToConsole(
+                        env, SynchronizeObjectsTask.class, "Couldn't find object " + name + " (" + oid + ").");
             }
 
             SynchronizationObjectItem objectItem = new SynchronizationObjectItem(
-                    item, object.getOid(), object.getName(), object.getType(), object, newObject);
-            objectItem.initialize(expander);
+                    item, oid, name, type, expandedLocal, newObject);
+            objectItem.initialize();
 
             counter.processed++;
 
@@ -109,8 +118,8 @@ public class SynchronizationTask extends SimpleBackgroundableTask {
         } catch (Exception ex) {
             counter.failed++;
 
-            midPointService.printToConsole(env, SynchronizeObjectsTask.class, "Error getting object"
-                    + object.getType().getTypeQName().getLocalPart() + "(" + object.getOid() + ")", ex);
+            midPointService.printToConsole(
+                    env, SynchronizeObjectsTask.class, "Error getting object " + name + " (" + oid + ")", ex);
         }
 
         return null;

@@ -6,6 +6,8 @@ import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.action.transfer.RefreshAction;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.ConsoleService;
+import com.evolveum.midpoint.studio.impl.ExpanderException;
 import com.evolveum.midpoint.studio.impl.ShowResultNotificationAction;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -605,7 +607,15 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
         } catch (Exception ex) {
             state.incrementFailed();
 
-            publishException(midPointService, "Exception occurred during '" + getTitle() + "' of '" + callable.describe() + "', reason: " + ex.getMessage(), ex);
+            String msg = "Exception occurred during '" + getTitle() + "' of '" + callable.describe() + "', reason: " + ex.getMessage();
+            if (ex instanceof ExpanderException) {
+                ConsoleService.get(getProject()).printToConsole(getEnvironment(), getClass(), msg);
+
+                MidPointUtils.publishNotification(
+                        getProject(), notificationKey, "Error", msg, NotificationType.WARNING);
+            } else {
+                publishException(midPointService, msg, ex);
+            }
         }
 
         ProcessObjectResult result = new ProcessObjectResult(null);

@@ -58,13 +58,13 @@ public class SynchronizationRefreshTask extends SynchronizationTask {
         }
     }
 
-    private void processFile(Counter counter, SynchronizationFileItem fileItem) {
+    private void processFile(Counter counter, SynchronizationFileItem<?> fileItem) {
         SynchronizationFileItem newFileItem = createSynchronizationFileItem(counter, fileItem.getFile());
         if (newFileItem == null) {
             return;
         }
 
-        getSession().replaceFileItem(fileItem, newFileItem);
+        getSession().replaceFileItem((SynchronizationFileItem) fileItem, newFileItem);
     }
 
     private void processObject(Counter counter, SynchronizationObjectItem objectItem) {

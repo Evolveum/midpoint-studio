@@ -1,8 +1,17 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObjectDefinition;
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
+import com.intellij.lang.injection.InjectedLanguageManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -10,12 +19,21 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.impl.source.xml.TagNameReference;
 import com.intellij.psi.xml.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.xml.namespace.QName;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PsiUtils {
+
+    private static Set<QName> OBJECT_TYPES;
+
+    static {
+        OBJECT_TYPES = Arrays.stream(ObjectTypes.values())
+                .map(ObjectTypes::getElementName)
+                .collect(Collectors.toSet());
+    }
 
     public static boolean isXmlElement(PsiElement element) {
         Project project = element.getProject();
@@ -219,5 +237,75 @@ public class PsiUtils {
         }
 
         return "oid".equals(attribute.getLocalName());
+    }
+
+    public static PsiElement getOuterPsiElement(PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+        // we'll try to check whether we're injected inside other psi (language), e.g. in xml
+        return InjectedLanguageManager.getInstance(element.getProject()).getInjectionHost(element);
+    }
+
+    public static ItemPath createItemPath(XmlTag tag) {
+        if (tag == null) {
+            return null;
+        }
+
+        // create list of tags from root to current tag iteratively using for loop
+        List<XmlTag> tags = new ArrayList<>();
+
+        XmlTag current = tag;
+        while (current != null) {
+            tags.add(current);
+            current = current.getParentTag();
+        }
+
+        Collections.reverse(tags);
+
+        return createItemPath(tags);
+    }
+
+    public static ItemPath createItemPath(List<XmlTag> tags) {
+        List<Object> components = new ArrayList<>();
+        for (XmlTag t : tags) {
+            QName name = MidPointUtils.createQName(t);
+            components.add(name);
+
+            // todo do this via prism definitions - if it's container
+            String idString = t.getAttributeValue("id");
+            if (NumberUtils.isDigits(idString)) {
+                components.add(Long.parseLong(idString));
+            }
+        }
+
+        return ItemPath.create(components);
+    }
+
+    public static ItemDefinition<?> findItemDefinitionForTag(XmlTag tag) {
+        if (tag == null) {
+            return null;
+        }
+
+        ItemPath path = createItemPath(tag);
+        if (path.isEmpty()) {
+            return null;
+        }
+
+        ItemName object = path.firstToName();
+        if (SchemaConstants.C_OBJECTS.equals(object)) {
+            path = path.rest();
+            object = path.firstToName();
+        }
+
+        // todo figure out xsi:type if path.first() is <c:object>
+
+        SchemaRegistry registry = PrismContext.get().getSchemaRegistry();
+        PrismObjectDefinition<?> objectDefinition = registry.findObjectDefinitionByElementName(object);
+        if (objectDefinition == null) {
+            return null;
+        }
+
+        return objectDefinition.findItemDefinition(path.rest().namedSegmentsOnly());
     }
 }

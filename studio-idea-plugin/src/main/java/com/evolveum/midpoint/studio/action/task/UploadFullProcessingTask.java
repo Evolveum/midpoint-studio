@@ -42,8 +42,13 @@ public class UploadFullProcessingTask extends ClientBackgroundableTask<TaskState
 
     @Override
     protected ProcessObjectResult processObject(MidPointObject object) throws Exception {
-        OperationResult result = UploadTaskMixin.uploadExecute(client, object, buildUploadOptions(getProject(), object));
+        UploadTaskMixin.UploadExecuteResult uploadExecuteResult =
+                UploadTaskMixin.uploadExecute(client, object, buildUploadOptions(getProject(), object));
 
+        UploadTaskMixin.showConsoleOutputNotification(
+                getProject(), getEnvironment(), getClass(), NOTIFICATION_KEY, object, uploadExecuteResult);
+
+        OperationResult result = uploadExecuteResult.result();
         ProcessObjectResult por = validateOperationResult(OPERATION_UPLOAD, result, object.getName());
 
         if (object.isExecutable()) {
