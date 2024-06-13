@@ -50,52 +50,56 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                                                @NotNull ProcessingContext context,
                                                @NotNull CompletionResultSet resultSet) {
 
-                        PsiElement element = parameters.getPosition();
-
-                        String contentUpToCursor = parameters.getOriginalFile().getText()
-                                .substring(0, parameters.getPosition().getTextOffset());
-
-                        PsiElement outer = PsiUtils.getOuterPsiElement(element);
-                        if (!(outer instanceof XmlText xmlText)) {
-                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
-                            return;
-                        }
-
-                        // we have axiom query embedded in xml
-                        XmlTag tag = xmlText.getParentTag();
-                        if (tag == null) {
-                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
-                            return;
-                        }
-
-                        PrismValue value = null;
-                        try {
-                            value = getPrismValue(tag);
-                        } catch (Exception ex) {
-                            LOG.trace("Couldn't get prism value from xml tag, reason: " + ex.getMessage());
-                        }
-
-                        if (value == null) {
-                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
-                            return;
-                        }
-
-                        SchemaContext schemaContext = value.getSchemaContext();
-                        if (schemaContext == null) {
-                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
-                            return;
-                        }
-
-                        ItemDefinition<?> def = schemaContext.getItemDefinition();
-                        if (def == null) {
-                            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
-                            return;
-                        }
-
-                        addSuggestions(def, contentUpToCursor, resultSet);
+                        AxiomQueryCompletionContributor.this.addCompletions(parameters, context, resultSet);
                     }
                 }
         );
+    }
+
+    private void addCompletions(CompletionParameters parameters, ProcessingContext context, CompletionResultSet resultSet) {
+        PsiElement element = parameters.getPosition();
+
+        String contentUpToCursor = parameters.getOriginalFile().getText()
+                .substring(0, parameters.getPosition().getTextOffset());
+
+        PsiElement outer = PsiUtils.getOuterPsiElement(element);
+        if (!(outer instanceof XmlText xmlText)) {
+            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            return;
+        }
+
+        // we have axiom query embedded in xml
+        XmlTag tag = xmlText.getParentTag();
+        if (tag == null) {
+            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            return;
+        }
+
+        PrismValue value = null;
+        try {
+            value = getPrismValue(tag);
+        } catch (Exception ex) {
+            LOG.trace("Couldn't get prism value from xml tag, reason: " + ex.getMessage());
+        }
+
+        if (value == null) {
+            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            return;
+        }
+
+        SchemaContext schemaContext = value.getSchemaContext();
+        if (schemaContext == null) {
+            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            return;
+        }
+
+        ItemDefinition<?> def = schemaContext.getItemDefinition();
+        if (def == null) {
+            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            return;
+        }
+
+        addSuggestions(def, contentUpToCursor, resultSet);
     }
 
     private PrismValue getPrismValue(XmlTag tag) {
