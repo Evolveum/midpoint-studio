@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.evolveum.midpoint.studio"
-version = "4.6.1"
+version = "4.9.0"
 
 dependencies {
     api(libs.midpoint.common) {

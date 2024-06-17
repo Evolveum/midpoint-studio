@@ -1,7 +1,6 @@
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
 
-
 allprojects {
     repositories {
         mavenLocal()
