@@ -99,7 +99,7 @@ dependencies {
 
         instrumentationTools()
         pluginVerifier()
-        testFramework(TestFrameworkType.Platform.JUnit4)
+        testFramework(TestFrameworkType.Platform)
     }
 
     antlr("org.antlr:antlr4:4.10.1") {

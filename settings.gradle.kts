@@ -21,7 +21,7 @@ dependencyResolutionManagement {
         create("libs") {
             version("kotlin", "1.9.23")
             version("changelog", "2.2.0")
-            version("intelliJPlatform", "2.0.0-beta6")
+            version("intelliJPlatform", "2.0.0-beta7")
             version("kover", "0.7.6")
             version("qodana", "2023.3.2")
 
