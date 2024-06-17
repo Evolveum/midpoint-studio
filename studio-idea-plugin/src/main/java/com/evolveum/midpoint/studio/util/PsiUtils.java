@@ -294,6 +294,9 @@ public class PsiUtils {
 
         ItemName object = path.firstToName();
         if (SchemaConstants.C_OBJECTS.equals(object)) {
+            if (path.size() == 1) {
+                return null;
+            }
             path = path.rest();
             object = path.firstToName();
         }
