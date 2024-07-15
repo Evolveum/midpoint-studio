@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class SynchronizationToolWindowFactory implements ToolWindowFactory, DumbAware {
 
-    private static final String TITLE = "Objects synchronization";
+    private static final String TITLE = "Configuration Synchronization";
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
