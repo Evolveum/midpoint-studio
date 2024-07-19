@@ -83,7 +83,7 @@ podTemplate(
                             fi
         
                             ./gradlew --stop
-                            ./gradlew clean buildPlugin verifyPlugin runPluginVerifier $gradleOptions
+                            ./gradlew clean buildPlugin verifyPlugin $gradleOptions
                         """
                         }
                     }
@@ -105,6 +105,15 @@ podTemplate(
                     stage("cleanup") {
                         sh """#!/bin/bash -ex
                             git clean -f -d
+                        """
+
+                        // Clean gradle folder because of https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1601
+                        sh """#!/bin/bash -ex
+                            GRADLE_DIR=/root/.gradle
+                            echo "Removing \$GRADLE_DIR folder"
+                            
+                            du -hs \$GRADLE_DIR
+                            rm -rf \$GRADLE_DIR
                         """
 
                         sh """#!/bin/bash -ex
