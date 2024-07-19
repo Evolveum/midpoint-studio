@@ -113,7 +113,7 @@ podTemplate(
                             echo "Removing \$GRADLE_DIR folder"
                             
                             du -hs \$GRADLE_DIR
-                            rm -rf \$GRADLE_DIR
+                            rm -rf \$GRADLE_DIR/*
                         """
 
                         sh """#!/bin/bash -ex
