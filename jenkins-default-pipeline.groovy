@@ -107,13 +107,13 @@ podTemplate(
                             git clean -f -d
                         """
 
-                        // Clean gradle folder because of https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1601
+                        // Clean gradle caches folder because of https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1601
                         sh """#!/bin/bash -ex
-                            GRADLE_DIR=/root/.gradle
-                            echo "Removing \$GRADLE_DIR folder"
+                            GRADLE_DIR=/root/.gradle/caches
                             
                             du -hs \$GRADLE_DIR
-                            rm -rf \$GRADLE_DIR/*
+                            
+                            find \$GRADLE_DIR -type d -mindepth 1 -maxdepth 1 -regex '\$GRADLE_DIR/[0-9]\\..*'
                         """
 
                         sh """#!/bin/bash -ex
