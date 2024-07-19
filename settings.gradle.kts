@@ -4,10 +4,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
-        // proxied gradlePluginPortal()
         maven("https://nexus.evolveum.com/nexus/repository/gradle-plugins/")
-
-        // proxied https://oss.sonatype.org/content/repositories/snapshots/
         maven("https://nexus.evolveum.com/nexus/repository/sonatype-snapshots/")
     }
 }
@@ -21,7 +18,7 @@ dependencyResolutionManagement {
         create("libs") {
             version("kotlin", "1.9.23")
             version("changelog", "2.2.0")
-            version("intelliJPlatform", "2.0.0-beta7")
+            version("intelliJPlatform", "2.0.0-beta9")
             version("kover", "0.7.6")
             version("qodana", "2023.3.2")
 

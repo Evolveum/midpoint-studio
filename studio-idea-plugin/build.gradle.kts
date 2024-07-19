@@ -14,7 +14,7 @@ fun properties(key: String): Provider<String> = provider {
 fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
-    id("java") // Java support
+    id("java")
 
     alias(libs.plugins.kotlin) // Kotlin support
     alias(libs.plugins.intelliJPlatform) // IntelliJ Platform Gradle Plugin
@@ -76,12 +76,28 @@ println("Plugin version: $pluginVersion")
 println("Publish channel: $publishChannel")
 
 repositories {
-    // todo proxy this from nexus
-    // IntelliJ Platform Gradle Plugin Repositories Extension - read more:
-    // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
-    intellijPlatform {
-        defaultRepositories()
+    maven("https://nexus.evolveum.com/nexus/repository/intellij-dependencies/")
+    maven("https://nexus.evolveum.com/nexus/repository/intellij-repository/")
+    maven("https://nexus.evolveum.com/nexus/repository/jetbrains-marketplace/")
+
+    // nexus proxy for jetbrainsIdeInstallers()
+    ivy {
+        url = uri("https://nexus.evolveum.com/nexus/repository/jetbrains-ide-installers/")
+        layout("maven")
+        patternLayout {
+            artifact("[organization]/[module]-[revision](-[classifier]).[ext]")
+        }
+        metadataSources {
+            artifact()
+        }
     }
+
+    intellijPlatform {
+        localPlatformArtifacts()
+    }
+
+    maven("https://nexus.evolveum.com/nexus/repository/intellij-plugin-verifier/")
+    maven("https://nexus.evolveum.com/nexus/repository/intellij-jbr/")
 }
 
 dependencies {
@@ -250,19 +266,6 @@ intellijPlatform {
         }
     }
 }
-
-// todo
-//intellij {
-// todo https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/820 (plugin 2.x issue)
-//    downloadSources.set(properties("platformDownloadSources").toBoolean())
-//
-//    intellijRepository.set("https://nexus.evolveum.com/nexus/repository/intellij-repository/")
-//    jreRepository.set("https://nexus.evolveum.com/nexus/repository/intellij-jbr/")
-//    pluginsRepositories {
-//        maven("https://nexus.evolveum.com/nexus/repository/jetbrains-plugins/")
-//        getRepositories()
-//    }
-//}
 
 // Configure gradle-changelog-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-changelog-plugin
