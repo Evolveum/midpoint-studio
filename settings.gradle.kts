@@ -12,11 +12,11 @@ pluginManagement {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            version("kotlin", "1.9.23")
+            version("kotlin", "1.9.24")
             version("changelog", "2.2.0")
-            version("intelliJPlatform", "2.0.0-beta9")
-            version("kover", "0.7.6")
-            version("qodana", "2023.3.2")
+            version("intelliJPlatform", "2.0.0-RC1")
+            version("kover", "0.8.1")
+            version("qodana", "2024.1.5")
 
             version("annotations", "24.1.0")
             version("asciidoctorj-tabbed-code", "0.3")
