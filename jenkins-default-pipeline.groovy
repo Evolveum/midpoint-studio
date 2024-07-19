@@ -113,7 +113,7 @@ podTemplate(
                             
                             du -hs \$GRADLE_DIR
                             
-                            find \$GRADLE_DIR -type d -mindepth 1 -maxdepth 1 -regex '\$GRADLE_DIR/[0-9]\\..*'
+                            find \$GRADLE_DIR -type d -mindepth 1 -maxdepth 1 -regex "\$GRADLE_DIR/[0-9]\\..*"
                         """
 
                         sh """#!/bin/bash -ex
