@@ -193,10 +193,7 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-        vendor = JvmVendorSpec.JETBRAINS
-    }
+    jvmToolchain(17)
 }
 
 intellijPlatform {
