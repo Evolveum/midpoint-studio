@@ -5,9 +5,6 @@ plugins {
     id("java-library")
 }
 
-group = "com.evolveum.midpoint.studio"
-version = "4.6.1"
-
 dependencies {
     api(libs.midpoint.common) {
         exclude("org.springframework")

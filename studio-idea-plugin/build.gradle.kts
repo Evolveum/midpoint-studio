@@ -1,39 +1,72 @@
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.IOUtils
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.intellij.tasks.RunPluginVerifierTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import java.nio.charset.StandardCharsets
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 
-fun properties(key: String) = project.findProperty(key).toString()
+// todo doesn't work in multi-module projects, there's ticket for it somewhere
+//  providers.gradleProperty(key)
+fun properties(key: String): Provider<String> = provider {
+    if (project.hasProperty(key)) project.findProperty(key)?.toString() else null
+}
+fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
-    // Java support
     id("java")
-    // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.9.22"
-    // ANTLR4 plugin
-    id("antlr")
-    // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "1.17.1"
-    // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-    id("org.jetbrains.changelog") version "2.2.0"
+
+    alias(libs.plugins.kotlin) // Kotlin support
+    alias(libs.plugins.intelliJPlatform) // IntelliJ Platform Gradle Plugin
+    alias(libs.plugins.changelog) // Gradle Changelog Plugin
+
+    id("antlr") // ANTLR4 plugin
 }
 
-group = properties("pluginGroup")
-version = properties("pluginVersion")
+group = properties("pluginGroup").get()
+version = properties("pluginVersion").get()
 
-var publishChannel = properties("publishChannel")
-var buildNumber = properties("buildNumber")
+var publishChannel = properties("publishChannel").get()
+var buildNumber = properties("buildNumber").get()
 
 if (publishChannel == "stable") {
     publishChannel = "default"
 }
 
-if (gradle.startParameter.taskNames.contains("publishPlugin")
-    && publishChannel != "default"
-    && publishChannel != "snapshot"
-    && publishChannel != "support") {
+if (gradle.startParameter.taskNames.contains("publishPlugin")) {
+    if (publishChannel != "default"
+        && publishChannel != "snapshot"
+        && publishChannel != "support"
+    ) {
+        throw GradleException("Invalid publish channel: $publishChannel")
+    }
 
-    throw GradleException("Invalid publish channel: $publishChannel")
+    val stream = project.file("src/main/java/com/evolveum/midpoint/studio/MidPointConstants.java").inputStream()
+    val defaultMidpointVersion = stream.use {
+        IOUtils.readLines(
+            stream,
+            StandardCharsets.UTF_8
+        ).stream()
+            .filter({ it.contains("DEFAULT_MIDPOINT_VERSION") })
+            .map { it.trim() }
+            .findFirst()
+            .orElse(null)
+    }
+
+    println("Default midpoint version: $defaultMidpointVersion")
+
+    if (publishChannel == "default"
+        && (defaultMidpointVersion == null || defaultMidpointVersion.contains("SNAPSHOT"))) {
+
+        throw GradleException(
+            "Cannot publish to the default channel with '$defaultMidpointVersion' as default midPoint version in constants"
+        )
+    }
 }
 
 var pluginVersionSuffix =
@@ -47,12 +80,49 @@ var pluginVersion = "$version$pluginVersionSuffix"
 println("Plugin version: $pluginVersion")
 println("Publish channel: $publishChannel")
 
-var customSandboxDir = System.getProperty("customSandboxDir")
-if (customSandboxDir == null || customSandboxDir.isBlank()) {
-    customSandboxDir = "${project.buildDir}/idea-sandbox"
+repositories {
+    maven("https://nexus.evolveum.com/nexus/repository/intellij-dependencies/")
+    maven("https://nexus.evolveum.com/nexus/repository/intellij-repository/")
+    maven("https://nexus.evolveum.com/nexus/repository/jetbrains-marketplace/")
+
+    // nexus proxy for jetbrainsIdeInstallers()
+    ivy {
+        url = uri("https://nexus.evolveum.com/nexus/repository/jetbrains-ide-installers/")
+        layout("maven")
+        patternLayout {
+            artifact("[organization]/[module]-[revision](-[classifier]).[ext]")
+        }
+        metadataSources {
+            artifact()
+        }
+    }
+
+    intellijPlatform {
+        localPlatformArtifacts()
+    }
+
+    maven("https://nexus.evolveum.com/nexus/repository/intellij-plugin-verifier/")
+    maven("https://nexus.evolveum.com/nexus/repository/intellij-jbr/")
 }
 
 dependencies {
+    // implementation(libs.annotations)
+
+    // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
+    intellijPlatform {
+        create(properties("platformType"), properties("platformVersion"))
+
+        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
+        bundledPlugins(properties("platformBundledPlugins").map { it.split(',').map(String::trim) })
+
+        // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
+        plugins(properties("platformPlugins").map { it.split(',').map(String::trim) })
+
+        instrumentationTools()
+        pluginVerifier()
+        testFramework(TestFrameworkType.Platform)
+    }
+
     antlr("org.antlr:antlr4:4.10.1") {
         exclude("com.ibm.icu")
     }
@@ -86,13 +156,14 @@ dependencies {
         exclude("ch.qos.logback")
         exclude("xerces")
     }
-    implementation(libs.security.api) {
+    implementation(libs.midpoint.security.api) {
         isTransitive = false
     }
     implementation(libs.notifications.api) {
         isTransitive = false
     }
     implementation(libs.midpoint.localization)
+//    implementation(libs.midpoint.client)
 
     implementation(libs.asciidoctorj.tabbed.code)
     implementation(libs.velocity) {
@@ -130,26 +201,72 @@ kotlin {
     jvmToolchain(17)
 }
 
-// Configure gradle-intellij-plugin plugin.
-// Read more: https://github.com/JetBrains/gradle-intellij-plugin
-intellij {
-    pluginName.set(properties("pluginName"))
-    version.set(properties("platformVersion"))
-    type.set(properties("platformType"))
-    downloadSources.set(properties("platformDownloadSources").toBoolean())
-    updateSinceUntilBuild.set(true)
+intellijPlatform {
+    pluginConfiguration {
+        version = pluginVersion
 
-    // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
-    plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+        // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
+        description = providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
+            val start = "<!-- Plugin description -->"
+            val end = "<!-- Plugin description end -->"
 
-    intellijRepository.set("https://nexus.evolveum.com/nexus/repository/intellij-repository/")
-    jreRepository.set("https://nexus.evolveum.com/nexus/repository/intellij-jbr/")
-    pluginsRepositories {
-        maven("https://nexus.evolveum.com/nexus/repository/jetbrains-plugins/")
-        getRepositories()
+            with(it.lines()) {
+                if (!containsAll(listOf(start, end))) {
+                    throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
+                }
+                subList(indexOf(start) + 1, indexOf(end)).joinToString("\n").let(::markdownToHTML)
+            }
+        }
+
+        val changelog = project.changelog // local variable for configuration cache compatibility
+        // Get the latest available change notes from the changelog file
+        changeNotes = properties("pluginVersion").map { pluginVersion ->
+            with(changelog) {
+                renderItem(
+                    (getOrNull(pluginVersion) ?: getUnreleased())
+                        .withHeader(false)
+                        .withEmptySections(false),
+                    Changelog.OutputType.HTML,
+                )
+            }
+        }
+
+        ideaVersion {
+            sinceBuild = properties("pluginSinceBuild")
+            untilBuild = properties("pluginUntilBuild")
+        }
     }
 
-    sandboxDir.set(customSandboxDir)
+//    signing {
+//        certificateChain = environment("CERTIFICATE_CHAIN")
+//        privateKey = environment("PRIVATE_KEY")
+//        password = environment("PRIVATE_KEY_PASSWORD")
+//    }
+
+    publishing {
+        token = environment("PUBLISH_TOKEN")
+        // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
+        // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
+        // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
+        channels = listOf(publishChannel)
+    }
+
+    verifyPlugin {
+        ides {
+            select {
+                types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
+                channels = listOf(
+                    ProductRelease.Channel.RELEASE,
+                    ProductRelease.Channel.EAP,
+                    ProductRelease.Channel.BETA,
+                    ProductRelease.Channel.RC
+                )
+
+                sinceBuild = properties("pluginSinceBuild")
+                untilBuild = properties("pluginUntilBuild")
+            }
+        }
+    }
 }
 
 // Configure gradle-changelog-plugin plugin.
@@ -162,92 +279,74 @@ changelog {
 }
 
 tasks {
-    withType<JavaCompile> {
-        sourceCompatibility = properties("javaVersion")
-        targetCompatibility = properties("javaVersion")
-    }
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = properties("javaVersion")
-    }
-    withType<Jar> {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
-
-    patchPluginXml {
-        version.set(pluginVersion)
-        sinceBuild.set(properties("pluginSinceBuild"))
-        untilBuild.set(properties("pluginUntilBuild"))
-
-        // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
-        pluginDescription.set(
-            file("README.md").readText().lines().run {
-                val start = "<!-- Plugin description -->"
-                val end = "<!-- Plugin description end -->"
-
-                if (!containsAll(listOf(start, end))) {
-                    throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
-                }
-                subList(indexOf(start) + 1, indexOf(end))
-            }.joinToString("\n").let { markdownToHTML(it) }
-        )
-
-        // Get the latest available change notes from the changelog file
-        changeNotes.set(provider {
-            with(changelog) {
-                renderItem(
-                    getOrNull(properties("pluginVersion")) ?: getUnreleased(),
-                    Changelog.OutputType.HTML,
-                )
-            }
-        })
-    }
-
-    runPluginVerifier {
-        ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
-        failureLevel.set(
-            listOf(
-                RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-                RunPluginVerifierTask.FailureLevel.MISSING_DEPENDENCIES,
-                RunPluginVerifierTask.FailureLevel.INVALID_PLUGIN
-            )
-        )
-    }
-
-    publishPlugin {
-        dependsOn("patchChangelog")
-        token.set(System.getenv("PUBLISH_TOKEN"))
-        // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
-        // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
-        // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels.set(listOf(publishChannel))
-    }
-
-    test {
-        useJUnitPlatform()
-    }
-
     runIde {
         jvmArgs("--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED")
-        systemProperties(
-            "idea.log.debug.categories" to "#com.evolveum.midpoint.studio:all",
-        )
+        systemProperty("idea.log.debug.categories" , "#com.evolveum.midpoint.studio:all")
     }
 
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
-    runIdeForUiTests {
+    testIdeUi {
         systemProperty("robot-server.port", "8082")
         systemProperty("ide.mac.message.dialogs.as.sheets", "false")
         systemProperty("jb.privacy.policy.text", "<!--999.999-->")
         systemProperty("jb.consents.confirmation.enabled", "false")
     }
 
-    downloadRobotServerPlugin {
-        version.set("0.11.7")
+    publishPlugin {
+        dependsOn(patchChangelog)
     }
 
     generateGrammarSource {
     }
+
+    printProductsReleases {
+        channels = listOf(
+            ProductRelease.Channel.EAP,
+            ProductRelease.Channel.RELEASE,
+            ProductRelease.Channel.BETA,
+            ProductRelease.Channel.RC
+        )
+        types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
+
+        sinceBuild = properties("pluginSinceBuild")
+        untilBuild = properties("pluginUntilBuild")
+    }
 }
 
 tasks.getByName("compileKotlin").dependsOn("generateGrammarSource")
+
+/**
+ * This scripts remove all IntelliJ Platform extracted copies from the Gradle Transformer Cache.
+ * Needed because of https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1601
+ */
+tasks.register("cleanupGradleTransformCache") {
+    val userHome = System.getProperty("user.home")
+    val caches = File(userHome, ".gradle/caches").toPath()
+
+    val transforms = caches
+        .listDirectoryEntries("*")
+        .mapNotNull { entry -> entry.resolve("transforms").takeIf { it.exists() } }
+        .plus(listOfNotNull(caches.resolve("transforms-4").takeIf { it.exists() }))
+    val entries = transforms.flatMap { it.listDirectoryEntries() }
+
+    entries.forEach { entry ->
+        val container = entry
+            .resolve("transformed")
+            .takeIf { it.exists() }
+            ?.listDirectoryEntries()
+            ?.firstOrNull { it.isDirectory() }
+            ?: return@forEach
+
+        val productInfoExists = container.resolve("product-info.json").exists() ||
+                container.resolve("Resources/product-info.json").exists()
+        val buildExists = container.resolve("build.txt").exists()
+        val hasIdeaDirectory = container.startsWith("idea")
+
+        if (productInfoExists || buildExists || hasIdeaDirectory) {
+            println("DELETING: $container")
+
+            FileUtils.deleteDirectory(entry.toFile())
+        }
+    }
+}

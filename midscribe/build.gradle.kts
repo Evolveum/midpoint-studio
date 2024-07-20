@@ -9,7 +9,6 @@ dependencies {
     implementation(libs.commons.io)
     implementation(libs.asciidoctorj)
     implementation(libs.asciidoctorj.pdf)
-    implementation(libs.asciidoctorj.pdf)
     implementation(libs.asciidoctorj.tabbed.code)
     implementation(libs.velocity)
 
