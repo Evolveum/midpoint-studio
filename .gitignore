@@ -40,3 +40,5 @@ out/
 .DS_Store
 
 _mess
+
+.intellijPlatform

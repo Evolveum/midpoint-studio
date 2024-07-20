@@ -1,10 +1,11 @@
 # MidPoint Studio
 
 ## [4.8.3]
+### Added
+- Support for Intellij 2024.2
+
 ### Changed
-
-### Fixed
-
+- Upgraded midPoint libraries to 4.8.3
 
 ## [4.8.2]
 ### Changed
