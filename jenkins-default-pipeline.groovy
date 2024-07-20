@@ -103,17 +103,20 @@ podTemplate(
                         archiveArtifacts artifacts: 'studio-idea-plugin/build/reports/pluginVerifier/**', followSymlinks: false
                     }
                     stage("cleanup") {
+                        container('jdk') {
+                            sh """#!/bin/bash -ex
+                                
+                                du -hs /root/.gradle
+                                
+                                ./gradlew --stop
+                                ./gradlew cleanupGradleTransformCache
+                                
+                                du -hs /root/.gradle
+                            """
+                        }
+
                         sh """#!/bin/bash -ex
                             git clean -f -d
-                        """
-
-                        // Clean gradle caches folder because of https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1601
-                        sh """#!/bin/bash -ex
-                            GRADLE_DIR=/root/.gradle/caches
-                            
-                            du -hs \$GRADLE_DIR
-                            
-                            find \$GRADLE_DIR -type d -mindepth 1 -maxdepth 1 -regex "\$GRADLE_DIR/[0-9]\\..*"
                         """
 
                         sh """#!/bin/bash -ex

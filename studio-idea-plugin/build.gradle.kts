@@ -1,3 +1,4 @@
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
@@ -5,6 +6,10 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import java.nio.charset.StandardCharsets
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 
 // todo doesn't work in multi-module projects, there's ticket for it somewhere
 //  providers.gradleProperty(key)
@@ -310,3 +315,38 @@ tasks {
 }
 
 tasks.getByName("compileKotlin").dependsOn("generateGrammarSource")
+
+/**
+ * This scripts remove all IntelliJ Platform extracted copies from the Gradle Transformer Cache.
+ * Needed because of https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1601
+ */
+tasks.register("cleanupGradleTransformCache") {
+    val userHome = System.getProperty("user.home")
+    val caches = File(userHome, ".gradle/caches").toPath()
+
+    val transforms = caches
+        .listDirectoryEntries("*")
+        .mapNotNull { entry -> entry.resolve("transforms").takeIf { it.exists() } }
+        .plus(listOfNotNull(caches.resolve("transforms-4").takeIf { it.exists() }))
+    val entries = transforms.flatMap { it.listDirectoryEntries() }
+
+    entries.forEach { entry ->
+        val container = entry
+            .resolve("transformed")
+            .takeIf { it.exists() }
+            ?.listDirectoryEntries()
+            ?.firstOrNull { it.isDirectory() }
+            ?: return@forEach
+
+        val productInfoExists = container.resolve("product-info.json").exists() ||
+                container.resolve("Resources/product-info.json").exists()
+        val buildExists = container.resolve("build.txt").exists()
+        val hasIdeaDirectory = container.startsWith("idea")
+
+        if (productInfoExists || buildExists || hasIdeaDirectory) {
+            println("DELETING: $container")
+
+            FileUtils.deleteDirectory(entry.toFile())
+        }
+    }
+}
