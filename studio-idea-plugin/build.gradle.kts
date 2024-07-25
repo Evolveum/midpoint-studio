@@ -3,10 +3,9 @@ import org.apache.commons.io.IOUtils
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
-import java.nio.charset.StandardCharsets
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
-import kotlin.io.path.deleteRecursively
+import java.nio.charset.StandardCharsets
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
@@ -16,6 +15,7 @@ import kotlin.io.path.listDirectoryEntries
 fun properties(key: String): Provider<String> = provider {
     if (project.hasProperty(key)) project.findProperty(key)?.toString() else null
 }
+
 fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
@@ -281,7 +281,7 @@ changelog {
 tasks {
     runIde {
         jvmArgs("--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED")
-        systemProperty("idea.log.debug.categories" , "#com.evolveum.midpoint.studio:all")
+        systemProperty("idea.log.debug.categories", "#com.evolveum.midpoint.studio:all")
     }
 
     // Configure UI tests plugin
