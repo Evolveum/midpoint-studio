@@ -21,6 +21,11 @@ public class TaskUpgradeAction extends AnAction {
     }
 
     @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
+
+    @Override
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
