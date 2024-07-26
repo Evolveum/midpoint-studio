@@ -61,7 +61,8 @@ if (gradle.startParameter.taskNames.contains("publishPlugin")) {
     println("Default midpoint version: $defaultMidpointVersion")
 
     if (publishChannel == "default"
-        && (defaultMidpointVersion == null || defaultMidpointVersion.contains("SNAPSHOT"))) {
+        && (defaultMidpointVersion == null || defaultMidpointVersion.contains("SNAPSHOT"))
+    ) {
 
         throw GradleException(
             "Cannot publish to the default channel with '$defaultMidpointVersion' as default midPoint version in constants"
@@ -321,32 +322,34 @@ tasks.getByName("compileKotlin").dependsOn("generateGrammarSource")
  * Needed because of https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1601
  */
 tasks.register("cleanupGradleTransformCache") {
-    val userHome = System.getProperty("user.home")
-    val caches = File(userHome, ".gradle/caches").toPath()
+    doLast({
+        val userHome = System.getProperty("user.home")
+        val caches = File(userHome, ".gradle/caches").toPath()
 
-    val transforms = caches
-        .listDirectoryEntries("*")
-        .mapNotNull { entry -> entry.resolve("transforms").takeIf { it.exists() } }
-        .plus(listOfNotNull(caches.resolve("transforms-4").takeIf { it.exists() }))
-    val entries = transforms.flatMap { it.listDirectoryEntries() }
+        val transforms = caches
+            .listDirectoryEntries("*")
+            .mapNotNull { entry -> entry.resolve("transforms").takeIf { it.exists() } }
+            .plus(listOfNotNull(caches.resolve("transforms-4").takeIf { it.exists() }))
+        val entries = transforms.flatMap { it.listDirectoryEntries() }
 
-    entries.forEach { entry ->
-        val container = entry
-            .resolve("transformed")
-            .takeIf { it.exists() }
-            ?.listDirectoryEntries()
-            ?.firstOrNull { it.isDirectory() }
-            ?: return@forEach
+        entries.forEach { entry ->
+            val container = entry
+                .resolve("transformed")
+                .takeIf { it.exists() }
+                ?.listDirectoryEntries()
+                ?.firstOrNull { it.isDirectory() }
+                ?: return@forEach
 
-        val productInfoExists = container.resolve("product-info.json").exists() ||
-                container.resolve("Resources/product-info.json").exists()
-        val buildExists = container.resolve("build.txt").exists()
-        val hasIdeaDirectory = container.startsWith("idea")
+            val productInfoExists = container.resolve("product-info.json").exists() ||
+                    container.resolve("Resources/product-info.json").exists()
+            val buildExists = container.resolve("build.txt").exists()
+            val hasIdeaDirectory = container.startsWith("idea")
 
-        if (productInfoExists || buildExists || hasIdeaDirectory) {
-            println("DELETING: $container")
+            if (productInfoExists || buildExists || hasIdeaDirectory) {
+                println("DELETING: $container")
 
-            FileUtils.deleteDirectory(entry.toFile())
+                FileUtils.deleteDirectory(entry.toFile())
+            }
         }
-    }
+    })
 }
