@@ -1,14 +1,15 @@
 package com.evolveum.midpoint.studio.action;
 
+import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.ShowExceptionNotificationAction;
-import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -18,6 +19,8 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -26,25 +29,30 @@ public class TestConnectionAction extends AnAction {
     private static final String NOTIFICATION_KEY = "Test Connection";
 
     @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
+
+    @Override
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
         Project project = e.getProject();
         if (project == null) {
-            e.getPresentation().setEnabled(false);
+            SwingUtilities.invokeLater(() -> e.getPresentation().setEnabled(false));
             return;
         }
 
         boolean hasFacet = MidPointUtils.hasMidPointFacet(e.getProject());
         if (!hasFacet) {
-            e.getPresentation().setEnabled(false);
+            SwingUtilities.invokeLater(() -> e.getPresentation().setEnabled(false));
             return;
         }
 
         EnvironmentService em = EnvironmentService.getInstance(project);
         Environment selected = em.getSelected();
 
-        e.getPresentation().setEnabled(selected != null);
+        SwingUtilities.invokeLater(() -> e.getPresentation().setEnabled(selected != null));
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -15,6 +16,7 @@ import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.AllClassesSearch;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,21 +44,26 @@ public class TestAction extends AnAction {
     }
 
     @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
+
+    @Override
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
         if (!MidPointUtils.isVisibleWithMidPointFacet(e)) {
-            e.getPresentation().setVisible(false);
+            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
             return;
         }
 
         if (isPluginVersionRelease) {
-            e.getPresentation().setVisible(false);
+            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
             return;
         }
 
         boolean internal = ApplicationManager.getApplication().isInternal();
-        e.getPresentation().setVisible(internal);
+        SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(internal));
     }
 
     @Override

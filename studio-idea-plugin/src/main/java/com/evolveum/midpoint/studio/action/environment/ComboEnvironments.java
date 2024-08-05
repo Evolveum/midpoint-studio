@@ -25,6 +25,11 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
     public static final String ACTION_ID = MidPointConstants.ACTION_ID_PREFIX + ComboEnvironments.class.getSimpleName();
 
     @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
+
+    @Override
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
@@ -33,7 +38,7 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
         }
 
         if (!MidPointUtils.isVisibleWithMidPointFacet(e)) {
-            e.getPresentation().setVisible(false);
+            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
             return;
         }
 
@@ -43,15 +48,19 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
 
         String text = env != null ? env.getName() : StudioBundle.message("ComboEnvironments.noneSelected");
 
-        getTemplatePresentation().setText(text);
-        e.getPresentation().setText(text);
+        SwingUtilities.invokeLater(() -> {
+            getTemplatePresentation().setText(text);
+            e.getPresentation().setText(text);
+        });
 
         Color color = env != null ? env.getAwtColor() : null;
         if (color != null) {
             Icon icon = MidPointUtils.createEnvironmentIcon(color);
 
-            getTemplatePresentation().setIcon(icon);
-            e.getPresentation().setIcon(icon);
+            SwingUtilities.invokeLater(() -> {
+                getTemplatePresentation().setIcon(icon);
+                e.getPresentation().setIcon(icon);
+            });
         }
     }
 

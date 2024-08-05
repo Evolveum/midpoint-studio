@@ -14,6 +14,7 @@ import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -23,6 +24,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
 
@@ -40,7 +42,12 @@ public class VerifyAction extends AnAction {
         super.update(evt);
 
         boolean enabled = MidPointUtils.isMidpointObjectFileSelected(evt);
-        evt.getPresentation().setEnabled(enabled);
+        SwingUtilities.invokeLater(() -> evt.getPresentation().setEnabled(enabled));
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     @Override
