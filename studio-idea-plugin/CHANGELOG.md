@@ -3,14 +3,14 @@
 ## [4.8.3]
 ### Added
 - Support for Intellij 2024.2
-
 ### Changed
 - Upgraded midPoint libraries to 4.8.3
+### Fixed
+- Fixed threading issues for actions
 
 ## [4.8.2]
 ### Changed
 - Improved references inlay, annotators
-
 ### Fixed
 - MID-5901 missing prefix "t" in bulk action
 - MID-9481 fixed translation for role cluster/session types
