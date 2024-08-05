@@ -10,4 +10,6 @@ public interface MidPointConstants {
     String PLUGIN_NAME = "MidPoint.Plugin";
 
     String ACTION_ID_PREFIX = "MidPoint.Action.";
+
+    String DEFAULT_MIDPOINT_VERSION = "4.8.3";
 }

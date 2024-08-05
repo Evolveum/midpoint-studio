@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.ide;
 
+import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.impl.EncryptionService;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
@@ -145,6 +146,7 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
 
                         properties.setProperty("PROJECT_NAME", escaped);
 
+                        properties.setProperty("MIDPOINT_VERSION", MidPointConstants.DEFAULT_MIDPOINT_VERSION);
 
                         return createPomFile(project, rootFile, properties);
                     });
