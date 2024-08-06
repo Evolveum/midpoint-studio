@@ -64,6 +64,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColorIcon;
 import com.intellij.util.ui.components.BorderLayoutPanel;
@@ -742,6 +743,7 @@ public class MidPointUtils {
         return result;
     }
 
+    @RequiresBackgroundThread
     public static boolean hasMidPointFacet(Project project) {
         if (project == null) {
             return false;

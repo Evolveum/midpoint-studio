@@ -3,8 +3,8 @@ package com.evolveum.midpoint.studio.action.environment;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
@@ -26,7 +26,7 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
 
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.EDT;
+        return ActionUpdateThread.BGT;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
         }
 
         if (!MidPointUtils.isVisibleWithMidPointFacet(e)) {
-            e.getPresentation().setVisible(false);
+            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
             return;
         }
 
@@ -48,15 +48,19 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
 
         String text = env != null ? env.getName() : StudioLocalization.message("ComboEnvironments.noneSelected");
 
-        getTemplatePresentation().setText(text);
-        e.getPresentation().setText(text);
+        SwingUtilities.invokeLater(() -> {
+            getTemplatePresentation().setText(text);
+            e.getPresentation().setText(text);
+        });
 
         Color color = env != null ? env.getAwtColor() : null;
         if (color != null) {
             Icon icon = MidPointUtils.createEnvironmentIcon(color);
 
-            getTemplatePresentation().setIcon(icon);
-            e.getPresentation().setIcon(icon);
+            SwingUtilities.invokeLater(() -> {
+                getTemplatePresentation().setIcon(icon);
+                e.getPresentation().setIcon(icon);
+            });
         }
     }
 

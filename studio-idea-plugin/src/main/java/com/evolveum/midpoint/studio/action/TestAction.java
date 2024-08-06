@@ -31,7 +31,7 @@ public class TestAction extends AnAction {
 
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.EDT;
+        return ActionUpdateThread.BGT;
     }
 
     @Override
@@ -39,12 +39,12 @@ public class TestAction extends AnAction {
         super.update(e);
 
         if (!MidPointUtils.isVisibleWithMidPointFacet(e)) {
-            e.getPresentation().setVisible(false);
+            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
             return;
         }
 
         boolean visible = MidPointUtils.isDevelopmentMode(true);
-        e.getPresentation().setVisible(visible);
+        SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(visible));
     }
 
     @Override

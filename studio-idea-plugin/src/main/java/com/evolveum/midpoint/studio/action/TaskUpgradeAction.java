@@ -10,6 +10,8 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -31,7 +33,10 @@ public class TaskUpgradeAction extends AnAction {
         super.update(evt);
 
         boolean enabled = MidPointUtils.shouldEnableAction(evt);
-        evt.getPresentation().setEnabled(enabled);
+
+        SwingUtilities.invokeLater(() -> {
+            evt.getPresentation().setEnabled(enabled);
+        });
     }
 
     @Override

@@ -18,6 +18,7 @@ import com.intellij.psi.xml.XmlTag;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +73,7 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
         super.update(evt);
 
         List<VirtualFile> xsdFiles = getSelectedXsdFiles(evt);
-        evt.getPresentation().setVisible(!xsdFiles.isEmpty());
+        SwingUtilities.invokeLater(() -> evt.getPresentation().setVisible(!xsdFiles.isEmpty()));
     }
 
     private List<VirtualFile> getSelectedXsdFiles(AnActionEvent evt) {

@@ -24,6 +24,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class VerifyAction extends AnAction {
         super.update(evt);
 
         boolean enabled = MidPointUtils.isMidpointObjectFileSelected(evt);
-        evt.getPresentation().setEnabled(enabled);
+        SwingUtilities.invokeLater(() -> evt.getPresentation().setEnabled(enabled));
     }
 
     @Override
