@@ -36,11 +36,6 @@ public class UploadTestResourceTask extends UploadExecuteTask {
     }
 
     @Override
-    protected boolean shouldSkipObjectProcessing(MidPointObject object) {
-        return !ObjectTypes.RESOURCE.equals(object.getType());
-    }
-
-    @Override
     public ProcessObjectResult processObject(MidPointObject obj) throws Exception {
         ProcessObjectResult por = super.processObject(obj);
 
@@ -48,6 +43,17 @@ public class UploadTestResourceTask extends UploadExecuteTask {
 
         if (uploadResult != null && !uploadResult.isSuccess()) {
             printProblem("Skipping test connection for " + obj.getName() + ", there was a problem with upload");
+            return por;
+        }
+
+        if (!ObjectTypes.RESOURCE.equals(obj.getType())) {
+            printProblem("Skipping test connection for " + obj.getName() + ", it's not a resource");
+
+            OperationResult result = new OperationResult(OPERATION_TEST_CONNECTION);
+            result.recordWarning("Skipping test connection for " + obj.getName() + ", it's not a resource");
+            por.result(result);
+            por.problem(true);
+
             return por;
         }
 
