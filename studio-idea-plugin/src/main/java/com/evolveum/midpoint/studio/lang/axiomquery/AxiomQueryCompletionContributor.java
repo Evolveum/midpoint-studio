@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
+import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
+import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
@@ -38,7 +38,7 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
 
     private static final Logger LOG = Logger.getInstance(AxiomQueryCompletionContributor.class);
 
-    private final AxiomQueryLangService axiomQueryLangService = new AxiomQueryLangServiceImpl(PrismContext.get());
+    private final AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(PrismContext.get());
 
     public AxiomQueryCompletionContributor() {
         extend(null,
@@ -206,8 +206,8 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
 
         List<LookupElement> suggestions = new ArrayList<>();
 
-        axiomQueryLangService.queryCompletion(def, contentUpToCursor)
-                .forEach((filterName, alias) -> suggestions.add(build(filterName, alias)));
+        axiomQueryContentAssist.process(def, contentUpToCursor, 0).autocomplete()
+                .forEach(suggestion -> suggestions.add(build(suggestion.name(), suggestion.alias())));
 
         resultSet.addAllElements(suggestions);
     }
