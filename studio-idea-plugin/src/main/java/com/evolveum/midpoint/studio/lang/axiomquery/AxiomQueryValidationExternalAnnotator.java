@@ -54,7 +54,7 @@ public class AxiomQueryValidationExternalAnnotator
                       List<AxiomQueryError> errors,
                       @NotNull AnnotationHolder holder) {
         for (AxiomQueryError error : errors) {
-            TextRange range = new TextRange(error.getCharPositionInLineStart(), error.getCharPositionInLineStop() + 1);
+            TextRange range = new TextRange(error.getCharPositionStart(), error.getCharPositionStop());
             holder.newAnnotation(HighlightSeverity.ERROR, error.getMessage())
                     .range(range)
                     .create();
