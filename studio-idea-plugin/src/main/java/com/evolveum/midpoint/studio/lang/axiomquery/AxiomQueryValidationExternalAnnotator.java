@@ -15,7 +15,6 @@ import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,17 +35,11 @@ public class AxiomQueryValidationExternalAnnotator
     @Nullable
     @Override
     public List<AxiomQueryError> doAnnotate(final PsiFile file) {
-        String content = file.getText();
-        if (content.isBlank()) {
-            return Collections.emptyList();
-        }
-
         PsiDocumentManager documentManager = PsiDocumentManager.getInstance(file.getProject());
         Document doc = documentManager.getDocument(file);
-
         ItemDefinition<?> def = getItemDefinitionFromHint(doc);
 
-        return axiomQueryContentAssist.process(def, content, 0).validate();
+        return axiomQueryContentAssist.process(def, file.getText(), 0).validate();
     }
 
     @Override
