@@ -42,6 +42,8 @@ public class EnvironmentCacheManager {
 
     public static final CacheKey<ExtensionSchemaCache> KEY_EXTENSION_SCHEMA = new CacheKey<>();
 
+    public static final CacheKey<ResourceCache> KEY_RESOURCE = new CacheKey<>();
+
     private static final Logger LOG = LoggerFactory.getLogger(EnvironmentCacheManager.class);
 
     private final Project project;
@@ -71,7 +73,7 @@ public class EnvironmentCacheManager {
         caches.put(KEY_CONNECTOR, new ConnectorCache(project));
         caches.put(KEY_PROPERTIES, new EnvironmentPropertiesCache(project));
         caches.put(KEY_EXTENSION_SCHEMA, new ExtensionSchemaCache(project));
-
+        caches.put(KEY_RESOURCE, new ResourceCache(project));
         MidPointService ms = MidPointService.get(project);
         MidPointConfiguration config = ms.getSettings();
 
