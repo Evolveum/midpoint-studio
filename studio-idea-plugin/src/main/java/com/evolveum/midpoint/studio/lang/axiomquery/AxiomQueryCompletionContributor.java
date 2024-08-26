@@ -59,19 +59,19 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
     private void addCompletions(CompletionParameters parameters, ProcessingContext context, CompletionResultSet resultSet) {
         PsiElement element = parameters.getPosition();
 
-        String contentUpToCursor = parameters.getOriginalFile().getText()
-                .substring(0, parameters.getPosition().getTextOffset());
+        String content = parameters.getOriginalFile().getText();
 
+        var cursorPosition = parameters.getOffset();
         PsiElement outer = PsiUtils.getOuterPsiElement(element);
         if (!(outer instanceof XmlText xmlText)) {
-            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            addSuggestionsFromEditorHint(parameters.getEditor(), content, cursorPosition, resultSet);
             return;
         }
 
         // we have axiom query embedded in xml
         XmlTag tag = xmlText.getParentTag();
         if (tag == null) {
-            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            addSuggestionsFromEditorHint(parameters.getEditor(), content, cursorPosition, resultSet);
             return;
         }
 
@@ -83,23 +83,22 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
         }
 
         if (value == null) {
-            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            addSuggestionsFromEditorHint(parameters.getEditor(), content, cursorPosition, resultSet);
             return;
         }
 
         SchemaContext schemaContext = value.getSchemaContext();
         if (schemaContext == null) {
-            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            addSuggestionsFromEditorHint(parameters.getEditor(), content, cursorPosition, resultSet);
             return;
         }
 
         ItemDefinition<?> def = schemaContext.getItemDefinition();
         if (def == null) {
-            addSuggestionsFromEditorHint(parameters.getEditor(), contentUpToCursor, resultSet);
+            addSuggestionsFromEditorHint(parameters.getEditor(), content, cursorPosition, resultSet);
             return;
         }
-
-        addSuggestions(def, contentUpToCursor, resultSet);
+        addSuggestions(def, content, cursorPosition, resultSet);
     }
 
     private PrismValue getPrismValue(XmlTag tag) {
@@ -193,20 +192,21 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
         return tags;
     }
 
-    private void addSuggestionsFromEditorHint(Editor editor, String contentUpToCursor, CompletionResultSet resultSet) {
+    private void addSuggestionsFromEditorHint(Editor editor, String content, int cursorPosition, CompletionResultSet resultSet) {
         ItemDefinition<?> def = getObjectDefinitionFromHint(editor);
 
-        addSuggestions(def, contentUpToCursor, resultSet);
+        addSuggestions(def, content, cursorPosition, resultSet);
     }
 
-    private void addSuggestions(ItemDefinition<?> def, String contentUpToCursor, CompletionResultSet resultSet) {
+    private void addSuggestions(ItemDefinition<?> def, String content, int cursorPosition, CompletionResultSet resultSet) {
         if (def == null) {
             return;
         }
 
         List<LookupElement> suggestions = new ArrayList<>();
-
-        axiomQueryContentAssist.process(def, contentUpToCursor, 0).autocomplete()
+        // FIXME: Somehow algorithm in Prism takes position of last character before cursor, instead of cursor.
+        cursorPosition = Math.max(0, cursorPosition -1);
+        axiomQueryContentAssist.process(def, content, cursorPosition).autocomplete()
                 .forEach(suggestion -> suggestions.add(build(suggestion.name(), suggestion.alias())));
 
         resultSet.addAllElements(suggestions);
