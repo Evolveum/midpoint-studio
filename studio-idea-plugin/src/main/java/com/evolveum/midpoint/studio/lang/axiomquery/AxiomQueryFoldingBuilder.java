@@ -33,7 +33,7 @@ public class AxiomQueryFoldingBuilder extends CustomFoldingBuilder {
     }
 
     private static String getPlaceholderText(PsiElement element) {
-        if (element.getNode().getElementType() == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.LINE_COMMENT)) {
+        if (element.getNode().getElementType() == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.COMMENT)) {
             return "//...";
         }
 

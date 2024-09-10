@@ -24,7 +24,7 @@ public class AxiomTokenTypes {
 
     public static final TokenSet COMMENTS = PSIElementTypeFactory.createTokenSet(
             AxiomLanguage.INSTANCE,
-            AxiomLexer.LINE_COMMENT);
+            AxiomLexer.COMMENT);
 
     public static final TokenSet WHITESPACES = TokenSet.EMPTY;
 

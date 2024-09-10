@@ -29,7 +29,7 @@ public class AxiomQuerySyntaxHighlighter extends SyntaxHighlighterBase {
             pack(createTextAttributesKey("AXIOM_QUERY_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER));
 
     public static final TextAttributesKey[] COMMENT_KEYS =
-            pack(createTextAttributesKey("AXIOM_QUERY_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT));
+            pack(createTextAttributesKey("AXIOM_QUERY_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT));
 
     private static final TextAttributesKey[] BAD_CHAR_KEYS = pack(HighlighterColors.BAD_CHARACTER);
 
@@ -65,7 +65,7 @@ public class AxiomQuerySyntaxHighlighter extends SyntaxHighlighterBase {
             return IDENTIFIER_KEYS;
         }
 
-        if (tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(LINE_COMMENT)) {
+        if (tokenType == AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(COMMENT)) {
             return COMMENT_KEYS;
         }
 

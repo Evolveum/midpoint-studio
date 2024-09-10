@@ -26,7 +26,7 @@ public class AxiomQueryTokenTypes {
 
     public static final TokenSet COMMENTS = PSIElementTypeFactory.createTokenSet(
             AxiomQueryLanguage.INSTANCE,
-            LINE_COMMENT);
+            COMMENT);
 
     public static final TokenSet WHITESPACES = PSIElementTypeFactory.createTokenSet(
             AxiomQueryLanguage.INSTANCE,

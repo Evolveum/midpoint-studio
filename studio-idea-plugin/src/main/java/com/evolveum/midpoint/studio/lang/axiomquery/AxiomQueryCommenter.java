@@ -18,7 +18,7 @@ public class AxiomQueryCommenter implements CodeDocumentationAwareCommenter {
 
     @Override
     public @Nullable IElementType getLineCommentTokenType() {
-        return AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.LINE_COMMENT);
+        return AxiomQueryTokenTypes.TOKEN_ELEMENT_TYPES.get(AxiomQueryLexer.COMMENT);
     }
 
     @Override
