@@ -29,7 +29,8 @@ public class AxiomQuerySyntaxHighlighter extends SyntaxHighlighterBase {
             pack(createTextAttributesKey("AXIOM_QUERY_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER));
 
     public static final TextAttributesKey[] COMMENT_KEYS =
-            pack(createTextAttributesKey("AXIOM_QUERY_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT));
+            pack(createTextAttributesKey("AXIOM_QUERY_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT),
+                createTextAttributesKey("AXIOM_QUERY_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT));
 
     private static final TextAttributesKey[] BAD_CHAR_KEYS = pack(HighlighterColors.BAD_CHARACTER);
 
