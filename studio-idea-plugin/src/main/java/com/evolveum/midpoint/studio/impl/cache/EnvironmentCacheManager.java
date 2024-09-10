@@ -4,10 +4,12 @@ import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SystemConfigurationType;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
@@ -42,7 +44,7 @@ public class EnvironmentCacheManager {
 
     public static final CacheKey<ExtensionSchemaCache> KEY_EXTENSION_SCHEMA = new CacheKey<>();
 
-    public static final CacheKey<ResourceCache> KEY_RESOURCE = new CacheKey<>();
+    public static final CacheKey<ObjectCache<ResourceType>> KEY_RESOURCE = new CacheKey<>();
 
     private static final Logger LOG = LoggerFactory.getLogger(EnvironmentCacheManager.class);
 
@@ -73,7 +75,7 @@ public class EnvironmentCacheManager {
         caches.put(KEY_CONNECTOR, new ConnectorCache(project));
         caches.put(KEY_PROPERTIES, new EnvironmentPropertiesCache(project));
         caches.put(KEY_EXTENSION_SCHEMA, new ExtensionSchemaCache(project));
-        caches.put(KEY_RESOURCE, new ResourceCache(project));
+        caches.put(KEY_RESOURCE, new ObjectCache<>(project, ResourceType.class));
         MidPointService ms = MidPointService.get(project);
         MidPointConfiguration config = ms.getSettings();
 
@@ -146,16 +148,20 @@ public class EnvironmentCacheManager {
             }
         }
 
-        for (Cache cache : caches.values()) {
+        for (CacheKey key : caches.keySet()) {
+            Cache cache = caches.get(key);
             try {
                 cache.reload();
+
+                project.getMessageBus().syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentCacheReloaded(key, cache);
             } catch (Exception ex) {
                 LOG.error("Error reloading cache: {}", ex.getMessage(), ex);
             }
         }
 
         restartHighlightInEditors();
-//        StudioPrismContextService.get(project).resetPrismContext();
+
+        project.getMessageBus().syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentCacheManagerReloaded();
 
         LOG.debug("Caches reload finished");
     }

@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ServiceFactory {
 
+    @Deprecated
     public static final PrismContext DEFAULT_PRISM_CONTEXT;
 
     static {

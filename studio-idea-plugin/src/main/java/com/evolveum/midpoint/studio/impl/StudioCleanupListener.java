@@ -79,4 +79,9 @@ public class StudioCleanupListener extends DefaultCleanupListener {
 
         return connector.asPrismObject();
     }
+
+    @Override
+    public Boolean onItemCleanup(CleanupEvent<Item<?, ?>> event) {
+        return super.onItemCleanup(event);
+    }
 }

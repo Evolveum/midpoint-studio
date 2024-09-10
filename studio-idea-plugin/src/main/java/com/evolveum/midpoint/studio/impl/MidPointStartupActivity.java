@@ -1,8 +1,5 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.schema.processor.ResourceSchemaRegistry;
-import com.evolveum.midpoint.schema.processor.ValueBasedDefinitionLookupsImpl;
 import com.evolveum.midpoint.studio.action.ShowConfigurationAction;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.ide.MavenManagerListener;
@@ -57,8 +54,6 @@ public class MidPointStartupActivity implements ProjectActivity {
 
     public static String NOTIFICATION_KEY = TITLE;
 
-    private static ResourceSchemaRegistry resourceSchemaRegistry = new ResourceSchemaRegistry();
-
     @Nullable
     @Override
     public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
@@ -68,9 +63,6 @@ public class MidPointStartupActivity implements ProjectActivity {
             mpm.addManagerListener(new MavenManagerListener(project));
         }
 
-        var prismContext = initializePrism();
-
-        initializeMidpointSchema(prismContext);
         RunnableUtils.invokeLaterIfNeeded(() -> RunnableUtils.runWriteAction(() -> initializeIgnoredResources()));
 
         initializeInspections(project);
@@ -80,29 +72,6 @@ public class MidPointStartupActivity implements ProjectActivity {
         RunnableUtils.invokeLaterIfNeeded(() -> initializeUI());
 
         return null;
-    }
-
-
-
-    private PrismContext initializePrism() {
-        LOG.info("Initializing service factory");
-        // FIXME: Probably Here we should create Project specific prism context
-        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
-        LOG.info("Service factory initialized " + ctx.toString());
-        return ctx;
-    }
-
-
-    private void initializeMidpointSchema(PrismContext prismContext) {
-
-        // Somehow this is invoked two times?
-
-        prismContext.getDefaultSchemaLookup().registerSchemaSpecific(ResourceSchemaRegistry.class, (s) -> resourceSchemaRegistry);
-
-        var valueBased = new ValueBasedDefinitionLookupsImpl();
-        valueBased.setResourceSchemaRegistry(resourceSchemaRegistry);
-        valueBased.init(prismContext);
-
     }
 
     private void initializeIgnoredResources() {

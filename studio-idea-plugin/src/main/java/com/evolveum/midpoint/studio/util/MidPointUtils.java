@@ -128,6 +128,7 @@ public class MidPointUtils {
 
     private static final Random RANDOM = new Random();
 
+    @Deprecated
     public static final PrismContext DEFAULT_PRISM_CONTEXT = ServiceFactory.DEFAULT_PRISM_CONTEXT;
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
