@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.trace.Format;
 import com.evolveum.midpoint.studio.impl.trace.FormattingContext;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
@@ -64,7 +63,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         initLayout();
         updateModel(null);
         MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void selectedTraceNodeChange(OpNode node) {

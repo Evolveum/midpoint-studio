@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.ui.trace.singleOp;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceType;
@@ -31,7 +30,7 @@ public class OpTraceRawPanel extends BorderLayoutPanel {
         initLayout();
 
         MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void selectedTraceNodeChange(OpNode node) {

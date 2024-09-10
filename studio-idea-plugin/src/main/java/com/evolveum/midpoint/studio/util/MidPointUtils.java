@@ -1062,7 +1062,7 @@ public class MidPointUtils {
 
     public static void subscribeToEnvironmentChange(Project project, Consumer<Environment> refreshFunction) {
         MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void environmentChanged(Environment oldEnv, Environment newEnv) {

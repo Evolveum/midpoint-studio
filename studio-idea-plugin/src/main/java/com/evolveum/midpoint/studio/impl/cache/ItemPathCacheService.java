@@ -44,7 +44,7 @@ public class ItemPathCacheService {
         this.project = project;
 
         MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void environmentChanged(Environment oldEnv, Environment newEnv) {

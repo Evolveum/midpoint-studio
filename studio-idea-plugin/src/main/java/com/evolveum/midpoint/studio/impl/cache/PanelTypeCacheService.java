@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.impl.cache;
 
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.impl.search.JavaFilesSearchScope;
@@ -27,7 +26,7 @@ public class PanelTypeCacheService {
 
         // todo this should rather listen to some maven event and change in dependencies (mainly com.evolveum.midpoint.* group)
         MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void environmentChanged(Environment oldEnv, Environment newEnv) {
