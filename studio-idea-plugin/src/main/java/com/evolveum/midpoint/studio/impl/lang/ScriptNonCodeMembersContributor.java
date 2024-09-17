@@ -10,6 +10,7 @@ import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
@@ -221,7 +222,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
 
         QName qname = new QName(namespace, localPart);
 
-        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+        PrismContext ctx = StudioPrismContextService.getPrismContext(typeTag.getProject());
         SchemaRegistry registry = ctx.getSchemaRegistry();
 
         Class clazz = registry.determineClassForType(qname);

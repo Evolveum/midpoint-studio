@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.schema.delta.ThreeWayMergeOperation;
 import com.evolveum.midpoint.studio.client.ClientUtils;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.ui.diff.ThreeWayMergeTree;
 import com.evolveum.midpoint.studio.ui.diff.ThreeWayMergeTreeModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -62,9 +63,9 @@ public class TestAction extends AnAction {
 
 
         try {
-            PrismObject previousInitial = parse(previousInitialFile);
-            PrismObject currentInitial = parse(currentInitialFile);
-            PrismObject currentObject = parse(currentObjectFile);
+            PrismObject previousInitial = parse(project, previousInitialFile);
+            PrismObject currentInitial = parse(project, currentInitialFile);
+            PrismObject currentObject = parse(project, currentObjectFile);
 
             ThreeWayMergeOperation operation = new ThreeWayMergeOperation(
                     currentInitial, currentObject, previousInitial, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS);
@@ -93,9 +94,9 @@ public class TestAction extends AnAction {
         }
     }
 
-    private PrismObject<?> parse(VirtualFile file) throws Exception {
+    private PrismObject<?> parse(Project project, VirtualFile file) throws Exception {
         return ClientUtils.createParser(
-                        MidPointUtils.DEFAULT_PRISM_CONTEXT,
+                        StudioPrismContextService.getPrismContext(project),
                         new ByteArrayInputStream(file.contentsToByteArray()))
                 .parse();
     }

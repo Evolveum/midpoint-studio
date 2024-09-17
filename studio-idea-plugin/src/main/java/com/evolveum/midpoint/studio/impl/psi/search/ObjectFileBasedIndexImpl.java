@@ -5,8 +5,8 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.diagnostic.Logger;
@@ -101,7 +101,7 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
 
             @Override
             public void runWithPluginClassLoader() {
-                PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+                PrismContext ctx = StudioPrismContextService.getPrismContext(inputData.getProject());
 
                 ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
                 PrismParser parser = ctx.parserFor(new ByteArrayInputStream(inputData.getContent())).language(PrismContext.LANG_XML).context(parsingContext);

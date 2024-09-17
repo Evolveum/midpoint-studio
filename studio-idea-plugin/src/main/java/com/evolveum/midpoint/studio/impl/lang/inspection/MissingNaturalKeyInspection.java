@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -26,7 +27,7 @@ public class MissingNaturalKeyInspection extends StudioInspection {
             return;
         }
 
-        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+        PrismContext ctx = StudioPrismContextService.getPrismContext(holder.getProject());
 
         List<XmlTag> tags = listTagsToRoot(tag, new ArrayList<>());
         if (tags.isEmpty()) {

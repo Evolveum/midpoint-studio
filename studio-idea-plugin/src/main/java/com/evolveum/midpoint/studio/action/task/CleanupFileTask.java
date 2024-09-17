@@ -4,6 +4,7 @@ import com.evolveum.midpoint.common.cleanup.CleanupItem;
 import com.evolveum.midpoint.common.cleanup.CleanupItemType;
 import com.evolveum.midpoint.common.cleanup.CleanupResult;
 import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismSerializer;
@@ -119,7 +120,9 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
         }
 
         try {
-            PrismParser parser = ClientUtils.createParser(MidPointUtils.DEFAULT_PRISM_CONTEXT, content)
+            PrismContext ctx = StudioPrismContextService.getPrismContext(getProject());
+
+            PrismParser parser = ClientUtils.createParser(ctx, content)
                     .preserveNamespaceContext();
 
             List<PrismObject<? extends ObjectType>> objects = (List) parser.parseObjects();
@@ -134,7 +137,7 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
             CleanupService cs = CleanupService.get(getProject());
 
             ObjectCleaner processor = cs.createCleanupProcessor();
-            processor.setListener(new StudioCleanupListener(getProject(), MidPointUtils.DEFAULT_PRISM_CONTEXT));
+            processor.setListener(new StudioCleanupListener(getProject(), ctx));
 
             ObjectValidator validator = cs.createObjectValidator();
 
@@ -162,7 +165,7 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
                 return content;
             }
 
-            PrismSerializer<String> serializer = ClientUtils.getSerializer(MidPointUtils.DEFAULT_PRISM_CONTEXT);
+            PrismSerializer<String> serializer = ClientUtils.getSerializer(ctx);
             if (clonedObjects.size() == 1) {
                 return serializer.serialize(clonedObjects.get(0));
             }

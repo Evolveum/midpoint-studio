@@ -1,6 +1,8 @@
 package com.evolveum.midpoint.studio.ui.configuration
 
 import com.evolveum.midpoint.prism.path.ItemPath
+import com.evolveum.midpoint.prism.schema.SchemaRegistry
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService
 import com.evolveum.midpoint.studio.impl.configuration.CleanupPathActionConfiguration
 import com.evolveum.midpoint.studio.impl.configuration.CleanupPathConfiguration
 import com.evolveum.midpoint.studio.util.MidPointUtils
@@ -24,7 +26,8 @@ class CleanupPathConfigurationEditor(val project: Project, val input: CleanupPat
             CleanupPathConfiguration(null, ItemPath.EMPTY_PATH, CleanupPathActionConfiguration.IGNORE)
 
     fun createComponent(): DialogPanel {
-        val provider = SchemaTypesProvider(MidPointUtils.DEFAULT_PRISM_CONTEXT.schemaRegistry)
+        val registry = StudioPrismContextService.getPrismContext(project).schemaRegistry
+        val provider = SchemaTypesProvider(registry)
         val autoCompletion = TextFieldWithAutoCompletion(project, provider, false, null)
 
         return panel {

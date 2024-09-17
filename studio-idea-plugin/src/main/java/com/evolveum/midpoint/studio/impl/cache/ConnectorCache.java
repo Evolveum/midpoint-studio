@@ -11,6 +11,7 @@ import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -271,7 +272,7 @@ public class ConnectorCache extends ObjectCache<ConnectorType> {
                 try {
                     String xml = updateNamespaces(filter);
 
-                    PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+                    PrismContext ctx = StudioPrismContextService.getPrismContext(filter.getProject());
                     PrismParser parser = ClientUtils.createParser(ctx, xml);
 
                     SearchFilterType filterType = parser.parseRealValue(SearchFilterType.class);
