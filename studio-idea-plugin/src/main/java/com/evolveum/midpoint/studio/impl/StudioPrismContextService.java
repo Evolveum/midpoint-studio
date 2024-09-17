@@ -27,6 +27,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -64,7 +65,8 @@ public final class StudioPrismContextService implements ProjectManagerListener {
             public PrismContext prismContext() {
                 Project project = PRISM_SERVICE_PROJECT.get();
                 if (project == null) {
-                    LOG.error("No project set for PrismService override supplier (empty thread local)");
+                    LOG.warn(
+                            "No project set for PrismService override supplier (empty thread local), returning default prism context instance", new RuntimeException());
 
                     return DEFAULT_PRISM_CONTEXT;
                 }
@@ -74,8 +76,14 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
             @Override
             public void prismContext(PrismContext prismContext) {
-                throw new UnsupportedOperationException(
-                        "Prism service not mutable. Prism context is manage via ProjectPrismContextService.");
+                LOG.debug("PrismService override supplier: prism context set to " + prismContext);
+                Project project = PRISM_SERVICE_PROJECT.get();
+                if (project == null) {
+                    LOG.warn("No project set for PrismService override supplier (empty thread local), ignoring prism context set");
+                    return;
+                }
+
+                StudioPrismContextService.setPrismContext(project, prismContext);
             }
         });
     }
@@ -106,6 +114,10 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         return project.getService(StudioPrismContextService.class).getPrismContext();
     }
 
+    public static void setPrismContext(@NotNull Project project, @NotNull PrismContext prismContext) {
+        project.getService(StudioPrismContextService.class).prismContext = prismContext;
+    }
+
     public synchronized @NotNull PrismContext getPrismContext() {
         if (prismContext == null) {
             prismContext = createPrismContext();
@@ -117,21 +129,27 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     private synchronized PrismContext createPrismContext() {
         LOG.info("Creating prism context for project: " + project.getName());
 
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
         PrismContext context;
         try {
-            context = createPrismContext(
-                    registry -> registerExtensionSchemas(project, registry),
-                    () -> EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_RESOURCE));
-        } catch (Exception ex) {
-            LOG.error("Couldn't initialize prism context", ex);
+            PRISM_SERVICE_PROJECT.set(this.project);
 
-            context = DEFAULT_PRISM_CONTEXT;
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
+            try {
+                context = createPrismContext(
+                        registry -> registerExtensionSchemas(project, registry),
+                        () -> EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_RESOURCE));
+            } catch (Exception ex) {
+                LOG.error("Couldn't initialize prism context", ex);
+
+                context = DEFAULT_PRISM_CONTEXT;
+            } finally {
+                Thread.currentThread().setContextClassLoader(cl);
+
+                LOG.info("Prism context created for project: " + project.getName());
+            }
         } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-
-            LOG.info("Prism context created for project: " + project.getName());
+            PRISM_SERVICE_PROJECT.remove();
         }
 
         return context;
@@ -226,6 +244,36 @@ public final class StudioPrismContextService implements ProjectManagerListener {
             schemaRegistry.registerDynamicSchemaExtensions(schemas);
         } catch (Exception ex) {
             LOG.debug("Couldn't register schema files", ex);
+        }
+    }
+
+    public static void runWithProject(@NotNull Project project, @NotNull Runnable runnable) {
+        try {
+            PRISM_SERVICE_PROJECT.set(project);
+
+            runnable.run();
+        } finally {
+            PRISM_SERVICE_PROJECT.remove();
+        }
+    }
+
+    public static <T> T runWithProject(@NotNull Project project, @NotNull Supplier<T> supplier) {
+        try {
+            PRISM_SERVICE_PROJECT.set(project);
+
+            return supplier.get();
+        } finally {
+            PRISM_SERVICE_PROJECT.remove();
+        }
+    }
+
+    public static <T> T runWithProject(@NotNull Project project, @NotNull Callable<T> callable) throws Exception {
+        try {
+            PRISM_SERVICE_PROJECT.set(project);
+
+            return callable.call();
+        } finally {
+            PRISM_SERVICE_PROJECT.remove();
         }
     }
 }

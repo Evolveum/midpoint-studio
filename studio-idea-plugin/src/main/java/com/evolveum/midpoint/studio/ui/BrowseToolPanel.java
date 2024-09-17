@@ -18,6 +18,7 @@ import com.evolveum.midpoint.studio.action.transfer.DeleteAction;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryHints;
@@ -284,7 +285,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
 
                     @Override
                     protected void doRun(ProgressIndicator indicator) {
-                        searchPerformed(e, indicator);
+                        StudioPrismContextService.runWithProject(e.getProject(), () -> searchPerformed(e, indicator));
                     }
                 };
             }
@@ -648,7 +649,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
     }
 
     public ObjectQuery buildQuery(MidPointClient client) throws SchemaException, IOException {
-        PrismContext ctx = client.getPrismContext();
+        PrismContext ctx = StudioPrismContextService.getPrismContext(project);
         QueryFactory qf = ctx.queryFactory();
 
         ComboQueryType.Type queryType = this.queryType.getSelected();

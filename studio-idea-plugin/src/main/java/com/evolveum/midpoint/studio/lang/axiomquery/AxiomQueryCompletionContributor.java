@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
@@ -50,13 +51,15 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                                                @NotNull ProcessingContext context,
                                                @NotNull CompletionResultSet resultSet) {
 
-                        AxiomQueryCompletionContributor.this.addCompletions(parameters, context, resultSet);
+                        StudioPrismContextService.runWithProject(
+                                parameters.getPosition().getProject(),
+                                () -> AxiomQueryCompletionContributor.this.addCompletions(parameters, resultSet));
                     }
                 }
         );
     }
 
-    private void addCompletions(CompletionParameters parameters, ProcessingContext context, CompletionResultSet resultSet) {
+    private void addCompletions(CompletionParameters parameters, CompletionResultSet resultSet) {
         PsiElement element = parameters.getPosition();
 
         String content = parameters.getOriginalFile().getText();
