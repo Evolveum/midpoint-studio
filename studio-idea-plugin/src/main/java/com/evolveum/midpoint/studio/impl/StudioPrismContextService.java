@@ -257,7 +257,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         }
     }
 
-    public static <T> T runWithProject(@NotNull Project project, @NotNull Supplier<T> supplier) {
+    public static <T> T runSupplierWithProject(@NotNull Project project, @NotNull Supplier<T> supplier) {
         try {
             PRISM_SERVICE_PROJECT.set(project);
 
@@ -267,7 +267,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         }
     }
 
-    public static <T> T runWithProject(@NotNull Project project, @NotNull Callable<T> callable) throws Exception {
+    public static <T> T runCallableWithProject(@NotNull Project project, @NotNull Callable<T> callable) throws Exception {
         try {
             PRISM_SERVICE_PROJECT.set(project);
 

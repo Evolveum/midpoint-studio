@@ -6,8 +6,8 @@ import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.OrderDirection;
 import com.evolveum.midpoint.prism.query.QueryFactory;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -60,21 +60,25 @@ public class DownloadSelectedTypesTask extends SimpleBackgroundableTask {
 
         Environment environment = getEnvironment();
 
-        PrismContext ctx = ServiceFactory.DEFAULT_PRISM_CONTEXT;
-        QueryFactory qf = ctx.queryFactory();
+        Project project = getProject();
 
-        ObjectPaging paging = qf.createPaging(0, settings.getTypesToDownloadLimit(),
-                ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);
-        ObjectQuery query = qf.createQuery(null, paging);
+        StudioPrismContextService.runWithProject(project, () -> {
+            PrismContext ctx = StudioPrismContextService.getPrismContext(project);
+            QueryFactory qf = ctx.queryFactory();
 
-        List<ObjectTypes> typesToDownload = determineTypesToDownload(settings);
-        for (ObjectTypes type : typesToDownload) {
-            DownloadTask dt = new DownloadTask(getProject(), null, type, query, false, false, true);
-            dt.setEnvironment(environment);
-            dt.setOpenAfterDownload(false);
+            ObjectPaging paging = qf.createPaging(0, settings.getTypesToDownloadLimit(),
+                    ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);
+            ObjectQuery query = qf.createQuery(null, paging);
 
-            ProgressManager.getInstance().run(dt);
-        }
+            List<ObjectTypes> typesToDownload = determineTypesToDownload(settings);
+            for (ObjectTypes type : typesToDownload) {
+                DownloadTask dt = new DownloadTask(project, null, type, query, false, false, true);
+                dt.setEnvironment(environment);
+                dt.setOpenAfterDownload(false);
+
+                ProgressManager.getInstance().run(dt);
+            }
+        });
     }
 
     private List<ObjectTypes> determineTypesToDownload(MidPointConfiguration settings) {

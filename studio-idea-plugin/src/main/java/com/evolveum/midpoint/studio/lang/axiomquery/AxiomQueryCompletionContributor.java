@@ -31,15 +31,12 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 import java.util.*;
 
-
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class AxiomQueryCompletionContributor extends CompletionContributorBase implements AxiomQueryHints {
 
     private static final Logger LOG = Logger.getInstance(AxiomQueryCompletionContributor.class);
-
-    private final AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(PrismContext.get());
 
     public AxiomQueryCompletionContributor() {
         extend(null,
@@ -60,6 +57,8 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
     }
 
     private void addCompletions(CompletionParameters parameters, CompletionResultSet resultSet) {
+        AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(PrismContext.get());
+
         PsiElement element = parameters.getPosition();
 
         String content = parameters.getOriginalFile().getText();
@@ -206,9 +205,11 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
             return;
         }
 
+        AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(PrismContext.get());
+
         List<LookupElement> suggestions = new ArrayList<>();
         // FIXME: Somehow algorithm in Prism takes position of last character before cursor, instead of cursor.
-        cursorPosition = Math.max(0, cursorPosition -1);
+        cursorPosition = Math.max(0, cursorPosition - 1);
         axiomQueryContentAssist.process(def, content, cursorPosition).autocomplete()
                 .forEach(suggestion -> suggestions.add(build(suggestion.name(), suggestion.alias())));
 

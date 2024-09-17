@@ -1,10 +1,7 @@
 package com.evolveum.midpoint.studio.impl.cache;
 
 import com.evolveum.midpoint.studio.client.TestConnectionResult;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -137,7 +134,7 @@ public class EnvironmentCacheManager {
 
         if (testConnection) {
             MidPointClient client = new MidPointClient(project, environment, true, true);
-            TestConnectionResult result = client.testConnection();
+            TestConnectionResult result = StudioPrismContextService.runSupplierWithProject(project, client::testConnection);
             LOG.debug("Test connection: {}", result.success() ? "success" : "failed");
 
             if (!result.success()) {
@@ -151,7 +148,7 @@ public class EnvironmentCacheManager {
         for (CacheKey key : caches.keySet()) {
             Cache cache = caches.get(key);
             try {
-                cache.reload();
+                StudioPrismContextService.runWithProject(project, cache::reload);
 
                 project.getMessageBus().syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentCacheReloaded(key, cache);
             } catch (Exception ex) {

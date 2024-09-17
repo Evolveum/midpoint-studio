@@ -2,13 +2,15 @@ package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.axiom.lang.antlr.AxiomQueryError;
 import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
-import com.evolveum.midpoint.studio.client.ServiceFactory;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
@@ -24,8 +26,6 @@ public class AxiomQueryValidationExternalAnnotator
         extends ExternalAnnotator<PsiFile, List<AxiomQueryError>>
         implements AxiomQueryHints {
 
-    AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(ServiceFactory.DEFAULT_PRISM_CONTEXT);
-
     @Override
     @Nullable
     public PsiFile collectInformation(@NotNull PsiFile file) {
@@ -35,9 +35,14 @@ public class AxiomQueryValidationExternalAnnotator
     @Nullable
     @Override
     public List<AxiomQueryError> doAnnotate(final PsiFile file) {
-        PsiDocumentManager documentManager = PsiDocumentManager.getInstance(file.getProject());
+        Project project = file.getProject();
+
+        PsiDocumentManager documentManager = PsiDocumentManager.getInstance(project);
         Document doc = documentManager.getDocument(file);
         ItemDefinition<?> def = getItemDefinitionFromHint(doc);
+
+        PrismContext ctx = StudioPrismContextService.getPrismContext(project);
+        AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(ctx);
 
         return axiomQueryContentAssist.process(def, file.getText(), 0).validate();
     }
