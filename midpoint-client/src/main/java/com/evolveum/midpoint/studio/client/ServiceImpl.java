@@ -6,7 +6,10 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.QueryConverter;
-import com.evolveum.midpoint.schema.*;
+import com.evolveum.midpoint.schema.GetOperationOptions;
+import com.evolveum.midpoint.schema.RetrieveOption;
+import com.evolveum.midpoint.schema.SearchResultList;
+import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
@@ -16,11 +19,10 @@ import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectListType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.xml.bind.JAXBElement;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
-import jakarta.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.util.*;
 
@@ -499,41 +501,6 @@ public class ServiceImpl implements Service {
 
         if (jakarta.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
             throw new AuthenticationException(jakarta.ws.rs.core.Response.Status.fromStatusCode(response.code()).getReasonPhrase());
-        }
-    }
-
-    @Override
-    public List<String> getSourceProfiles() throws IOException {
-        Request.Builder builder = context.build(ServiceContext.REST_PREFIX_DEBUG, "/profiles", null)
-                .addHeader("Content-Type", "application/json")
-                .get();
-
-        Request req = builder.build();
-
-        OkHttpClient client = context.getClient();
-        try (okhttp3.Response response = client.newCall(req).execute()) {
-
-        }
-
-        return new ArrayList<>();
-    }
-
-    @Override
-    public List<ScriptObject> getSourceProfileScripts(String profile) throws IOException {
-        Request.Builder builder = context.build(ServiceContext.REST_PREFIX_DEBUG, "/profile/" + profile, null)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "application/json")
-                .get();
-
-        Request req = builder.build();
-
-        OkHttpClient client = context.getClient();
-        try (okhttp3.Response response = client.newCall(req).execute()) {
-            String data = response.body().string();
-
-            ObjectMapper om = new ObjectMapper();
-            ScriptObjects sos = om.readValue(data.getBytes(), ScriptObjects.class);
-            return sos.getScripts();
         }
     }
 

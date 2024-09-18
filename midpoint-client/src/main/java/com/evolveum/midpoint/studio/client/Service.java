@@ -65,9 +65,5 @@ public interface Service {
 
     PrismContext prismContext();
 
-    List<String> getSourceProfiles() throws IOException;
-
-    List<ScriptObject> getSourceProfileScripts(String profile) throws IOException;
-
     Map<SchemaFileType, String> getExtensionSchemas() throws IOException, SchemaException, AuthenticationException, ClientException;
 }

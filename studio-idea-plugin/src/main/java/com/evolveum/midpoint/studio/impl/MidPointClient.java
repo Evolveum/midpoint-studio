@@ -466,14 +466,6 @@ public class MidPointClient {
         return null;
     }
 
-    public List<String> getSourceProfiles() throws IOException {
-        return client.getSourceProfiles();
-    }
-
-    public List<ScriptObject> getSourceProfileScripts(String profile) throws IOException {
-        return client.getSourceProfileScripts(profile);
-    }
-
     public Map<SchemaFileType, String> getExtensionSchemas() {
         printToConsole("Getting extension schemas");
 
