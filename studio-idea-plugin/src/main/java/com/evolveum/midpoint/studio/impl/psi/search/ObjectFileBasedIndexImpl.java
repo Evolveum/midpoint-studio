@@ -125,7 +125,7 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
             }
         };
 
-        runnable.run();
+        StudioPrismContextService.runWithProject(inputData.getProject(), runnable);
 
         return map;
     };

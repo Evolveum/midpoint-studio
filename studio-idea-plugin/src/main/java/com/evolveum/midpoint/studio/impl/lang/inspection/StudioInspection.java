@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang.inspection;
 
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
@@ -23,7 +24,9 @@ public abstract class StudioInspection extends LocalInspectionTool implements In
                     return;
                 }
 
-                StudioInspection.this.visitElement(holder, isOnTheFly, element);
+                StudioPrismContextService.runWithProject(
+                        project,
+                        () -> StudioInspection.this.visitElement(holder, isOnTheFly, element));
             }
         };
     }

@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.action.task;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -75,13 +76,13 @@ public abstract class BackgroundableTask extends Task.Backgroundable {
             return;
         }
 
-        new RunnableUtils.PluginClasspathRunnable() {
+        StudioPrismContextService.runWithProject(getProject(), new RunnableUtils.PluginClasspathRunnable() {
 
             @Override
             public void runWithPluginClassLoader() {
                 doRun(indicator);
             }
-        }.run();
+        });
 
         logToConsole("Finished: " + getTitle());
     }

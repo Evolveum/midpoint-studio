@@ -755,7 +755,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         }
 
         if (name) {
-            PrismPropertyDefinition def = ctx.getSchemaRegistry().findPropertyDefinitionByElementName(ObjectType.F_NAME);
             QName matchingRule = PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME;
             List<ObjectFilter> filters = new ArrayList<>();
             for (String s : filtered) {
