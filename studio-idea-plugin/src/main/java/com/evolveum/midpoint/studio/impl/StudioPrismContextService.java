@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismService;
 import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryImpl;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
 import com.evolveum.midpoint.schema.processor.ResourceSchemaRegistry;
 import com.evolveum.midpoint.schema.processor.ValueBasedDefinitionLookupsImpl;
@@ -50,7 +51,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     static {
         LOG.info("Creating default prism context");
         try {
-            DEFAULT_PRISM_CONTEXT = createPrismContext(null, null);
+            DEFAULT_PRISM_CONTEXT = createPrismContext(null);
         } catch (Exception ex) {
             LOG.error("Couldn't initialize empty prism context", ex);
 
@@ -105,7 +106,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
             @Override
             public void environmentCacheManagerReloaded() {
-                prismContext = createPrismContext();
+                prismContext = reloadPrismContext();
             }
         });
     }
@@ -118,31 +119,37 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         project.getService(StudioPrismContextService.class).prismContext = prismContext;
     }
 
-    public synchronized @NotNull PrismContext getPrismContext() {
+    public @NotNull PrismContext getPrismContext() {
         if (prismContext == null) {
-            prismContext = createPrismContext();
+            synchronized (this) {
+                if (prismContext == null) {
+                    reloadPrismContext();
+                }
+            }
         }
-
         return prismContext;
     }
 
-    private synchronized PrismContext createPrismContext() {
+    private synchronized PrismContext reloadPrismContext() {
         LOG.info("Creating prism context for project: " + project.getName());
 
-        PrismContext context;
+        var previousContext = prismContext != null ? prismContext : DEFAULT_PRISM_CONTEXT;
         try {
             PRISM_SERVICE_PROJECT.set(this.project);
 
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
             try {
-                context = createPrismContext(
-                        registry -> registerExtensionSchemas(project, registry),
-                        () -> EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_RESOURCE));
+
+
+                prismContext = createPrismContext(r -> registerExtensionSchemas(project, r));
+                registerResourceSchemas(prismContext, () -> EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_RESOURCE));
+                registerSchemaObjects(project, prismContext.getSchemaRegistry());
+                prismContext.reload();
             } catch (Exception ex) {
                 LOG.error("Couldn't initialize prism context", ex);
 
-                context = DEFAULT_PRISM_CONTEXT;
+                prismContext = previousContext;
             } finally {
                 Thread.currentThread().setContextClassLoader(cl);
 
@@ -152,11 +159,11 @@ public final class StudioPrismContextService implements ProjectManagerListener {
             PRISM_SERVICE_PROJECT.remove();
         }
 
-        return context;
+        return prismContext;
     }
 
     private static PrismContext createPrismContext(
-            Consumer<SchemaRegistryImpl> extensionsConsumer, Supplier<ObjectCache<ResourceType>> resourceCacheSupplier)
+            Consumer<SchemaRegistryImpl> extensionsConsumer)
             throws SchemaException, IOException, SAXException {
 
         Thread.currentThread().setContextClassLoader(ServiceFactory.class.getClassLoader());
@@ -180,7 +187,10 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
         PrismContext context = factory.createPrismContext();
         context.initialize();
+        return context;
+    }
 
+    private static void registerResourceSchemas(PrismContext context, Supplier<ObjectCache<ResourceType>> resourceCacheSupplier) {
         if (resourceCacheSupplier != null) {
             ResourceSchemaRegistry resourceSchemaRegistry = new ResourceSchemaRegistry();
             context.getDefaultSchemaLookup().registerSchemaSpecific(
@@ -197,19 +207,14 @@ public final class StudioPrismContextService implements ProjectManagerListener {
             valueBased.setResourceSchemaRegistry(resourceSchemaRegistry);
             valueBased.init(context);
         }
-
-        return context;
     }
 
     private void registerExtensionSchemas(Project project, SchemaRegistryImpl schemaRegistry) {
         LOG.info("Registering extension schemas for project: " + project.getName());
-
-        registerSchemaObjects(project, schemaRegistry);
-
         registerSchemaFiles(project, schemaRegistry);
     }
 
-    private void registerSchemaObjects(Project project, SchemaRegistryImpl schemaRegistry) {
+    private void registerSchemaObjects(Project project, SchemaRegistry schemaRegistry) {
         ObjectCache<SchemaType> cache = EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_SCHEMA);
 
         Map<String, Element> schemas = cache.list().stream()
