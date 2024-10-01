@@ -8,6 +8,7 @@
 - Added annotation/intention support for protected strings that aren't using secret providers
 - Objects synchronization UI
 - Enumerated values via valueEnumerationRef annotation are added as suggestions in autocompletion/inspections
+- Support for shadow and dynamic extension schemas
 ### Changed
 - Renamed occurrences Axiom query to MidPoint query
 - Improved references handling (inlays, download/show intent, etc.)
