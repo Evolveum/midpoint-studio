@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.util.Key;
@@ -24,7 +25,7 @@ public interface AxiomQueryHints {
         return getItemDefinitionFromHint(editor.getDocument());
     }
 
-    default @Nullable ItemDefinition<?> getItemDefinitionFromHint(@Nullable UserDataHolder holder) {
+    default @Nullable ItemDefinition<?> getItemDefinitionFromHint(@Nullable UserDataHolder holder, PrismContext context) {
         if (holder == null) {
             return null;
         }
@@ -34,7 +35,11 @@ public interface AxiomQueryHints {
             return null;
         }
 
-        return MidPointUtils.DEFAULT_PRISM_CONTEXT.getSchemaRegistry()
+        return context.getSchemaRegistry()
                 .findObjectDefinitionByType(type);
+    }
+
+    default @Nullable ItemDefinition<?> getItemDefinitionFromHint(@Nullable UserDataHolder holder) {
+        return getItemDefinitionFromHint(holder, PrismContext.get());
     }
 }

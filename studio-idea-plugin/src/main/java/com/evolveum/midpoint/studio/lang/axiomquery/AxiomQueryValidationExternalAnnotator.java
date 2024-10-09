@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
+import com.evolveum.midpoint.prism.query.ContentAssist;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
@@ -39,12 +40,11 @@ public class AxiomQueryValidationExternalAnnotator
 
         PsiDocumentManager documentManager = PsiDocumentManager.getInstance(project);
         Document doc = documentManager.getDocument(file);
-        ItemDefinition<?> def = getItemDefinitionFromHint(doc);
 
         PrismContext ctx = StudioPrismContextService.getPrismContext(project);
+        ItemDefinition<?> def = getItemDefinitionFromHint(doc,ctx);
         AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(ctx);
-
-        return axiomQueryContentAssist.process(def, file.getText(), 0).validate();
+        return axiomQueryContentAssist.process(def, file.getText(), 0, ContentAssist.Options.VALIDATE).validate();
     }
 
     @Override
@@ -52,8 +52,8 @@ public class AxiomQueryValidationExternalAnnotator
                       List<AxiomQueryError> errors,
                       @NotNull AnnotationHolder holder) {
         for (AxiomQueryError error : errors) {
-            TextRange range = new TextRange(error.getCharPositionStart(), error.getCharPositionStop());
-            holder.newAnnotation(HighlightSeverity.ERROR, error.getMessage())
+            TextRange range = new TextRange(error.charPositionInLineStart(), error.charPositionInLineStop());
+            holder.newAnnotation(HighlightSeverity.ERROR, error.message())
                     .range(range)
                     .create();
         }

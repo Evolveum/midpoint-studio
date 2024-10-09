@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
+import com.evolveum.midpoint.prism.query.ContentAssist;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
@@ -210,7 +211,7 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
         List<LookupElement> suggestions = new ArrayList<>();
         // FIXME: Somehow algorithm in Prism takes position of last character before cursor, instead of cursor.
         cursorPosition = Math.max(0, cursorPosition - 1);
-        axiomQueryContentAssist.process(def, content, cursorPosition).autocomplete()
+        axiomQueryContentAssist.process(def, content, cursorPosition, ContentAssist.Options.AUTOCOMPLETE).autocomplete()
                 .forEach(suggestion -> suggestions.add(build(suggestion.name(), suggestion.alias())));
 
         resultSet.addAllElements(suggestions);
