@@ -5,7 +5,6 @@ import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
-import com.evolveum.midpoint.prism.query.ContentAssist;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
@@ -44,7 +43,7 @@ public class AxiomQueryValidationExternalAnnotator
         PrismContext ctx = StudioPrismContextService.getPrismContext(project);
         ItemDefinition<?> def = getItemDefinitionFromHint(doc,ctx);
         AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(ctx);
-        return axiomQueryContentAssist.process(def, file.getText(), 0, ContentAssist.Options.VALIDATE).validate();
+        return axiomQueryContentAssist.process(def, file.getText()).validate();
     }
 
     @Override
