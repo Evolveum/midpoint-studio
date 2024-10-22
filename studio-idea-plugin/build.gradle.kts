@@ -131,14 +131,8 @@ dependencies {
     implementation("org.antlr:antlr4-intellij-adaptor:0.1")
 
     implementation(projects.midpointClient)
-    implementation(projects.midscribe) {
-        exclude("org.springframework")
-        exclude("net.sf.jasperreports")
-        exclude("org.apache.cxf")
-        exclude("org.slf4j")
-        exclude("ch.qos.logback")
-        exclude("xerces")
-    }
+
+    implementation(libs.midscribe.core)
 
     implementation(libs.midpoint.model.common) {
         isTransitive = false

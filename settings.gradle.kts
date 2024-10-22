@@ -26,6 +26,7 @@ dependencyResolutionManagement {
             version("jcommander", "1.81")
             version("logback", "1.2.3")
             version("midpoint", "4.9-SNAPSHOT")
+            version("midscribe", "4.10-SNAPSHOT")
             version("okhttp", "4.10.0")
             version("openkeepass", "0.8.1")
             version("spring", "5.3.8")
@@ -64,7 +65,6 @@ dependencyResolutionManagement {
             library("midpoint-model-common", "com.evolveum.midpoint.model", "model-common").versionRef("midpoint")
             library("midpoint-model-impl", "com.evolveum.midpoint.model", "model-impl").versionRef("midpoint")
             library("midpoint-schema", "com.evolveum.midpoint.infra", "schema").versionRef("midpoint")
-//            library("midpoint-client", "com.evolveum.midpoint.client", "midpoint-client-impl-prism").versionRef("midpoint")
             library("midpoint-security-api", "com.evolveum.midpoint.repo", "security-api").versionRef("midpoint")
             library("notifications-api", "com.evolveum.midpoint.model", "notifications-api").versionRef("midpoint")
             library("okhttp-logging", "com.squareup.okhttp3", "logging-interceptor").versionRef("okhttp")
@@ -75,6 +75,7 @@ dependencyResolutionManagement {
             library("slf4j-api", "org.slf4j", "slf4j-api").versionRef("slf4j")
             library("velocity", "org.apache.velocity", "velocity-engine-core").versionRef("velocity")
             library("antlr", "org.antlr", "antlr4").versionRef("antlr")
+            library("midscribe-core", "com.evolveum.midpoint", "midscribe-core").versionRef("midscribe")
         }
         create("testLibs") {
             version("jupiter", "5.8.1")
@@ -93,5 +94,4 @@ dependencyResolutionManagement {
 }
 
 include("midpoint-client")
-include("midscribe")
 include("studio-idea-plugin")
