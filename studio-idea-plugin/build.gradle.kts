@@ -301,6 +301,10 @@ changelog {
 }
 
 tasks {
+    withType<Jar> {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
     runIde {
         jvmArgs("--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED")
         systemProperty("idea.log.debug.categories", "#com.evolveum.midpoint.studio:all")

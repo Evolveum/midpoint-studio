@@ -14,9 +14,9 @@ dependencyResolutionManagement {
         create("libs") {
             version("kotlin", "1.9.25")
             version("changelog", "2.2.1")
-            version("intelliJPlatform", "2.0.1")
+            version("intelliJPlatform", "2.1.0")
             version("kover", "0.8.3")
-            version("qodana", "2024.1.9")
+            version("qodana", "2024.2.3")
 
             version("annotations", "24.1.0")
             version("asciidoctorj-tabbed-code", "0.3")
