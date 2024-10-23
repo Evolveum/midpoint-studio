@@ -22,9 +22,10 @@ public interface MidPointProjectNotifier {
         // intentionally empty
     }
 
-    void selectedTraceNodeChange(OpNode node);
+    default void selectedPerformanceNodeChange(OperationPerformance node) {
+        // intentionally empty
+    }
 
-    void selectedPerformanceNodeChange(OperationPerformance node);
     default <C extends Cache> void environmentCacheReloaded(@NotNull EnvironmentCacheManager.CacheKey<C> key, C cache) {
         // intentionally empty
     }
