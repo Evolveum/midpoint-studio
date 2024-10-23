@@ -8,7 +8,7 @@ import com.evolveum.midpoint.schema.result.OperationResultStatus;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -26,7 +26,6 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
-import com.intellij.tools.ToolEditorDialog;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
@@ -105,7 +104,7 @@ public class OperationResultDialog extends DialogWrapper {
         return new ColoredTableCellRenderer() {
 
             @Override
-            protected void customizeCellRenderer(JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
+            protected void customizeCellRenderer(@NotNull JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
                 append(value != null ? value.toString() : "");
 
                 if (!(value instanceof OperationResultStatus)) {
@@ -220,7 +219,7 @@ public class OperationResultDialog extends DialogWrapper {
     }
 
     private void saveResult(final Project project, ProgressIndicator indicator, final VirtualFileWrapper fileWrapper, OperationResult result) {
-        MidPointService mm = MidPointService.getInstance(project);
+        MidPointService mm = MidPointService.get(project);
 
         EnvironmentService em = EnvironmentService.getInstance(project);
         Environment environment = em.getSelected();

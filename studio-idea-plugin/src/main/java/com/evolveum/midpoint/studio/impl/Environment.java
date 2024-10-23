@@ -54,6 +54,8 @@ public class Environment implements Serializable, Comparable<Environment> {
 
     private String propertiesFilePath;
 
+    private boolean useHttp2;
+
     private List<String> nodeUrls;
 
     public Environment() {
@@ -80,6 +82,7 @@ public class Environment implements Serializable, Comparable<Environment> {
         this.proxyPassword = other.proxyPassword;
         this.propertiesFilePath = other.propertiesFilePath;
         this.nodeUrls = other.nodeUrls;
+        this.useHttp2 = other.useHttp2;
     }
 
     public String getId() {
@@ -219,6 +222,14 @@ public class Environment implements Serializable, Comparable<Environment> {
         this.nodeUrls = nodeUrls;
     }
 
+    public boolean isUseHttp2() {
+        return useHttp2;
+    }
+
+    public void setUseHttp2(boolean useHttp2) {
+        this.useHttp2 = useHttp2;
+    }
+
     @Override
     public int compareTo(@NotNull Environment o) {
         return String.CASE_INSENSITIVE_ORDER.compare(name, o.name);
@@ -232,6 +243,7 @@ public class Environment implements Serializable, Comparable<Environment> {
         Environment that = (Environment) o;
 
         if (ignoreSslErrors != that.ignoreSslErrors) return false;
+        if (useHttp2 != that.useHttp2) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (shortName != null ? !shortName.equals(that.shortName) : that.shortName != null) return false;
@@ -269,6 +281,7 @@ public class Environment implements Serializable, Comparable<Environment> {
         result = 31 * result + (proxyUsername != null ? proxyUsername.hashCode() : 0);
         result = 31 * result + (proxyPassword != null ? proxyPassword.hashCode() : 0);
         result = 31 * result + (propertiesFilePath != null ? propertiesFilePath.hashCode() : 0);
+        result = 31 * result + (useHttp2 ? 1 : 0);
         result = 31 * result + (nodeUrls != null ? nodeUrls.hashCode() : 0);
         return result;
     }
@@ -281,5 +294,9 @@ public class Environment implements Serializable, Comparable<Environment> {
         sb.append(", url='").append(url).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    public Environment copy() {
+        return new Environment(this);
     }
 }

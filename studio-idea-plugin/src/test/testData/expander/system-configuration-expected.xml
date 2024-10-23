@@ -1,0 +1,15 @@
+<systemConfiguration xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+                     oid="b71f4d74-cf3e-4b22-88b7-1a6d1b4decef">
+
+    <name>System configuration</name>
+
+    <notificationConfiguration>
+        <mail>
+            <server>
+                <host>127.0.0.1</host>
+            </server>
+        </mail>
+    </notificationConfiguration>
+
+
+</systemConfiguration>

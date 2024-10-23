@@ -3,11 +3,13 @@ package com.evolveum.midpoint.studio.ui.trace.lens;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
+import static com.evolveum.midpoint.studio.ui.trace.TraceUtils.getObjectFromReference;
 
 public class LensElementContextNode extends PrismValueNode {
 
@@ -20,7 +22,10 @@ public class LensElementContextNode extends PrismValueNode {
         Validate.notNull(lensElementContext);
 
         this.lensElementContext = lensElementContext;
-        this.objects = Arrays.asList(lensElementContext.getObjectOld(), lensElementContext.getObjectCurrent(), lensElementContext.getObjectNew());
+        this.objects = Arrays.asList(
+                getObjectFromReference(lensElementContext.getObjectOldRef()),
+                getObjectFromReference(lensElementContext.getObjectCurrentRef()),
+                getObjectFromReference(lensElementContext.getObjectNewRef()));
     }
 
     private static String computeLabel(LensElementContextType lensElementContext) {
@@ -38,7 +43,10 @@ public class LensElementContextNode extends PrismValueNode {
 
     private static List<PrismContainerValue<?>> computeValues(LensElementContextType lensElementContext) {
         List<PrismContainerValue<?>> values = Arrays.asList(
-                toPcv(lensElementContext.getObjectOld()), toPcv(lensElementContext.getObjectCurrent()), toPcv(lensElementContext.getObjectNew()));
+                toPcv(getObjectFromReference(lensElementContext.getObjectOldRef())),
+                toPcv(getObjectFromReference(lensElementContext.getObjectCurrentRef())),
+                toPcv(getObjectFromReference(lensElementContext.getObjectNewRef())));
+
         return values;
     }
 

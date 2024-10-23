@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.action.browse;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -22,9 +23,11 @@ public class ComboQueryType extends ComboBoxAction implements DumbAware {
 
         OID("Oid"),
 
-        QUERY_XML("Query XML");
+        AXIOM("MidPoint Query"),
 
-        private String label;
+        QUERY_XML("XML Query");
+
+        private final String label;
 
         Type(String label) {
             this.label = label;
@@ -38,7 +41,7 @@ public class ComboQueryType extends ComboBoxAction implements DumbAware {
     private Type selected = Type.NAME_OR_OID;
 
     @Override
-    public void update(AnActionEvent e) {
+    public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
         String text = selected.getLabel();
@@ -70,6 +73,11 @@ public class ComboQueryType extends ComboBoxAction implements DumbAware {
         return group;
     }
 
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
+    }
+
     private static class TypeAction extends AnAction implements DumbAware {
 
         private Type type;
@@ -88,9 +96,13 @@ public class ComboQueryType extends ComboBoxAction implements DumbAware {
         }
 
         @Override
-        public void actionPerformed(AnActionEvent e) {
+        public void actionPerformed(@NotNull AnActionEvent e) {
             combo.setSelected(type);
-            combo.update(e);
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
         }
     }
 }

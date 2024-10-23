@@ -4,22 +4,21 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.PrismSerializer;
+import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
-import com.evolveum.midpoint.schema.GetOperationOptions;
-import com.evolveum.midpoint.schema.RetrieveOption;
-import com.evolveum.midpoint.schema.SearchResultList;
-import com.evolveum.midpoint.schema.SelectorOptions;
+import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.*;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.LookupTableType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.OrgType;
+import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -30,10 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -44,15 +40,15 @@ public class MidPointClient {
 
     private static final String NOTIFICATION_KEY = "MidPoint Rest Client";
 
-    private Project project;
+    private final Project project;
 
-    private Environment environment;
+    private final Environment environment;
 
     private boolean suppressNotifications;
 
     private boolean suppressConsole;
 
-    private Optional<Console> console;
+    private final Optional<Console> console;
 
     private Service client;
 
@@ -60,7 +56,7 @@ public class MidPointClient {
         this(project, environment, null);
     }
 
-    public MidPointClient(Project project, @NotNull Environment environment, MidPointSettings settings) {
+    public MidPointClient(Project project, @NotNull Environment environment, MidPointConfiguration settings) {
         this(project, environment, settings, false, false);
     }
 
@@ -68,7 +64,7 @@ public class MidPointClient {
         this(project, environment, null, suppressNotifications, suppressConsole);
     }
 
-    public MidPointClient(Project project, @NotNull Environment environment, MidPointSettings settings, boolean suppressNotifications, boolean suppressConsole) {
+    public MidPointClient(Project project, @NotNull Environment environment, MidPointConfiguration settings, boolean suppressNotifications, boolean suppressConsole) {
         this.project = project;
         this.environment = environment;
         this.suppressNotifications = suppressNotifications;
@@ -76,10 +72,10 @@ public class MidPointClient {
 
         if (settings == null) {
             if (project != null) {
-                MidPointService ms = MidPointService.getInstance(project);
+                MidPointService ms = MidPointService.get(project);
                 settings = ms.getSettings();
             } else {
-                settings = MidPointSettings.createDefaultSettings();
+                settings = MidPointConfiguration.createDefaultSettings();
             }
         }
 
@@ -92,7 +88,7 @@ public class MidPointClient {
         init(settings);
     }
 
-    private void init(MidPointSettings settings) {
+    private void init(MidPointConfiguration settings) {
         LOG.debug("Initialization of rest client for environment " + environment.getName());
         long time = System.currentTimeMillis();
 
@@ -108,6 +104,7 @@ public class MidPointClient {
                     .proxyUsername(environment.getProxyUsername())
                     .proxyPassword(environment.getProxyPassword())
                     .ignoreSSLErrors(environment.isIgnoreSslErrors())
+                    .useHttp2(environment.isUseHttp2())
                     .responseTimeout(settings.getRestResponseTimeout());
 
             factory.messageListener((message) -> {
@@ -167,8 +164,8 @@ public class MidPointClient {
         return options;
     }
 
-    public <O extends ObjectType> SearchResult search(Class<O> type, ObjectQuery query, boolean raw) {
-        Collection<SelectorOptions<GetOperationOptions>> options = buildSearchSelectorOptions(raw);
+    public <O extends ObjectType> SearchResult search(
+            Class<O> type, ObjectQuery query, Collection<SelectorOptions<GetOperationOptions>> options) {
 
         printToConsole("Starting objects search for " + type.getSimpleName() + ", " + options);
 
@@ -182,6 +179,12 @@ public class MidPointClient {
         }
 
         return result;
+    }
+
+    public <O extends ObjectType> SearchResult search(Class<O> type, ObjectQuery query, boolean raw) {
+        Collection<SelectorOptions<GetOperationOptions>> options = buildSearchSelectorOptions(raw);
+
+        return search(type, query, options);
     }
 
     /**
@@ -204,7 +207,7 @@ public class MidPointClient {
 
         SearchResultList<O> result = null;
         try {
-            result = (SearchResultList) client.list(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
+            result = client.list(ObjectTypes.getObjectType(type).getClassDefinition(), query, options);
 
             printToConsole("Search done");
         } catch (Exception ex) {
@@ -223,13 +226,22 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts) {
-        printToConsole("Getting object " + type.getSimpleName() + " oid= " + oid + ", " + opts);
+        return get(type, oid, opts, false);
+    }
+
+    public <O extends ObjectType> MidPointObject get(Class<O> type, String oid, SearchOptions opts, boolean allowNotFound) {
+        printToConsole("Getting object " + type.getSimpleName() + ", oid=" + oid + ", " + opts);
 
         MidPointObject result = null;
         try {
             Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
             if (opts.raw()) {
                 options.add(SelectorOptions.create(GetOperationOptions.createRaw()));
+            }
+
+            if (UserType.class.equals(type)) {
+                options.add(SelectorOptions.create(UniformItemPath.create(UserType.F_JPEG_PHOTO),
+                        GetOperationOptions.createRetrieve(RetrieveOption.INCLUDE)));
             }
 
             if (LookupTableType.class.equals(type)) {
@@ -241,6 +253,10 @@ public class MidPointClient {
 
             printToConsole("Get done");
         } catch (Exception ex) {
+            if (allowNotFound && ex instanceof ObjectNotFoundException) {
+                return null;
+            }
+
             handleGenericException("Error occurred while searching objects", ex);
         }
 
@@ -267,15 +283,70 @@ public class MidPointClient {
         return client.execute(object);
     }
 
+    private Expander createExpander() {
+        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
+
+        return new Expander(environment, cm, project);
+    }
+
+    public UploadResponse modify(MidPointObject obj, List<String> options, boolean expand, VirtualFile file)
+            throws ObjectNotFoundException, IOException, AuthenticationException, SchemaException {
+
+        if (expand) {
+            obj = expand(obj, file);
+        }
+
+        UploadResponse response = new UploadResponse();
+
+        if (obj.isDelta()) {
+            client.modify(obj, options);
+        } else {
+            // todo just nasty options handling. This definitely calls for cleanup (whole midpoint client api attempt mess)
+            SearchOptions opts = new SearchOptions();
+            opts.raw(options.contains("raw"));
+
+            MidPointObject existingObject = get(obj.getType().getClassDefinition(), obj.getOid(), opts, true);
+            if (existingObject == null) {
+                String oid = client.add(obj, options);
+                response.setOid(oid);
+
+                return response;
+            }
+            PrismObject existing = parseObject(existingObject.getContent());
+            PrismObject current = parseObject(obj.getContent());
+
+            ObjectDelta<?> delta = existing.diff(current);
+            ObjectModificationType deltaType = DeltaConvertor.toObjectModificationType(delta);
+            String deltaXml = serialize(deltaType);
+
+            MidPointObject deltaObj = MidPointObject.copy(obj);
+            deltaObj.setDelta(true);
+            deltaObj.setContent(deltaXml);
+
+            client.modify(deltaObj, options);
+        }
+
+        return response;
+    }
+
+    private MidPointObject expand(MidPointObject obj, VirtualFile file) {
+        Expander expander = createExpander();
+
+        String expanded = expander.expand(obj.getContent(), file);
+
+        MidPointObject expandedObject = ClientUtils.parseText(expanded).get(0);
+
+        obj.setContent(expanded);
+        obj.setOid(expandedObject.getOid());
+        obj.setName(expandedObject.getName());
+        obj.setDisplayName(expandedObject.getDisplayName());
+
+        return obj;
+    }
+
     public UploadResponse uploadRaw(MidPointObject obj, List<String> options, boolean expand, VirtualFile file) throws IOException, AuthenticationException {
         if (expand) {
-            EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-            Expander expander = new Expander(environment, cm, project);
-
-            String expanded = expander.expand(obj.getContent(), file);
-
-            obj = MidPointObject.copy(obj);
-            obj.setContent(expanded);
+            obj = expand(obj, file);
         }
 
         UploadResponse response = new UploadResponse();
@@ -318,18 +389,24 @@ public class MidPointClient {
     }
 
     public PrismObject<?> parseObject(String xml) throws IOException, SchemaException {
-        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm, project);
+        return parseObject(xml, null);
+    }
 
-        String expanded = expander.expand(xml);
+    public PrismObject<?> parseObject(String xml, ExpanderOptions opts) throws IOException, SchemaException {
+        return parseObject(xml, null, opts);
+    }
+
+    public PrismObject<?> parseObject(String xml, VirtualFile file, ExpanderOptions opts) throws IOException, SchemaException {
+        Expander expander = createExpander();
+
+        String expanded = expander.expand(xml, file, opts);
 
         PrismParser parser = createParser(new ByteArrayInputStream(expanded.getBytes()));
         return parser.parse();
     }
 
     public List<PrismObject<?>> parseObjects(String xml) throws IOException, SchemaException {
-        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm, project);
+        Expander expander = createExpander();
 
         String expanded = expander.expand(xml);
 
@@ -338,8 +415,7 @@ public class MidPointClient {
     }
 
     public List<PrismObject<?>> parseObjects(VirtualFile file) throws IOException, SchemaException {
-        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm, project);
+        Expander expander = createExpander();
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
@@ -351,12 +427,11 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> PrismObject<O> parseObject(VirtualFile file) throws IOException, SchemaException {
-        EncryptionService cm = project != null ? EncryptionService.getInstance(project) : null;
-        Expander expander = new Expander(environment, cm, project);
+        Expander expander = createExpander();
 
         try (InputStream is = file.getInputStream()) {
             Charset charset = file.getCharset();
-            InputStream expanded = expander.expand(is, charset != null ? charset : StandardCharsets.UTF_8);
+            InputStream expanded = expander.expand(is, charset);
 
             PrismParser parser = createParser(expanded);
             return parser.parse();
@@ -391,11 +466,26 @@ public class MidPointClient {
         return null;
     }
 
-    public List<String> getSourceProfiles() throws IOException {
-        return client.getSourceProfiles();
+    public Map<SchemaFileType, String> getExtensionSchemas() {
+        printToConsole("Getting extension schemas");
+
+        Map<SchemaFileType, String> result = Collections.emptyMap();
+        try {
+            result = client.getExtensionSchemas();
+
+            printToConsole("Extension schemas fetched");
+        } catch (Exception ex) {
+            handleGenericException("Error occurred while trying to fetch extension schemas", ex);
+        }
+
+        return result;
     }
 
-    public List<ScriptObject> getSourceProfileScripts(String profile) throws IOException {
-        return client.getSourceProfileScripts(profile);
+    public void setSuppressConsole(boolean suppressConsole) {
+        this.suppressConsole = suppressConsole;
+    }
+
+    public void setSuppressNotifications(boolean suppressNotifications) {
+        this.suppressNotifications = suppressNotifications;
     }
 }

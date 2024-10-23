@@ -1,20 +1,11 @@
 package com.evolveum.midpoint.studio;
 
 import com.evolveum.midpoint.studio.action.TaskUpgradeAction;
-import com.evolveum.midpoint.studio.impl.MidPointFacetType;
-import com.intellij.facet.FacetManager;
-import com.intellij.facet.FacetType;
-import com.intellij.facet.FacetTypeRegistry;
-import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.impl.ModuleManagerEx;
-import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.apache.xalan.xslt.EnvironmentCheck;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
@@ -22,39 +13,32 @@ import org.xmlunit.diff.Diff;
 import java.io.File;
 import java.io.PrintWriter;
 
-/**
- * Created by Viliam Repan (lazyman).
- */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
-
-    public static final String TEST_DATA_PATH = "./src/test/testData";
+public class TaskUpgradeActionTest extends StudioActionTest {
 
     private static final Logger LOG = Logger.getInstance(TaskUpgradeActionTest.class);
 
     @BeforeAll
     protected void beforeAll() throws Exception {
-        super.setUp();
-
-        WriteAction.runAndWait(() -> {
-            ModuleManagerEx moduleManager = ModuleManagerEx.getInstanceEx(getProject());
-            Module module = moduleManager.getModules()[0];
-            FacetType facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-            FacetManager.getInstance(module).addFacet(facetType, facetType.getDefaultFacetName(), null);
-        });
+        super.beforeAll();
 
         EnvironmentCheck check = new EnvironmentCheck();
         check.checkEnvironment(new PrintWriter(System.out));
     }
 
-    @AfterAll
-    protected void afterAll() throws Exception {
-        super.tearDown();
+    @Override
+    protected String getTestFolder() {
+        return "task-upgrade";
     }
 
-    @Override
-    protected String getTestDataPath() {
-        return TEST_DATA_PATH + "/task-upgrade";
+    @Test
+    public void testReport() {
+        testUpgrade("report-1-input.xml", "report-1-output.xml");
+    }
+
+    @Disabled
+    @Test
+    public void testTrigger() {
+        testUpgrade("trigger-1-input.xml", "trigger-2-output.xml");
     }
 
     @Test
@@ -109,12 +93,12 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
 
     @Test
     public void testBulkIterative1Multinode() {
-        testUpgrade("bulk-iterative-1-input.xml", "bulk-iterative-1-output.xml");
+        testUpgrade("action-iterative-1-input.xml", "action-iterative-1-output.xml");
     }
 
     @Test
     public void testBulkIterative2() {
-        testUpgrade("bulk-iterative-2-input.xml", "bulk-iterative-2-output.xml");
+        testUpgrade("action-iterative-2-input.xml", "action-iterative-2-output.xml");
     }
 
     @Test
@@ -165,6 +149,16 @@ public class TaskUpgradeActionTest extends LightJavaCodeInsightFixtureTestCase {
     @Test
     public void testUnknownAction() {
         testUpgrade("unknown-1-input.xml", "unknown-1-input.xml");
+    }
+
+    @Test
+    public void testMid7658() {
+        testUpgrade("mid-7658-1-input.xml", "mid-7658-1-output.xml");
+    }
+
+    @Test
+    public void testMid7658Invalid() {
+        testUpgrade("mid-7658-1-invalid-input.xml", "mid-7658-1-invalid-input.xml");
     }
 
     private void testUpgrade(String input, String validation) {

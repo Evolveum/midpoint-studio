@@ -8,19 +8,22 @@
     <depends>org.intellij.groovy</depends>
     <depends>org.jetbrains.idea.maven</depends>
 
+    <resource-bundle>messages.MidPointStudio</resource-bundle>
+
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService
-                serviceImplementation="com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.ConsoleService"/>
+
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.XmlSchemaCacheService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ConnectorXmlSchemaCacheService"/>
-
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PropertiesInlayCacheService"/>
-
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.ItemPathCacheService"/>
 
-        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.MidPointService"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.PanelTypeCacheService"/>
+
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.configuration.CleanupService"/>
+
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.configuration.MidPointService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.EncryptionServiceImpl"
                         serviceInterface="com.evolveum.midpoint.studio.impl.EncryptionService"/>
@@ -30,27 +33,57 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.trace.TraceService"/>
 
-        <projectConfigurable parentId="language"
-                             instance="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
-                             id="com.evolveum.midpoint.studio.ui.MidPointProjectStructureConfigurable"
-                             displayName="MidPoint"
-                             nonDefaultProject="true"/>
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager"/>
+
+        <projectConfigurable
+                parentId="language"
+                instance="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                key="MidPointConfigurable.title"
+                bundle="messages.MidPointStudio"
+                nonDefaultProject="true"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="80"
+                instance="com.evolveum.midpoint.studio.ui.configuration.CredentialsConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.CredentialsConfigurable"
+                key="CredentialsConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="60"
+                instance="com.evolveum.midpoint.studio.ui.configuration.EnvironmentsConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.EnvironmentsConfigurable"
+                key="EnvironmentsConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
+                groupWeight="40"
+                instance="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
+                key="CleanupConfigurable.title"
+                bundle="messages.MidPointStudio"/>
+
+        <projectConfigurable
+                parentId="com.evolveum.midpoint.studio.ui.configuration.CleanupConfigurable"
+                groupWeight="50"
+                instance="com.evolveum.midpoint.studio.ui.configuration.MissingRefObjectsConfigurable"
+                id="com.evolveum.midpoint.studio.ui.configuration.MissingRefObjectsConfigurable"
+                key="MissingReferencesConfigurable.title"
+                bundle="messages.MidPointStudio"/>
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
+        <framework.detector implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFacetFrameworkDetector"/>
+
         <fileIconProvider implementation="com.evolveum.midpoint.studio.impl.ide.MidPointIconProvider"/>
 
-        <!--        <errorHandler implementation="com.evolveum.midpoint.studio.impl.ide.error.JiraErrorReporter"/>-->
-
-        <!--        <fileType.fileViewProviderFactory filetype="MidPoint" implementationClass="com.evolveum.midpoint.studio.impl.psi.MidPointFileViewProviderFactory"/>-->
-
-        <!-- TODO finish implementation -->
-        <!--<xmlStructureViewBuilderProvider
-                implementation="com.evolveum.midpoint.studio.ui.structureView.MidPointXmlStructureViewBuilderProvider"/>-->
-
-        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.MidPointMultiHostInjector"/>
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.GroovyMultiHostInjector"/>
 
         <fileTemplateGroup implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFileTemplateGroupFactory"/>
 
@@ -59,7 +92,7 @@
         <facet.toolWindow id="MidPoint"
                           facetIdList="MidPointFacet"
                           anchor="bottom"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.MidPointToolWindowFactory"/>
 
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.trace.TraceViewEditorProvider"/>
@@ -70,7 +103,7 @@
                           facetIdList="MidPointFacet"
                           anchor="bottom"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.TraceToolWindowFactory"/>
 
         <facet.toolWindow id="MidPointPerformance"
@@ -84,22 +117,22 @@
                           facetIdList="MidPointFacet"
                           anchor="bottom"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.log.LogWindowFactory"/>
 
         <facet.toolWindow id="TraceLensContext"
                           facetIdList="MidPointFacet"
                           anchor="left"
                           order="last"
-                          icon="/icons/midpoint.png"
+                          icon="/icons/toolwindow_midpoint.svg"
                           factoryClass="com.evolveum.midpoint.studio.ui.trace.lensContext.TraceLensContextToolWindowFactory"/>
 
-        <facet.toolWindow id="TraceOptions"
+        <facet.toolWindow id="Synchronization"
                           facetIdList="MidPointFacet"
-                          anchor="right"
+                          anchor="left"
                           order="last"
-                          icon="/icons/midpoint.png"
-                          factoryClass="com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsWindowFactory"/>
+                          icon="AllIcons.Actions.Refresh"
+                          factoryClass="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationToolWindowFactory"/>
 
         <facet.toolWindow id="PerformanceOptions"
                           facetIdList="MidPointFacet"
@@ -107,13 +140,6 @@
                           order="last"
                           icon="/icons/midpoint.png"
                           factoryClass="com.evolveum.midpoint.studio.ui.performance.options.OptionsWindowFactory"/>
-
-        <facet.toolWindow id="TraceGraph"
-                          facetIdList="MidPointFacet"
-                          anchor="right"
-                          order="last"
-                          icon="/icons/midpoint.png"
-                          factoryClass="com.evolveum.midpoint.studio.ui.trace.graph.TraceGraphWindowFactory"/>
 
         <fileType
                 name="MPTrace"
@@ -129,6 +155,75 @@
                 language=""
                 implementationClass="com.evolveum.midpoint.studio.impl.performance.MPPerformanceFileType"/>
 
+        <!-- Studio properties language support -->
+
+        <fileType
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesFileType"
+                name="Studio Properties File" fieldName="INSTANCE" extensions="sproperties"/>
+        <lang.parserDefinition
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesParserDefinition"/>
+        <lang.ast.factory
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesASTFactory"/>
+        <multiHostInjector
+                implementation="com.evolveum.midpoint.studio.lang.properties.SPropertiesMultiHostInjector"/>
+        <lang.syntaxHighlighterFactory
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesSyntaxHighlighterFactory"/>
+        <lang.braceMatcher
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesBraceMatcher"/>
+        <lang.elementManipulator
+                forClass="com.evolveum.midpoint.studio.lang.properties.psi.SPropertiesPath"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesPathManipulator"/>
+        <completion.contributor
+                language="Studio Properties"
+                implementationClass="com.evolveum.midpoint.studio.lang.properties.SPropertiesCompletionContributor"/>
+
+
+        <!-- Studio properties language support end -->
+
+        <!-- Axiom Query language support -->
+
+        <fileType language="Axiom Query"
+                  implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryFileType"
+                  name="Axiom Query File" fieldName="INSTANCE" extensions="axq"/>
+        <lang.syntaxHighlighterFactory language="Axiom Query"
+                                       implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQuerySyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="Axiom Query"
+                               implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryParserDefinition"/>
+        <lang.ast.factory language="Axiom Query"
+                          implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryASTFactory"/>
+        <lang.braceMatcher language="Axiom Query"
+                           implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryBraceMatcher"/>
+        <lang.commenter language="Axiom Query"
+                        implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCommenter"/>
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.impl.lang.AxiomQueryMultiHostInjector"/>
+        <completion.contributor language="Axiom Query"
+                                implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryCompletionContributor"/>
+        <externalAnnotator language="Axiom Query"
+                           implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryValidationExternalAnnotator"/>
+        <!--<lang.foldingBuilder language="Axiom Query"
+                             implementationClass="com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryFoldingBuilder" />-->
+
+        <!-- Axiom Query language support end -->
+
+        <!-- Axiom language support -->
+
+        <!--<fileType language="Axiom"
+                  implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomFileType"
+                  name="Axiom File" fieldName="INSTANCE" extensions="axiom"/>
+        <lang.syntaxHighlighterFactory language="Axiom"
+                                       implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomSyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="Axiom"
+                               implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomParserDefinition"/>
+        <lang.ast.factory language="Axiom"
+                          implementationClass="com.evolveum.midpoint.studio.lang.axiom.AxiomASTFactory"/>-->
+
+        <!-- Axiom language support end -->
+
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
@@ -140,35 +235,115 @@
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>
         <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.DeprecatedElementAnnotator"/>
-        <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.TaskHandlerAnnotatorCompletionProvider"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotator"/>
+        <annotator language="XML"
+                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>
 
         <completion.contributor language="XML"
                                 implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
 
+        <completion.contributor language="XML"
+                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"
+                                order="before xmlLocation"/>
+
+        <completion.contributor language="XML"
+                                implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>
+
+        <completion.contributor language="XML"
+                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.EnumerationRefCompletionContributor"/>
+
+        <xml.tagNameProvider
+                implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
+
+        <xml.elementDescriptorProvider
+                implementation="com.evolveum.midpoint.studio.impl.lang.MetadataElementDescriptorProvider"/>
+
         <codeInsight.parameterNameHints language="XML"
                                         implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointInlayParameterHintsProvider"/>
 
-        <!--        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.profiler.ProfilingEditorProvider"/>-->
-
         <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.delta.ObjectDeltaEditorProvider"/>
+
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.diff.DiffEditorProvider"/>
+
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.diff.SimpleDiffEditorProvider"/>
+
+        <fileEditorProvider implementation="com.evolveum.midpoint.studio.ui.delta.ThreeWayMergeEditorProvider"/>
 
         <diff.lang.DiffIgnoredRangeProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.MidPointDiffIgnoreRangeProvider"/>
 
-        <!--<stubElementTypeHolder class="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointStubElementTypes" externalIdPrefix="xml."/>
-        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectNameIndex"/>
-        <stubIndex implementation="com.evolveum.midpoint.studio.impl.psi.stubs.index.MidPointObjectOidIndex"/>-->
-
         <fileBasedIndex implementation="com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl"/>
+
+        <customizableActionGroupProvider implementation="com.evolveum.midpoint.studio.action.ExpUiActionGroupProvider"/>
+
+        <localInspection language="XML"
+                         enabledByDefault="true"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="MissingNaturalKeyInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.MissingNaturalKeyInspection"/>
+        <localInspection language="XML"
+                         enabledByDefault="true"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="DeprecatedElementInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.DeprecatedElementInspection"/>
+        <localInspection language="XML"
+                         enabledByDefault="true"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="EnumerationRefInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.EnumerationRefInspection"/>
+        <localInspection language="XML"
+                         enabledByDefault="true"
+                         groupBundle="messages.MidPointStudio"
+                         groupKey="MidpointInspectionGroup.title"
+                         key="MissingMappingNameInspection.title"
+                         implementationClass="com.evolveum.midpoint.studio.impl.lang.inspection.MissingMappingNameInspection"/>
+
+        <intentionAction>
+            <className>com.evolveum.midpoint.studio.impl.lang.intention.DownloadObjectIntention</className>
+            <language>XML</language>
+            <bundleName>messages.MidPointStudio</bundleName>
+            <categoryKey>MidpointIntentionActionGroup.title</categoryKey>
+            <descriptionDirectoryName>DownloadObjectIntention</descriptionDirectoryName>
+            <skipBeforeAfter>true</skipBeforeAfter>
+        </intentionAction>
+        <intentionAction>
+            <className>com.evolveum.midpoint.studio.impl.lang.intention.ShowObjectIntention</className>
+            <language>XML</language>
+            <bundleName>messages.MidPointStudio</bundleName>
+            <categoryKey>MidpointIntentionActionGroup.title</categoryKey>
+            <descriptionDirectoryName>ShowObjectIntention</descriptionDirectoryName>
+            <skipBeforeAfter>true</skipBeforeAfter>
+        </intentionAction>
+        <intentionAction>
+            <className>com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention</className>
+            <language>XML</language>
+            <bundleName>messages.MidPointStudio</bundleName>
+            <categoryKey>MidpointIntentionActionGroup.title</categoryKey>
+            <descriptionDirectoryName>ReplaceShadowRefAnnotatorIntention</descriptionDirectoryName>
+            <skipBeforeAfter>false</skipBeforeAfter>
+        </intentionAction>
+        <intentionAction>
+            <className>com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention</className>
+            <language>XML</language>
+            <bundleName>messages.MidPointStudio</bundleName>
+            <categoryKey>MidpointIntentionActionGroup.title</categoryKey>
+            <descriptionDirectoryName>ProtectedStringAnnotatorIntention</descriptionDirectoryName>
+            <skipBeforeAfter>false</skipBeforeAfter>
+        </intentionAction>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
         <membersContributor implementation="com.evolveum.midpoint.studio.impl.lang.ScriptNonCodeMembersContributor"/>
     </extensions>
 
-    <actions>
+    <actions resource-bundle="messages.MidPointStudio">
 
         <!-- MISCELLANEOUS -->
 
@@ -180,7 +355,7 @@
 
         <action id="MidPoint.Action.GenerateRandomOid"
                 class="com.evolveum.midpoint.studio.action.GenerateRandomOid"
-                icon="/icons/random_oid.png"
+                icon="com.evolveum.midpoint.studio.MidPointIcons.RandomOid"
                 text="Generate Random OID"
                 description="Generate Random OID"/>
 
@@ -189,16 +364,27 @@
                 text="Recompute"
                 icon="AllIcons.Actions.Compile"/>
 
-        <action id="MidPoint.Action.DownloadSelectedTypes" class="com.evolveum.midpoint.studio.action.transfer.DownloadSelectedTypes"
+        <action id="MidPoint.Action.DownloadSelectedTypes"
+                class="com.evolveum.midpoint.studio.action.transfer.DownloadSelectedTypes"
                 text="Download Selected Types"
                 icon="AllIcons.Actions.Download"/>
 
-        <action id="MidPoint.Action.UploadExecute" class="com.evolveum.midpoint.studio.action.transfer.UploadExecute"
-                text="Upload/Execute"
+        <action id="MidPoint.Action.UploadFullProcessing"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadFullProcessingAction"
+                text="Upload (Full Processing)"
+                icon="AllIcons.Actions.Upload"/>
+
+        <action id="MidPoint.Action.UploadExecute"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecute"/>
 
+        <action id="MidPoint.ExpUI.Action.UploadExecute"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteAction"
+                text="Upload/Execute"
+                icon="com.evolveum.midpoint.studio.MidPointIcons.ExpUI.UploadExecute"/>
+
         <action id="MidPoint.Action.UploadExecuteStopOnError"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnError"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadExecuteStopOnErrorAction"
                 text="Upload/Execute (stop on error)"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadExecuteStop"/>
 
@@ -207,22 +393,27 @@
                 text="Refresh From Server"
                 icon="AllIcons.Actions.BuildLoadChanges"/>
 
-        <action id="MidPoint.Action.DiffRemote"
-                class="com.evolveum.midpoint.studio.action.transfer.DiffRemoteAction"
-                text="Diff Remote"
+        <action id="MidPoint.Action.SynchronizeObjects"
+                class="com.evolveum.midpoint.studio.action.transfer.SynchronizeObjectsAction"
+                text="Synchronize Objects"
                 icon="AllIcons.Actions.Diff"/>
 
         <!-- SERVER SIDE -->
 
         <action id="MidPoint.Action.UploadRecompute"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadRecompute"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadRecomputeAction"
                 text="Upload/Recompute"
                 icon="AllIcons.Actions.Upload"/>
 
         <action id="MidPoint.Action.UploadTestResource"
-                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResourceAction"
                 text="Upload/Test Resource"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.UploadTest"/>
+
+        <action id="MidPoint.ExpUI.Action.UploadTestResource"
+                class="com.evolveum.midpoint.studio.action.transfer.UploadTestResourceAction"
+                text="Upload/Test Resource"
+                icon="com.evolveum.midpoint.studio.MidPointIcons.ExpUI.UploadTest"/>
 
         <action id="MidPoint.Action.UploadTestValidateResource"
                 class="com.evolveum.midpoint.studio.action.transfer.UploadTestValidateResourceAction"
@@ -236,12 +427,12 @@
 
         <action id="MidPoint.Action.DeleteRaw"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteRawAction"
-                text="Delete (raw)"
+                text="Delete from Server (raw)"
                 icon="com.evolveum.midpoint.studio.MidPointIcons.RemoveRaw"/>
 
         <action id="MidPoint.Action.Delete"
                 class="com.evolveum.midpoint.studio.action.transfer.DeleteAction"
-                text="Delete (non-raw)"
+                text="Delete from Server (non-raw)"
                 icon="AllIcons.Vcs.Remove"/>
 
         <!-- OTHERS -->
@@ -259,7 +450,7 @@
         <action id="MidPoint.Action.CleanupFile"
                 class="com.evolveum.midpoint.studio.action.CleanupFileAction"
                 text="Cleanup File"
-                icon="AllIcons.Actions.ShowHiddens"/>
+                icon="AllIcons.Actions.ToggleVisibility"/>
 
         <action id="MidPoint.Action.VerifyAction"
                 class="com.evolveum.midpoint.studio.action.VerifyAction"
@@ -286,28 +477,33 @@
                 text="Upgrade task to activity (4.4)"
                 icon="AllIcons.Actions.Annotate"/>
 
+        <action id="MidPoint.Action.DiffLocal"
+                class="com.evolveum.midpoint.studio.action.DiffLocalAction"
+                text="Diff Local"
+                icon="AllIcons.Actions.Diff"/>
+
+        <action id="MidPoint.Action.ComboEnvironmentAction"
+                class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
 
             <group id="MidPoint.Group.Menu.TransferRelated"
-                   text="Other Actions"
+                   text="MidPoint Actions"
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
-                <reference ref="MidPoint.Action.Recompute"/>
-                <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
-
-                <separator/>
-
                 <reference ref="MidPoint.Action.UploadExecute"/>
                 <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
-
-                <separator/>
-
                 <reference ref="MidPoint.Action.UploadRecompute"/>
                 <reference ref="MidPoint.Action.UploadTestResource"/>
                 <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.Recompute"/>
+                <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
 
                 <separator/>
 
@@ -316,13 +512,10 @@
                 <separator/>
 
                 <reference ref="MidPoint.Action.Refresh"/>
-
-                <reference ref="MidPoint.Action.DiffRemote"/>
-
+                <reference ref="MidPoint.Action.DiffLocal"/>
+                <reference ref="MidPoint.Action.SynchronizeObjects"/>
                 <reference ref="MidPoint.Action.CleanupFile"/>
-
                 <reference ref="MidPoint.Action.VerifyAction"/>
-
                 <reference ref="MidPoint.Action.UpgradeTask"/>
 
                 <separator/>
@@ -387,15 +580,9 @@
 
             <reference ref="MidPoint.Action.TestAction"/>
 
-            <reference ref="MidPoint.Action.UploadExecute"/>
-            <reference ref="MidPoint.Action.UploadRecompute"/>
-            <reference ref="MidPoint.Action.UploadTestResource"/>
-
-            <separator/>
-
+            <reference ref="MidPoint.Action.UploadFullProcessing"/>
             <reference ref="MidPoint.Action.Refresh"/>
-
-            <reference ref="MidPoint.Action.DiffRemote"/>
+            <reference ref="MidPoint.Action.SynchronizeObjects"/>
 
             <separator/>
 
@@ -409,6 +596,14 @@
                    popup="true"
                    icon="AllIcons.Actions.ListChanges">
 
+                <reference ref="MidPoint.Action.UploadExecute"/>
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+                <reference ref="MidPoint.Action.UploadRecompute"/>
+                <reference ref="MidPoint.Action.UploadTestResource"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
                 <reference ref="MidPoint.Action.Recompute"/>
                 <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
 
@@ -418,15 +613,9 @@
 
                 <separator/>
 
-                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
-                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
-
-                <separator/>
-
+                <reference ref="MidPoint.Action.DiffLocal"/>
                 <reference ref="MidPoint.Action.CleanupFile"/>
-
                 <reference ref="MidPoint.Action.VerifyAction"/>
-
                 <reference ref="MidPoint.Action.UpgradeTask"/>
 
                 <separator/>
@@ -441,15 +630,7 @@
 
             <separator/>
 
-            <action id="MidPoint.Action.EnvironmentColor"
-                    class="com.evolveum.midpoint.studio.action.environment.EnvironmentColor"/>
-
-            <action id="MidPoint.Action.ComboEnvironmentAction"
-                    class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
-
-            <!--<action id="MidPoint.Action.ProfileAction" class="com.evolveum.midpoint.studio.action.ProfileEnvironment"
-                    text="Profile Environment"
-                    icon="AllIcons.Actions.Profile"/>-->
+            <reference ref="MidPoint.Action.ComboEnvironmentAction"/>
 
             <reference ref="MidPoint.Action.TestConnection"/>
 
@@ -459,10 +640,72 @@
             <add-to-group group-id="MainToolBar" relative-to-action="ToolbarRunGroup" anchor="before"/>
         </group>
 
+        <group id="MidPoint.ExpUI.Toolbar.Main" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
+
+            <reference ref="MidPoint.Action.TestAction"/>
+
+            <reference ref="MidPoint.Action.UploadFullProcessing"/>
+            <reference ref="MidPoint.Action.Refresh"/>
+            <reference ref="MidPoint.Action.SynchronizeObjects"/>
+
+            <separator/>
+
+            <reference ref="MidPoint.Action.ComboEnvironmentAction"/>
+
+            <reference ref="MidPoint.Action.TestConnection"/>
+
+            <group id="MidPoint.ExpUI.Toolbar.Others"
+                   text="Other Actions"
+                   popup="true"
+                   icon="AllIcons.Actions.More">
+
+                <reference ref="MidPoint.ExpUI.Action.UploadExecute"/>
+                <reference ref="MidPoint.Action.UploadExecuteStopOnError"/>
+                <reference ref="MidPoint.Action.UploadRecompute"/>
+                <reference ref="MidPoint.ExpUI.Action.UploadTestResource"/>
+                <reference ref="MidPoint.Action.UploadTestValidateResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.Recompute"/>
+                <reference ref="MidPoint.Action.DownloadSelectedTypes"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.TestResource"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.Delete"/>
+                <reference ref="MidPoint.Action.DeleteRaw"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.DiffLocal"/>
+                <reference ref="MidPoint.Action.CleanupFile"/>
+                <reference ref="MidPoint.Action.VerifyAction"/>
+                <reference ref="MidPoint.Action.UpgradeTask"/>
+
+                <separator/>
+
+                <reference ref="MidPoint.Action.ExtractLocalizationPropertiesAction"/>
+                <reference ref="MidPoint.Group.Menu.ServerLog"/>
+                <reference ref="MidPoint.Action.GenerateRandomOid"/>
+                <reference ref="MidPoint.Action.Documentation"/>
+
+            </group>
+
+            <!-- now handled only through {@link MidPointStartupActivity} since MainToolbarRight is supported since 223.* -->
+            <!-- <add-to-group group-id="MainToolbarRight" anchor="first"/> -->
+            <!-- this one has to be used for older than 223.* -->
+            <!-- <add-to-group group-id="RunToolbarWidgetCustomizableActionGroup" anchor="first"/> -->
+        </group>
+
         <group id="MidPoint.Group.Menu.Editor">
             <reference ref="MidPoint.Group.Menu"/>
             <add-to-group anchor="last" group-id="EditorPopupMenu"/>
         </group>
+
         <group id="MidPoint.Group.Menu.NonEditor">
             <reference ref="MidPoint.Group.Menu"/>
             <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>

@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -10,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,7 +30,7 @@ public class Expander {
 
     public static final String KEY_SERVER_DISPLAY_NAME = "#server.displayName";
 
-    public static final Pattern PATTERN = Pattern.compile("\\$\\((\\S*?)\\)");
+    public static final Pattern PATTERN = Pattern.compile("\\$\\((.+?)\\)");
 
     private Environment environment;
 
@@ -38,10 +40,20 @@ public class Expander {
 
     private Map<String, String> projectProperties = new HashMap<>();
 
+    private boolean ignoreMissingKeys;
+
+    public Expander(Environment environment, Project project) {
+        this(environment,
+                project != null ? EncryptionService.getInstance(project) : null, project);
+    }
+
     public Expander(Environment environment, EncryptionService encryptionService, Project project) {
         this.environment = environment;
         this.encryptionService = encryptionService;
         this.environmentProperties = new EnvironmentProperties(project, environment);
+
+        MidPointService ms = MidPointService.get(project);
+        this.ignoreMissingKeys = ms.getSettings().isIgnoreMissingKeys();
 
         initProjectProperties(project);
     }
@@ -61,7 +73,11 @@ public class Expander {
     }
 
     public String expand(String object) {
-        return expand(object, null);
+        return expand(object, (ExpanderOptions) null);
+    }
+
+    public String expand(String object, ExpanderOptions opts) {
+        return expand(object, null, opts);
     }
 
     /**
@@ -74,8 +90,16 @@ public class Expander {
      * @return
      */
     public String expand(String object, VirtualFile file) {
+        return expand(object, file, null);
+    }
+
+    public String expand(String object, VirtualFile file, ExpanderOptions opts) {
         if (object == null) {
             return null;
+        }
+
+        if (opts == null) {
+            opts = new ExpanderOptions();
         }
 
         Matcher matcher = PATTERN.matcher(object);
@@ -90,7 +114,7 @@ public class Expander {
                 continue;
             }
 
-            String value = expandKey(key, file);
+            String value = expandKey(key, file, opts.expandEncrypted());
             if (value == null) {
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group()));
                 missingKeys.add(key);
@@ -134,23 +158,38 @@ public class Expander {
     }
 
     public boolean isExpandingFile(String key, VirtualFile file) {
-        if (key != null && key.startsWith("@")) {
-            String filePath = key.replaceFirst("@", "");
-            File contentFile = new File(filePath);
-            if (contentFile.isAbsolute() && contentFile.exists()) {
-                return true;
-            } else {
-                if (file != null) {
-                    if (!file.isDirectory()) {
-                        file = file.getParent();
-                    }
-                    VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
-                    return content.exists();
+        String filePath = getFilePathFromKey(key);
+        if (filePath == null) {
+            return false;
+        }
+
+        File contentFile = new File(filePath);
+        if (contentFile.isAbsolute() && contentFile.exists()) {
+            return true;
+        } else {
+            if (file != null) {
+                if (!file.isDirectory()) {
+                    file = file.getParent();
                 }
+                VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
+                return content != null && content.exists();
             }
         }
 
         return false;
+    }
+
+    private String getFilePathFromKey(String key) {
+        if (key == null) {
+            return null;
+        }
+
+        key = key.trim();
+        if (!key.startsWith("@")) {
+            return null;
+        }
+
+        return key.replaceFirst("@", "").trim();
     }
 
     public String expandKeyFromProperties(String key) {
@@ -172,22 +211,29 @@ public class Expander {
         return set;
     }
 
-    private String expandKey(String key, VirtualFile file) {
-        if (key != null && key.startsWith("@")) {
-            String filePath = key.replaceFirst("@", "");
-            File contentFile = new File(filePath);
-            if (contentFile.isAbsolute()) {
-                VirtualFile content = VfsUtil.findFileByIoFile(contentFile, true);
-                return loadContent(content);
+    private String expandKey(String key, VirtualFile file, boolean expandEncrypted) {
+        String filePath = getFilePathFromKey(key);
+        if (filePath != null) {
+            // just windows stuff (mid-7781). Backslash is not correctly handled later in {@link VirtualFile.findFileByRelativePath(path) }
+            filePath = filePath.replace("\\", "/");
+
+            Path uri = Path.of(filePath);
+            if (uri.isAbsolute()) {
+                VirtualFile content = VfsUtil.findFile(uri, true);
+
+                return loadContent(content, key, filePath, null);
             } else {
                 if (file != null) {
                     if (!file.isDirectory()) {
                         file = file.getParent();
                     }
-                    VirtualFile content = file.findFileByRelativePath(contentFile.getPath());
+                    VirtualFile content = file.findFileByRelativePath(filePath);
 
-                    return loadContent(content);
+                    return loadContent(content, key, filePath, file);
                 } else {
+                    if (ignoreMissingKeys) {
+                        return null;
+                    }
                     throw new IllegalStateException("Couldn't load file '" + key + "', unknown path '" + key + "'");
                 }
             }
@@ -199,8 +245,8 @@ public class Expander {
             return value;
         }
 
-        if (encryptionService == null || !encryptionService.isAvailable()) {
-            return expandKeyFromProperties(key, true);
+        if (!expandEncrypted || encryptionService == null || !encryptionService.isAvailable()) {
+            return expandKeyFromProperties(key, expandEncrypted);
         }
 
         EncryptedProperty property = encryptionService.get(key, EncryptedProperty.class);
@@ -227,22 +273,38 @@ public class Expander {
         String value = environmentProperties.get(key);
 
         if (value == null && throwExceptionIfNotFound) {
-            throw new IllegalStateException("Couldn't translate key '" + key + "'");
+            if (ignoreMissingKeys) {
+                return null;
+            }
+            throw new ExpanderException("Couldn't translate key '" + key + "'");
         }
 
         return value;
     }
 
-    private String loadContent(VirtualFile file) {
+    private String loadContent(VirtualFile file, String key, String contentFilePath, VirtualFile contentParent) {
+        if (file == null) {
+            if (ignoreMissingKeys) {
+                return null;
+            }
+            throw new IllegalStateException("Can't load content for key '" + key + "', file '" + contentFilePath + "' is not present in '" + contentParent + "'");
+        }
+
         if (file.isDirectory()) {
-            throw new IllegalStateException("Can't load content, file '" + file.getPath() + "' is directory");
+            if (ignoreMissingKeys) {
+                return null;
+            }
+            throw new IllegalStateException("Can't load content for key '" + key + "', file '" + file.getPath() + "' is directory");
         }
 
         try {
             byte[] content = file.contentsToByteArray();
             return new String(content, file.getCharset());
         } catch (IOException ex) {
-            throw new IllegalStateException("Couldn't load content of file '\" + file.getPath() + \"', reason: " + ex.getMessage());
+            if (ignoreMissingKeys) {
+                return null;
+            }
+            throw new IllegalStateException("Couldn't load content for key '" + key + "', file '" + file.getPath() + "', reason: " + ex.getMessage());
         }
     }
 }

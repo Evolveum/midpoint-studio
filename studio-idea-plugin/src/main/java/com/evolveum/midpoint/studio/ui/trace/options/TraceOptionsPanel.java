@@ -5,6 +5,7 @@ import com.evolveum.midpoint.schema.traces.PerformanceCategory;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
+import com.evolveum.midpoint.studio.ui.UiAction;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.TraceTreeViewColumn;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
@@ -30,7 +31,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
     private static final Logger LOG = Logger.getInstance(TraceOptionsPanel.class);
 
-    private TraceService traceManager;
+    private final TraceService traceManager;
 
     /**
      * Predefined view e.g. "All", "Functional overview", ...
@@ -104,13 +105,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         };
         group.add(viewTypeComboboxAction);
 
-        AnAction apply = new AnAction("Apply", "Apply options changes", AllIcons.Actions.Commit) {
-
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                applyPerformed();
-            }
-        };
+        AnAction apply = new UiAction("Apply", AllIcons.Actions.Commit, e -> applyPerformed());
         group.add(apply);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceOptionsToolbar", group, true);
@@ -254,6 +249,11 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
 
         public ViewTypeComboboxAction(PredefinedOpView opView) {
             this.opView = opView;
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
         }
 
         @NotNull

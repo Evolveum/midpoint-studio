@@ -44,7 +44,7 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
 
     private Content buildBrowser(Project project) {
         BrowseToolPanel browsePanel = new BrowseToolPanel(project);
-        return ContentFactory.SERVICE.getInstance()
+        return ContentFactory.getInstance()
                 .createContent(browsePanel, "Browse Objects", false);
     }
 
@@ -60,7 +60,7 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
 
         root.setToolbar(toolbar);
 
-        return ContentFactory.SERVICE.getInstance()
+        return ContentFactory.getInstance()
                 .createContent(root, "Console", false);
     }
 
@@ -77,15 +77,10 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
         toolbar.setTargetComponent(root);
         root.add(toolbar.getComponent(), BorderLayout.WEST);
 
-        return ContentFactory.SERVICE.getInstance().createContent(root, "Encrypted Properties", false);
+        return ContentFactory.getInstance().createContent(root, "Encrypted Properties", false);
     }
 
     @Override
-    public void init(ToolWindow window) {
-    }
-
-    @Override
-    public boolean isDoNotActivateOnStart() {
-        return false;
+    public void init(@NotNull ToolWindow window) {
     }
 }

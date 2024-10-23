@@ -4,8 +4,9 @@
                 xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
                 xmlns:mext="http://midpoint.evolveum.com/xml/ns/public/model/extension-3"
                 xmlns:scext="http://midpoint.evolveum.com/xml/ns/public/model/scripting/extension-3"
+                xmlns:rext="http://midpoint.evolveum.com/xml/ns/public/report/extension-3"
                 xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
-                exclude-result-prefixes="mext scext c">
+                exclude-result-prefixes="mext scext c rext">
 
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 
@@ -31,12 +32,17 @@
     <xsl:variable name="URI_SCRIPTING" select="'http://midpoint.evolveum.com/xml/ns/public/model/scripting/handler-3'"/>
     <xsl:variable name="URI_SHADOW_INTEGRITY" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadow-integrity-check/handler-3'"/>
     <xsl:variable name="URI_SHADOW_REFRESH" select="'http://midpoint.evolveum.com/xml/ns/public/model/shadowRefresh/handler-3'"/>
+    <xsl:variable name="URI_TRIGGER_SCANNER" select="'http://midpoint.evolveum.com/xml/ns/public/model/trigger/scanner/handler-3'"/>
+    <xsl:variable name="URI_CLEANUP" select="'http://midpoint.evolveum.com/xml/ns/public/model/cleanup/handler-3'"/>
+    <xsl:variable name="URI_VALIDITY" select="'http://midpoint.evolveum.com/xml/ns/public/model/synchronization/task/focus-validation-scanner/handler-3'"/>
+    <xsl:variable name="URI_PARTITIONED_VALIDITY" select="'http://midpoint.evolveum.com/xml/ns/public/model/partitioned-focus-validity-scanner/handler-3'"/>
+    <xsl:variable name="URI_REPORT" select="'http://midpoint.evolveum.com/xml/ns/public/report/handler-3'"/>
 
     <xsl:variable name="taskHandlerUri" select="/c:task/c:handlerUri/text()"/>
     <xsl:variable name="assignmentTargetOid" select="/c:task/c:assignment/c:targetRef/@oid"/>
     <xsl:variable name="workersHandlerUri" select="/c:task/c:workManagement/c:workers/c:handlerUri/text()"/>
 
-    <xsl:variable name="isDeletionActivity" select="$taskHandlerUri = $URI_DELETE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000528' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_DELETE)"/>
+    <xsl:variable name="isDeletionActivity" select="$taskHandlerUri = $URI_DELETE or $assignmentTargetOid = '00000000-0000-0000-0000-000000000515' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_DELETE)"/>
 
     <xsl:template match="/c:task">
         <xsl:copy>
@@ -77,8 +83,25 @@
                     <xsl:when test="$taskHandlerUri = $URI_SCRIPTING or $assignmentTargetOid = '00000000-0000-0000-0000-000000000508' or ($taskHandlerUri = $URI_WORKERS_CREATION and $workersHandlerUri = $URI_SCRIPTING)">
                         <xsl:call-template name="nonIterativeScripting"/>
                     </xsl:when>
+                    <!--<xsl:when test="$taskHandlerUri = $URI_TRIGGER_SCANNER">
+                        <xsl:call-template name="triggerScanner"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_CLEANUP">
+                        <xsl:call-template name="cleanup"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_VALIDITY">
+                        <xsl:call-template name="validity"/>
+                    </xsl:when>
+                    <xsl:when test="$taskHandlerUri = $URI_PARTITIONED_VALIDITY">
+                        <xsl:call-template name="validity">
+                            <xsl:with-param name="partitioned" select="'true'"/>
+                        </xsl:call-template>
+                    </xsl:when>-->
+                    <xsl:when test="$taskHandlerUri = $URI_REPORT">
+                        <xsl:call-template name="report"/>
+                    </xsl:when>
                     <xsl:otherwise>
-                        <xsl:message terminate="yes">Unknown action</xsl:message>
+                        <xsl:message terminate="yes">Unknown handlerUri (action) and/or archetype</xsl:message>
                     </xsl:otherwise>
                 </xsl:choose>
 
@@ -154,6 +177,7 @@
     <xsl:template match="/c:task/c:extension/mext:useRepositoryDirectly"/>
     <xsl:template match="/c:task/c:extension/mext:optionRaw"/>
     <xsl:template match="/c:task/c:extension/scext:executeScript"/>
+    <xsl:template match="/c:task/c:extension/rext:reportParam"/>
 
     <xsl:template match="/c:task/c:executionStatus">
         <executionState><xsl:value-of select="node()"/></executionState>
@@ -456,4 +480,53 @@
         <xsl:call-template name="distributionSimpleActivity"/>
     </xsl:template>
 
+    <xsl:template name="triggerScanner">
+        <work>
+            <triggerScan/>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
+
+    <xsl:template name="cleanup">
+        <work>
+            <cleanup/>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
+
+    <xsl:template name="validity">
+        <xsl:param name="partitioned" select="'false'" required="no"/>
+        <work>
+            <focusValidityScan>
+                <xsl:if test="$partitioned = 'true'">
+                    <queryStyle>separateObjectAndAssignmentQueries</queryStyle>
+                </xsl:if>
+            </focusValidityScan>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
+
+    <xsl:template name="report">
+        <work>
+            <reportExport>
+                <xsl:if test="/c:task/c:objectRef/@oid">
+                    <xsl:element name="reportRef">
+                        <xsl:attribute name="oid">
+                            <xsl:value-of select="/c:task/c:objectRef/@oid"/>
+                        </xsl:attribute>
+                    </xsl:element>
+                    <xsl:if test="/c:task/c:extension/rext:reportParam">
+                        <reportParam>
+                            <xsl:copy-of select="/c:task/c:extension/rext:reportParam/*"/>
+                        </reportParam>
+                    </xsl:if>
+                </xsl:if>
+            </reportExport>
+        </work>
+        <xsl:call-template name="controlFlow"/>
+        <xsl:call-template name="distributionSimpleActivity"/>
+    </xsl:template>
 </xsl:stylesheet>

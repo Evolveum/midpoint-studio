@@ -1,22 +1,11 @@
+fun properties(key: String) = providers.gradleProperty(key)
+fun environment(key: String) = providers.environmentVariable(key)
+
 allprojects {
     repositories {
         mavenLocal()
-        mavenCentral()
-        maven {
-            url = uri("https://nexus.evolveum.com/nexus/content/repositories/releases/")
-        }
-        maven {
-            url = uri("https://nexus.evolveum.com/nexus/content/groups/public/")
-        }
-        maven {
-            url = uri("https://nexus.evolveum.com/nexus/content/repositories/snapshots/")
-        }
-        maven {
-            url = uri("https://www.jetbrains.com/intellij-repository/snapshots/")
-        }
-        maven {
-            url = uri("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
-        }
+        maven("https://nexus.evolveum.com/nexus/content/groups/public/")
+        maven("https://nexus.evolveum.com/nexus/content/repositories/snapshots/")
     }
 }
 
@@ -24,6 +13,14 @@ subprojects {
     tasks {
         withType<JavaCompile> {
             options.encoding = "UTF-8"
+            sourceCompatibility = properties("javaVersion").get()
+            targetCompatibility = properties("javaVersion").get()
         }
+    }
+}
+
+tasks {
+    wrapper {
+        gradleVersion = properties("gradleVersion").get()
     }
 }

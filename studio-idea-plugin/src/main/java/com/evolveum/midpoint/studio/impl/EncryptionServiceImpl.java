@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
@@ -45,7 +47,7 @@ public class EncryptionServiceImpl implements EncryptionService {
             return;
         }
 
-        MidPointSettings settings = MidPointService.getInstance(project).getSettings();
+        MidPointConfiguration settings = MidPointService.get(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             return;
         }
@@ -59,7 +61,7 @@ public class EncryptionServiceImpl implements EncryptionService {
     public void changeMasterPassword(String oldPassword, String newPassword) {
         LOG.info("Changing master password");
 
-        MidPointSettings settings = MidPointService.getInstance(project).getSettings();
+        MidPointConfiguration settings = MidPointService.get(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             throw new IllegalStateException("Midpoint setting unavailable");
         }
@@ -86,8 +88,31 @@ public class EncryptionServiceImpl implements EncryptionService {
 
     @Override
     public boolean isAvailable() {
+        return getStatus().getStatus() == Status.OK;
+    }
+
+    @NotNull
+    @Override
+    public StatusMessage getStatus() {
+        File dbFile = getDatabaseFile();
+        if (!dbFile.exists()) {
+            return new StatusMessage(Status.MISSING_FILE, "Credentials file doesn't exist.");
+        }
+
         String masterPassword = getMasterPassword();
-        return StringUtils.isNoneEmpty(masterPassword);
+        if (StringUtils.isEmpty(masterPassword)) {
+            return new StatusMessage(Status.PASSWORD_NOT_SET, "Master password not set.");
+        }
+
+        try {
+            KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
+        } catch (Exception ex) {
+            return new StatusMessage(
+                    Status.PASSWORD_INCORRECT,
+                    "Couldn't open credentials file, reason: " + ex.getMessage() + ".");
+        }
+
+        return new StatusMessage(Status.OK, "Credentials service is configured correctly.");
     }
 
     @Override
@@ -273,7 +298,7 @@ public class EncryptionServiceImpl implements EncryptionService {
     }
 
     private String getMasterPassword() {
-        MidPointSettings settings = MidPointService.getInstance(project).getSettings();
+        MidPointConfiguration settings = MidPointService.get(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             LOG.debug("MidPoint settings not available.");
             return null;

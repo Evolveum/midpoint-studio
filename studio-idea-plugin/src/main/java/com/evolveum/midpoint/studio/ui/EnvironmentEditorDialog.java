@@ -4,7 +4,7 @@ import com.evolveum.midpoint.studio.client.ProxyType;
 import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.studio.util.Selectable;
@@ -18,14 +18,12 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogEarthquakeShaker;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.util.ui.JBUI;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -61,14 +59,15 @@ public class EnvironmentEditorDialog extends DialogWrapper {
     private JTextField proxyUsername;
     private JLabel testConnection;
     private JPanel colorPanel;
+    private JCheckBox useHttp2;
 
     private Project project;
 
-    private MidPointSettings settings;
+    private MidPointConfiguration settings;
 
     private Selectable<Environment> selectable;
 
-    public EnvironmentEditorDialog(Project project, MidPointSettings settings, @Nullable Selectable<Environment> environment) {
+    public EnvironmentEditorDialog(Project project, MidPointConfiguration settings, @Nullable Selectable<Environment> environment) {
         super(false);
 
         this.project = project;
@@ -177,9 +176,10 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         environment.setUsername(username.getText());
         environment.setPassword(String.copyValueOf(password.getPassword()));
         environment.setIgnoreSslErrors(ignoreSslErrors.isSelected());
+        environment.setUseHttp2(useHttp2.isSelected());
 
         environment.setProxyServerHost(proxyHost.getText());
-        String port = proxyPort.getToolTipText();
+        String port = proxyPort.getText();
         if (StringUtils.isNumeric(port)) {
             environment.setProxyServerPort(Integer.parseInt(proxyPort.getText()));
         }
@@ -204,6 +204,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         username.setText(environment.getUsername());
         password.setText(environment.getPassword());
         ignoreSslErrors.setSelected(environment.isIgnoreSslErrors());
+        useHttp2.setSelected(environment.isUseHttp2());
 
         proxyHost.setText(environment.getProxyServerHost());
         proxyPort.setText(environment.getProxyServerPort() != null ? environment.getProxyServerPort().toString() : null);
@@ -217,7 +218,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
     @NotNull
     @Override
-    protected Action[] createActions() {
+    protected Action @NotNull [] createActions() {
         return new Action[]{
                 getCancelAction(),
                 getOKAction(),
@@ -294,10 +295,6 @@ public class EnvironmentEditorDialog extends DialogWrapper {
                 ValidationInfo info = infoList.get(0);
                 if (info.component != null && info.component.isVisible()) {
                     IdeFocusManager.getInstance(null).requestFocus(info.component, true);
-                }
-
-                if (!Registry.is("ide.inplace.validation.tooltip")) {
-                    DialogEarthquakeShaker.shake(getPeer().getWindow());
                 }
 
                 startTrackingValidation();

@@ -58,6 +58,10 @@ public class MidPointObject {
         return o;
     }
 
+    public MidPointObject copy() {
+        return MidPointObject.copy(this);
+    }
+
     public String getContent() {
         return content;
     }

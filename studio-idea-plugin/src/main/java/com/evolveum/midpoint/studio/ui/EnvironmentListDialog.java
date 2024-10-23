@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
@@ -23,7 +23,7 @@ public class EnvironmentListDialog extends DialogWrapper {
 
         this.project = project;
 
-        MidPointService ms = MidPointService.getInstance(project);
+        MidPointService ms = MidPointService.get(project);
         EnvironmentService manager = EnvironmentService.getInstance(project);
 
         panel = new EnvironmentsPanel(project, ms.getSettings(), manager.getFullSettings());
@@ -36,8 +36,6 @@ public class EnvironmentListDialog extends DialogWrapper {
         setOKActionEnabled(true);
         setOKButtonText("Save");
         setCancelButtonText("Cancel");
-
-        setButtonsAlignment(SwingConstants.RIGHT);
 
         init();
     }

@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -30,14 +31,13 @@ public class ShowExceptionNotificationAction extends NotificationAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt, @NotNull Notification notification) {
-        MidPointService mm = MidPointService.getInstance(evt.getProject());
-
         StringBuilder sb = new StringBuilder();
         if (message != null) {
             sb.append(message).append('\n');
         }
         sb.append(ExceptionUtil.getThrowableText(exception));
 
+        MidPointService mm = MidPointService.get(evt.getProject());
         mm.printToConsole(environment, clazz, sb.toString());
         mm.focusConsole();
     }

@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
@@ -11,12 +12,13 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,6 +57,8 @@ public class ClientUtils {
 
     public static final String DELTAS_XML_SUFFIX = "</objectDeltaObjectList>\n";
 
+    public static final ItemName O_OBJECT_MODIFICATION = new ItemName("http://midpoint.evolveum.com/xml/ns/public/common/api-types-3", "objectModification");
+
     public static List<MidPointObject> filterObjectTypeOnly(List<MidPointObject> objects) {
         return filterObjectTypeOnly(objects, true);
     }
@@ -69,6 +73,36 @@ public class ClientUtils {
                 .collect(Collectors.toList());
     }
 
+    public static String serializeDOMToString(Node node) {
+        if (node == null) {
+            return null;
+        }
+
+        Document doc;
+        if (node instanceof Document) {
+            doc = (Document) node;
+        } else {
+            doc = node.getOwnerDocument();
+        }
+
+        // TODO HACK
+        // This is just a hack that adds xml:space="preserve" to root DOM element if needed before serialization to string.
+        // After serialization xml attribute is removed from string
+        Element element;
+        if (node instanceof Element) {
+            element = (Element) node;
+        } else {
+            element = doc.getDocumentElement();
+        }
+
+        DOMUtil.preserveFormattingIfPresent(element);
+
+        String xml = DOMUtil.serializeDOMToString(node);
+        xml = xml.replaceFirst("xml:space=\"preserve\"", "");
+
+        return xml;
+    }
+
     public static List<MidPointObject> parseText(String text) {
         return parseText(text, null);
     }
@@ -80,7 +114,7 @@ public class ClientUtils {
         }
     }
 
-    private static List<MidPointObject> parseText(String text, File file) {
+    public static List<MidPointObject> parseText(String text, File file) {
         Document doc = DOMUtil.parseDocument(text);
         String displayName = file != null ? file.getPath() : null;
 
@@ -149,12 +183,12 @@ public class ClientUtils {
         String localName = element.getLocalName();
 
         boolean executable = (namespace == null || SchemaConstantsGenerated.NS_SCRIPTING.equals(namespace)) && SCRIPTING_ACTIONS.contains(localName);
-        boolean delta = (namespace == null || SchemaConstantsGenerated.O_OBJECT_MODIFICATION.getNamespaceURI().equals(namespace))
-                && SchemaConstantsGenerated.O_OBJECT_MODIFICATION.getLocalPart().equals(localName);
+        boolean delta = (namespace == null || O_OBJECT_MODIFICATION.getNamespaceURI().equals(namespace))
+                && O_OBJECT_MODIFICATION.getLocalPart().equals(localName);
 
         ObjectTypes type = getObjectType(element);
 
-        MidPointObject o = new MidPointObject(DOMUtil.serializeDOMToString(element), type, executable);
+        MidPointObject o = new MidPointObject(ClientUtils.serializeDOMToString(element), type, executable);
         o.setDelta(delta);
 
         String oid = element.getAttribute("oid");
@@ -229,6 +263,9 @@ public class ClientUtils {
             Function<LocalizableMessage, String> resolveKeys = msg -> localizationService.translate(msg, Locale.US);
             OperationResultType operationResultType = ((OperationResult) object).createOperationResultType(resolveKeys);
             result = serializer.serializeAnyData(operationResultType, fakeQName);
+        } else if (object instanceof JAXBElement) {
+            JAXBElement element = (JAXBElement) object;
+            result = serializer.serializeAnyData(element.getValue(), element.getName());
         } else {
             result = serializer.serializeAnyData(object, fakeQName);
         }

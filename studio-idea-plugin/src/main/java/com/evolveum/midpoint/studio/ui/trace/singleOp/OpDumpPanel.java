@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.ui.trace.singleOp;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
@@ -14,9 +13,9 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
+import jakarta.xml.bind.JAXBElement;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.awt.*;
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ public class OpDumpPanel extends BorderLayoutPanel {
         initLayout();
 
         MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void selectedTraceNodeChange(OpNode node) {

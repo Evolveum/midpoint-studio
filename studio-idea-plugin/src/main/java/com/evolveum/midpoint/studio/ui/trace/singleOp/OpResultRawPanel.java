@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.ui.trace.singleOp;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
@@ -39,7 +38,7 @@ public class OpResultRawPanel extends BorderLayoutPanel {
         initLayout();
 
         MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void selectedTraceNodeChange(OpNode node) {
@@ -55,6 +54,7 @@ public class OpResultRawPanel extends BorderLayoutPanel {
 
         DefaultActionGroup group = new DefaultActionGroup();
         showChildren = new SimpleCheckboxAction("Show children") {
+
             @Override
             public void onStateChange() {
                 nodeChange(currentNode, loaded);

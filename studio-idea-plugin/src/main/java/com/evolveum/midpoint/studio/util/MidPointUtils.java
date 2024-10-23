@@ -11,7 +11,11 @@ import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
+import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -45,16 +49,24 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManagerEx;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.patterns.XmlPatterns;
+import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread;
+import com.intellij.util.messages.MessageBus;
+import com.intellij.util.ui.ColorIcon;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTreeTable;
@@ -63,6 +75,7 @@ import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -83,13 +96,11 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.awt.Color;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -101,33 +112,47 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  */
 public class MidPointUtils {
 
-    public static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+    public static final Pattern UUID_PATTERN =
+            Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
-    public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getTypeQName().getLocalPart(), o2.getTypeQName().getLocalPart());
+    public static final Comparator<ObjectTypes> OBJECT_TYPES_COMPARATOR =
+            Comparator.comparing(o -> o.name());
 
-    public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR = (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(getOrigFromPolyString(o1.getName()), getOrigFromPolyString(o2.getName()));
+    public static final Comparator<ObjectType> OBJECT_TYPE_COMPARATOR =
+            (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(
+                    getOrigFromPolyString(o1.getName()),
+                    getOrigFromPolyString(o2.getName())
+            );
 
     private static final Logger LOG = Logger.getInstance(MidPointUtils.class);
 
     private static final Random RANDOM = new Random();
 
+    @Deprecated
     public static final PrismContext DEFAULT_PRISM_CONTEXT = ServiceFactory.DEFAULT_PRISM_CONTEXT;
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
 
     private static final String[] NAMES;
 
+    public static final Set<String> NAMESPACES;
+
     static {
+        NAMESPACES = Set.of(
+                SchemaConstantsGenerated.NS_COMMON,
+                SchemaConstantsGenerated.NS_QUERY,
+                SchemaConstantsGenerated.NS_SCRIPTING);
+
         List<String> names = new ArrayList<>();
         for (ObjectTypes t : ObjectTypes.values()) {
-            if (t.getClassDefinition() == null || Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
+            if (Modifier.isAbstract(t.getClassDefinition().getModifiers())) {
                 continue;
             }
 
             names.add(t.getElementName().getLocalPart());
         }
 
-        NAMES = names.toArray(new String[names.size()]);
+        NAMES = names.toArray(new String[0]);
     }
 
     public static Color generateAwtColor() {
@@ -238,12 +263,14 @@ public class MidPointUtils {
     }
 
     private static CredentialAttributes createCredentialAttributes(String key) {
+        // previously was "MidPointSettings" (simple class name for MidPointConfiguration)
+        // we left it as is, because we don't want to change the key that is used to search keychain for existing credentials
         return new CredentialAttributes(CredentialAttributesKt
-                .generateServiceName(MidPointSettings.class.getSimpleName(), key));
+                .generateServiceName("MidPointSettings", key));
     }
 
     public static void publishException(Project project, Environment env, Class clazz, String notificationKey, String msg, Exception ex) {
-        MidPointService mm = MidPointService.getInstance(project);
+        MidPointService mm = MidPointService.get(project);
         mm.printToConsole(env, clazz, msg + ". Reason: " + ex.getMessage());
 
         publishExceptionNotification(project, env, clazz, notificationKey, msg, ex);
@@ -308,7 +335,7 @@ public class MidPointUtils {
         }
 
         if (project != null) {
-            MidPointService manager = MidPointService.getInstance(project);
+            MidPointService manager = MidPointService.get(project);
             manager.printToConsole(env, clazz, message, ex);
         }
     }
@@ -331,19 +358,16 @@ public class MidPointUtils {
         return createAnAction(text, icon, actionPerformed, null);
     }
 
-    public static AnAction createAnAction(String text, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
+    public static AnAction createAnAction(
+            String text, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
+
         return createAnAction(text, text, icon, actionPerformed, update);
     }
 
-    public static AnAction createAnAction(String text, String description, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
-        return new AnAction(text, description, icon) {
+    public static AnAction createAnAction(
+            String text, String description, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
 
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                if (actionPerformed != null) {
-                    actionPerformed.accept(e);
-                }
-            }
+        return new UiAction(text, description, icon, actionPerformed) {
 
             @Override
             public void update(@NotNull AnActionEvent e) {
@@ -377,7 +401,7 @@ public class MidPointUtils {
     }
 
     @Experimental
-    public static <R> JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
+    public static JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
         return createTable2(model, columnModel, disableHack, null);
     }
 
@@ -619,6 +643,24 @@ public class MidPointUtils {
 
     }
 
+    public static boolean isTagMatchingNameOrType(XmlTag tag, QName name, QName type) {
+        if (tag == null) {
+            return false;
+        }
+
+        QName realName = createQName(tag);
+        if (name != null && name.equals(realName)) {
+            return true;
+        }
+
+        QName realType = elementXsiType(tag);
+        if (type != null && type.equals(realType)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static QName elementXsiType(XmlTag tag) {
         if (tag == null) {
             return null;
@@ -663,6 +705,10 @@ public class MidPointUtils {
     }
 
     public static boolean isObjectTypeElement(XmlTag tag) {
+        return isObjectTypeElement(tag, true);
+    }
+
+    public static boolean isObjectTypeElement(XmlTag tag, boolean namespaceAware) {
         if (tag == null) {
             return false;
         }
@@ -670,6 +716,10 @@ public class MidPointUtils {
         QName name = new QName(tag.getNamespace(), tag.getLocalName());
         for (ObjectTypes type : ObjectTypes.values()) {
             if (name.equals(type.getElementName())) {
+                return true;
+            }
+
+            if (!namespaceAware && type.getElementName().getLocalPart().equalsIgnoreCase(name.getLocalPart())) {
                 return true;
             }
         }
@@ -716,7 +766,12 @@ public class MidPointUtils {
         return result;
     }
 
-    public static boolean hasMidPointFacet(@NotNull Project project) {
+    @RequiresBackgroundThread
+    public static boolean hasMidPointFacet(Project project) {
+        if (project == null) {
+            return false;
+        }
+
         ModuleManager mm = ModuleManager.getInstance(project);
         Module[] modules = mm.getModules();
         if (modules == null || modules.length == 0) {
@@ -771,11 +826,36 @@ public class MidPointUtils {
     }
 
     public static boolean shouldEnableAction(AnActionEvent evt) {
-        if (!isVisibleWithMidPointFacet(evt)) {
+        Computable<Boolean> computable = () -> {
+            if (!isVisibleWithMidPointFacet(evt)) {
+                return false;
+            }
+
+            return isEnvironmentAndFileSelected(evt);
+        };
+
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            return computable.compute();
+        } else {
+            return ApplicationManager.getApplication().runReadAction(computable);
+        }
+    }
+
+    public static boolean isMidpointFile(PsiFile file) {
+        if (file == null) {
             return false;
         }
 
-        return isEnvironmentAndFileSelected(evt);
+        if (!(file instanceof XmlFile xmlFile)) {
+            return false;
+        }
+
+        if (xmlFile.getRootTag() == null) {
+            return false;
+        }
+
+        String namespace = xmlFile.getRootTag().getNamespace();
+        return NAMESPACES.contains(namespace);
     }
 
     public static boolean isMidpointObjectFileSelected(AnActionEvent evt) {
@@ -843,11 +923,12 @@ public class MidPointUtils {
         }
     }
 
-    public static List<MidPointObject> parseText(Project project, String text, String notificationKey) {
+    public static List<MidPointObject> parseText(Project project, String text, VirtualFile file, String notificationKey) {
         try {
-            return ClientUtils.parseText(text);
+            File ioFile = file != null ? VfsUtil.virtualToIoFile(file) : null;
+            return ClientUtils.parseText(text, ioFile);
         } catch (RuntimeException ex) {
-            String msg = "Couldn't parse text '" + org.apache.commons.lang.StringUtils.abbreviate(text, 10) + "'";
+            String msg = "Couldn't parse text '" + org.apache.commons.lang3.StringUtils.abbreviate(text, 10) + "'";
 
             if (notificationKey != null) {
                 MidPointUtils.publishExceptionNotification(project, null, MidPointUtils.class, notificationKey, msg, ex);
@@ -938,11 +1019,84 @@ public class MidPointUtils {
 
             String output = sw.toString();
             if (tel.isErrorOrFatal()) {
-                throw new TransformerException("Found these problems:\n"+ tel.dumpAllMessages());
+                throw new TransformerException("Found these problems:\n" + tel.dumpAllMessages());
             }
 
             return output;
         }
+    }
+
+    public static String updateObjectRootElementToObject(String objectXml) {
+        if (objectXml == null) {
+            return null;
+        }
+
+        org.w3c.dom.Document doc = DOMUtil.parseDocument(objectXml);
+        Element rootNode = doc.getDocumentElement();
+        QName rootName = new QName(rootNode.getNamespaceURI(), rootNode.getLocalName());
+
+        if (rootName.equals(ObjectTypes.OBJECT) && rootNode.hasAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type")) {
+            return objectXml;
+        }
+
+        Node previousRoot = doc.removeChild(rootNode);
+
+        Element root = DOMUtil.createElement(doc, SchemaConstantsGenerated.C_OBJECT);
+        doc.appendChild(root);
+
+        NodeList list = previousRoot.getChildNodes();
+        for (int i = 0; i < list.getLength(); i++) {
+            Node copied = doc.importNode(list.item(i), true);
+            root.appendChild(copied);
+        }
+
+        NamedNodeMap attributes = previousRoot.getAttributes();
+        if (attributes != null) {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                Node node = attributes.item(i);
+                if (node.getNodeType() != Node.ATTRIBUTE_NODE) {
+                    continue;
+                }
+
+                Attr attr = (Attr) doc.importNode(node, true);
+                root.setAttributeNodeNS(attr);
+            }
+        }
+
+        // if there's no xsi:type in root, we'll try to figure out and add it
+        if (!root.hasAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type")) {
+            ObjectTypes type = null;
+            for (ObjectTypes ot : ObjectTypes.values()) {
+                if (rootName.equals(ot.getElementName())) {
+                    type = ot;
+                    break;
+                }
+            }
+
+            if (type == null) {
+                return objectXml;
+            }
+
+            root.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "xsi:type", type.getTypeQName().getLocalPart());
+        }
+
+        return ClientUtils.serializeDOMToString(doc);
+    }
+
+    public static void subscribeToEnvironmentChange(Project project, Consumer<Environment> refreshFunction) {
+        MessageBus bus = project.getMessageBus();
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
+
+            @Override
+            public void environmentChanged(Environment oldEnv, Environment newEnv) {
+                refreshFunction.accept(newEnv);
+            }
+        });
+
+        ApplicationManager.getApplication().invokeLater(() -> {
+            EnvironmentService service = project.getService(EnvironmentService.class);
+            refreshFunction.accept(service.getSelected());
+        });
     }
 
     private static class TransformerErrorListener implements ErrorListener {
@@ -984,5 +1138,98 @@ public class MidPointUtils {
 
             return StringUtils.join(all, "\n");
         }
+    }
+
+    public static XmlTagPattern.Capture typesTag(String localName) {
+        return qualifiedTag(localName, SchemaConstantsGenerated.NS_TYPES);
+    }
+
+    public static XmlTagPattern.Capture commonTag(String localName) {
+        return qualifiedTag(localName, SchemaConstantsGenerated.NS_COMMON);
+    }
+
+    public static XmlTagPattern.Capture annotationTag(String localName) {
+        return qualifiedTag(localName, SchemaConstantsGenerated.NS_ANNOTATION);
+    }
+
+    public static XmlTagPattern.Capture qualifiedTag(QName name) {
+        return XmlPatterns.xmlTag().withLocalName(name.getLocalPart()).withNamespace(name.getNamespaceURI());
+    }
+
+    public static XmlTagPattern.Capture qualifiedTag(String localName, String namespace) {
+        return XmlPatterns.xmlTag().withLocalName(localName).withNamespace(namespace);
+    }
+
+    public static Icon createEnvironmentIcon(Color color) {
+        if (color == null) {
+            return null;
+        }
+
+        return new ColorIcon(24, 14, 24, 14, color, true);
+    }
+
+    public static <T extends Enum> String createKeyForEnum(T value) {
+        if (value == null) {
+            return null;
+        }
+
+        return value.getClass().getSimpleName() + "." + value.name();
+    }
+
+    public static int showConfirmationDialog(
+            Project project, String message, String title, String yesText, String noText) {
+
+        AtomicInteger result = new AtomicInteger(0);
+
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            Component comp = WindowManager.getInstance().suggestParentWindow(project);
+
+            JComponent source;
+            if (comp instanceof JComponent) {
+                source = (JComponent) comp;
+            } else if (comp instanceof JWindow) {
+                source = ((JWindow) comp).getRootPane();
+            } else if (comp instanceof JFrame) {
+                source = ((JFrame) comp).getRootPane();
+            } else {
+                throw new IllegalStateException("Couldn't find parent component for dialog");
+            }
+
+            int r = Messages.showConfirmationDialog(source, message, title, yesText, noText);
+
+            result.set(r);
+        });
+
+        return result.get();
+    }
+
+
+    /**
+     * Returns type of object from ObjectReferenceType xml tag PSI element (from type attribute).
+     */
+    public static ObjectTypes getTypeFromReference(XmlTag tag) {
+        String xmlType = tag.getAttributeValue("type");
+        if (xmlType == null) {
+            return null;
+        }
+
+        String localPart = QNameUtil.parsePrefixedName(xmlType).localName();
+        return Arrays.stream(ObjectTypes.values())
+                .filter(t -> t.getTypeQName().getLocalPart().equals(localPart))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static boolean isDevelopmentMode(boolean enabled) {
+        boolean internal = ApplicationManager.getApplication().isInternal();
+
+        return enabled && internal;
+    }
+
+    public static MidPointObject expand(MidPointObject object, Expander expander) {
+        VirtualFile file = object.getFile() != null ? VfsUtil.findFileByIoFile(object.getFile(), true) : null;
+        String content = expander.expand(object.getContent(), file);
+
+        return ClientUtils.parseText(content, object.getFile()).get(0);
     }
 }

@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.delta;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.studio.impl.xml.ObjectsDiffFactory;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaObjectType;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -16,16 +17,19 @@ import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
+import javax.xml.namespace.QName;
+
 /**
  * Created by Viliam Repan (lazyman).
  */
+@Deprecated
 public class ObjectDeltaEditorProvider implements FileEditorProvider, DumbAware {
 
     private static final String EDITOR_TYPE_ID = "object-delta-ui";
 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile file) {
-        if (project == null || file == null) {
+        if (!MidPointUtils.hasMidPointFacet(project)) {
             return false;
         }
 
@@ -44,8 +48,12 @@ public class ObjectDeltaEditorProvider implements FileEditorProvider, DumbAware 
             return false;
         }
 
-        return SchemaConstantsGenerated.T_OBJECT_DELTA_OBJECT.equals(MidPointUtils.createQName(root)) ||
-                ObjectDeltaObjectType.COMPLEX_TYPE.equals(MidPointUtils.elementXsiType(root));
+        QName rootName = MidPointUtils.createQName(root);
+        QName rootXsiType = MidPointUtils.elementXsiType(root);
+
+        return SchemaConstantsGenerated.T_OBJECT_DELTA_OBJECT.equals(rootName) ||
+                ObjectDeltaObjectType.COMPLEX_TYPE.equals(rootXsiType) ||
+                ObjectsDiffFactory.Q_DIFF.equals(rootName);
     }
 
     @Override

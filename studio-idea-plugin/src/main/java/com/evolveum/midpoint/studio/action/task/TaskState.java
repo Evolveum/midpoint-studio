@@ -15,6 +15,8 @@ public class TaskState {
 
     private int failed;
 
+    private boolean stoppedOnError;
+
     public void incrementProcessedFile() {
         processedFile++;
     }
@@ -27,12 +29,20 @@ public class TaskState {
         processed++;
     }
 
+    public void incrementProcessed(int add) {
+        processed += add;
+    }
+
     public void incrementSkipped() {
         skipped++;
     }
 
     public void incrementFailed() {
         failed++;
+    }
+
+    public void setStopOnError() {
+        this.stoppedOnError = true;
     }
 
     public int getProcessedFile() {
@@ -53,5 +63,9 @@ public class TaskState {
 
     public int getFailed() {
         return failed;
+    }
+
+    public boolean isStoppedOnError() {
+        return stoppedOnError;
     }
 }

@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
-import com.evolveum.midpoint.studio.util.ObjectTypesConverter;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
+import com.evolveum.midpoint.studio.util.ObjectTypesListConverter;
 import com.intellij.openapi.options.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,10 +23,11 @@ public class MidPointSettingsPanel extends JPanel {
     private JTextField typesIncluded;
     private JTextField typesExcluded;
     private JTextField restClientTimeout;
+    private JCheckBox ignoreUknownProperties;
 
-    private MidPointSettings settings;
+    private MidPointConfiguration settings;
 
-    public MidPointSettingsPanel(MidPointSettings settings) {
+    public MidPointSettingsPanel(MidPointConfiguration settings) {
         super(new BorderLayout());
 
         this.settings = settings;
@@ -42,11 +43,12 @@ public class MidPointSettingsPanel extends JPanel {
         logRestCommunication.setSelected(settings.isPrintRestCommunicationToConsole());
         restClientTimeout.setText(Integer.toString(settings.getRestResponseTimeout()));
 
-        ObjectTypesConverter converter = new ObjectTypesConverter();
+        ObjectTypesListConverter converter = new ObjectTypesListConverter();
         typesIncluded.setText(converter.toString(settings.getDownloadTypesInclude()));
         typesExcluded.setText(converter.toString(settings.getDownloadTypesExclude()));
 
         typesDownloadLimit.setText(Integer.toString(settings.getTypesToDownloadLimit()));
+        ignoreUknownProperties.setSelected(settings.isIgnoreMissingKeys());
     }
 
     public boolean isModified() {
@@ -58,8 +60,8 @@ public class MidPointSettingsPanel extends JPanel {
         }
     }
 
-    public MidPointSettings getSettings() {
-        MidPointSettings settings = MidPointSettings.createDefaultSettings();
+    public MidPointConfiguration getSettings() {
+        MidPointConfiguration settings = MidPointConfiguration.createDefaultSettings();
         settings.setProjectId(this.settings.getProjectId());    // we don't want to replace projectId with random id
         settings.setDowloadFilePattern(downloadPattern.getText());
         settings.setGeneratedFilePattern(generatedPattern.getText());
@@ -68,11 +70,13 @@ public class MidPointSettingsPanel extends JPanel {
             settings.setRestResponseTimeout(Integer.parseInt(restClientTimeout.getText()));
         }
 
-        ObjectTypesConverter converter = new ObjectTypesConverter();
+        ObjectTypesListConverter converter = new ObjectTypesListConverter();
         settings.setDownloadTypesInclude(converter.fromString(typesIncluded.getText()));
         settings.setDownloadTypesExclude(converter.fromString(typesExcluded.getText()));
 
         settings.setTypesToDownloadLimit(Integer.parseInt(typesDownloadLimit.getText()));
+
+        settings.setIgnoreMissingKeys(ignoreUknownProperties.isSelected());
 
         return settings;
     }
@@ -100,7 +104,7 @@ public class MidPointSettingsPanel extends JPanel {
 
     private void validateTypes(String types, String message) throws ConfigurationException {
         try {
-            ObjectTypesConverter.fromString(types, false);
+            ObjectTypesListConverter.fromString(types, false);
         } catch (RuntimeException ex) {
             throw new ConfigurationException(message + ex.getMessage());
         }

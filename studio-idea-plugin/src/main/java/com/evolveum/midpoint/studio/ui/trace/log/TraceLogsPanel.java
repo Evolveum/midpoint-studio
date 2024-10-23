@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.ui.trace.log;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LogSegmentType;
 import com.intellij.icons.AllIcons;
@@ -40,7 +39,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
     public TraceLogsPanel(MessageBus bus) {
         initLayout();
 
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void selectedTraceNodeChange(OpNode node) {
@@ -58,6 +57,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
     private void initLayout() {
         DefaultActionGroup group = new DefaultActionGroup();
         SimpleCheckboxAction logsWrapText = new SimpleCheckboxAction("Wrap text") {
+
             @Override
             public void onStateChange() {
                 logs.setLineWrap(isSelected());
@@ -67,6 +67,7 @@ public class TraceLogsPanel extends BorderLayoutPanel {
         group.add(logsWrapText);
 
         currentOpOnly = new SimpleCheckboxAction("Current operation only") {
+
             @Override
             public void onStateChange() {
                 updateTexts(fullyLoaded);

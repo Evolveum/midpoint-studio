@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.EncryptedPropertiesParser;
 import com.evolveum.midpoint.studio.util.EncryptedPropertiesSerializer;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -142,7 +143,7 @@ public class EncryptedPropertiesPanel extends AddEditRemovePanel<EncryptedProper
             EncryptedPropertiesSerializer serializer = new EncryptedPropertiesSerializer(environmentService);
             serializer.serialize(properties, file);
         } catch (IOException ex) {
-            MidPointService mm = MidPointService.getInstance(project);
+            MidPointService mm = MidPointService.get(project);
             mm.printToConsole(environmentService.getSelected(), OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
         }
     }
@@ -194,7 +195,7 @@ public class EncryptedPropertiesPanel extends AddEditRemovePanel<EncryptedProper
 
             properties.forEach(p -> es.add(p));
         } catch (IOException ex) {
-            MidPointService mm = MidPointService.getInstance(project);
+            MidPointService mm = MidPointService.get(project);
             mm.printToConsole(environmentService.getSelected(), OperationResultDialog.class, "Couldn't import file " + file.getPath() + " for operation result", ex);
         }
     }

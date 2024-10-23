@@ -1,12 +1,12 @@
 package com.evolveum.midpoint.studio.impl.lang;
 
 import com.evolveum.midpoint.common.LocalizationService;
-import com.evolveum.midpoint.common.refinery.RefinedObjectClassDefinition;
 import com.evolveum.midpoint.model.api.expr.MidpointFunctions;
 import com.evolveum.midpoint.model.common.expression.functions.BasicExpressionFunctions;
 import com.evolveum.midpoint.model.common.expression.functions.LogExpressionFunctions;
 import com.evolveum.midpoint.model.impl.expr.MidpointFunctionsImpl;
 import com.evolveum.midpoint.notifications.api.events.Event;
+import com.evolveum.midpoint.schema.processor.ResourceObjectTypeDefinition;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 
 /**
@@ -42,7 +42,7 @@ public enum MidPointExpressionVariables {
 
     FOCUS_EXISTS("focusExists", Boolean.class),
 
-    R("associationTargetObjectClassDefinition", RefinedObjectClassDefinition.class),
+    R("associationTargetObjectClassDefinition", ResourceObjectTypeDefinition.class),
 
     ENTITLEMENT("entitlement", ShadowType.class),
 
@@ -64,11 +64,11 @@ public enum MidPointExpressionVariables {
 
     LOCALIZATION_SERVICE("localizationService",LocalizationService.class);
 
-    private String variable;
+    private final String variable;
 
-    private Class type;
+    private final Class type;
 
-    private Class instanceType;
+    private final Class instanceType;
 
     MidPointExpressionVariables(String variable, Class type) {
         this(variable, type, type);

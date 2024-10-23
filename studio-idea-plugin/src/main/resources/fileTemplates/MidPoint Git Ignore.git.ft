@@ -1,14 +1,18 @@
-.idea
+### Mac OS ###
+.DS_Store
+
+### Java/Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/
 *.iml
 
-.classpath
-.project
-.settings
+### MidPoint Studio ###
 
-target
-
-.cache
-scratches
-
+scratches/
 credentials.kdbx
 

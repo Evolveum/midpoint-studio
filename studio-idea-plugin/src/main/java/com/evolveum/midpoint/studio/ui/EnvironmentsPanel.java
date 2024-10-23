@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentSettings;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.Selectable;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AddEditRemovePanel;
@@ -20,11 +20,11 @@ public class EnvironmentsPanel extends AddEditRemovePanel<Selectable<Environment
 
     private Project project;
 
-    private MidPointSettings settings;
+    private MidPointConfiguration settings;
 
     private EnvironmentSettings environmentSettings;
 
-    public EnvironmentsPanel(Project project, MidPointSettings settings, EnvironmentSettings environmentSettings) {
+    public EnvironmentsPanel(Project project, MidPointConfiguration settings, EnvironmentSettings environmentSettings) {
         super(new EnvironmentsModel(), new ArrayList<>(), null);
 
         this.project = project;

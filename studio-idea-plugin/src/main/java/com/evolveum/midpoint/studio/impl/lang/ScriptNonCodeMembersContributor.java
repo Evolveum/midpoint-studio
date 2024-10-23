@@ -7,8 +7,10 @@ import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.path.NameItemPathSegment;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
@@ -24,6 +26,7 @@ import org.jetbrains.plugins.groovy.lang.resolve.ResolveUtilKt;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -57,6 +60,11 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
 
         for (MidPointExpressionVariables v : MidPointExpressionVariables.values()) {
             Class type = getVariableType(v);
+
+            if (aClass.getQualifiedName() == null) {
+                // MID-8463 can't create dynamic property
+                continue;
+            }
 
             PsiVariable variable = new GrDynamicImplicitProperty(psiManager, v.getVariable(),
                     type.getName(), aClass.getQualifiedName());
@@ -97,7 +105,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             XmlTag typeTag = MidPointUtils.findSubTag(parameter, ExpressionParameterType.F_TYPE.asSingleName());
 
             String name = null;
-            if (nameTag != null && nameTag.getValue() != null) {
+            if (nameTag != null) {
                 name = nameTag.getValue().getText();
             }
 
@@ -106,7 +114,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             }
 
             Class type = Object.class;
-            if (typeTag != null && typeTag.getValue() != null) {
+            if (typeTag != null) {
                 type = getParameterVariableType(typeTag);
             }
 
@@ -144,7 +152,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             XmlTag nameTag = MidPointUtils.findSubTag(source, SchemaConstants.C_NAME);
 
             List<QName> namePath = new ArrayList<>();
-            if (pathTag != null && pathTag.getValue() != null) {
+            if (pathTag != null) {
                 namePath = parseNamePath(pathTag.getValue().getText());
             }
 
@@ -153,7 +161,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
                 name = namePath.get(namePath.size() - 1).getLocalPart();
             }
 
-            if (nameTag != null && nameTag.getValue() != null && nameTag.getValue().getText() != null) {
+            if (nameTag != null) {
                 name = nameTag.getValue().getText();
             }
 
@@ -181,10 +189,10 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         }
 
         try {
-            UniformItemPath itemPath = ItemPathHolder.parseFromString(path);
+            UniformItemPath itemPath = ItemPathHolder.parseFromString(path, new HashMap<>());   // todo recheck second argument
             itemPath = itemPath.namedSegmentsOnly();
 
-            itemPath.getSegments().stream().forEach(s -> names.add(((NameItemPathSegment) s).getName()));
+            itemPath.getSegments().forEach(s -> names.add(((NameItemPathSegment) s).getName()));
         } catch (Exception ex) {
         }
 
@@ -192,7 +200,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
     }
 
     private Class getParameterVariableType(XmlTag typeTag) {
-        if (typeTag == null || typeTag.getValue() == null) {
+        if (typeTag == null) {
             return Object.class;
         }
 
@@ -214,7 +222,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
 
         QName qname = new QName(namespace, localPart);
 
-        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+        PrismContext ctx = StudioPrismContextService.getPrismContext(typeTag.getProject());
         SchemaRegistry registry = ctx.getSchemaRegistry();
 
         Class clazz = registry.determineClassForType(qname);
@@ -252,8 +260,10 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         }
 
         for (ItemDefinition def : results) {
-            if (def.getTypeClassIfKnown() != null) {
-                return def.getTypeClassIfKnown();
+            QName name = def.getTypeName();
+            Class clazz = XsdTypeMapper.toJavaTypeIfKnown(name);
+            if (clazz != null) {
+                return clazz;
             }
         }
 

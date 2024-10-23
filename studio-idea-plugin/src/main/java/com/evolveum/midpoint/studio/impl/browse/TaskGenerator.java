@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl.browse;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.action.task.GeneratorTask;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -9,6 +10,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.SystemObjectsType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TaskRecurrenceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TaskType;
 import com.intellij.openapi.project.Project;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
@@ -59,7 +61,7 @@ public class TaskGenerator extends Generator {
 
     @Override
     public String generate(Project project, List<ObjectType> objects, GeneratorOptions options) {
-        // TODO deduplicate with bulk actions
+        // TODO deduplicate with actions
         ObjectTypes type = action.applicableTo;
         if (options.isBatchUsingOriginalQuery()) {
             if (options.getOriginalQueryTypes().size() == 1) {
@@ -96,26 +98,32 @@ public class TaskGenerator extends Generator {
 
             Element extension = DOMUtil.createSubElement(task, TaskType.F_EXTENSION);
             DOMUtil.createSubElement(extension, new QName(Constants.MEXT_NS, "objectType", "mext")).setTextContent(type.getTypeQName().getLocalPart());
-            Element objectQuery = DOMUtil.createSubElement(extension, new QName(Constants.MEXT_NS, "objectQuery", "mext"));
+
             if (options.isBatchByOids()) {
-                Element filter = DOMUtil.createSubElement(objectQuery, Constants.Q_FILTER_PREFIXED);
-                Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_PREFIXED);
-                for (ObjectType o : batch.getObjects()) {
-                    DOMUtil.createSubElement(inOid, Constants.Q_VALUE_PREFIXED).setTextContent(o.getOid());
-                    DOMUtil.createComment(inOid, " " + o.getName() + " ");
+                if (!batch.getObjects().isEmpty()) {
+                    Element objectQuery = DOMUtil.createSubElement(extension, new QName(Constants.MEXT_NS, "objectQuery", "mext"));
+                    Element filter = DOMUtil.createSubElement(objectQuery, Constants.Q_FILTER_PREFIXED);
+                    Element inOid = DOMUtil.createSubElement(filter, Constants.Q_IN_OID_PREFIXED);
+                    for (ObjectType o : batch.getObjects()) {
+                        DOMUtil.createSubElement(inOid, Constants.Q_VALUE_PREFIXED).setTextContent(o.getOid());
+                        DOMUtil.createComment(inOid, " " + o.getName() + " ");
+                    }
                 }
             } else {
-                try {
-                    Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
-                    List<Element> children = DOMUtil.listChildElements(originalQuery);
-                    for (Element child : children) {
-                        DOMUtil.fixNamespaceDeclarations(child);
-                        objectQuery.appendChild(root.getOwnerDocument().adoptNode(child));
+                if (StringUtils.isNotEmpty(options.getOriginalQuery())) {
+                    Element objectQuery = DOMUtil.createSubElement(extension, new QName(Constants.MEXT_NS, "objectQuery", "mext"));
+                    try {
+                        Element originalQuery = DOMUtil.parseDocument(options.getOriginalQuery()).getDocumentElement();
+                        List<Element> children = DOMUtil.listChildElements(originalQuery);
+                        for (Element child : children) {
+                            DOMUtil.fixNamespaceDeclarations(child);
+                            objectQuery.appendChild(root.getOwnerDocument().adoptNode(child));
+                        }
+                    } catch (RuntimeException e) {
+                        MidPointUtils.publishExceptionNotification(project, null, TaskGenerator.class,
+                                GeneratorTask.NOTIFICATION_KEY, "Couldn't parse XML query", e);
+                        throw e;
                     }
-                } catch (RuntimeException e) {
-                    MidPointUtils.publishExceptionNotification(project, null, TaskGenerator.class,
-                            GeneratorAction.NOTIFICATION_KEY, "Couldn't parse XML query", e);
-                    throw e;
                 }
             }
 

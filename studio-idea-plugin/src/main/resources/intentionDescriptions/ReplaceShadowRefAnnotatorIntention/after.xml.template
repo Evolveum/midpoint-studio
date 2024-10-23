@@ -1,0 +1,9 @@
+<associationTargetSearch>
+    <filter>
+        <q:text>
+            // TODO please populate filter using shadow attributes that identify
+            // shadow with oid=21dcbff9-d67c-47e4-afee-fa7e215131da
+        </q:text>
+    </filter>
+    <searchStrategy>onResourceIfNeeded</searchStrategy>
+</associationTargetSearch>

@@ -1,0 +1,6 @@
+<password>
+    <t:externalData>
+        <t:provider>my-provider</t:provider>
+        <t:key>my-secret-key</t:key>
+    </t:externalData>
+</password>

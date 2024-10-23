@@ -12,9 +12,25 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
+
 public class TraceUtils {
 
     private static final Logger LOG = Logger.getInstance(TraceUtils.class);
+
+    public static <O extends ObjectType> O getObjectFromReference(ObjectReferenceType ref) {
+        if (ref == null) {
+            return null;
+        }
+
+        PrismObject<O> object = ref.asReferenceValue().getObject();
+        if (object == null) {
+            return null;
+        }
+
+        return object.asObjectable();
+    }
 
     public static String prettyPrint(Object object) {
         if (object instanceof ItemDeltaItemType) {

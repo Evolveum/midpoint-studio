@@ -6,7 +6,10 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.QueryConverter;
-import com.evolveum.midpoint.schema.*;
+import com.evolveum.midpoint.schema.GetOperationOptions;
+import com.evolveum.midpoint.schema.RetrieveOption;
+import com.evolveum.midpoint.schema.SearchResultList;
+import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
@@ -14,16 +17,12 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectListType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.BuildInformationType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.NodeType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.xml.bind.JAXBElement;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.util.*;
 
@@ -173,20 +172,14 @@ public class ServiceImpl implements Service {
         }
 
         Map<String, Object> options = new HashMap<>();
-        opts.forEach(o -> options.put("options", o));
+        options.put("options", opts);
 
-        MidPointObject toBeModified;
-        try {
-            toBeModified = get(ObjectTypes.OBJECT.getClassDefinition(), object.getOid(), GetOperationOptions.createRawCollection());
-
-            if (toBeModified == null) {
-                throw new ObjectNotFoundException("Couldn't fetch object before modificaction to find out proper type");
-            }
-        } catch (IOException | ObjectNotFoundException ex) {
-            throw new ClientException("Couldn't fetch object before modification to find out proper type", ex);
+        ObjectTypes type = object.getType();
+        if (type == null) {
+            type = getObjectType(object.getOid());
         }
 
-        String path = "/" + ObjectTypes.getRestTypeFromClass(toBeModified.getType().getClassDefinition()) + "/" + object.getOid();
+        String path = "/" + ObjectTypes.getRestTypeFromClass(type.getClassDefinition()) + "/" + object.getOid();
 
         Request req = context.build(path, options)
                 .patch(RequestBody.create(object.getContent(), ServiceContext.APPLICATION_XML))
@@ -198,6 +191,21 @@ public class ServiceImpl implements Service {
             // shouldn't happen, there's no parsing involved
             throw new ClientException("Couldn't modify object", ex);
         }
+    }
+
+    private ObjectTypes getObjectType(String oid) {
+        MidPointObject toBeModified;
+        try {
+            toBeModified = get(ObjectTypes.OBJECT.getClassDefinition(), oid, GetOperationOptions.createRawCollection());
+
+            if (toBeModified == null) {
+                throw new ObjectNotFoundException("Couldn't fetch object before modification to find out proper type");
+            }
+        } catch (IOException | ObjectNotFoundException | AuthenticationException ex) {
+            throw new ClientException("Couldn't fetch object before modification to find out proper type", ex);
+        }
+
+        return toBeModified.getType();
     }
 
     @Override
@@ -212,7 +220,7 @@ public class ServiceImpl implements Service {
         }
 
         Map<String, Object> options = new HashMap<>();
-        opts.forEach(o -> options.put("options", o));
+        options.put("options", opts);
 
         String path = "/" + ObjectTypes.getRestTypeFromClass(object.getType().getClassDefinition());
 
@@ -365,7 +373,7 @@ public class ServiceImpl implements Service {
         try (Response response = client.newCall(req).execute()) {
             validateResponseCode(response, oid);
 
-            if (javax.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
+            if (jakarta.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
                 throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
             }
 
@@ -429,7 +437,7 @@ public class ServiceImpl implements Service {
         ObjectModificationType modification = new ObjectModificationType();
         modification.oid(oid);
 
-        String xml = context.getSerializer().serialize(new JAXBElement(SchemaConstantsGenerated.O_OBJECT_MODIFICATION, ObjectModificationType.class, modification));
+        String xml = context.getSerializer().serialize(new JAXBElement(ClientUtils.O_OBJECT_MODIFICATION, ObjectModificationType.class, modification));
 
         Request.Builder builder = context.build("/" + path + "/" + oid, options)
                 .post(RequestBody.create(xml, ServiceContext.APPLICATION_XML));
@@ -440,11 +448,11 @@ public class ServiceImpl implements Service {
         try (okhttp3.Response response = client.newCall(req).execute()) {
             validateResponseCode(response, oid);
 
-            if (javax.ws.rs.core.Response.Status.NO_CONTENT.getStatusCode() == response.code()) {
+            if (jakarta.ws.rs.core.Response.Status.NO_CONTENT.getStatusCode() == response.code()) {
                 return null;
             }
 
-            if (javax.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
+            if (jakarta.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
                 throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
             }
 
@@ -478,7 +486,7 @@ public class ServiceImpl implements Service {
         try (okhttp3.Response response = client.newCall(req).execute()) {
             validateResponseCode(response, oid);
 
-            if (javax.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
+            if (jakarta.ws.rs.core.Response.Status.OK.getStatusCode() != response.code()) {
                 throw new ClientException("Unknown response status: " + response.code(), context.getOperationResultFromResponse(response));
             }
 
@@ -487,47 +495,41 @@ public class ServiceImpl implements Service {
     }
 
     private void validateResponseCode(okhttp3.Response response, String oid) throws ObjectNotFoundException, AuthenticationException {
-        if (javax.ws.rs.core.Response.Status.NOT_FOUND.getStatusCode() == response.code()) {
+        if (jakarta.ws.rs.core.Response.Status.NOT_FOUND.getStatusCode() == response.code()) {
             throw new ObjectNotFoundException("Cannot get object with oid '" + oid + "'. Object doesn't exist");
         }
 
-        if (javax.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
-            throw new AuthenticationException(javax.ws.rs.core.Response.Status.fromStatusCode(response.code()).getReasonPhrase());
+        if (jakarta.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
+            throw new AuthenticationException(jakarta.ws.rs.core.Response.Status.fromStatusCode(response.code()).getReasonPhrase());
         }
     }
 
     @Override
-    public List<String> getSourceProfiles() throws IOException {
-        Request.Builder builder = context.build(ServiceContext.REST_PREFIX_DEBUG, "/profiles", null)
-                .addHeader("Content-Type", "application/json")
+    public Map<SchemaFileType, String> getExtensionSchemas() throws IOException, SchemaException, AuthenticationException, ClientException {
+        SchemaFilesType files = getSchemaFiles();
+        if (files == null || files.getSchema().isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<SchemaFileType, String> result = new HashMap<>();
+        for (SchemaFileType file : files.getSchema()) {
+            Request.Builder builder = context.build("/ws/schema", "/" + file.getFileName(), null).get();
+            Request req = builder.build();
+
+            String xsd = executeRequest(req, String.class);
+            result.put(file, xsd);
+        }
+
+        return result;
+    }
+
+    private SchemaFilesType getSchemaFiles() throws IOException, SchemaException, AuthenticationException, ClientException {
+        Request.Builder builder = context.build("/ws/schema", "", null)
                 .get();
 
         Request req = builder.build();
 
-        OkHttpClient client = context.getClient();
-        try (okhttp3.Response response = client.newCall(req).execute()) {
-
-        }
-
-        return new ArrayList<>();
+        return executeRequest(req, SchemaFilesType.class);
     }
 
-    @Override
-    public List<ScriptObject> getSourceProfileScripts(String profile) throws IOException {
-        Request.Builder builder = context.build(ServiceContext.REST_PREFIX_DEBUG, "/profile/" + profile, null)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "application/json")
-                .get();
-
-        Request req = builder.build();
-
-        OkHttpClient client = context.getClient();
-        try (okhttp3.Response response = client.newCall(req).execute()) {
-            String data = response.body().string();
-
-            ObjectMapper om = new ObjectMapper();
-            ScriptObjects sos = om.readValue(data.getBytes(), ScriptObjects.class);
-            return sos.getScripts();
-        }
-    }
 }

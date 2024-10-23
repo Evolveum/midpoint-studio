@@ -12,7 +12,7 @@ public enum Execution implements Localized {
     OID_BATCHES_BY_N("By OIDs, in batches of N"),
     ORIGINAL_QUERY("Using original query (selection ignored)");
 
-    private String key;
+    private final String key;
 
     Execution(String key) {
         this.key = key;

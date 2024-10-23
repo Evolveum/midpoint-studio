@@ -1,13 +1,12 @@
 package com.evolveum.midpoint.studio.action;
 
+import com.evolveum.midpoint.studio.action.task.DocumentationTask;
 import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
-import com.evolveum.midpoint.studio.impl.MidPointService;
-import com.evolveum.midpoint.studio.impl.MidPointSettings;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.DocumentationDialog;
 import com.evolveum.midscribe.generator.GenerateOptions;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionPlaces;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,12 +15,14 @@ import java.io.File;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class DocumentationAction extends AnAction {
+public class DocumentationAction extends AsyncAction<DocumentationTask> {
+
+    private GenerateOptions options;
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
-        MidPointService mm = MidPointService.getInstance(evt.getProject());
-        MidPointSettings settings = mm.getSettings();
+        MidPointService mm = MidPointService.get(evt.getProject());
+        MidPointConfiguration settings = mm.getSettings();
 
         DocGeneratorOptions opts = settings.getDocGeneratorOptions();
 
@@ -44,9 +45,16 @@ public class DocumentationAction extends AnAction {
         File adocOutput = new File(exportOutput.getParent(), exportOutput.getName() + ".adoc");
         options.setAdocOutput(adocOutput);
 
-        // todo set custom midpoint client that can fetch for example connectors from environment
+        this.options = options;
 
-        GenerateDocumentationAction gda = new GenerateDocumentationAction(options);
-        ActionManager.getInstance().tryToExecute(gda, evt.getInputEvent(), null, ActionPlaces.UNKNOWN, false);
+        super.actionPerformed(evt);
+    }
+
+    @Override
+    protected DocumentationTask createTask(AnActionEvent e, Environment env) {
+        DocumentationTask task = new DocumentationTask(e.getProject(), e::getDataContext, options);
+        task.setEnvironment(env);
+
+        return task;
     }
 }

@@ -1,11 +1,9 @@
 package com.evolveum.midpoint.studio.action.logging;
 
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ClassLoggerConfigurationType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.LoggingLevelType;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.evolveum.midpoint.studio.action.task.SetAllToInfoTask;
+import com.evolveum.midpoint.studio.action.task.SetLoggerTask;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -13,7 +11,7 @@ import java.util.List;
 public class SetAllToInfoAction extends SetLoggerAction {
 
     public SetAllToInfoAction() {
-        super(null);
+        this(null);
     }
 
     public SetAllToInfoAction(String text) {
@@ -21,12 +19,10 @@ public class SetAllToInfoAction extends SetLoggerAction {
     }
 
     @Override
-    public List<ClassLoggerConfigurationType> buildClassLoggers() {
-        List<ClassLoggerConfigurationType> list = new ArrayList<>();
+    protected SetLoggerTask createTask(AnActionEvent e, Environment env) {
+        SetLoggerTask task = new SetAllToInfoTask(e.getProject());
+        task.setEnvironment(env);
 
-        Arrays.stream(ModuleLogger.values()).forEach(o -> list.add(createClassLogger(o.getLogger(), LoggingLevelType.INFO)));
-        Arrays.stream(ModelLogger.values()).forEach(o -> list.add(createClassLogger(o.getLogger(), LoggingLevelType.INFO)));
-
-        return list;
+        return task;
     }
 }

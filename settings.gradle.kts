@@ -1,70 +1,97 @@
 rootProject.name = "midpoint-studio"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-enableFeaturePreview("VERSION_CATALOGS")
 
 pluginManagement {
     repositories {
-        maven("https://oss.sonatype.org/content/repositories/snapshots/")
-        gradlePluginPortal()
+        maven("https://nexus.evolveum.com/nexus/repository/gradle-plugins/")
+        maven("https://nexus.evolveum.com/nexus/repository/sonatype-snapshots/")
     }
 }
 
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
+            version("kotlin", "1.9.25")
+            version("changelog", "2.2.1")
+            version("intelliJPlatform", "2.1.0")
+            version("kover", "0.8.3")
+            version("qodana", "2024.2.3")
+
+            version("annotations", "24.1.0")
             version("asciidoctorj-tabbed-code", "0.3")
-            version("commons-io", "2.9.0")
+            version("commons-io", "2.11.0")
             version("commons-lang", "3.10")
             version("jaxb-runtime", "2.3.2")
             version("jcommander", "1.81")
-            version("jupiter", "5.6.0")
             version("logback", "1.2.3")
-            version("midpoint", "4.4-SNAPSHOT")
-            version("midscribe", "4.3-SNAPSHOT")
-            version("okhttp", "4.9.0")
+            version("midpoint", "4.9")
+            version("midscribe", "4.10-SNAPSHOT")
+            version("okhttp", "4.10.0")
             version("openkeepass", "0.8.1")
-            version("slf4j", "1.7.26")
-            version("spring", "5.2.8.RELEASE")
+            version("spring", "5.3.8")
             version("stax", "1.2.0")
             version("testng", "6.14.3")
-            version("xchart", "3.5.4")
-            version("xml-apis", "1.4.01")
+            version("slf4j", "1.7.32")
+            version("asciidoctorj", "2.5.3")
+            version("asciidoctorj-pdf", "1.6.2")
+            version("asciidoctorj-tabbed-code", "0.3")
+            version("velocity", "2.3")
+            version("jruby", "9.2.19.0")
+            version("antlr", "4.10.1")
+
+            plugin("changelog", "org.jetbrains.changelog").versionRef("changelog")
+            plugin("intelliJPlatform", "org.jetbrains.intellij.platform").versionRef("intelliJPlatform")
+            plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
+            plugin("kover", "org.jetbrains.kotlinx.kover").versionRef("kover")
+            plugin("qodana", "org.jetbrains.qodana").versionRef("qodana")
+
+            library("annotations", "org.jetbrains", "annotations").versionRef("annotations")
+            library("asciidoctorj", "org.asciidoctor", "asciidoctorj").versionRef("asciidoctorj")
+            library("asciidoctorj-pdf", "org.asciidoctor", "asciidoctorj-pdf").versionRef("asciidoctorj-pdf")
+            library(
+                "asciidoctorj-tabbed-code",
+                "com.bmuschko",
+                "asciidoctorj-tabbed-code-extension"
+            ).versionRef("asciidoctorj-tabbed-code")
+            library("commons-io", "commons-io", "commons-io").versionRef("commons-io")
+            library("commons-lang", "org.apache.commons", "commons-lang3").versionRef("commons-lang")
+            library("jaxb-runtime", "org.glassfish.jaxb", "jaxb-runtime").versionRef("jaxb-runtime")
+            library("jcommander", "com.beust", "jcommander").versionRef("jcommander")
+            library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
+            library("midpoint-common", "com.evolveum.midpoint.infra", "common").versionRef("midpoint")
+            library("midpoint-localization", "com.evolveum.midpoint", "midpoint-localization").versionRef("midpoint")
+            library("midpoint-model-api", "com.evolveum.midpoint.model", "model-api").versionRef("midpoint")
+            library("midpoint-model-common", "com.evolveum.midpoint.model", "model-common").versionRef("midpoint")
+            library("midpoint-model-impl", "com.evolveum.midpoint.model", "model-impl").versionRef("midpoint")
+            library("midpoint-schema", "com.evolveum.midpoint.infra", "schema").versionRef("midpoint")
+            library("midpoint-security-api", "com.evolveum.midpoint.repo", "security-api").versionRef("midpoint")
+            library("notifications-api", "com.evolveum.midpoint.model", "notifications-api").versionRef("midpoint")
+            library("okhttp-logging", "com.squareup.okhttp3", "logging-interceptor").versionRef("okhttp")
+            library("okhttp3", "com.squareup.okhttp3", "okhttp").versionRef("okhttp")
+            library("openkeepass", "de.slackspace", "openkeepass").versionRef("openkeepass")
+            library("spring-core", "org.springframework", "spring-core").versionRef("spring")
+            library("stax", "stax", "stax").versionRef("stax")
+            library("slf4j-api", "org.slf4j", "slf4j-api").versionRef("slf4j")
+            library("velocity", "org.apache.velocity", "velocity-engine-core").versionRef("velocity")
+            library("antlr", "org.antlr", "antlr4").versionRef("antlr")
+            library("midscribe-core", "com.evolveum.midpoint", "midscribe-core").versionRef("midscribe")
+        }
+        create("testLibs") {
+            version("jupiter", "5.8.1")
             version("remote-robot", "0.11.7")
             version("xmlunit", "2.8.3")
+            version("xalan", "2.7.2")
 
-            alias("asciidoctorj-tabbed-code").to("com.bmuschko", "asciidoctorj-tabbed-code-extension")
-                .versionRef("asciidoctorj-tabbed-code")
-            alias("common").to("com.evolveum.midpoint.infra", "common").versionRef("midpoint")
-            alias("commons-io").to("commons-io", "commons-io").versionRef("commons-io")
-            alias("commons-lang").to("org.apache.commons", "commons-lang3").versionRef("commons-lang")
-            alias("jaxb-runtime").to("org.glassfish.jaxb", "jaxb-runtime").versionRef("jaxb-runtime")
-            alias("jcommander").to("com.beust", "jcommander").versionRef("jcommander")
-            alias("jupiter-api").to("org.junit.jupiter", "junit-jupiter-api").versionRef("jupiter")
-            alias("jupiter-engine").to("org.junit.jupiter", "junit-jupiter-engine").withoutVersion()
-            alias("logback-classic").to("ch.qos.logback", "logback-classic").versionRef("logback")
-            alias("midpoint-localization").to("com.evolveum.midpoint", "midpoint-localization").versionRef("midpoint")
-            alias("midscribe-core").to("com.evolveum.midpoint", "midscribe-core").versionRef("midscribe")
-            alias("model-api").to("com.evolveum.midpoint.model", "model-api").versionRef("midpoint")
-            alias("model-common").to("com.evolveum.midpoint.model", "model-common").versionRef("midpoint")
-            alias("model-impl").to("com.evolveum.midpoint.model", "model-impl").versionRef("midpoint")
-            alias("notifications-api").to("com.evolveum.midpoint.model", "notifications-api").versionRef("midpoint")
-            alias("okhttp-logging").to("com.squareup.okhttp3", "logging-interceptor").versionRef("okhttp")
-            alias("okhttp3").to("com.squareup.okhttp3", "okhttp").versionRef("okhttp")
-            alias("openkeepass").to("de.slackspace", "openkeepass").versionRef("openkeepass")
-            alias("security-api").to("com.evolveum.midpoint.repo", "security-api").versionRef("midpoint")
-            alias("slf4j-log4j12").to("org.slf4j", "slf4j-log4j12").versionRef("slf4j")
-            alias("spring-core").to("org.springframework", "spring-core").versionRef("spring")
-            alias("stax").to("stax", "stax").versionRef("stax")
-            alias("xchart").to("org.knowm.xchart", "xchart").versionRef("xchart")
-            alias("xml-apis").to("xml-apis", "xml-apis").versionRef("xml-apis")
-            alias("remote-robot").to("com.intellij.remoterobot", "remote-robot").versionRef("remote-robot")
-            alias("remote-fixtures").to("com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
-            alias("xmlunit-core").to("org.xmlunit", "xmlunit-core").versionRef("xmlunit")
+            library("jupiter-api", "org.junit.jupiter", "junit-jupiter-api").versionRef("jupiter")
+            library("jupiter-engine", "org.junit.jupiter", "junit-jupiter-engine").withoutVersion()
+            library("remote-robot", "com.intellij.remoterobot", "remote-robot").versionRef("remote-robot")
+            library("remote-fixtures", "com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
+            library("xmlunit-core", "org.xmlunit", "xmlunit-core").versionRef("xmlunit")
+            library("xalan", "xalan", "xalan").versionRef("xalan")
         }
     }
 }
 
 include("midpoint-client")
 include("studio-idea-plugin")
-

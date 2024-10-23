@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace.overview;
 
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.schema.ResourceShadowDiscriminator;
 import com.evolveum.midpoint.schema.traces.operations.ProjectorProjectionOpNode;
 import com.evolveum.midpoint.studio.ui.trace.Colors;
 import com.evolveum.midpoint.studio.ui.trace.ViewingState;
@@ -16,13 +15,14 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import java.util.List;
 
+import static com.evolveum.midpoint.studio.ui.trace.TraceUtils.getObjectFromReference;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 /**
  *
  */
 public class ProjectorProjectionOverviewProvider implements OverviewProvider<ProjectorProjectionOpNode> {
-    
+
     private static final Logger LOG = Logger.getInstance(ProjectorProjectionOverviewProvider.class);
 
     @Override
@@ -32,16 +32,16 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         ProjectorComponentTraceType trace = node.getTrace();
         if (trace != null) {
 
-            ResourceShadowDiscriminator rsd = getRsd(node, trace);
+            ShadowDiscriminatorType rsd = getRsd(node, trace);
 
-            PrismValueNode.create("Discriminator", rsd != null ? rsd.toResourceShadowDiscriminatorType() : null, root);
+            PrismValueNode.create("Discriminator", rsd != null ? rsd : null, root);
 
             LensContextType inputContext = trace.getInputLensContext();
             if (inputContext != null) {
                 LensFocusContextType focusContext = inputContext.getFocusContext();
                 if (focusContext != null) {
-                    PrismValueNode.create("Focus old", focusContext.getObjectOld(), root);
-                    PrismValueNode.create("Focus current", focusContext.getObjectCurrent(), root);
+                    PrismValueNode.create("Focus old", getObjectFromReference(focusContext.getObjectOldRef()), root);
+                    PrismValueNode.create("Focus current", getObjectFromReference(focusContext.getObjectCurrentRef()), root);
                     ObjectDeltaTypeNode.create("Focus primary delta: ", false, focusContext.getPrimaryDelta(), node.getFocusName(), root);
                     ObjectDeltaTypeNode.create("Focus secondary delta (before): ", false, focusContext.getSecondaryDelta(), node.getFocusName(), root);
                 }
@@ -50,8 +50,8 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
                 String projectionName = getProjectionName(projCtx);
 
                 if (projCtx != null) {
-                    PrismValueNode.create("Projection old", projCtx.getObjectOld(), root);
-                    PrismValueNode.create("Projection current", projCtx.getObjectCurrent(), root)
+                    PrismValueNode.create("Projection old", getObjectFromReference(projCtx.getObjectOldRef()), root);
+                    PrismValueNode.create("Projection current", getObjectFromReference(projCtx.getObjectCurrentRef()), root)
                             .setBackgroundColor(Colors.INPUT_1_COLOR, true);
 
                     ObjectDeltaType syncDelta = projCtx.getSyncDelta();
@@ -78,7 +78,7 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
                 if (focusContext != null) {
                     ObjectDeltaType secondaryDelta = focusContext.getSecondaryDelta();
                     ObjectDeltaTypeNode.create("Secondary delta (after): ", false, secondaryDelta, node.getFocusName(), root);
-                    PrismValueNode.create("Focus new", focusContext.getObjectNew(), root);
+                    PrismValueNode.create("Focus new", getObjectFromReference(focusContext.getObjectNewRef()), root);
                 }
                 LensProjectionContextType projCtx = findProjectionContext(outputContext, rsd);
                 String projectionName = getProjectionName(projCtx);
@@ -89,7 +89,7 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
                     if (secDeltaNode != null) {
                         secDeltaNode.setBackgroundColor(Colors.OUTPUT_2_COLOR, true);
                     }
-                    PrismValueNode.create("Projection new", projCtx.getObjectNew(), root)
+                    PrismValueNode.create("Projection new", getObjectFromReference(projCtx.getObjectNewRef()), root)
                             .setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
                 }
             }
@@ -100,18 +100,18 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         if (projCtx == null) {
             return null;
         }
-        if (projCtx.getObjectNew() != null) {
-            return PolyString.getOrig(projCtx.getObjectNew().getName());
-        } else if (projCtx.getObjectCurrent() != null) {
-            return PolyString.getOrig(projCtx.getObjectCurrent().getName());
-        } else if (projCtx.getObjectOld() != null) {
-            return PolyString.getOrig(projCtx.getObjectOld().getName());
+        if (getObjectFromReference(projCtx.getObjectNewRef()) != null) {
+            return PolyString.getOrig(getObjectFromReference(projCtx.getObjectNewRef()).getName());
+        } else if (getObjectFromReference(projCtx.getObjectCurrentRef()) != null) {
+            return PolyString.getOrig(getObjectFromReference(projCtx.getObjectCurrentRef()).getName());
+        } else if (getObjectFromReference(projCtx.getObjectOldRef()) != null) {
+            return PolyString.getOrig(getObjectFromReference(projCtx.getObjectOldRef()).getName());
         } else {
             return null;
         }
     }
 
-    private LensProjectionContextType findProjectionContext(LensContextType context, ResourceShadowDiscriminator rsd) {
+    private LensProjectionContextType findProjectionContext(LensContextType context, ShadowDiscriminatorType rsd) {
         if (rsd == null) {
             if (context.getProjectionContext().size() == 1) {
                 return context.getProjectionContext().get(0); // TODO ok?
@@ -123,7 +123,7 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         for (LensProjectionContextType projCtx : context.getProjectionContext()) {
             ShadowDiscriminatorType projRsd = projCtx.getResourceShadowDiscriminator();
             if (projRsd != null && projRsd.getResourceRef() != null && projRsd.getResourceRef().getOid() != null &&
-                    projRsd.getResourceRef().getOid().equals(rsd.getResourceOid()) &&
+                    projRsd.getResourceRef().equals(rsd.getResourceRef()) &&
                     defaultIfNull(projRsd.getKind(), ShadowKindType.ACCOUNT) == defaultIfNull(rsd.getKind(), ShadowKindType.ACCOUNT) &&
                     defaultIfNull(projRsd.getIntent(), "default").equals(defaultIfNull(rsd.getIntent(), "default"))) {
                 return projCtx;
@@ -132,15 +132,15 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
         return null;
     }
 
-    private ResourceShadowDiscriminator getRsd(ProjectorProjectionOpNode node, ProjectorComponentTraceType trace) {
+    private ShadowDiscriminatorType getRsd(ProjectorProjectionOpNode node, ProjectorComponentTraceType trace) {
         if (trace.getResourceShadowDiscriminator() != null) {
-            return ResourceShadowDiscriminator.fromResourceShadowDiscriminatorType(trace.getResourceShadowDiscriminator(), false);
+            return trace.getResourceShadowDiscriminator();
         } else {
             return getRsdGuessed(node);
         }
     }
 
-    private ResourceShadowDiscriminator getRsdGuessed(ProjectorProjectionOpNode node) {
+    private ShadowDiscriminatorType getRsdGuessed(ProjectorProjectionOpNode node) {
         List<String> qualifiers = node.getResult().getQualifier();
         if (qualifiers.size() != 1) {
             LOG.info("Wrong # of qualifiers: " + qualifiers);
@@ -152,7 +152,18 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
             LOG.info("Wrong # of parts: " + qualifiers);
         }
         try {
-            return new ResourceShadowDiscriminator(parts[2], ShadowKindType.fromValue(parts[3]), parts[4], null, false);
+            ShadowDiscriminatorType sd = new ShadowDiscriminatorType();
+            sd.setResourceRef(new ObjectReferenceType()
+                    .oid(parts[2])
+                    .type(ResourceType.COMPLEX_TYPE));
+            sd.kind(ShadowKindType.fromValue(parts[3]));
+            sd.setIntent(parts[4]);
+            sd.setTag(null);
+
+            // todo set gone = false, probably via tombstone
+            sd.setTombstone(false);
+
+            return sd;
         } catch (Throwable t) {
             LOG.info("Exception: " + t);
             return null;

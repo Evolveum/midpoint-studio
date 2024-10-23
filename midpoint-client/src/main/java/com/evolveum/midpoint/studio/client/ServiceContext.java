@@ -22,7 +22,7 @@ public class ServiceContext {
 
     public static final String REST_PREFIX_DEBUG = "/rest/sources";
 
-    public static final MediaType APPLICATION_XML = MediaType.get(javax.ws.rs.core.MediaType.APPLICATION_XML);
+    public static final MediaType APPLICATION_XML = MediaType.get(jakarta.ws.rs.core.MediaType.APPLICATION_XML);
 
     private String url;
 
@@ -107,10 +107,10 @@ public class ServiceContext {
 
     public void validateResponse(Response response) throws AuthenticationException {
         int code = response.code();
-        javax.ws.rs.core.Response.Status status = javax.ws.rs.core.Response.Status.fromStatusCode(response.code());
+        jakarta.ws.rs.core.Response.Status status = jakarta.ws.rs.core.Response.Status.fromStatusCode(response.code());
         String reason = status != null ? status.getReasonPhrase() : null;
 
-        if (javax.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
+        if (jakarta.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode() == response.code()) {
             throw new AuthenticationException(reason);
         }
 

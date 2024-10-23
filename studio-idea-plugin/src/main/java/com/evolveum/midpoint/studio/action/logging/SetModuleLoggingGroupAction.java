@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.action.logging;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LoggingLevelType;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.project.DumbAware;
@@ -17,6 +18,11 @@ public abstract class SetModuleLoggingGroupAction extends DefaultActionGroup imp
         add(new SetBasicLoggerAction(logger, LoggingLevelType.INFO));
         add(new SetBasicLoggerAction(logger, LoggingLevelType.DEBUG));
         add(new SetBasicLoggerAction(logger, LoggingLevelType.TRACE));
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
     }
 
     @Override

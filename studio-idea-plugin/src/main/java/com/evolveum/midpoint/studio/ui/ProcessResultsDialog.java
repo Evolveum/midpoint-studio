@@ -5,10 +5,8 @@ import com.evolveum.midpoint.studio.impl.browse.*;
 import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
 import com.evolveum.midpoint.studio.util.LocalizedRenderer;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.intellij.openapi.ui.DialogEarthquakeShaker;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.wm.IdeFocusManager;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
@@ -26,18 +24,18 @@ import java.util.List;
 public class ProcessResultsDialog extends DialogWrapper {
 
     public static final List<Generator> GENERATORS = Arrays.asList(
-            new BulkActionGenerator(BulkActionGenerator.Action.RECOMPUTE),
-            new BulkActionGenerator(BulkActionGenerator.Action.ENABLE),
-            new BulkActionGenerator(BulkActionGenerator.Action.DISABLE),
-            new BulkActionGenerator(BulkActionGenerator.Action.DELETE),
-            new BulkActionGenerator(BulkActionGenerator.Action.MODIFY),
-            new BulkActionGenerator(BulkActionGenerator.Action.ASSIGN_TO_THIS),
-            new BulkActionGenerator(BulkActionGenerator.Action.ASSIGN_THIS),
-            new BulkActionGenerator(BulkActionGenerator.Action.EXECUTE_SCRIPT),
-            new BulkActionGenerator(BulkActionGenerator.Action.NOTIFY),
-            new BulkActionGenerator(BulkActionGenerator.Action.LOG),
-            new BulkActionGenerator(BulkActionGenerator.Action.TEST_RESOURCE),
-            new BulkActionGenerator(BulkActionGenerator.Action.VALIDATE),
+            new ActionGenerator(ActionGenerator.Action.RECOMPUTE),
+            new ActionGenerator(ActionGenerator.Action.ENABLE),
+            new ActionGenerator(ActionGenerator.Action.DISABLE),
+            new ActionGenerator(ActionGenerator.Action.DELETE),
+            new ActionGenerator(ActionGenerator.Action.MODIFY),
+            new ActionGenerator(ActionGenerator.Action.ASSIGN_TO_THIS),
+            new ActionGenerator(ActionGenerator.Action.ASSIGN_THIS),
+            new ActionGenerator(ActionGenerator.Action.EXECUTE_SCRIPT),
+            new ActionGenerator(ActionGenerator.Action.NOTIFY),
+            new ActionGenerator(ActionGenerator.Action.LOG),
+            new ActionGenerator(ActionGenerator.Action.TEST_RESOURCE),
+            new ActionGenerator(ActionGenerator.Action.VALIDATE),
             new TaskGenerator(TaskGenerator.Action.RECOMPUTE),
             new TaskGenerator(TaskGenerator.Action.DELETE),
             new TaskGenerator(TaskGenerator.Action.MODIFY),
@@ -63,6 +61,7 @@ public class ProcessResultsDialog extends DialogWrapper {
     private JCheckBox runtimeResolutionCheckBox;
     private JCheckBox useSymbolicReferencesCheckBox;
     private JPanel root;
+    private JCheckBox useActivityInTask;
 
     private String query;
     private ObjectTypes type;
@@ -115,6 +114,7 @@ public class ProcessResultsDialog extends DialogWrapper {
         executeInDryRunCheckBox.setSelected(opts.isDryRun());
         useSymbolicReferencesCheckBox.setSelected(opts.isSymbolicReferences());
         runtimeResolutionCheckBox.setSelected(opts.isSymbolicReferencesRuntime());
+        useActivityInTask.setSelected(opts.isUseActivities());
     }
 
     @Nullable
@@ -125,7 +125,7 @@ public class ProcessResultsDialog extends DialogWrapper {
 
     @NotNull
     @Override
-    protected Action[] createActions() {
+    protected Action @NotNull [] createActions() {
         return new Action[]{
                 getCancelAction(),
                 getOKAction(),
@@ -169,6 +169,7 @@ public class ProcessResultsDialog extends DialogWrapper {
         opts.setRaw(executeInRawModeCheckBox.isSelected());
         opts.setSymbolicReferences(useSymbolicReferencesCheckBox.isSelected());
         opts.setSymbolicReferencesRuntime(runtimeResolutionCheckBox.isSelected());
+        opts.setUseActivities(useActivityInTask.isSelected());
 
         Execution exec = (Execution) execution.getSelectedItem();
         if (exec == null) {
@@ -214,10 +215,6 @@ public class ProcessResultsDialog extends DialogWrapper {
                 ValidationInfo info = infoList.get(0);
                 if (info.component != null && info.component.isVisible()) {
                     IdeFocusManager.getInstance(null).requestFocus(info.component, true);
-                }
-
-                if (!Registry.is("ide.inplace.validation.tooltip")) {
-                    DialogEarthquakeShaker.shake(getPeer().getWindow());
                 }
 
                 startTrackingValidation();

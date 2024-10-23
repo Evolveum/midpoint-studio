@@ -10,6 +10,41 @@ import java.util.List;
  */
 public interface EncryptionService {
 
+    enum Status {
+
+        UNKNOWN,
+
+        OK,
+
+        MISSING_FILE,
+
+        PASSWORD_NOT_SET,
+
+        PASSWORD_INCORRECT
+    }
+
+    class StatusMessage {
+
+        private final Status status;
+
+        private final String message;
+
+        public StatusMessage(@NotNull Status status, String message) {
+            this.status = status;
+            this.message = message;
+        }
+
+        @NotNull
+        public Status getStatus() {
+            return status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+
     String NOTIFICATION_KEY = "Credentials";
 
     static EncryptionService getInstance(@NotNull Project project) {
@@ -19,6 +54,9 @@ public interface EncryptionService {
     void init(String masterPassword);
 
     void changeMasterPassword(String oldPassword, String newPassword);
+
+    @NotNull
+    StatusMessage getStatus();
 
     boolean isAvailable();
 

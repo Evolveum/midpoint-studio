@@ -1,11 +1,16 @@
 package com.evolveum.midpoint.studio.impl.lang.annotation;
 
+import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.xml.XmlAttribute;
@@ -26,37 +31,64 @@ public class RefOidAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+        Project project = element.getProject();
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return;
+        }
+
         PsiElement parent = element.getParent();
-        if (!(element instanceof XmlAttributeValue)
+        if (!(element instanceof XmlAttributeValue value)
                 || !(parent instanceof XmlAttribute)
                 || !"oid".equals(((XmlAttribute) parent).getLocalName())) {
             return;
         }
 
-        XmlAttributeValue value = (XmlAttributeValue) element;
         XmlTag tag = getTag(value);
 
-        String oid = value.getValue();
-        checkOidFormat(oid, value, holder);
+        checkOidFormat(value, holder);
 
         if (MidPointUtils.isObjectTypeElement(tag)) {
-            checkObjectOidValidity(oid, value, holder);
+            checkObjectOidValidity(value, holder);
         } else if (isObjectReference(tag)) {
-//            checkObjectReferenceValidity(oid, value, holder);
+            checkObjectReferencePresence(value, holder);
         }
     }
 
-    private void checkObjectOidValidity(String oid, XmlAttributeValue value, AnnotationHolder holder) {
+    private String getTypeFromReference(XmlTag tag) {
+        ObjectTypes type = MidPointUtils.getTypeFromReference(tag);
+        if (type == null) {
+            type = ObjectTypes.OBJECT;
+        }
+
+        String value = StudioLocalization.get().translateEnum(type);
+        return value != null ? value.toLowerCase() : "object";
+    }
+
+    private void checkObjectReferencePresence(XmlAttributeValue value, AnnotationHolder holder) {
+        String oid = value.getValue();
+        XmlTag tag = getTag(value);
+        String type = getTypeFromReference(tag);
+
+        List<VirtualFile> result = ObjectFileBasedIndexImpl.getVirtualFiles(value.getValue(), value.getProject(), true);
+        if (result.isEmpty()) {
+            holder.newAnnotation(HighlightSeverity.WARNING, "Referenced " + type + " with oid '" + oid + "' not found in project.")
+                    .range(value)
+                    .highlightType(ProblemHighlightType.POSSIBLE_PROBLEM)
+                    .create();
+        }
+    }
+
+    private void checkObjectOidValidity(XmlAttributeValue value, AnnotationHolder holder) {
         List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(value.getValue(), value.getProject(), true);
-        if (result != null && result.size() > 1) {
+        if (result.size() > 1) {
             holder.newAnnotation(HighlightSeverity.ERROR, "Oid must be unique, found " + result.size() + " objects in total.")
                     .range(value)
                     .create();
-            return;
         }
     }
 
-    private void checkOidFormat(String oid, XmlAttributeValue value, AnnotationHolder holder) {
+    private void checkOidFormat(XmlAttributeValue value, AnnotationHolder holder) {
+        String oid = value.getValue();
         if (StringUtils.isEmpty(oid)) {
             holder.newAnnotation(HighlightSeverity.ERROR, "Oid not defined")
                     .range(value)
@@ -75,14 +107,7 @@ public class RefOidAnnotator implements Annotator {
             holder.newAnnotation(HighlightSeverity.WARNING, "Oid doesn't match UUID format")
                     .range(value)
                     .create();
-            return;
         }
-    }
-
-    private boolean isReferenceValid() {
-        // todo implement
-
-        return true;
     }
 
     private boolean isObjectReference(XmlTag tag) {
@@ -96,13 +121,12 @@ public class RefOidAnnotator implements Annotator {
         }
 
         PsiElement element = reference.resolve();
-        if (element == null || !(element instanceof XmlTag)) {
+        if (!(element instanceof XmlTag xsdElement)) {
             return false;
         }
 
-        XmlTag xsdElement = (XmlTag) element;
         QName qname = MidPointUtils.createQName(xsdElement);
-        if (!qname.equals(new QName(W3C_XML_SCHEMA_NS_URI, "element").equals(xsdElement))) {
+        if (!new QName(W3C_XML_SCHEMA_NS_URI, "element").equals(qname)) {
             return false;
         }
 
@@ -112,12 +136,8 @@ public class RefOidAnnotator implements Annotator {
         }
 
         String typeValue = type.getValue();
-        if (typeValue != null && typeValue.endsWith(":ObjectReferenceType")) {
-            // we probably doesn't have to resolve this reference further
-            return true;
-        }
-
-        return false;
+        // we probably don't have to resolve this reference further
+        return typeValue != null && typeValue.endsWith(":ObjectReferenceType");
     }
 
     private XmlTag getTag(XmlAttributeValue value) {

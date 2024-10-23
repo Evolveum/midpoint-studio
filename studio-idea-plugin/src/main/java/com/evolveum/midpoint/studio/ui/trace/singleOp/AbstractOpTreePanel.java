@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.trace.Format;
 import com.evolveum.midpoint.studio.impl.trace.FormattingContext;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
@@ -64,7 +63,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         initLayout();
         updateModel(null);
         MessageBus bus = project.getMessageBus();
-        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        bus.connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void selectedTraceNodeChange(OpNode node) {
@@ -142,6 +141,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         this.variables.addTreeSelectionListener(this::variablesSelectionChanged);
 
         this.variables.addHighlighter(new AbstractHighlighter() {
+
             @Override
             protected Component doHighlight(Component component, ComponentAdapter adapter) {
                 int row = adapter.convertRowIndexToModel(adapter.row);
@@ -170,6 +170,11 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
 
         DefaultActionGroup group = new DefaultActionGroup();
         variablesDisplayAs = new FormatComboboxAction() {
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.EDT;
+            }
 
             @Override
             public void setFormat(Format format) {
@@ -235,7 +240,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         }
 
         @Override
-        public void update(AnActionEvent e) {
+        public void update(@NotNull AnActionEvent e) {
             super.update(e);
 
             String text = getFormat().getDisplayName();

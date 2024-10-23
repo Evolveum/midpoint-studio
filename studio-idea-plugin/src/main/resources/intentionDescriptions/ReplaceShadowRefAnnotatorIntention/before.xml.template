@@ -1,0 +1,6 @@
+<value xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3">
+    <shadowRef>
+        <oid>21dcbff9-d67c-47e4-afee-fa7e215131da</oid>
+        <type>c:ShadowType</type>
+    </shadowRef>
+</value>

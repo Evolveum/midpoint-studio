@@ -13,9 +13,9 @@ public enum ModuleLogger {
 
     REPOSITORY("com.evolveum.midpoint.repo", "Repository");
 
-    private String logger;
+    private final String logger;
 
-    private String label;
+    private final String label;
 
     ModuleLogger(String logger, String label) {
         this.logger = logger;

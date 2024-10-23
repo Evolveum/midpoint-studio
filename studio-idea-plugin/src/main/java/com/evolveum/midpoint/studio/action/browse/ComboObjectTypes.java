@@ -1,20 +1,18 @@
 package com.evolveum.midpoint.studio.action.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.impl.service.MidPointLocalizationService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.DumbAware;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,15 +20,28 @@ import java.util.List;
  */
 public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
+    private List<SelectionListener<ObjectTypes>> selectionListeners = new java.util.ArrayList<>();
+
     private ObjectTypes selected = ObjectTypes.OBJECT;
 
+    public void addSelectionListener(SelectionListener<ObjectTypes> listener) {
+        selectionListeners.add(listener);
+    }
+
+    public void removeSelectionListener(SelectionListener<ObjectTypes> listener) {
+        selectionListeners.remove(listener);
+    }
+
     @Override
-    public void update(AnActionEvent e) {
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.EDT;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
-        String text = selected.getTypeQName().getLocalPart();
-
-        String value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+        String value = StudioLocalization.get().translateEnum(selected);
         getTemplatePresentation().setText(value);
         e.getPresentation().setText(value);
     }
@@ -41,6 +52,10 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
         }
 
         this.selected = selected;
+
+        for (SelectionListener<ObjectTypes> listener : selectionListeners) {
+            listener.onSelectionChanged(selected);
+        }
     }
 
     public ObjectTypes getSelected() {
@@ -48,13 +63,13 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
     }
 
     @NotNull
+    @Deprecated
     @Override
     protected DefaultActionGroup createPopupActionGroup(JComponent button) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        List<ObjectTypes> types = new ArrayList<>();
-        types.addAll(Arrays.asList(ObjectTypes.values()));
-        Collections.sort(types, MidPointUtils.OBJECT_TYPES_COMPARATOR);
+        List<ObjectTypes> types = Arrays.asList(ObjectTypes.values());
+        types.sort(MidPointUtils.OBJECT_TYPES_COMPARATOR);
 
         for (ObjectTypes type : types) {
             group.add(new TypeAction(type, this));
@@ -65,9 +80,9 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
 
     private static class TypeAction extends AnAction implements DumbAware {
 
-        private ObjectTypes type;
+        private final ObjectTypes type;
 
-        private ComboObjectTypes combo;
+        private final ComboObjectTypes combo;
 
         public TypeAction(ObjectTypes type, ComboObjectTypes combo) {
             super(type.getTypeQName().getLocalPart());
@@ -76,23 +91,21 @@ public class ComboObjectTypes extends ComboBoxAction implements DumbAware {
             this.combo = combo;
         }
 
-        public ObjectTypes getType() {
-            return type;
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
         }
 
         @Override
-        public void actionPerformed(AnActionEvent e) {
+        public void actionPerformed(@NotNull AnActionEvent e) {
             combo.setSelected(type);
-            combo.update(e);
         }
 
         @Override
-        public void update(AnActionEvent e) {
+        public void update(@NotNull AnActionEvent e) {
             super.update(e);
 
-            String text = type.getTypeQName().getLocalPart();
-
-            String value = ServiceManager.getService(MidPointLocalizationService.class).translate("ObjectType." + text, text);
+            String value = StudioLocalization.get().translateEnum(type);
             getTemplatePresentation().setText(value);
             e.getPresentation().setText(value);
         }

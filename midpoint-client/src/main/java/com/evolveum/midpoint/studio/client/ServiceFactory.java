@@ -1,13 +1,12 @@
 package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.util.PrismContextFactory;
 import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
-import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.util.MiscUtil;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.commons.lang3.StringUtils;
@@ -16,9 +15,12 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,6 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ServiceFactory {
 
+    @Deprecated
     public static final PrismContext DEFAULT_PRISM_CONTEXT;
 
     static {
@@ -40,7 +43,7 @@ public class ServiceFactory {
             DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
             // todo create web client just to obtain extension schemas!
 
-            PrismContextFactory factory = new MidPointPrismContextFactory();
+            MidPointPrismContextFactory factory = new MidPointPrismContextFactory();
             PrismContext prismContext = factory.createPrismContext();
             prismContext.initialize();
 
@@ -73,6 +76,8 @@ public class ServiceFactory {
     private MessageListener messageListener;
 
     private int responseTimeout = 60;
+
+    private boolean useHttp2 = false;
 
     public ServiceFactory url(final String url) {
         this.url = url;
@@ -129,27 +134,25 @@ public class ServiceFactory {
         return this;
     }
 
+    public ServiceFactory useHttp2(final boolean useHttp2) {
+        this.useHttp2 = useHttp2;
+        return this;
+    }
+
     public Service create() throws Exception {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.followSslRedirects(false);
         builder.followRedirects(false);
+        if (useHttp2) {
+            setupHttp2(builder);
+        }
 
         builder.writeTimeout(responseTimeout, TimeUnit.SECONDS);
         builder.readTimeout(responseTimeout, TimeUnit.SECONDS);
         builder.connectTimeout(responseTimeout, TimeUnit.SECONDS);
 
         if (username != null || password != null) {
-            builder.authenticator((route, response) -> {
-
-                if (response.request().header("Authorization") != null) {
-                    return null; // Give up, we've already failed to authenticate.
-                }
-
-                String credential = Credentials.basic(username, password);
-                return response.request().newBuilder()
-                        .header("Authorization", credential)
-                        .build();
-            });
+            setupAuthentication(builder);
         }
 
         if (ignoreSSLErrors) {
@@ -163,18 +166,7 @@ public class ServiceFactory {
         }
 
         if (StringUtils.isNotEmpty(proxyServer)) {
-            Proxy proxy = new Proxy(proxyServerType.getType(), new InetSocketAddress(proxyServer, proxyServerPort));
-            builder.proxy(proxy);
-
-            if (proxyUsername != null || proxyPassword != null) {
-                builder.proxyAuthenticator((route, response) -> {
-
-                    String credential = Credentials.basic(proxyUsername, proxyPassword);
-                    return response.request().newBuilder()
-                            .header("Proxy-Authorization", credential)
-                            .build();
-                });
-            }
+            setupProxy(builder);
         }
 
         builder.addInterceptor(chain -> {
@@ -190,19 +182,89 @@ public class ServiceFactory {
             return chain.proceed(newRequest);
         });
 
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(
-                message -> {
-                    if (messageListener == null) {
-                        return;
-                    }
-
-                    messageListener.handleMessage(message);
-                });
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        builder.addInterceptor(logging);
+        setupLogging(builder);
 
         ServiceContext context = new ServiceContext(url, DEFAULT_PRISM_CONTEXT, builder.build());
 
         return new ServiceImpl(context);
+    }
+
+    private void setupHttp2(OkHttpClient.Builder builder) {
+        URI uri = URI.create(url);
+        String scheme = uri.getScheme();
+        if (scheme == null) {
+            return;
+        }
+
+        scheme = scheme.toLowerCase();
+        if ("http".equals(scheme)) {
+            builder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
+        } else if ("https".equals(scheme)) {
+            builder.protocols(Arrays.asList(Protocol.HTTP_2, Protocol.HTTP_1_1));
+        }
+    }
+
+    private void setupAuthentication(OkHttpClient.Builder builder) {
+        builder.addInterceptor(chain -> {
+
+            String credential = Credentials.basic(username, password);
+            Request request = chain.request().newBuilder()
+                    .header("Authorization", credential)
+                    .build();
+
+            return chain.proceed(request);
+        });
+    }
+
+    private void setupProxy(OkHttpClient.Builder builder) {
+        URI uri = URI.create(proxyServer);
+
+        if (proxyServerPort == null) {
+            if (uri.getPort() >= 0 && uri.getPort() <= 0xFFFF) {
+                proxyServerPort = uri.getPort();
+            } else if (proxyServerType.getType() == Proxy.Type.HTTP) {
+                if ("http".equalsIgnoreCase(uri.getScheme())) {
+                    proxyServerPort = 80;
+                } else if ("https".equalsIgnoreCase(uri.getScheme())) {
+                    proxyServerPort = 443;
+                }
+            }
+        }
+
+        if (proxyServerType == null) {
+            throw new IllegalArgumentException("Proxy server type not defined");
+        }
+
+        if (StringUtils.isEmpty(uri.getHost())) {
+            throw new IllegalArgumentException("Proxy host not defined");
+        }
+
+        if (proxyServerPort == null) {
+            throw new IllegalArgumentException("Proxy port undefined");
+        }
+
+        Proxy proxy = new Proxy(proxyServerType.getType(), new InetSocketAddress(uri.getHost(), proxyServerPort));
+        builder.proxy(proxy);
+
+        if (proxyUsername != null || proxyPassword != null) {
+            builder.proxyAuthenticator((route, response) -> {
+
+                String credential = Credentials.basic(proxyUsername, proxyPassword);
+                return response.request().newBuilder()
+                        .header("Proxy-Authorization", credential)
+                        .build();
+            });
+        }
+    }
+
+    private void setupLogging(OkHttpClient.Builder builder) {
+        if (messageListener == null) {
+            messageListener = message -> {
+            };
+        }
+
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> messageListener.handleMessage(message));
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        builder.addNetworkInterceptor(logging);
     }
 }

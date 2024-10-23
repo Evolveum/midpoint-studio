@@ -19,7 +19,7 @@ public class TraceLensContextToolWindowFactory implements ToolWindowFactory, Dum
         ContentManager contentManager = toolWindow.getContentManager();
 
         TraceLensContextPanel lens = new TraceLensContextPanel(project);
-        Content optionsContent = ContentFactory.SERVICE.getInstance().createContent(lens, null, false);
+        Content optionsContent = ContentFactory.getInstance().createContent(lens, null, false);
         contentManager.addContent(optionsContent);
     }
 
@@ -27,10 +27,5 @@ public class TraceLensContextToolWindowFactory implements ToolWindowFactory, Dum
     public void init(ToolWindow window) {
         window.setStripeTitle("Lens Context");
         window.setTitle("Lens Context");
-    }
-
-    @Override
-    public boolean isDoNotActivateOnStart() {
-        return false;
     }
 }

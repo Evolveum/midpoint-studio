@@ -3,6 +3,8 @@ package com.evolveum.midpoint.studio.action.environment;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
@@ -23,10 +25,20 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
     public static final String ACTION_ID = MidPointConstants.ACTION_ID_PREFIX + ComboEnvironments.class.getSimpleName();
 
     @Override
-    public void update(AnActionEvent e) {
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
         if (e.getProject() == null) {
+            return;
+        }
+
+        if (!MidPointUtils.isVisibleWithMidPointFacet(e)) {
+            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
             return;
         }
 
@@ -34,13 +46,26 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
 
         Environment env = envManager.getSelected();
 
-        String text = env != null ? env.getName() : "None Selected";
-        getTemplatePresentation().setText(text);
-        e.getPresentation().setText(text);
+        String text = env != null ? env.getName() : StudioLocalization.message("ComboEnvironments.noneSelected");
+
+        SwingUtilities.invokeLater(() -> {
+            getTemplatePresentation().setText(text);
+            e.getPresentation().setText(text);
+        });
+
+        Color color = env != null ? env.getAwtColor() : null;
+        if (color != null) {
+            Icon icon = MidPointUtils.createEnvironmentIcon(color);
+
+            SwingUtilities.invokeLater(() -> {
+                getTemplatePresentation().setIcon(icon);
+                e.getPresentation().setIcon(icon);
+            });
+        }
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
     }
 
     @NotNull
@@ -63,19 +88,20 @@ public class ComboEnvironments extends ComboBoxAction implements DumbAware {
         return panel;
     }
 
-    @NotNull
     @Override
-    protected DefaultActionGroup createPopupActionGroup(JComponent jComponent) {
+    protected @NotNull DefaultActionGroup createPopupActionGroup(JComponent button) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        Project project = DataManager.getInstance().getDataContext(jComponent).getData(CommonDataKeys.PROJECT);
-        EnvironmentService manager = EnvironmentService.getInstance(project);
+        Project project = DataManager.getInstance().getDataContext(button).getData(CommonDataKeys.PROJECT);
+        if (project != null) {
+            EnvironmentService manager = EnvironmentService.getInstance(project);
 
-        for (Environment env : manager.getEnvironments()) {
-            group.add(new SelectEnvironment(env));
+            for (Environment env : manager.getEnvironments()) {
+                group.add(new SelectEnvironment(env));
+            }
+
+            group.addSeparator();
         }
-
-        group.addSeparator();
 
         group.add(new SelectEnvironment(null));
 

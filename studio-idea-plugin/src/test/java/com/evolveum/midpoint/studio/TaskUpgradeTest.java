@@ -27,7 +27,7 @@ public class TaskUpgradeTest {
         System.out.println(sw);
 
         File parent = new File(".");
-        File datafile = new File(parent, "src/test/testData/task-upgrade/bulk-iterative-2-input.xml");
+        File datafile = new File(parent, "src/test/testData/task-upgrade/action-iterative-2-input.xml");
 
         String input = Files.readString(datafile.toPath());
 

@@ -26,13 +26,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
 
-        <connid.version>1.5.0.18</connid.version>
-        <scripted.sql.version>2.2.1</scripted.sql.version>
-        <midpoint.version>4.4-SNAPSHOT</midpoint.version>
-        <groovy.version>3.0.8</groovy.version>
-        <testng.version>7.4.0</testng.version>
+        <connid.version>1.5.1.10</connid.version>
+        <scripted.sql.version>2.3</scripted.sql.version>
+        <midpoint.version>${MIDPOINT_VERSION}</midpoint.version>
+        <groovy.version>4.0.11</groovy.version>
+        <testng.version>7.8.0</testng.version>
     </properties>
 
     <build>
@@ -65,25 +65,25 @@
             <version>${connid.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
+            <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>${groovy.version}</version>
             <type>pom</type>
             <exclusions>
                 <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
+                    <groupId>org.apache.groovy</groupId>
                     <artifactId>groovy-ant</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
+                    <groupId>org.apache.groovy</groupId>
                     <artifactId>groovy-test-junit5</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
+                    <groupId>org.apache.groovy</groupId>
                     <artifactId>groovy-test</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
+                    <groupId>org.apache.groovy</groupId>
                     <artifactId>groovy-testng</artifactId>
                 </exclusion>
             </exclusions>

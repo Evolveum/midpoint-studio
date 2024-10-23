@@ -13,6 +13,8 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.LensFocusContextType
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import static com.evolveum.midpoint.studio.ui.trace.TraceUtils.getObjectFromReference;
+
 /**
  *
  */
@@ -29,8 +31,8 @@ public class ClockworkRunOverviewProvider implements OverviewProvider<ClockworkR
                 root.add(new PrismValueNode("Context (before)", inputContext.asPrismContainerValue()));
                 LensFocusContextType focusContext = inputContext.getFocusContext();
                 if (focusContext != null) {
-                    PrismValueNode.create("Focus old", focusContext.getObjectOld(), root);
-                    PrismValueNode.create("Focus current", focusContext.getObjectCurrent(), root)
+                    PrismValueNode.create("Focus old", getObjectFromReference(focusContext.getObjectOldRef()), root);
+                    PrismValueNode.create("Focus current", getObjectFromReference(focusContext.getObjectCurrentRef()), root)
                             .setBackgroundColor(Colors.INPUT_1_COLOR, true);
 
                     ObjectDeltaType primaryDelta = focusContext.getPrimaryDelta();
@@ -45,7 +47,7 @@ public class ClockworkRunOverviewProvider implements OverviewProvider<ClockworkR
             if (outputContext != null) {
                 LensFocusContextType focusContext = outputContext.getFocusContext();
                 if (focusContext != null) {
-                    PrismValueNode.create("Focus new", focusContext.getObjectNew(), root)
+                    PrismValueNode.create("Focus new", getObjectFromReference(focusContext.getObjectNewRef()), root)
                             .setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
                 }
                 root.add(new PrismValueNode("Context (after)", outputContext.asPrismContainerValue()));

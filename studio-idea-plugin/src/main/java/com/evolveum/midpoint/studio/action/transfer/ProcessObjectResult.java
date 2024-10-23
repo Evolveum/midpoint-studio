@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.action.transfer;
 
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.client.MidPointObject;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -13,7 +14,9 @@ public class ProcessObjectResult {
 
     private boolean shouldContinue = true;
 
-    ProcessObjectResult(OperationResult result) {
+    private MidPointObject object;
+
+    public ProcessObjectResult(OperationResult result) {
         this.result = result;
     }
 
@@ -29,6 +32,10 @@ public class ProcessObjectResult {
         return this.shouldContinue;
     }
 
+    public MidPointObject object() {
+        return this.object;
+    }
+
     public ProcessObjectResult result(final OperationResult result) {
         this.result = result;
         return this;
@@ -41,6 +48,11 @@ public class ProcessObjectResult {
 
     public ProcessObjectResult shouldContinue(final boolean shouldContinue) {
         this.shouldContinue = shouldContinue;
+        return this;
+    }
+
+    public ProcessObjectResult object(final MidPointObject object) {
+        this.object = object;
         return this;
     }
 }

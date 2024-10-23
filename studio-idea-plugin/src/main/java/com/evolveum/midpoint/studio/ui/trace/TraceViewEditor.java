@@ -4,7 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.OpNodeTreeBuilder;
 import com.evolveum.midpoint.schema.traces.TraceParser;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.StudioNameResolver;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.OpTreePanel;
@@ -22,6 +22,8 @@ import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.project.PossiblyDumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.UserDataHolder;
+import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.panels.Wrapper;
 import org.jetbrains.annotations.NotNull;
@@ -35,11 +37,13 @@ import java.util.List;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
+public class TraceViewEditor implements FileEditor, UserDataHolder, PossiblyDumbAware {
 
     private static final Logger LOG = Logger.getInstance(TraceViewEditor.class);
 
     public static final String NOTIFICATION_KEY = "Trace View";
+
+    private UserDataHolderBase userDataHolder = new UserDataHolderBase();
 
     private Project project;
 
@@ -81,7 +85,7 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
             LOG.info("Initializing TraceViewEditor - built op node tree: " + (System.currentTimeMillis() - start) + " ms");
 
         } catch (Exception ex) {
-            MidPointService mm = MidPointService.getInstance(project);
+            MidPointService mm = MidPointService.get(project);
             mm.printToConsole(null, TraceViewEditor.class, "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
             MidPointUtils.publishExceptionNotification(project, null, TraceViewEditor.class, NOTIFICATION_KEY, "Couldn't load file", ex);
 
@@ -179,12 +183,12 @@ public class TraceViewEditor implements FileEditor, PossiblyDumbAware {
     @Nullable
     @Override
     public <T> T getUserData(@NotNull Key<T> key) {
-        return null;
+        return userDataHolder.getUserData(key);
     }
 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T value) {
-
+        userDataHolder.putUserData(key, value);
     }
 
     @Override

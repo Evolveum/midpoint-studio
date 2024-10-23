@@ -38,7 +38,7 @@ public class MPTraceFileType implements UIBasedFileType {
 
     @Override
     public Icon getIcon() {
-        return MidPointIcons.ACTION_MIDPOINT;
+        return MidPointIcons.Midpoint;
     }
 
     @Override

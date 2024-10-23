@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.scale.JBUIScale;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +30,7 @@ public class HeaderDecorator extends BorderLayoutPanel {
         header.setBackground(JBUI.CurrentTheme.ToolWindow.headerActiveBackground());
         header.setFont(JBUI.CurrentTheme.ToolWindow.headerFont());
 
-        int padding = JBUI.CurrentTheme.ToolWindow.tabVerticalPadding();
+        int padding = JBUIScale.scale(6);// todo fix JBUI.CurrentTheme.ToolWindow.tabVerticalPadding();
         header.setBorder(JBUI.Borders.empty(padding, 7, padding, 0));
 
         return header;

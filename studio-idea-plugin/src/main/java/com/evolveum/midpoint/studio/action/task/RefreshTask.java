@@ -4,7 +4,11 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.transfer.RefreshAction;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.SearchOptions;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationType;
@@ -18,17 +22,13 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -75,32 +75,11 @@ public class RefreshTask extends Task.Backgroundable {
 
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
-        AtomicInteger result = new AtomicInteger(0);
+        int result = MidPointUtils.showConfirmationDialog(
+                getProject(), "Are you sure you want to reload " + toProcess.size()
+                        + " file(s) from the server '" + env.getName() + "'?", "Confirm action", "Refresh", "Cancel");
 
-        ApplicationManager.getApplication().invokeAndWait(() -> {
-            Component comp = event.getInputEvent().getComponent();
-
-            JComponent source;
-            if (comp instanceof JComponent) {
-                source = (JComponent) comp;
-            } else {
-                JWindow w;
-                if (comp instanceof JWindow) {
-                    w = (JWindow) comp;
-                } else {
-                    w = (JWindow) WindowManager.getInstance().suggestParentWindow(getProject());
-                }
-
-                source = w.getRootPane();
-            }
-
-            int r = Messages.showConfirmationDialog(source, "Are you sure you want to reload " + toProcess.size()
-                    + " file(s) from the server '" + env.getName() + "'?", "Confirm action", "Refresh", "Cancel");
-
-            result.set(r);
-        });
-
-        if (result.get() == Messages.NO) {
+        if (result == Messages.NO) {
             return;
         }
 
@@ -114,7 +93,7 @@ public class RefreshTask extends Task.Backgroundable {
     }
 
     private void processFiles(ProgressIndicator indicator, Environment env, List<VirtualFile> files) {
-        MidPointService mm = MidPointService.getInstance(getProject());
+        MidPointService mm = MidPointService.get(getProject());
 
         MidPointClient client = new MidPointClient(getProject(), env);
 

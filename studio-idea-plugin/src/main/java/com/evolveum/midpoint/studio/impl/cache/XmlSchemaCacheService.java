@@ -1,15 +1,21 @@
 package com.evolveum.midpoint.studio.impl.cache;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.intellij.javaee.ExternalResourceManagerEx;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.ui.UIUtil;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -108,7 +114,28 @@ public class XmlSchemaCacheService {
 
         SCHEMAS.put(url, schema);
 
+        checkUserDefinedXsdSchemas(baseFile.getProject(), url);
+
         return schema;
+    }
+
+    private void checkUserDefinedXsdSchemas(Project project, String url) {
+        ExternalResourceManagerEx manager = ExternalResourceManagerEx.getInstanceEx();
+
+        String[] urls = manager.getAvailableUrls();
+        if (urls == null) {
+            return;
+        }
+
+        boolean found = Arrays.stream(urls).anyMatch(u -> Objects.equals(u, url));
+        if (!found) {
+            return;
+        }
+
+        UIUtil.invokeLaterIfNeeded(() -> {
+            MidPointService mpService = project.getService(MidPointService.class);
+            mpService.printToConsole(null, XmlSchemaCacheService.class, "Warning: Namespace URL '" + url + "' also defined as custom user resource. This can possible interfere with Midpoint XSD files linked by Midpoint Studio plugin.");
+        });
     }
 
     public synchronized void clear() {

@@ -1,14 +1,25 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
+import com.evolveum.midpoint.studio.lang.properties.SPropertiesCompletionProvider;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.prism.xml.ns._public.query_3.FilterClauseType;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.completion.DefaultCompletionContributor;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.XmlPatterns;
-import com.intellij.patterns.XmlTagPattern;
+import org.jetbrains.annotations.NotNull;
 
+import static com.evolveum.midpoint.studio.util.MidPointUtils.*;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
+ * todo this should be split into separate contributors probably
+ * Use {@link com.evolveum.midpoint.studio.impl.lang.MidPointCompletionContributor}.
+ * See example {@link com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor}
+ *
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointCompletionContributor extends DefaultCompletionContributor {
@@ -18,7 +29,7 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                 psiElement().inside(
                         XmlPatterns
                                 .xmlText()),
-                new PropertiesCompletionProvider());
+                new SPropertiesCompletionProvider());
 
         extend(CompletionType.BASIC,
                 psiElement().inside(
@@ -51,14 +62,14 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                         XmlPatterns
                                 .xmlText()
                                 .withParent(
-                                        commonTag("handlerUri").withParent(commonTag("task"))
+                                        commonTag("handlerUri").withParent(qualifiedTag(SchemaConstantsGenerated.C_TASK))
                                 )),
                 new TaskHandlerAnnotatorCompletionProvider());
 
         extend(CompletionType.BASIC,
                 psiElement().inside(
                         XmlPatterns.or(
-                                XmlPatterns.xmlText().withParent(commonTag("matching")),
+                                XmlPatterns.xmlText().withParent(qualifiedTag(FilterClauseType.F_MATCHING)),
                                 XmlPatterns.xmlText().withParent(commonTag("matchingRule")),
                                 XmlPatterns.xmlText().withParent(annotationTag("matchingRule"))
                         )
@@ -73,17 +84,26 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
                         )
                 ),
                 new ItemPathCompletionProvider());
+
+        extend(CompletionType.BASIC,
+                psiElement().inside(
+                        XmlPatterns.xmlText().withParent(commonTag("panelType"))
+                ),
+                new PanelTypeCompletionProvider());
     }
 
-    private XmlTagPattern.Capture commonTag(String localName) {
-        return qualifiedTag(localName, SchemaConstantsGenerated.NS_COMMON);
-    }
+    @Override
+    public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
+        if (parameters.getEditor().getProject() == null) {
+            return;
+        }
 
-    private XmlTagPattern.Capture annotationTag(String localName) {
-        return qualifiedTag(localName, SchemaConstantsGenerated.NS_ANNOTATION);
-    }
+        Project project = parameters.getEditor().getProject();
 
-    private XmlTagPattern.Capture qualifiedTag(String localName, String namespace) {
-        return XmlPatterns.xmlTag().withLocalName(localName).withNamespace(namespace);
+        if (!MidPointUtils.hasMidPointFacet(project)) {
+            return;
+        }
+
+        super.fillCompletionVariants(parameters, result);
     }
 }

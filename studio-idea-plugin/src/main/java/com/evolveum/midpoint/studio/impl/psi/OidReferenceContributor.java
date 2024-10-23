@@ -18,5 +18,10 @@ public class OidReferenceContributor extends PsiReferenceContributor {
                         .withParent(
                                 XmlPatterns.xmlAttribute("oid")),
                 new OidReferenceProvider());
+
+        registrar.registerReferenceProvider(
+                XmlPatterns
+                        .xmlTag().withLocalName("oid"),
+                new OidReferenceProvider());
     }
 }
