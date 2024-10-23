@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.ui.performance.singleOp;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
 import com.evolveum.midpoint.schema.traces.PerformanceCategoryInfo;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.impl.MidPointProjectNotifierAdapter;
 import com.evolveum.midpoint.studio.impl.performance.OperationPerformance;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.singleOp.model.ListTableModel;
@@ -32,7 +31,7 @@ public class SingleOpPerformancePanel extends BorderLayoutPanel {
     public SingleOpPerformancePanel(Project project) {
         initLayout();
 
-        project.getMessageBus().connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifierAdapter() {
+        project.getMessageBus().connect().subscribe(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC, new MidPointProjectNotifier() {
 
             @Override
             public void selectedPerformanceNodeChange(OperationPerformance node) {

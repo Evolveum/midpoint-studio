@@ -468,7 +468,7 @@
         <!-- STATISTICS -->
 
         <action id="MidPoint.Action.SummarizeOperations"
-                class="com.evolveum.midpoint.studio.action.SummarizeOperations"
+                class="com.evolveum.midpoint.studio.action.SummarizeOperationAction"
                 text="Summarize Operations"/>
 
 

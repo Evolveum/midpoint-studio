@@ -2,10 +2,11 @@ package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.TraceParser;
-import com.evolveum.midpoint.studio.action.browse.BackgroundAction;
+import com.evolveum.midpoint.studio.action.task.SimpleBackgroundableTask;
+import com.evolveum.midpoint.studio.impl.ConsoleService;
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.performance.PerformanceTree;
 import com.evolveum.midpoint.studio.impl.performance.output.AsciiWriter;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -14,7 +15,7 @@ import com.evolveum.midpoint.util.Holder;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TracingOutputType;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -25,51 +26,46 @@ import com.intellij.openapi.vfs.VirtualFile;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Supplier;
 
 import static java.util.Collections.emptyList;
 
-public class SummarizeOperations extends BackgroundAction {
+public class SummarizeOperationsTask extends SimpleBackgroundableTask {
 
-    private static final String NOTIFICATION_KEY = "Summarize operations";
+    public static final String TITLE = "Summarize operations";
 
-    public SummarizeOperations() {
-        super("Summarizing operations");
-    }
+    public static final String NOTIFICATION_KEY = TITLE;
 
-    public SummarizeOperations(String taskTitle) {
-        super(taskTitle);
+    public SummarizeOperationsTask(Project project, Supplier<DataContext> dataContextSupplier) {
+        super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
     }
 
     @Override
-    protected void executeOnBackground(AnActionEvent evt, ProgressIndicator indicator) {
+    protected void doRun(ProgressIndicator indicator) {
+        StudioPrismContextService.runWithProject(getProject(), () -> {
+            super.doRun(indicator);
 
-        List<VirtualFile> files = getFilesToProcess(evt);
-        if (files.isEmpty()) {
-            return;
-        }
+            List<VirtualFile> files = getFilesToProcess();
+            if (files.isEmpty()) {
+                return;
+            }
 
-        MidPointService mm = getMidpointService(evt);
-        EnvironmentService es = EnvironmentService.getInstance(Objects.requireNonNull(evt.getProject()));
-        summarizeFiles(files, mm, es, evt.getProject());
+            summarizeFiles(files);
+        });
     }
 
-    private MidPointService getMidpointService(AnActionEvent evt) {
-        Project project = evt.getProject();
-        assert project != null;
-        return MidPointService.getInstance(project);
-    }
-
-    private void summarizeFiles(List<VirtualFile> files, MidPointService mm,
-            EnvironmentService es, Project project) {
+    private void summarizeFiles(List<VirtualFile> files) {
         PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
         TraceParser traceParser = new TraceParser(prismContext);
 
         PerformanceTree performanceTree = new PerformanceTree();
 
+        MidPointService mm = MidPointService.get(getProject());
+
+        Environment env = getEnvironment();
+
         for (VirtualFile file : files) {
             RunnableUtils.runWriteActionAndWait(() -> {
-                Environment env = es.getSelected();
                 try {
                     TracingOutputType tracingOutput = traceParser.parse(file.getInputStream(), true, true, file.getCanonicalPath());
                     OperationResultType operationResult = tracingOutput.getResult();
@@ -81,12 +77,11 @@ public class SummarizeOperations extends BackgroundAction {
                     }
                 } catch (Exception ex) {
                     String msg = "Exception occurred when loading file '" + file.getName() + "'";
-                    processException(msg, ex, mm, es);
+                    processException(msg, ex);
                 }
             });
         }
 
-        Environment env = es.getSelected();
         mm.printToConsole(env, getClass(), "Parsed " + performanceTree.getSamples() + " samples");
         if (performanceTree.getSamples() > 0) {
             performanceTree.computeStatistics();
@@ -106,16 +101,16 @@ public class SummarizeOperations extends BackgroundAction {
                     ObjectOutputStream oos = new ObjectOutputStream(newSummaryFile.getOutputStream(this));
                     oos.writeObject(performanceTree);
                     oos.close();
-                    MidPointUtils.publishNotification(mm.getProject(), NOTIFICATION_KEY, getTaskTitle(),
+                    MidPointUtils.publishNotification(mm.getProject(), NOTIFICATION_KEY, TITLE,
                             "Summary written to " + newSummaryFile.getCanonicalPath(), NotificationType.INFORMATION);
                     summaryFileHolder.setValue(newSummaryFile);
                 } catch (IOException e) {
-                    processException("Couldn't write summary file", e, mm, es);
+                    processException("Couldn't write summary file", e);
                 }
             });
 
-            if (project != null && summaryFileHolder.getValue() != null) {
-                ApplicationManager.getApplication().invokeAndWait(() -> MidPointUtils.openFile(project, summaryFileHolder.getValue()));
+            if (getProject() != null && summaryFileHolder.getValue() != null) {
+                ApplicationManager.getApplication().invokeAndWait(() -> MidPointUtils.openFile(getProject(), summaryFileHolder.getValue()));
             }
         }
     }
@@ -133,24 +128,24 @@ public class SummarizeOperations extends BackgroundAction {
         return String.format("_summary%d.perf-sum", index);
     }
 
-    private void processException(String msg, Exception ex, MidPointService mm, EnvironmentService es) {
-        Environment env = es.getSelected();
-        mm.printToConsole(env, getClass(), msg + ". Reason: " + ex.getMessage());
-        MidPointUtils.publishExceptionNotification(mm.getProject(), env, getClass(), NOTIFICATION_KEY, msg, ex);
+    private void processException(String msg, Exception ex) {
+        Project project = getProject();
+        ConsoleService.get(project).printToConsole(getEnvironment(), getClass(), msg + ". Reason: " + ex.getMessage());
+        MidPointUtils.publishExceptionNotification(project, getEnvironment(), getClass(), NOTIFICATION_KEY, msg, ex);
     }
 
-    private List<VirtualFile> getFilesToProcess(AnActionEvent evt) {
+    private List<VirtualFile> getFilesToProcess() {
         VirtualFile[] selectedFiles = ApplicationManager.getApplication().runReadAction(
-                (Computable<VirtualFile[]>) () -> evt.getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+                (Computable<VirtualFile[]>) () -> dataContextSupplier.get().getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
         if (selectedFiles == null || selectedFiles.length == 0) {
-            MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, getTaskTitle(),
+            MidPointUtils.publishNotification(getProject(), NOTIFICATION_KEY, TITLE,
                     "No files selected for summarization", NotificationType.WARNING);
             return emptyList();
         }
 
         List<VirtualFile> toProcess = MidPointUtils.filterZipFiles(selectedFiles);
         if (toProcess.isEmpty()) {
-            MidPointUtils.publishNotification(evt.getProject(), NOTIFICATION_KEY, getTaskTitle(),
+            MidPointUtils.publishNotification(getProject(), NOTIFICATION_KEY, TITLE,
                     "No files matched for summarization (zip)", NotificationType.WARNING);
         }
         return toProcess;

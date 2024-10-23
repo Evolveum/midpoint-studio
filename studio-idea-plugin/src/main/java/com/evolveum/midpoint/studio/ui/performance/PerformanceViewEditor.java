@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui.performance;
 
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointService;
+import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.performance.PerformanceOptions;
 import com.evolveum.midpoint.studio.impl.performance.PerformanceTree;
 import com.evolveum.midpoint.studio.ui.performance.mainTree.PerformanceTreePanel;
@@ -61,7 +61,7 @@ public class PerformanceViewEditor implements FileEditor, PossiblyDumbAware {
             tree = (PerformanceTree) ois.readObject();
             ois.close();
         } catch (Exception ex) {
-            MidPointService mm = MidPointService.getInstance(project);
+            MidPointService mm = MidPointService.get(project);
             EnvironmentService es = EnvironmentService.getInstance(project);
             Environment env = es.getSelected();
             mm.printToConsole(env, getClass(), "Couldn't load file", ex, ConsoleViewContentType.LOG_ERROR_OUTPUT);
