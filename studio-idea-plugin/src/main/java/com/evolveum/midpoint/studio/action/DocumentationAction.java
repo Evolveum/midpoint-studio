@@ -6,7 +6,7 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.DocumentationDialog;
-import com.evolveum.midscribe.generator.GenerateOptions;
+import com.evolveum.midscribe.generator.GeneratorOptions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,7 +17,7 @@ import java.io.File;
  */
 public class DocumentationAction extends AsyncAction<DocumentationTask> {
 
-    private GenerateOptions options;
+    private GeneratorOptions options;
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent evt) {
@@ -39,7 +39,7 @@ public class DocumentationAction extends AsyncAction<DocumentationTask> {
         settings.setDocGeneratorOptions(opts);
         mm.settingsUpdated();
 
-        GenerateOptions options = DocGeneratorOptions.buildGenerateOptions(opts);
+        GeneratorOptions options = DocGeneratorOptions.buildGenerateOptions(opts);
 
         File exportOutput = opts.getExportOutput();
         File adocOutput = new File(exportOutput.getParent(), exportOutput.getName() + ".adoc");

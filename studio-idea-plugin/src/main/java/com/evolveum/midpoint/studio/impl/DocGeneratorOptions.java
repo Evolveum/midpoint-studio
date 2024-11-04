@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.studio.util.FileConverter;
 import com.evolveum.midscribe.generator.ExportFormat;
-import com.evolveum.midscribe.generator.GenerateOptions;
+import com.evolveum.midscribe.generator.GeneratorOptions;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.annotations.OptionTag;
 
@@ -135,23 +135,23 @@ public class DocGeneratorOptions {
         return opts;
     }
 
-    public static GenerateOptions buildGenerateOptions(DocGeneratorOptions opts) {
-        GenerateOptions go = new GenerateOptions();
+    public static GeneratorOptions buildGenerateOptions(DocGeneratorOptions opts) {
+        GeneratorOptions go = new GeneratorOptions();
         go.setAdocOutput(opts.getAdocOutput());
         go.setExportFormat(opts.getExportFormat());
         go.setTemplate(opts.getTemplate());
         go.setExportOutput(opts.getExportOutput());
-        go.setSourceDirectory(List.of(opts.getSourceDirectory()));
+        go.setSources(List.of(opts.getSourceDirectory()));
         go.setInclude(opts.getInclude());
         go.setExclude(opts.getExclude());
 
         return go;
     }
 
-    public static DocGeneratorOptions buildDocGenerateOptions(GenerateOptions opts) {
+    public static DocGeneratorOptions buildDocGenerateOptions(GeneratorOptions opts) {
         DocGeneratorOptions dgo = new DocGeneratorOptions();
 
-        List<File> sources = opts.getSourceDirectory();
+        List<File> sources = opts.getSources();
         File source = sources != null && !sources.isEmpty() ? sources.get(0) : null;
         dgo.setSourceDirectory(source);
         dgo.setInclude(opts.getInclude());

@@ -10,9 +10,12 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.MidscribeLogListener;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midscribe.generator.GenerateOptions;
 import com.evolveum.midscribe.generator.Generator;
-import com.evolveum.midscribe.generator.InMemoryObjectStore;
+import com.evolveum.midscribe.generator.GeneratorOptions;
+import com.evolveum.midscribe.generator.ObjectStoreFactory;
+import com.evolveum.midscribe.generator.store.GetOptions;
+import com.evolveum.midscribe.generator.store.InMemoryObjectStoreFactory;
+import com.evolveum.midscribe.generator.store.ObjectStore;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -38,10 +41,10 @@ public class DocumentationTask extends SimpleBackgroundableTask {
 
     public static String NOTIFICATION_KEY = TITLE;
 
-    private final GenerateOptions options;
+    private final GeneratorOptions options;
 
     public DocumentationTask(
-            @NotNull Project project, Supplier<DataContext> dataContextSupplier, @NotNull GenerateOptions options) {
+            @NotNull Project project, Supplier<DataContext> dataContextSupplier, @NotNull GeneratorOptions options) {
 
         super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
 
@@ -51,26 +54,12 @@ public class DocumentationTask extends SimpleBackgroundableTask {
     @Override
     protected void doRun(ProgressIndicator indicator) {
         super.doRun(indicator);
-
-        if (client != null) {
-            try {
-                MidPointObjectStore store = new MidPointObjectStore(options, midPointService, client);
-                store.init();
-
-                options.setObjectStoreInstance(store);
-            } catch (Exception ex) {
-                String msg = "Couldn't initialize object store for midscribe";
-                LOG.warn(msg, ex);
-
-                MidPointUtils.handleGenericException(getProject(), getEnvironment(), DocumentationTask.class, NOTIFICATION_KEY, msg, ex);
-            }
-        }
-
         Properties properties = new Properties();
         properties.put(RuntimeConstants.RESOURCE_MANAGER_INSTANCE, new ResourceManagerImpl());
 
         Generator generator = new Generator(options);
         generator.setLogListener(new MidscribeLogListener(getEnvironment(), midPointService));
+        generator.setObjectStoreFactory(new StudioObjectStoreFactory(midPointService, client));
         try {
             generator.generate(properties);
         } catch (Exception ex) {
@@ -81,30 +70,45 @@ public class DocumentationTask extends SimpleBackgroundableTask {
         }
     }
 
-    private static class MidPointObjectStore extends InMemoryObjectStore {
+    private static class StudioObjectStoreFactory implements ObjectStoreFactory {
 
-        private Logger LOG = Logger.getInstance(MidPointObjectStore.class);
+        private final MidPointService midPointService;
 
-        private MidPointService midPointService;
+        private final MidPointClient client;
 
-        private MidPointClient client;
-
-        public MidPointObjectStore(GenerateOptions options, MidPointService midPointService, MidPointClient client) {
-            super(options);
-
+        public StudioObjectStoreFactory(MidPointService midPointService, MidPointClient client) {
             this.midPointService = midPointService;
             this.client = client;
         }
 
         @Override
-        public PrismContext getPrismContext() {
-            return client.getPrismContext();
+        public ObjectStore createObjectStore(GeneratorOptions options, PrismContext prismContext, boolean additional) {
+            ObjectStore store = new InMemoryObjectStoreFactory().createObjectStore(options, prismContext, additional);
+
+            return new StudioObjectStore(store, midPointService, client);
+        }
+    }
+
+    private static class StudioObjectStore implements ObjectStore {
+
+        private Logger LOG = Logger.getInstance(StudioObjectStore.class);
+
+        private ObjectStore store;
+
+        private MidPointService midPointService;
+
+        private MidPointClient client;
+
+        public StudioObjectStore(ObjectStore store, MidPointService midPointService, MidPointClient client) {
+            this.store = store;
+            this.midPointService = midPointService;
+            this.client = client;
         }
 
         @Override
-        public <T extends ObjectType> List<T> list(Class<T> type) {
-            List<T> objects = super.list(type);
-            if (objects != null) {
+        public <T extends ObjectType> List<T> list(Class<T> type, GetOptions options) {
+            List<T> objects = store.list(type, options);
+            if (!objects.isEmpty()) {
                 return objects;
             }
 
@@ -125,8 +129,8 @@ public class DocumentationTask extends SimpleBackgroundableTask {
         }
 
         @Override
-        public <T extends ObjectType> T get(Class<T> type, String oid) {
-            T object = super.get(type, oid);
+        public <T extends ObjectType> T get(Class<T> type, String oid, GetOptions options) {
+            T object = store.get(type, oid, options);
             if (object != null) {
                 return object;
             }
@@ -140,7 +144,7 @@ public class DocumentationTask extends SimpleBackgroundableTask {
             }
 
             try {
-                MidPointObject obj = client.get(type, oid, new SearchOptions().raw(true));
+                com.evolveum.midpoint.studio.client.MidPointObject obj = client.get(type, oid, new SearchOptions().raw(true));
                 return parseObject(obj);
             } catch (Exception ex) {
                 logException("Couldn't get object with oid " + oid, ex);
