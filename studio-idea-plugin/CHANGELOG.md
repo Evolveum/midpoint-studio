@@ -1,5 +1,13 @@
 # MidPoint Studio
 
+## [4.10.0]
+### Added
+
+### Changed
+
+### Fixed
+
+
 ## [4.9.0]
 ### Added
 - Support for Intellij 2024.1
