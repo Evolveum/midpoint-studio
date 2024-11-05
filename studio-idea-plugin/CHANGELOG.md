@@ -15,6 +15,7 @@
 - Improved UI for project configuration
 - Improved caching for objects loaded from environment
 - MID-9691 bulk actions execution now prints notification if there was console output on server
+- Updated midScribe documentation generator
 ### Fixed
 - MID-9282 Properties host injector
 - MID-9383 Fixed groovy-all dependency in pom.xml in project template
