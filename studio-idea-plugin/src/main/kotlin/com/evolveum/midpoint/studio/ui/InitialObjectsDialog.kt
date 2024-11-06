@@ -13,22 +13,22 @@ class InitialObjectsDialog(val project: Project) {
     private fun createPanel(): DialogPanel {
         return panel {
             row(message("InitialObjectsDialog.currentVanillaObjects")) {
-                textFieldWithBrowseButton(
-                    message("InitialObjectsDialog.selectDirectory"),
-                    project,
-                    FileChooserDescriptorFactory.createSingleFolderDescriptor()
-                )
-                    .columns(COLUMNS_LARGE)
+//                textFieldWithBrowseButton(
+//                    message("InitialObjectsDialog.selectDirectory"),
+//                    project,
+//                    FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+//                )
+//                    .columns(COLUMNS_LARGE)
 
             }
                 .comment(message("InitialObjectsDialog.currentVanillaObjects.comment"))
             row(message("InitialObjectsDialog.newVanillaObjects")) {
-                textFieldWithBrowseButton(
-                    message("InitialObjectsDialog.selectDirectory"),
-                    project,
-                    FileChooserDescriptorFactory.createSingleFolderDescriptor()
-                )
-                    .columns(COLUMNS_LARGE)
+//                textFieldWithBrowseButton(
+//                    message("InitialObjectsDialog.selectDirectory"),
+//                    project,
+//                    FileChooserDescriptorFactory.createSingleFolderDescriptor()
+//                )
+//                    .columns(COLUMNS_LARGE)
 
             }
                 .comment(message("InitialObjectsDialog.newVanillaObjects.comment"))

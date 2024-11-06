@@ -108,12 +108,12 @@ class EnvironmentEditor(val project: Project, val input: Selectable<Environment>
                         .bindSelected(selectable.`object`::isUseHttp2, selectable.`object`::setUseHttp2)
                 }
                 row(StudioLocalization.message("EnvironmentEditorPanel.other.properties")) {
-                    textFieldWithBrowseButton(
-                        StudioLocalization.message("EnvironmentEditorPanel.other.properties.title"),
-                        project,
-                        FileChooserDescriptorFactory.createSingleFileDescriptor("properties")
-                    )
-                        .columns(COLUMNS_LARGE)
+//                    textFieldWithBrowseButton(
+//                        StudioLocalization.message("EnvironmentEditorPanel.other.properties.title"),
+//                        project,
+//                        FileChooserDescriptorFactory.createSingleFileDescriptor("properties")
+//                    )
+//                        .columns(COLUMNS_LARGE)
 
                 }
                 row(StudioLocalization.message("EnvironmentEditorPanel.other.color")) {
