@@ -4,7 +4,7 @@
 ### Added
 
 ### Changed
-
+- Support for Intellij 2024.3
 ### Fixed
 
 
