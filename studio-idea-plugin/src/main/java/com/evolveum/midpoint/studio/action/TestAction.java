@@ -26,10 +26,6 @@ import java.io.ByteArrayInputStream;
  */
 public class TestAction extends AnAction {
 
-    public TestAction() {
-        super("MidPoint Test Action");
-    }
-
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.BGT;
@@ -41,11 +37,7 @@ public class TestAction extends AnAction {
 
         if (!MidPointUtils.isVisibleWithMidPointFacet(e)) {
             SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
-            return;
         }
-
-        boolean visible = MidPointUtils.isDevelopmentMode(true);
-        SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(visible));
     }
 
     @Override

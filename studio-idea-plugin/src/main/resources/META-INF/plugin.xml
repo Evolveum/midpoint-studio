@@ -439,6 +439,7 @@
 
         <action id="MidPoint.Action.TestAction"
                 class="com.evolveum.midpoint.studio.action.TestAction"
+                internal="true"
                 text="Test Action"
                 icon="AllIcons.Debugger.Db_set_breakpoint"/>
 
