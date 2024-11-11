@@ -40,20 +40,20 @@ public class TestConnectionAction extends AnAction {
 
         Project project = e.getProject();
         if (project == null) {
-            SwingUtilities.invokeLater(() -> e.getPresentation().setEnabled(false));
+            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
             return;
         }
 
         boolean hasFacet = MidPointUtils.hasMidPointFacet(e.getProject());
         if (!hasFacet) {
-            SwingUtilities.invokeLater(() -> e.getPresentation().setEnabled(false));
+            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
             return;
         }
 
         EnvironmentService em = EnvironmentService.getInstance(project);
         Environment selected = em.getSelected();
 
-        SwingUtilities.invokeLater(() -> e.getPresentation().setEnabled(selected != null));
+        SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(selected != null));
     }
 
     @Override
