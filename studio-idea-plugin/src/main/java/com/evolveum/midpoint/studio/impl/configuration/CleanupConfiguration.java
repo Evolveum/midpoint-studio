@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class CleanupConfiguration implements Serializable {
 
@@ -127,7 +128,7 @@ public class CleanupConfiguration implements Serializable {
 
         List<CleanupPathConfiguration> paths = getCleanupPaths().stream()
                 .map(CleanupPathConfiguration::copy)
-                .toList();
+                .collect(Collectors.toList());  // can't use .toList() directly because it would be immutable list
         configuration.setCleanupPaths(paths);
 
         configuration.setCleanupConnectorReferences(cleanupConnectorReferences);
