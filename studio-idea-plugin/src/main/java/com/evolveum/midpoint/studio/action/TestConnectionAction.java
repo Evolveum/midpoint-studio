@@ -20,8 +20,6 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-
 /**
  * Created by Viliam Repan (lazyman).
  */
@@ -38,22 +36,16 @@ public class TestConnectionAction extends AnAction {
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
 
-        Project project = e.getProject();
-        if (project == null) {
-            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
-            return;
-        }
-
         boolean hasFacet = MidPointUtils.hasMidPointFacet(e.getProject());
         if (!hasFacet) {
-            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
+            e.getPresentation().setVisible(false);
             return;
         }
 
-        EnvironmentService em = EnvironmentService.getInstance(project);
+        EnvironmentService em = EnvironmentService.getInstance(e.getProject());
         Environment selected = em.getSelected();
 
-        SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(selected != null));
+        e.getPresentation().setVisible(selected != null);
     }
 
     @Override
