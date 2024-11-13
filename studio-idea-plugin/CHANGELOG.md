@@ -2,11 +2,12 @@
 
 ## [4.10.0]
 ### Added
+- Support for Intellij 2024.3
 
 ### Changed
 
 ### Fixed
-
+- MID-10157 cleanup path custom action can't be edited fix
 
 ## [4.9.0]
 ### Added
