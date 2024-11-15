@@ -9,13 +9,12 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.ui.StudioAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
@@ -24,30 +23,25 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class VerifyAction extends AnAction {
+public class VerifyAction extends StudioAction {
 
     public static final String ACTION_NAME = "Cleanup File";
 
     public static final String NOTIFICATION_KEY = "Cleanup File Action";
 
     @Override
-    public void update(@NotNull AnActionEvent evt) {
-        super.update(evt);
+    protected boolean isEnabled(@NotNull AnActionEvent e) {
+        if (!super.isEnabled(e)) {
+            return false;
+        }
 
-        boolean enabled = MidPointUtils.isMidpointObjectFileSelected(evt);
-        SwingUtilities.invokeLater(() -> evt.getPresentation().setEnabled(enabled));
-    }
-
-    @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
+        return MidPointUtils.isMidpointObjectFileSelected(e);
     }
 
     @Override

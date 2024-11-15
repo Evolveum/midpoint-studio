@@ -8,7 +8,7 @@ import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.studio.impl.StudioCleanupListener;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
-import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
@@ -253,11 +253,11 @@ public class DiffProcessor<O extends ObjectType> {
         };
         actions.add(strategyAction);
 
-        actions.add(new UiAction("Cleanup", AllIcons.Actions.ToggleVisibility, e -> cleanupPerformed()));
+        actions.add(new ToolbarAction("Cleanup", AllIcons.Actions.ToggleVisibility, e -> cleanupPerformed()));
 
         actions.add(new Separator());
 
-        actions.add(new UiAction("Switch Sides", getDirectionIcon(), e -> switchSidesPerformed()) {
+        actions.add(new ToolbarAction("Switch Sides", getDirectionIcon(), e -> switchSidesPerformed()) {
 
             @Override
             public void update(@NotNull AnActionEvent e) {
@@ -267,7 +267,7 @@ public class DiffProcessor<O extends ObjectType> {
             }
         });
 
-        actions.add(new UiAction("Accept", AllIcons.RunConfigurations.ShowPassed, e -> acceptPerformed()) {
+        actions.add(new ToolbarAction("Accept", AllIcons.RunConfigurations.ShowPassed, e -> acceptPerformed()) {
 
             @Override
             public void update(@NotNull AnActionEvent e) {
@@ -277,7 +277,7 @@ public class DiffProcessor<O extends ObjectType> {
                 e.getPresentation().setEnabled(enabled);
             }
         });
-        actions.add(new UiAction("Ignore", AllIcons.RunConfigurations.ShowIgnored, e -> ignorePerformed()) {
+        actions.add(new ToolbarAction("Ignore", AllIcons.RunConfigurations.ShowIgnored, e -> ignorePerformed()) {
 
             @Override
             public void update(@NotNull AnActionEvent e) {

@@ -6,12 +6,11 @@ import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.ShowExceptionNotificationAction;
 import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
+import com.evolveum.midpoint.studio.ui.StudioAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -23,29 +22,18 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TestConnectionAction extends AnAction {
+public class TestConnectionAction extends StudioAction {
 
     private static final String NOTIFICATION_KEY = "Test Connection";
 
     @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
-    }
-
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        super.update(e);
-
-        boolean hasFacet = MidPointUtils.hasMidPointFacet(e.getProject());
-        if (!hasFacet) {
-            e.getPresentation().setVisible(false);
-            return;
+    protected boolean isEnabled(@NotNull AnActionEvent e) {
+        if (!super.isEnabled(e)) {
+            return false;
         }
 
         EnvironmentService em = EnvironmentService.getInstance(e.getProject());
-        Environment selected = em.getSelected();
-
-        e.getPresentation().setVisible(selected != null);
+        return em.getSelected() != null;
     }
 
     @Override
@@ -54,7 +42,8 @@ public class TestConnectionAction extends AnAction {
         EnvironmentService em = EnvironmentService.getInstance(project);
         Environment selected = em.getSelected();
 
-        Task.Backgroundable task = new Task.Backgroundable(e.getProject(), "Testing connection for '" + selected.getName() + "'") {
+        Task.Backgroundable task = new Task.Backgroundable(
+                e.getProject(), "Testing connection for '" + selected.getName() + "'") {
 
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
@@ -67,7 +56,8 @@ public class TestConnectionAction extends AnAction {
                 }.run();
             }
         };
-        ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
+        ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
     }
 
     private void testConnection(Project project, Environment environment) {

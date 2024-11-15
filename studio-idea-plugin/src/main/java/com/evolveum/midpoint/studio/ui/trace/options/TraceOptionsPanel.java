@@ -5,7 +5,7 @@ import com.evolveum.midpoint.schema.traces.PerformanceCategory;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
-import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
@@ -105,7 +105,7 @@ public class TraceOptionsPanel extends BorderLayoutPanel {
         };
         group.add(viewTypeComboboxAction);
 
-        AnAction apply = new UiAction("Apply", AllIcons.Actions.Commit, e -> applyPerformed());
+        AnAction apply = new ToolbarAction("Apply", AllIcons.Actions.Commit, e -> applyPerformed());
         group.add(apply);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceOptionsToolbar", group, true);
