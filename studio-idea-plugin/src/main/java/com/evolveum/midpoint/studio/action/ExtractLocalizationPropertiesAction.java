@@ -1,8 +1,11 @@
 package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.ui.StudioAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.LangDataKeys;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.fileChooser.FileChooserDialog;
@@ -29,7 +32,7 @@ import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class ExtractLocalizationPropertiesAction extends AnAction {
+public class ExtractLocalizationPropertiesAction extends StudioAction {
 
     private static final String NS_JAXB = "http://java.sun.com/xml/ns/jaxb";
 
@@ -64,16 +67,21 @@ public class ExtractLocalizationPropertiesAction extends AnAction {
     private static final String ATTRIBUTE_VALUE = "value";
 
     @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
-    }
-
-    @Override
     public void update(@NotNull AnActionEvent evt) {
         super.update(evt);
 
         List<VirtualFile> xsdFiles = getSelectedXsdFiles(evt);
         SwingUtilities.invokeLater(() -> evt.getPresentation().setVisible(!xsdFiles.isEmpty()));
+    }
+
+    @Override
+    protected boolean isEnabled(@NotNull AnActionEvent e) {
+        if (!super.isEnabled(e)) {
+            return false;
+        }
+
+        List<VirtualFile> xsdFiles = getSelectedXsdFiles(e);
+        return !xsdFiles.isEmpty();
     }
 
     private List<VirtualFile> getSelectedXsdFiles(AnActionEvent evt) {

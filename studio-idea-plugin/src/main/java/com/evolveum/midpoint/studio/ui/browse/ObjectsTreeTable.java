@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.browse;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -51,8 +51,8 @@ public class ObjectsTreeTable extends DefaultTreeTable<ObjectsTreeTableModel> {
 
     private void setupPopupMenu() {
         DefaultActionGroup group = new DefaultActionGroup();
-        group.add(new UiAction("Copy oids", e -> copySelectedObjectOids()));
-        group.add(new UiAction("Copy names", e -> copySelectedObjectNames()));
+        group.add(new ToolbarAction("Copy oids", e -> copySelectedObjectOids()));
+        group.add(new ToolbarAction("Copy names", e -> copySelectedObjectNames()));
 
         ActionPopupMenu menu = ActionManager.getInstance().createActionPopupMenu("ObjectTreeTablePopupMenu", group);
         setComponentPopupMenu(menu.getComponent());

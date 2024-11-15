@@ -3,7 +3,7 @@ package com.evolveum.midpoint.studio.impl.diff;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.delta.DiffUtil;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
-import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -106,9 +106,9 @@ public class InitialObjectDiffProcessor<O extends ObjectType> {
 
     private JComponent initToolbar(JComponent parent) {
         DefaultActionGroup group = new DefaultActionGroup();
-        group.add(new UiAction("Apply non-conflicting from left", AllIcons.Chooser.Right, e -> {
+        group.add(new ToolbarAction("Apply non-conflicting from left", AllIcons.Chooser.Right, e -> {
         }));
-        group.add(new UiAction("Apply non-conflicting from right", AllIcons.Chooser.Left, e -> {
+        group.add(new ToolbarAction("Apply non-conflicting from right", AllIcons.Chooser.Left, e -> {
         }));
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("toolbar", group, true);

@@ -503,6 +503,7 @@
             <group id="MidPoint.Group.Menu.ServerLog"
                    text="Server Log"
                    icon="com.evolveum.midpoint.studio.MidPointIcons.ServerLog"
+                   class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup"
                    popup="true">
 
                 <group id="MidPoint.Group.Menu.ServerLog.ModelLogging"

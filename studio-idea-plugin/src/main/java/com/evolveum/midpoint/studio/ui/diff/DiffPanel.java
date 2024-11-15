@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui.diff;
 
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
-import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.diff.DiffRequestFactory;
@@ -141,8 +141,8 @@ public abstract class DiffPanel<O extends ObjectType> extends BorderLayoutPanel 
     private JComponent initMainToolbar(JComponent parent) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        group.add(new UiAction("Expand All", AllIcons.Actions.Expandall, e -> expandAllPerformed()));
-        group.add(new UiAction("Collapse All", AllIcons.Actions.Collapseall, e -> collapseAllPerformed()));
+        group.add(new ToolbarAction("Expand All", AllIcons.Actions.Expandall, e -> expandAllPerformed()));
+        group.add(new ToolbarAction("Collapse All", AllIcons.Actions.Collapseall, e -> collapseAllPerformed()));
 
         List<AnAction> actions = createToolbarActions();
         actions.forEach(group::add);

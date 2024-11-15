@@ -4,7 +4,7 @@ import com.evolveum.midpoint.studio.MidPointIcons;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
-import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -63,8 +63,8 @@ public class MissingRefObjectsTable extends DefaultTreeTable<MissingRefObjectsTa
 
     private void setupPopupMenu() {
         DefaultActionGroup group = new DefaultActionGroup();
-        group.add(new UiAction("Download", e -> getTableModel().markSelectedAction(MissingRefAction.DOWNLOAD)));
-        group.add(new UiAction("Ignore", e -> getTableModel().markSelectedAction(MissingRefAction.IGNORE)));
+        group.add(new ToolbarAction("Download", e -> getTableModel().markSelectedAction(MissingRefAction.DOWNLOAD)));
+        group.add(new ToolbarAction("Ignore", e -> getTableModel().markSelectedAction(MissingRefAction.IGNORE)));
 
         ActionPopupMenu menu = ActionManager.getInstance().createActionPopupMenu("ObjectTreeTablePopupMenu", group);
         setComponentPopupMenu(menu.getComponent());

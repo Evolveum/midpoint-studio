@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.HeaderDecorator;
-import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
@@ -76,7 +76,7 @@ public class TraceGraphPanel extends BorderLayoutPanel {
     private void createToolbar() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        AnAction create = new UiAction("Create", AllIcons.Actions.Commit, e -> applyPerformed());
+        AnAction create = new ToolbarAction("Create", AllIcons.Actions.Commit, e -> applyPerformed());
         group.add(create);
 
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceGraphToolbar", group, true);

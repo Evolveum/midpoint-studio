@@ -13,7 +13,7 @@ import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
-import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -367,7 +367,7 @@ public class MidPointUtils {
     public static AnAction createAnAction(
             String text, String description, Icon icon, Consumer<AnActionEvent> actionPerformed, Consumer<AnActionEvent> update) {
 
-        return new UiAction(text, description, icon, actionPerformed) {
+        return new ToolbarAction(text, description, icon, actionPerformed) {
 
             @Override
             public void update(@NotNull AnActionEvent e) {

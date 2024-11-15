@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui.synchronization;
 
-import com.evolveum.midpoint.studio.ui.UiAction;
+import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -64,14 +64,14 @@ public class SynchronizationPanel extends BorderLayoutPanel {
     private JComponent initMainToolbar(JComponent parent) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        group.add(new UiAction(
+        group.add(new ToolbarAction(
                 "Expand All", AllIcons.Actions.Expandall, e -> TreeUtil.expandAll(tree)));
-        group.add(new UiAction(
+        group.add(new ToolbarAction(
                 "Collapse All", AllIcons.Actions.Collapseall, e -> TreeUtil.collapseAll(tree, true, 1)));
 
         group.add(new Separator());
 
-        group.add(new UiAction("Refresh", AllIcons.Actions.Refresh, e -> refreshPerformed()) {
+        group.add(new ToolbarAction("Refresh", AllIcons.Actions.Refresh, e -> refreshPerformed()) {
 
             @Override
             public void update(@NotNull AnActionEvent e) {
@@ -82,7 +82,7 @@ public class SynchronizationPanel extends BorderLayoutPanel {
             }
         });
 
-        group.add(new UiAction("Upload (Full Processing)", AllIcons.Actions.Upload, e -> uploadPerformed()) {
+        group.add(new ToolbarAction("Upload (Full Processing)", AllIcons.Actions.Upload, e -> uploadPerformed()) {
 
             @Override
             public void update(@NotNull AnActionEvent e) {
