@@ -20,8 +20,8 @@ dependencyResolutionManagement {
             version("qodana", "2024.2.3")
 
             // versions of midpoint libraries
-            version("midpoint", "4.9")
-            version("midscribe", "4.9-SNAPSHOT")
+            version("midpoint", "4.9.1-SNAPSHOT")
+            version("midscribe", "4.9.1-SNAPSHOT")
 
             // versions of third-party libraries
             version("annotations", "24.1.0")
