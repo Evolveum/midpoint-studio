@@ -5,7 +5,10 @@
 
 ### Changed
 - Support for Intellij 2024.3
+- Updated midScribe dependencies
 ### Fixed
+- MID-10157 Fixed: Can't add new path to object cleanup configuration
+- Button visibility for multiple actions, also for non-midpoint projects
 
 
 ## [4.9.0]
