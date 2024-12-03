@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.studio.util.FileConverter;
-import com.evolveum.midscribe.generator.ExportFormat;
+import com.evolveum.midscribe.generator.export.ExportFormat;
 import com.evolveum.midscribe.generator.GeneratorOptions;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.annotations.OptionTag;
