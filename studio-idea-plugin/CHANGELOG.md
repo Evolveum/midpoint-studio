@@ -6,7 +6,7 @@
 ### Changed
 
 ### Fixed
-
+- MID-10275 cleanup configuration fixed illegal state exception
 
 ## [4.9.1]
 ### Changed
