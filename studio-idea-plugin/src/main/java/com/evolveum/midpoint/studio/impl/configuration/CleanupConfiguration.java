@@ -81,6 +81,7 @@ public class CleanupConfiguration implements Serializable {
         this.removeContainerIds = removeContainerIds;
     }
 
+    @NotNull
     public MissingRefObjects getMissingReferences() {
         if (missingReferences == null) {
             missingReferences = new MissingRefObjects();

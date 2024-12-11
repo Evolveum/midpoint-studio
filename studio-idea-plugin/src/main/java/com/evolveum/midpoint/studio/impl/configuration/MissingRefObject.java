@@ -58,6 +58,7 @@ public class MissingRefObject implements Serializable, Comparable<MissingRefObje
         this.name = name;
     }
 
+    @NotNull
     public List<MissingRef> getReferences() {
         if (references == null) {
             references = new ArrayList<>();
