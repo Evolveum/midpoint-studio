@@ -1,15 +1,20 @@
 # MidPoint Studio
 
-## [4.9.1]
+## [4.9.2]
 ### Added
 
+### Changed
+
+### Fixed
+
+
+## [4.9.1]
 ### Changed
 - Support for Intellij 2024.3
 - Updated midScribe dependencies
 ### Fixed
 - MID-10157 Fixed: Can't add new path to object cleanup configuration
 - Button visibility for multiple actions, also for non-midpoint projects
-
 
 ## [4.9.0]
 ### Added
