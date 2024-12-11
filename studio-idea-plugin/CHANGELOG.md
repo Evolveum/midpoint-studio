@@ -8,6 +8,7 @@
 
 ### Fixed
 - MID-10157 cleanup path custom action can't be edited fix
+- MID-10275 cleanup configuration fixed illegal state exception
 
 ## [4.9.0]
 ### Added
