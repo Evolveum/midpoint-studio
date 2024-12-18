@@ -12,12 +12,18 @@ pluginManagement {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
+            // versions of plugins used in build
             version("kotlin", "1.9.25")
             version("changelog", "2.2.1")
             version("intelliJPlatform", "2.1.0")
             version("kover", "0.8.3")
             version("qodana", "2024.2.3")
 
+            // versions of midpoint libraries
+            version("midpoint", "4.10-SNAPSHOT")
+            version("midscribe", "4.10-SNAPSHOT")
+
+            // versions of third-party libraries
             version("annotations", "24.1.0")
             version("asciidoctorj-tabbed-code", "0.3")
             version("commons-io", "2.11.0")
@@ -25,8 +31,6 @@ dependencyResolutionManagement {
             version("jaxb-runtime", "2.3.2")
             version("jcommander", "1.81")
             version("logback", "1.2.3")
-            version("midpoint", "4.9")
-            version("midscribe", "4.10-SNAPSHOT")
             version("okhttp", "4.10.0")
             version("openkeepass", "0.8.1")
             version("spring", "5.3.8")
@@ -40,12 +44,25 @@ dependencyResolutionManagement {
             version("jruby", "9.2.19.0")
             version("antlr", "4.10.1")
 
+            // plugins
             plugin("changelog", "org.jetbrains.changelog").versionRef("changelog")
             plugin("intelliJPlatform", "org.jetbrains.intellij.platform").versionRef("intelliJPlatform")
             plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("kover", "org.jetbrains.kotlinx.kover").versionRef("kover")
             plugin("qodana", "org.jetbrains.qodana").versionRef("qodana")
 
+            // midpoint libraries
+            library("midpoint-common", "com.evolveum.midpoint.infra", "common").versionRef("midpoint")
+            library("midpoint-localization", "com.evolveum.midpoint", "midpoint-localization").versionRef("midpoint")
+            library("midpoint-model-api", "com.evolveum.midpoint.model", "model-api").versionRef("midpoint")
+            library("midpoint-model-common", "com.evolveum.midpoint.model", "model-common").versionRef("midpoint")
+            library("midpoint-model-impl", "com.evolveum.midpoint.model", "model-impl").versionRef("midpoint")
+            library("midpoint-schema", "com.evolveum.midpoint.infra", "schema").versionRef("midpoint")
+            library("midpoint-security-api", "com.evolveum.midpoint.repo", "security-api").versionRef("midpoint")
+            library("notifications-api", "com.evolveum.midpoint.model", "notifications-api").versionRef("midpoint")
+            library("midscribe-core", "com.evolveum.midpoint", "midscribe-core").versionRef("midscribe")
+
+            // third-party libraries
             library("annotations", "org.jetbrains", "annotations").versionRef("annotations")
             library("asciidoctorj", "org.asciidoctor", "asciidoctorj").versionRef("asciidoctorj")
             library("asciidoctorj-pdf", "org.asciidoctor", "asciidoctorj-pdf").versionRef("asciidoctorj-pdf")
@@ -59,14 +76,6 @@ dependencyResolutionManagement {
             library("jaxb-runtime", "org.glassfish.jaxb", "jaxb-runtime").versionRef("jaxb-runtime")
             library("jcommander", "com.beust", "jcommander").versionRef("jcommander")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
-            library("midpoint-common", "com.evolveum.midpoint.infra", "common").versionRef("midpoint")
-            library("midpoint-localization", "com.evolveum.midpoint", "midpoint-localization").versionRef("midpoint")
-            library("midpoint-model-api", "com.evolveum.midpoint.model", "model-api").versionRef("midpoint")
-            library("midpoint-model-common", "com.evolveum.midpoint.model", "model-common").versionRef("midpoint")
-            library("midpoint-model-impl", "com.evolveum.midpoint.model", "model-impl").versionRef("midpoint")
-            library("midpoint-schema", "com.evolveum.midpoint.infra", "schema").versionRef("midpoint")
-            library("midpoint-security-api", "com.evolveum.midpoint.repo", "security-api").versionRef("midpoint")
-            library("notifications-api", "com.evolveum.midpoint.model", "notifications-api").versionRef("midpoint")
             library("okhttp-logging", "com.squareup.okhttp3", "logging-interceptor").versionRef("okhttp")
             library("okhttp3", "com.squareup.okhttp3", "okhttp").versionRef("okhttp")
             library("openkeepass", "de.slackspace", "openkeepass").versionRef("openkeepass")
@@ -75,7 +84,6 @@ dependencyResolutionManagement {
             library("slf4j-api", "org.slf4j", "slf4j-api").versionRef("slf4j")
             library("velocity", "org.apache.velocity", "velocity-engine-core").versionRef("velocity")
             library("antlr", "org.antlr", "antlr4").versionRef("antlr")
-            library("midscribe-core", "com.evolveum.midpoint", "midscribe-core").versionRef("midscribe")
         }
         create("testLibs") {
             version("jupiter", "5.8.1")

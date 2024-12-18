@@ -2,8 +2,10 @@ package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
+import com.evolveum.midpoint.prism.impl.query.lang.Filter;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
+import com.evolveum.midpoint.prism.query.Suggestion;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
@@ -12,20 +14,20 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
-import com.intellij.codeInsight.completion.CompletionParameters;
-import com.intellij.codeInsight.completion.CompletionProvider;
-import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.completion.PrioritizedLookupElement;
+import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.codeInsight.lookup.LookupElementDecorator;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import com.intellij.util.ProcessingContext;
+import kotlinx.html.P;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
@@ -47,7 +49,6 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                     public void addCompletions(@NotNull CompletionParameters parameters,
                                                @NotNull ProcessingContext context,
                                                @NotNull CompletionResultSet resultSet) {
-
                         StudioPrismContextService.runWithProject(
                                 parameters.getPosition().getProject(),
                                 () -> AxiomQueryCompletionContributor.this.addCompletions(parameters, resultSet));
@@ -57,8 +58,6 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
     }
 
     private void addCompletions(CompletionParameters parameters, CompletionResultSet resultSet) {
-        AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(PrismContext.get());
-
         PsiElement element = parameters.getPosition();
 
         String content = parameters.getOriginalFile().getText();
@@ -100,7 +99,9 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
             addSuggestionsFromEditorHint(parameters.getEditor(), content, cursorPosition, resultSet);
             return;
         }
+
         addSuggestions(def, content, cursorPosition, resultSet);
+        resultSet.runRemainingContributors(parameters, true);
     }
 
     private PrismValue getPrismValue(XmlTag tag) {
@@ -201,18 +202,25 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
     }
 
     private void addSuggestions(ItemDefinition<?> def, String content, int cursorPosition, CompletionResultSet resultSet) {
-        if (def == null) {
-            return;
-        }
+        if (def == null) return;
 
+        CompletionResultSet customResultSet = resultSet.withPrefixMatcher("");
         AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(PrismContext.get());
 
+        List<LookupElement> aliases = new ArrayList<>();
         List<LookupElement> suggestions = new ArrayList<>();
         cursorPosition = Math.max(0, cursorPosition);
         axiomQueryContentAssist.process(def, content, cursorPosition).autocomplete()
-                .forEach(suggestion -> suggestions.add(build(suggestion.name(), suggestion.alias())));
+                .forEach(suggestion -> {
+                    if (Arrays.stream(Filter.Alias.values()).map(Filter.Alias::getName).toList().contains(suggestion.name())) {
+                        aliases.add(build(suggestion.name(), suggestion.alias()));
+                    } else {
+                        suggestions.add(build(suggestion.name(), suggestion.alias()));
+                    }
+                });
 
         resultSet.addAllElements(suggestions);
+        customResultSet.addAllElements(aliases);
     }
 
     /**
@@ -244,6 +252,27 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
 
         LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
 
-        return PrioritizedLookupElement.withPriority(element, 90);
+        // paring tokens
+        HashMap<String, String> pairTokens = new HashMap<>();
+        pairTokens.put("(", ")");
+        pairTokens.put("[", "]");
+        pairTokens.put("{", "}");
+        pairTokens.put("'", "'");
+        pairTokens.put("\"", "\"");
+
+        if (pairTokens.containsKey(key)) {
+            return new LookupElementDecorator<>(element) {
+                @Override
+                public void handleInsert(@NotNull InsertionContext context) {
+                    Editor editor = context.getEditor();
+                    int offset = editor.getCaretModel().getOffset();
+                    editor.getDocument().insertString(offset, pairTokens.get(key));
+                    editor.getCaretModel().moveToOffset(offset);
+                    PsiDocumentManager.getInstance(context.getProject()).commitDocument(editor.getDocument());
+                }
+            };
+        } else {
+            return PrioritizedLookupElement.withPriority(element, 90);
+        }
     }
 }

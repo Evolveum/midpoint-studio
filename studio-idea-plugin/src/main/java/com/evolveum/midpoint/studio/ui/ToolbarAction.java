@@ -10,24 +10,24 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.function.Consumer;
 
-public class UiAction extends AnAction {
+public class ToolbarAction extends AnAction {
 
     private final Consumer<AnActionEvent> actionPerformedConsumer;
 
-    public UiAction(
+    public ToolbarAction(
             @Nullable @NlsActions.ActionText String text,
             @Nullable Consumer<AnActionEvent> actionPerformedConsumer) {
         this(text, null, actionPerformedConsumer);
     }
 
-    public UiAction(
+    public ToolbarAction(
             @Nullable @NlsActions.ActionText String text,
             @Nullable Icon icon,
             @Nullable Consumer<AnActionEvent> actionPerformedConsumer) {
         this(text, null, icon, actionPerformedConsumer);
     }
 
-    public UiAction(
+    public ToolbarAction(
             @Nullable @NlsActions.ActionText String text,
             @Nullable @NlsActions.ActionText String description,
             @Nullable Icon icon,

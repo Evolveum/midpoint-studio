@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.action;
 
-import com.intellij.openapi.actionSystem.AnAction;
+import com.evolveum.midpoint.studio.ui.StudioAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.wm.IdeFrame;
@@ -17,7 +17,7 @@ import java.util.UUID;
 /**
  * Created by lazyman on 10/02/2017.
  */
-public class GenerateRandomOid extends AnAction {
+public class GenerateRandomOid extends StudioAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {

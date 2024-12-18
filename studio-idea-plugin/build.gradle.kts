@@ -106,12 +106,15 @@ repositories {
     maven("https://nexus.evolveum.com/nexus/repository/intellij-jbr/")
 }
 
+val platformVersion = properties("platformVersion").get()
+val useInstaller = !platformVersion.contains("SNAPSHOT")
+
 dependencies {
     // implementation(libs.annotations)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        create(properties("platformType"), properties("platformVersion"))
+        create(properties("platformType"), properties("platformVersion"), useInstaller = useInstaller)
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(properties("platformBundledPlugins").map { it.split(',').map(String::trim) })
@@ -119,6 +122,7 @@ dependencies {
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(properties("platformPlugins").map { it.split(',').map(String::trim) })
 
+        jetbrainsRuntime()
         instrumentationTools()
         pluginVerifier()
         testFramework(TestFrameworkType.Platform)
@@ -244,6 +248,7 @@ intellijPlatform {
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels = listOf(publishChannel)
+        hidden = true
     }
 
     verifyPlugin {

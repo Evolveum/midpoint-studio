@@ -462,6 +462,7 @@
 
         <action id="MidPoint.Action.TestAction"
                 class="com.evolveum.midpoint.studio.action.TestAction"
+                internal="true"
                 text="Test Action"
                 icon="AllIcons.Debugger.Db_set_breakpoint"/>
 
@@ -532,6 +533,7 @@
             <group id="MidPoint.Group.Menu.ServerLog"
                    text="Server Log"
                    icon="com.evolveum.midpoint.studio.MidPointIcons.ServerLog"
+                   class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup"
                    popup="true">
 
                 <group id="MidPoint.Group.Menu.ServerLog.ModelLogging"

@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
 import com.evolveum.midpoint.studio.util.EnumComboBoxModel;
-import com.evolveum.midscribe.generator.ExportFormat;
+import com.evolveum.midscribe.generator.export.ExportFormat;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;

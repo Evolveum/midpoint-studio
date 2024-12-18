@@ -24,9 +24,6 @@ Plugin for Intellij Idea to help identity engineers customize https://midpoint.e
 ** Schema documentation
 ** File Templates
 * Support for multiple environments
-* Log browser
-** Local
-** Via SSH
 * Master password encryption for passwords and other secret values
 
 == Documentation
@@ -42,15 +39,18 @@ Installation steps:
 . Go to menu *File -> Settings (Preferences) -> Plugins*
 . For stable releases, they are directly available
 .. Search for "MidPoint Studio" -> Install
-. For snapshot releases
+. For other releases
 .. Go to *Manage plugin repositories*
-.. Add repository `https://plugins.jetbrains.com/plugins/Snapshot/list`
+.. Snapshot releases (unreleased new major release)
+... Add repository `https://plugins.jetbrains.com/plugins/Snapshot/list`
+.. Support releases (unreleased new patch release)
+... Add repository `https://plugins.jetbrains.com/plugins/Support/list`
 .. Save & Close dialog
 .. Search for "MidPoint Studio" -> Install
 
 == Issues, Bugs
 
-You're welcome to file bugs, new feature request or other issues in our issue tracker https://jira.evolveum.com[Jira].
+You're welcome to file bugs, new feature request or other issues in our issue tracker https://support.evolveum.com[support].
 Please don't forget add this information to new issue:
 
 * Add component `Studio`
@@ -61,19 +61,19 @@ Please don't forget add this information to new issue:
 
 === Git Branches
 
-* Development branch -> `master`
-* Snapshots -> `snapshot`
-* Releases -> `stable`
+* Main development branch -> `master` for next major release
+* Support/maintenance branch -> `support-X.Y` for current stable release X.Y.*
 
 === Versions and Releases
 
-* Snapshot builds -> `<major.minor.patch>-snapshot-<build_number>`, e.g. `4.6.2-snapshot-60`
-* Releases -> `<major.minor.patch>`, e.g. `4.6.2`
+* Releases -> `<major.minor.patch>`, e.g. `4.9.0`
+* Snapshot builds -> `<major.minor.patch>-snapshot-<build_number>`, e.g. `4.10.0-snapshot-60`
+* Support builds -> `<major.minor.patch>-support-<build_number>`, e.g. `4.8.2-support-78`
 
 Versioning scheme for major and minor version aligns to MidPoint releases.
 MidPoint Studio release 4.6.* will use 4.6 libraries from MidPoint project.
 
-Each type of release (snapshot, stable) is published to https://plugins.jetbrains.com/plugin/13809-midpoint-studio[JetBrains Marketplace].
+Each type of release (stable, snapshot, support) is published to https://plugins.jetbrains.com/plugin/13809-midpoint-studio[JetBrains Marketplace].
 
 === Logging settings
 

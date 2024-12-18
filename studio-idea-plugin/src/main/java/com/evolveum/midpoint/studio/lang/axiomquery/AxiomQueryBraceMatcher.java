@@ -14,7 +14,7 @@ public class AxiomQueryBraceMatcher implements PairedBraceMatcher {
 
     @NotNull
     @Override
-    public BracePair[] getPairs() {
+    public BracePair @NotNull [] getPairs() {
         return new BracePair[]{
                 new BracePair(getTokenElementType(SQUARE_BRACKET_LEFT), getTokenElementType(SQUARE_BRACKET_RIGHT), true),
                 new BracePair(getTokenElementType(ROUND_BRACKET_LEFT), getTokenElementType(ROUND_BRACKET_RIGHT), true),

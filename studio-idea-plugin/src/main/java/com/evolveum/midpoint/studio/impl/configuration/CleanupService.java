@@ -11,7 +11,9 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @State(
@@ -30,6 +32,34 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
     @Override
     protected CleanupConfiguration createDefaultSettings() {
         return new CleanupConfiguration();
+    }
+
+    @Override
+    public void settingsUpdated() {
+        // check for repeating objects or missing refs
+        CleanupConfiguration config = getSettings();
+        MissingRefObjects objects = config.getMissingReferences();
+
+        List<MissingRefObject> missingRefObjects = objects.getObjects();
+        removeDuplicateObjects(missingRefObjects);
+
+        for (MissingRefObject obj : missingRefObjects) {
+            List<MissingRef> refs = obj.getReferences();
+
+            removeDuplicateRefs(refs);
+        }
+
+        super.settingsUpdated();
+    }
+
+    private void removeDuplicateRefs(List<MissingRef> refs) {
+        Set<String> existingOids = new HashSet<>();
+        refs.removeIf(ref -> !existingOids.add(ref.getOid()));
+    }
+
+    private void removeDuplicateObjects(List<MissingRefObject> objects) {
+        Set<String> existingOids = new HashSet<>();
+        objects.removeIf(obj -> !existingOids.add(obj.getOid()));
     }
 
     private List<CleanupPath> getCleanupPaths() {

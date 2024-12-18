@@ -27,8 +27,8 @@ public class MidPointFacetActionGroup extends DefaultActionGroup {
         }
 
         boolean hasFacet = MidPointUtils.hasMidPointFacet(e.getProject());
-        SwingUtilities.invokeLater(() -> {
-            e.getPresentation().setVisible(hasFacet);
-        });
+        if (!hasFacet) {
+            e.getPresentation().setVisible(false);
+        }
     }
 }

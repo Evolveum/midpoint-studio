@@ -5,11 +5,10 @@ import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.schema.delta.ThreeWayMergeOperation;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.evolveum.midpoint.studio.ui.StudioAction;
 import com.evolveum.midpoint.studio.ui.diff.ThreeWayMergeTree;
 import com.evolveum.midpoint.studio.ui.diff.ThreeWayMergeTreeModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -24,28 +23,15 @@ import java.io.ByteArrayInputStream;
 /**
  * Created by Viliam Repan (lazyman).
  */
-public class TestAction extends AnAction {
-
-    public TestAction() {
-        super("MidPoint Test Action");
-    }
+public class TestAction extends StudioAction {
 
     @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
-    }
-
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        super.update(e);
-
-        if (!MidPointUtils.isVisibleWithMidPointFacet(e)) {
-            SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(false));
-            return;
+    protected boolean isVisible(@NotNull AnActionEvent e) {
+        if (!super.isVisible(e)) {
+            return false;
         }
 
-        boolean visible = MidPointUtils.isDevelopmentMode(true);
-        SwingUtilities.invokeLater(() -> e.getPresentation().setVisible(visible));
+        return MidPointUtils.isDevelopmentMode(true);
     }
 
     @Override

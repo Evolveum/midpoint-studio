@@ -46,7 +46,7 @@ public class CleanupPathsPanel extends AddEditRemovePanel<CleanupPathConfigurati
         return dialog.getData();
     }
 
-    private static class CleanupPathsModel extends AddEditRemovePanel.TableModel<CleanupPathConfiguration> {
+    private static class CleanupPathsModel extends TableModel<CleanupPathConfiguration> {
 
         private static final String[] COLUMN_NAMES = new String[]{"Type", "Path", "Action"};
 

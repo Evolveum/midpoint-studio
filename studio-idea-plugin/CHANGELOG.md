@@ -1,5 +1,15 @@
 # MidPoint Studio
 
+## [4.10.0]
+### Added
+- Support for Intellij 2024.3
+
+### Changed
+
+### Fixed
+- MID-10157 cleanup path custom action can't be edited fix
+- MID-10275 cleanup configuration fixed illegal state exception
+
 ## [4.9.0]
 ### Added
 - Support for Intellij 2024.1
@@ -15,6 +25,7 @@
 - Improved UI for project configuration
 - Improved caching for objects loaded from environment
 - MID-9691 bulk actions execution now prints notification if there was console output on server
+- Updated midScribe documentation generator
 ### Fixed
 - MID-9282 Properties host injector
 - MID-9383 Fixed groovy-all dependency in pom.xml in project template

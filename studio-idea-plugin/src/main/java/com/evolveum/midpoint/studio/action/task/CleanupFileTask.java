@@ -272,12 +272,19 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
         config.setOid(oid);
         config.setType(type.getTypeQName());
 
+        Set<String> alreadyCreated = new HashSet<>();
+
         for (ObjectReferenceType ref : missingReferences) {
+            if (alreadyCreated.contains(ref.getOid())) {
+                continue;
+            }
+
             MissingRef rc = new MissingRef();
             rc.setOid(ref.getOid());
             rc.setType(ref.getType());
 
             config.getReferences().add(rc);
+            alreadyCreated.add(ref.getOid());
         }
 
         return config;

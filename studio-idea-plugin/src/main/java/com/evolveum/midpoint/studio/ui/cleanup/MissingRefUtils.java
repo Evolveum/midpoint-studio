@@ -36,9 +36,11 @@ public class MissingRefUtils {
                                         .collect(
                                                 Collectors.toMap(
                                                         r -> new MissingRefKey(r.getOid(), r.getType()),
-                                                        r -> r.getAction()
+                                                        r -> r.getAction(),
+                                                        (m1, m2) -> m1
                                                 )
-                                        )
+                                        ),
+                                (m1, m2) -> m1
                         )
                 );
     }
@@ -51,7 +53,10 @@ public class MissingRefUtils {
         }
 
         Map<MissingRefKey, MissingRefObject> map = config.getObjects().stream()
-                .collect(Collectors.toMap(o -> new MissingRefKey(o.getOid(), o.getType()), o -> o));
+                .collect(Collectors.toMap(
+                        o -> new MissingRefKey(o.getOid(), o.getType()),
+                        o -> o,
+                        (m1, m2) -> m1));
 
         List<ObjectReferenceType> download = new ArrayList<>();
 
@@ -61,7 +66,10 @@ public class MissingRefUtils {
             Map<MissingRefKey, MissingRefAction> refConfigMap = new HashMap<>();
             if (mroConfig != null) {
                 refConfigMap = mroConfig.getReferences().stream()
-                        .collect(Collectors.toMap(o -> new MissingRefKey(o.getOid(), o.getType()), o -> o.getAction()));
+                        .collect(Collectors.toMap(
+                                o -> new MissingRefKey(o.getOid(), o.getType()),
+                                o -> o.getAction(),
+                                (m1, m2) -> m1));
             }
 
             for (MissingRef ref : mro.getReferences()) {
@@ -98,7 +106,10 @@ public class MissingRefUtils {
         MissingRefObjects objects = config.getMissingReferences();
 
         Map<MissingRefKey, MissingRefObject> existing = objects.getObjects().stream()
-                .collect(Collectors.toMap(o -> new MissingRefKey(o.getOid(), o.getType()), o -> o));
+                .collect(Collectors.toMap(
+                        o -> new MissingRefKey(o.getOid(), o.getType()),
+                        o -> o,
+                        (m1, m2) -> m1));
 
         // replace objects in settings with the ones from the dialog
         for (MissingRefObject object : cloned) {
@@ -141,7 +152,10 @@ public class MissingRefUtils {
         MissingRefObjects settings = cs.getSettings().getMissingReferences();
 
         Map<MissingRefKey, MissingRefObject> existing = settings.getObjects().stream()
-                .collect(Collectors.toMap(o -> new MissingRefKey(o.getOid(), o.getType()), o -> o));
+                .collect(Collectors.toMap(
+                        o -> new MissingRefKey(o.getOid(), o.getType()),
+                        o -> o,
+                        (m1, m2) -> m1));
 
         for (MissingRefObject clonedObject : clonedMissing) {
             MissingRefKey key = new MissingRefKey(clonedObject.getOid(), clonedObject.getType());
@@ -149,8 +163,11 @@ public class MissingRefUtils {
 
             Map<MissingRefKey, MissingRefAction> existingRefs = existingObject != null ?
                     existingObject.getReferences().stream()
-                            .collect(Collectors.toMap(o -> new MissingRefKey(o.getOid(), o.getType()), o -> o.getAction())) :
-                    new HashMap<>();
+                            .collect(Collectors.toMap(
+                                    o -> new MissingRefKey(o.getOid(), o.getType()),
+                                    o -> o.getAction(),
+                                    (m1, m2) -> m1))
+                    : new HashMap<>();
 
             clonedObject.getReferences().forEach(mr -> {
                 MissingRefKey refKey = new MissingRefKey(mr.getOid(), mr.getType());
