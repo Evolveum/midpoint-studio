@@ -148,6 +148,7 @@ public class EnvironmentCacheManager {
         for (CacheKey key : caches.keySet()) {
             Cache cache = caches.get(key);
             try {
+                LOG.debug("Reloading cache: {}", cache.getClass().getSimpleName());
                 StudioPrismContextService.runWithProject(project, cache::reload);
 
                 project.getMessageBus().syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentCacheReloaded(key, cache);

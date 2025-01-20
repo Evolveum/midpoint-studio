@@ -267,7 +267,7 @@ public class ConnectorCache extends ObjectCache<ConnectorType> {
         RunnableUtils.PluginClassCallable<XmlFile> callable = new RunnableUtils.PluginClassCallable<>() {
 
             @Override
-            public XmlFile callWithPluginClassLoader() throws Exception {
+            public XmlFile callWithPluginClassLoader() {
                 ObjectFilter of = null;
                 try {
                     String xml = updateNamespaces(filter);
@@ -304,7 +304,7 @@ public class ConnectorCache extends ObjectCache<ConnectorType> {
         };
 
         try {
-            return callable.call();
+            return StudioPrismContextService.runCallableWithProject(getProject(), callable);
         } catch (Exception ex) {
             if (!(ex instanceof ControlFlowException)) {
                 LOG.error("Couldn't find connector schema", ex);

@@ -9,7 +9,6 @@ import org.jetbrains.concurrency.CancellablePromise;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Supplier;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -52,22 +51,6 @@ public abstract class RunnableUtils {
         }
 
         public abstract R callWithPluginClassLoader() throws Exception;
-    }
-
-    public static <T> T executeWithPluginClassloader(Supplier<T> supplier) {
-        PluginClassCallable<T> c = new PluginClassCallable<>() {
-
-            @Override
-            public T callWithPluginClassLoader() throws Exception {
-                return supplier.get();
-            }
-        };
-
-        try {
-            return c.call();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     public static void runReadAction(Runnable runnable) {
