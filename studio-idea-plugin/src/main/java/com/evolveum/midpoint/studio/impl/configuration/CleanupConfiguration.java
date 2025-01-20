@@ -30,6 +30,8 @@ public class CleanupConfiguration implements Serializable {
 
     private MissingRefObjects missingReferences;
 
+    private boolean removeMetadata;
+
     public @NotNull List<CleanupPathConfiguration> getCleanupPaths() {
         if (cleanupPaths == null) {
             cleanupPaths = new ArrayList<>();
@@ -114,14 +116,16 @@ public class CleanupConfiguration implements Serializable {
                 && askActionOverride == that.askActionOverride
                 && removeContainerIds == that.removeContainerIds
                 && missingNaturalKeys == that.missingNaturalKeys
-                && Objects.equals(missingReferences, that.missingReferences);
+                && Objects.equals(missingReferences, that.missingReferences)
+                && removeMetadata == that.removeMetadata;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
                 cleanupPaths, askActionOverride, cleanupConnectorReferences, replaceConnectorOidsWithFilter,
-                warnAboutMissingReferences, removeContainerIds, missingNaturalKeys, missingReferences);
+                warnAboutMissingReferences, removeContainerIds, missingNaturalKeys, missingReferences,
+                removeMetadata);
     }
 
     public void copyTo(@NotNull CleanupConfiguration configuration) {
@@ -137,6 +141,7 @@ public class CleanupConfiguration implements Serializable {
         configuration.setWarnAboutMissingReferences(warnAboutMissingReferences);
         configuration.setRemoveContainerIds(removeContainerIds);
         configuration.setMissingNaturalKeys(missingNaturalKeys);
+        configuration.setRemoveMetadata(removeMetadata);
 
         if (missingReferences != null) {
             configuration.setMissingReferences(missingReferences.copy());
@@ -148,5 +153,13 @@ public class CleanupConfiguration implements Serializable {
         copyTo(clone);
 
         return clone;
+    }
+
+    public boolean isRemoveMetadata() {
+        return removeMetadata;
+    }
+
+    public void setRemoveMetadata(boolean removeMetadata) {
+        this.removeMetadata = removeMetadata;
     }
 }

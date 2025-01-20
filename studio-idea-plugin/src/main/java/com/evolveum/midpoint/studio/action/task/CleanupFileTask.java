@@ -137,8 +137,6 @@ public class CleanupFileTask extends ObjectsBackgroundableTask<TaskState> {
             CleanupService cs = CleanupService.get(getProject());
 
             ObjectCleaner processor = cs.createCleanupProcessor();
-            processor.setListener(new StudioCleanupListener(getProject(), ctx));
-
             ObjectValidator validator = cs.createObjectValidator();
 
             String current = MavenUtils.getMidpointVersion(getProject());

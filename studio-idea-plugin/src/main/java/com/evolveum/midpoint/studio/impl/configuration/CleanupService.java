@@ -1,14 +1,20 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
+import com.evolveum.midpoint.common.cleanup.CleanupEvent;
 import com.evolveum.midpoint.common.cleanup.CleanupPath;
 import com.evolveum.midpoint.common.cleanup.CleanupPathAction;
 import com.evolveum.midpoint.common.cleanup.ObjectCleaner;
+import com.evolveum.midpoint.prism.Item;
+import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.schema.validator.ObjectValidator;
 import com.evolveum.midpoint.schema.validator.ValidationItemType;
+import com.evolveum.midpoint.studio.impl.StudioCleanupListener;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
+import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -82,12 +88,21 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
         return MidPointUtils.isDevelopmentMode(true) && getSettings().isRemoveContainerIds();
     }
 
+    private boolean isRemoveMetadata() {
+        return getSettings().isRemoveMetadata();
+    }
+
     public ObjectCleaner createCleanupProcessor() {
         ObjectCleaner processor = new ObjectCleaner();
         processor.setIgnoreNamespaces(true);
         processor.setPaths(getCleanupPaths());
         processor.setRemoveAskActionItemsByDefault(getAskActionOverride() == CleanupPathAction.REMOVE);
         processor.setRemoveContainerIds(isRemoveContainerIds());
+        processor.setRemoveMetadata(isRemoveMetadata());
+
+        Project project = getProject();
+        processor.setListener(
+                new StudioCleanupListener(getProject(), StudioPrismContextService.getPrismContext(project)));
 
         return processor;
     }

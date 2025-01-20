@@ -117,6 +117,14 @@ class CleanupConfigurable(val project: Project) :
                         )
                 }
                     .visible(MidPointUtils.isDevelopmentMode(true))
+                row {
+                    checkBox(message("CleanupConfigurable.removeMetadata"))
+                        .comment(message("CleanupConfigurable.removeMetadata.comment"))
+                        .bindSelected(
+                            { configuration.isRemoveMetadata },
+                            { configuration.isRemoveMetadata = it }
+                        )
+                }
             }
         }
     }
