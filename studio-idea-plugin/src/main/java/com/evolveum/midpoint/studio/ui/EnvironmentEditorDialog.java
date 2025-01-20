@@ -35,6 +35,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -262,8 +263,8 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         try {
             MidPointClient client = new MidPointClient(project, env, settings);
             TestConnectionResult result = project != null ?
-                    StudioPrismContextService.runCallableWithProject(project, () -> client.testConnection()) :
-                    client.testConnection();
+                    StudioPrismContextService.runCallableWithProject(project, client::testConnection) :
+                    StudioPrismContextService.runCallableWithDefaultContext(client::testConnection);
 
             if (result.success()) {
                 updateInAwtThread(ConsoleViewContentType.NORMAL_OUTPUT_KEY.getDefaultAttributes().getForegroundColor(), "Version: " + result.version() + ", revision: " + result.revision());
