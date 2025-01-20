@@ -44,7 +44,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
     private static final Logger LOG = Logger.getInstance(StudioPrismContextService.class);
 
-    public static final ThreadLocal<Project> PRISM_SERVICE_PROJECT = new ThreadLocal<>();
+    private static final ThreadLocal<Project> PRISM_SERVICE_PROJECT = new ThreadLocal<>();
 
     private static final PrismContext DEFAULT_PRISM_CONTEXT;
 
@@ -264,8 +264,9 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
     public static <T> T runSupplierWithProject(@NotNull Project project, @NotNull Supplier<T> supplier) {
         try {
+            LOG.debug("RUN Thread " + Thread.currentThread().getName() + " Project " + project + " Thread local project set to: " + PRISM_SERVICE_PROJECT.get());
             PRISM_SERVICE_PROJECT.set(project);
-
+            LOG.debug("SET Thread " + Thread.currentThread().getName() + " Project " + project + " Thread local project set to: " + PRISM_SERVICE_PROJECT.get());
             return supplier.get();
         } finally {
             PRISM_SERVICE_PROJECT.remove();
