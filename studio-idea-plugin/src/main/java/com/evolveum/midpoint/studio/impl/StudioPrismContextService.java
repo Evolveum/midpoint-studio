@@ -20,6 +20,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaType;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
@@ -44,8 +45,16 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
     private static final Logger LOG = Logger.getInstance(StudioPrismContextService.class);
 
-    private static final ThreadLocal<Project> PRISM_SERVICE_PROJECT = new ThreadLocal<>();
+    /**
+     * ContextKey allows two different scenarios:
+     * 1. Project is set, prism context is created for that project.
+     * 2. Project is not set, default prism context is used (and no warning if explicitly asked for default prism context).
+     */
+    private static final ThreadLocal<ContextKey> PRISM_SERVICE_PROJECT = new ThreadLocal<>();
 
+    /**
+     * Default prism context initialized when class is loaded, will not change throughout the application lifecycle.
+     */
     private static final PrismContext DEFAULT_PRISM_CONTEXT;
 
     static {
@@ -64,15 +73,19 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
             @Override
             public PrismContext prismContext() {
-                Project project = PRISM_SERVICE_PROJECT.get();
-                if (project == null) {
-                    LOG.warn(
-                            "No project set for PrismService override supplier (empty thread local), " +
-                                    "returning default prism context instance",
-                            new RuntimeException("Exception just for stacktrace"));
+                ContextKey key = PRISM_SERVICE_PROJECT.get();
+                if (key.projectId == null) {
+                    if (!key.useDefaultPrismContext) {
+                        LOG.warn(
+                                "No project set for PrismService override supplier (empty thread local), " +
+                                        "returning default prism context instance",
+                                new RuntimeException("Exception just for stacktrace"));
+                    }
 
                     return DEFAULT_PRISM_CONTEXT;
                 }
+
+                Project project = getProject(key.projectId);
 
                 return StudioPrismContextService.getPrismContext(project);
             }
@@ -80,21 +93,30 @@ public final class StudioPrismContextService implements ProjectManagerListener {
             @Override
             public void prismContext(PrismContext prismContext) {
                 LOG.debug("PrismService override supplier: prism context set to " + prismContext);
-                Project project = PRISM_SERVICE_PROJECT.get();
-                if (project == null) {
-                    LOG.debug(
-                            "No project set for PrismService override supplier (empty thread local), " +
-                                    "ignoring prism context set");
+
+                ContextKey key = PRISM_SERVICE_PROJECT.get();
+                if (key.projectId == null) {
+                    if (!key.useDefaultPrismContext) {
+                        LOG.warn(
+                                "No project set for PrismService override supplier (empty thread local), " +
+                                        "ignoring prism context set");
+                    }
+
                     return;
                 }
 
-                StudioPrismContextService.setPrismContext(project, prismContext);
+                Project project = getProject(key.projectId);
+
+                StudioPrismContextService.get(project).setPrismContext(prismContext);
             }
         });
     }
 
     private final @NotNull Project project;
 
+    /**
+     * Prism context specific for each project.
+     */
     private PrismContext prismContext;
 
     @SuppressWarnings("unused")
@@ -102,6 +124,10 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         this.project = project;
 
         initialize();
+    }
+
+    public static @NotNull StudioPrismContextService get(@NotNull Project project) {
+        return project.getService(StudioPrismContextService.class);
     }
 
     private void initialize() {
@@ -119,17 +145,15 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         return project.getService(StudioPrismContextService.class).getPrismContext();
     }
 
-    public static void setPrismContext(@NotNull Project project, @NotNull PrismContext prismContext) {
-        project.getService(StudioPrismContextService.class).prismContext = prismContext;
-    }
-
     public synchronized @NotNull PrismContext getPrismContext() {
         if (prismContext == null) {
-            if (prismContext == null) {
-                reloadPrismContext();
-            }
+            reloadPrismContext();
         }
         return prismContext;
+    }
+
+    private synchronized void setPrismContext(@NotNull PrismContext prismContext) {
+        this.prismContext = prismContext;
     }
 
     private synchronized PrismContext reloadPrismContext() {
@@ -137,7 +161,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
         var previousContext = prismContext != null ? prismContext : DEFAULT_PRISM_CONTEXT;
         try {
-            PRISM_SERVICE_PROJECT.set(this.project);
+            PRISM_SERVICE_PROJECT.set(new ContextKey(this.project));
 
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
@@ -255,7 +279,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
     public static void runWithProject(@NotNull Project project, @NotNull Runnable runnable) {
         try {
-            PRISM_SERVICE_PROJECT.set(project);
+            PRISM_SERVICE_PROJECT.set(new ContextKey(project));
 
             runnable.run();
         } finally {
@@ -265,10 +289,19 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
     public static <T> T runSupplierWithProject(@NotNull Project project, @NotNull Supplier<T> supplier) {
         try {
-            LOG.debug("RUN Thread " + Thread.currentThread().getName() + " Project " + project + " Thread local project set to: " + PRISM_SERVICE_PROJECT.get());
-            PRISM_SERVICE_PROJECT.set(project);
-            LOG.debug("SET Thread " + Thread.currentThread().getName() + " Project " + project + " Thread local project set to: " + PRISM_SERVICE_PROJECT.get());
+            PRISM_SERVICE_PROJECT.set(new ContextKey(project));
+
             return supplier.get();
+        } finally {
+            PRISM_SERVICE_PROJECT.remove();
+        }
+    }
+
+    public static <T> T runCallableWithDefaultContext(@NotNull Callable<T> callable) throws Exception {
+        try {
+            PRISM_SERVICE_PROJECT.set(new ContextKey());
+
+            return callable.call();
         } finally {
             PRISM_SERVICE_PROJECT.remove();
         }
@@ -276,11 +309,36 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
     public static <T> T runCallableWithProject(@NotNull Project project, @NotNull Callable<T> callable) throws Exception {
         try {
-            PRISM_SERVICE_PROJECT.set(project);
+            PRISM_SERVICE_PROJECT.set(new ContextKey(project));
 
             return callable.call();
         } finally {
             PRISM_SERVICE_PROJECT.remove();
+        }
+    }
+
+    private static Project getProject(@NotNull String projectId) {
+        return ProjectManager.getInstance().findOpenProjectByHash(projectId);
+    }
+
+    /**
+     * Key for prism context service thread local.
+     *
+     * @param projectId project identifier
+     * @param useDefaultPrismContext whether to use default prism if project identifier is not set
+     */
+    private record ContextKey(String projectId, boolean useDefaultPrismContext) {
+
+        public ContextKey(@NotNull String projectId) {
+            this(projectId, false);
+        }
+
+        public ContextKey(@NotNull Project project) {
+            this(project.getLocationHash(), false);
+        }
+
+        public ContextKey() {
+            this(null, true);
         }
     }
 }
