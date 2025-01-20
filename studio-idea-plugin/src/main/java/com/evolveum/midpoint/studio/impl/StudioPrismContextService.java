@@ -57,9 +57,9 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
             throw new IllegalStateException("Couldn't initialize prism context", ex);
         }
+        LOG.info("Default prism context created");
 
         LOG.info("Attaching PrismService override supplier");
-
         PrismService.overrideSupplier(() -> new PrismService.Mutable() {
 
             @Override
@@ -67,7 +67,9 @@ public final class StudioPrismContextService implements ProjectManagerListener {
                 Project project = PRISM_SERVICE_PROJECT.get();
                 if (project == null) {
                     LOG.warn(
-                            "No project set for PrismService override supplier (empty thread local), returning default prism context instance", new RuntimeException());
+                            "No project set for PrismService override supplier (empty thread local), " +
+                                    "returning default prism context instance",
+                            new RuntimeException("Exception just for stacktrace"));
 
                     return DEFAULT_PRISM_CONTEXT;
                 }
@@ -80,7 +82,9 @@ public final class StudioPrismContextService implements ProjectManagerListener {
                 LOG.debug("PrismService override supplier: prism context set to " + prismContext);
                 Project project = PRISM_SERVICE_PROJECT.get();
                 if (project == null) {
-                    LOG.warn("No project set for PrismService override supplier (empty thread local), ignoring prism context set");
+                    LOG.debug(
+                            "No project set for PrismService override supplier (empty thread local), " +
+                                    "ignoring prism context set");
                     return;
                 }
 
@@ -119,12 +123,10 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         project.getService(StudioPrismContextService.class).prismContext = prismContext;
     }
 
-    public @NotNull PrismContext getPrismContext() {
+    public synchronized @NotNull PrismContext getPrismContext() {
         if (prismContext == null) {
-            synchronized (this) {
-                if (prismContext == null) {
-                    reloadPrismContext();
-                }
+            if (prismContext == null) {
+                reloadPrismContext();
             }
         }
         return prismContext;
@@ -140,11 +142,10 @@ public final class StudioPrismContextService implements ProjectManagerListener {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
             try {
-
-
                 prismContext = createPrismContext(r -> registerExtensionSchemas(project, r));
                 registerResourceSchemas(prismContext, () -> EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_RESOURCE));
                 registerSchemaObjects(project, prismContext.getSchemaRegistry());
+
                 prismContext.reload();
             } catch (Exception ex) {
                 LOG.error("Couldn't initialize prism context", ex);

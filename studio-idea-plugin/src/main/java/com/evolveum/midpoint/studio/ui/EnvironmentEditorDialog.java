@@ -4,6 +4,7 @@ import com.evolveum.midpoint.studio.client.ProxyType;
 import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -260,7 +261,9 @@ public class EnvironmentEditorDialog extends DialogWrapper {
 
         try {
             MidPointClient client = new MidPointClient(project, env, settings);
-            TestConnectionResult result = client.testConnection();
+            TestConnectionResult result = project != null ?
+                    StudioPrismContextService.runCallableWithProject(project, () -> client.testConnection()) :
+                    client.testConnection();
 
             if (result.success()) {
                 updateInAwtThread(ConsoleViewContentType.NORMAL_OUTPUT_KEY.getDefaultAttributes().getForegroundColor(), "Version: " + result.version() + ", revision: " + result.revision());
