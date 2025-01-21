@@ -74,14 +74,14 @@ public final class StudioPrismContextService implements ProjectManagerListener {
             @Override
             public PrismContext prismContext() {
                 ContextKey key = PRISM_SERVICE_PROJECT.get();
-                if (key.projectId == null) {
-                    if (!key.useDefaultPrismContext) {
+
+                if (key == null || key.projectId == null) {
+                    if (key == null || !key.useDefaultPrismContext) {
                         LOG.warn(
                                 "No project set for PrismService override supplier (empty thread local), " +
                                         "returning default prism context instance",
                                 new RuntimeException("Exception just for stacktrace"));
                     }
-
                     return DEFAULT_PRISM_CONTEXT;
                 }
 
@@ -95,8 +95,8 @@ public final class StudioPrismContextService implements ProjectManagerListener {
                 LOG.debug("PrismService override supplier: prism context set to " + prismContext);
 
                 ContextKey key = PRISM_SERVICE_PROJECT.get();
-                if (key.projectId == null) {
-                    if (!key.useDefaultPrismContext) {
+                if (key == null || key.projectId == null) {
+                    if (key == null || !key.useDefaultPrismContext) {
                         LOG.warn(
                                 "No project set for PrismService override supplier (empty thread local), " +
                                         "ignoring prism context set");
@@ -324,7 +324,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     /**
      * Key for prism context service thread local.
      *
-     * @param projectId project identifier
+     * @param projectId              project identifier
      * @param useDefaultPrismContext whether to use default prism if project identifier is not set
      */
     private record ContextKey(String projectId, boolean useDefaultPrismContext) {
