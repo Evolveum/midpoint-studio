@@ -6,10 +6,8 @@ import com.evolveum.midpoint.prism.delta.ChangeType;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.studio.impl.StudioCleanupListener;
 import com.evolveum.midpoint.studio.impl.configuration.CleanupService;
 import com.evolveum.midpoint.studio.ui.ToolbarAction;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.icons.AllIcons;
@@ -393,8 +391,6 @@ public class DiffProcessor<O extends ObjectType> {
         CleanupService cs = CleanupService.get(project);
 
         ObjectCleaner processor = cs.createCleanupProcessor();
-        processor.setListener(new StudioCleanupListener(project, MidPointUtils.DEFAULT_PRISM_CONTEXT));
-
         processor.process(leftSource.object());
         processor.process(rightSource.object());
 
