@@ -57,9 +57,9 @@ public class EnvironmentSettings implements Serializable {
     public static EnvironmentSettings createDefaultSettings() {
         EnvironmentSettings settings = new EnvironmentSettings();
 
-        Environment def = Environment.DEFAULT;
-        settings.getEnvironments().add(def);
-        settings.setSelected(def);
+        settings.getEnvironments().add(Environment.DEFAULT);
+        settings.getEnvironments().add(Environment.DEMO);
+        settings.setSelected(Environment.DEFAULT);
 
         return settings;
     }

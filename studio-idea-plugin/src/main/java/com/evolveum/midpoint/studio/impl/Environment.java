@@ -15,15 +15,24 @@ import java.util.UUID;
  */
 public class Environment implements Serializable, Comparable<Environment> {
 
+    public static final Environment DEMO = new Environment();
+
     public static final Environment DEFAULT = new Environment();
 
     static {
-        DEFAULT.setName("Default");
-        DEFAULT.setUrl("http://localhost:8080/midpoint");
-        DEFAULT.setAwtColor(MidPointUtils.generateAwtColor());
-        DEFAULT.setIgnoreSslErrors(false);
-        DEFAULT.setUsername("administrator");
-        DEFAULT.setPassword("5ecr3t");
+        DEMO.setName("Demo");
+        DEMO.setUrl("https://demo.evolveum.com/midpoint");
+        DEMO.setAwtColor(MidPointUtils.generateAwtColor());
+        DEMO.setIgnoreSslErrors(false);
+        DEMO.setUsername("administrator");
+        DEMO.setPassword("IGA4ever");
+
+        DEMO.setName("Default");
+        DEMO.setUrl("http://localhost:8080/midpoint");
+        DEMO.setAwtColor(MidPointUtils.generateAwtColor());
+        DEMO.setIgnoreSslErrors(false);
+        DEMO.setUsername("administrator");
+        DEMO.setPassword("5ecr3t");
     }
 
     private String id;
