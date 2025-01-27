@@ -18,6 +18,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AssignmentHolderType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ModelExecuteOptionsType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.model.scripting_3.*;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
@@ -30,11 +31,14 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public interface UploadTaskMixin {
 
-    record UploadExecuteResult(OperationResult result, String consoleOutput) {
+    record UploadExecuteResult(OperationResult result, ExecuteScriptResponseType executeScriptResponse) {
 
     }
 
@@ -42,20 +46,42 @@ public interface UploadTaskMixin {
             Project project, Environment environment, Class caller, String notificationKey, MidPointObject object,
             UploadExecuteResult result) {
 
-        if (result == null || result.consoleOutput() == null) {
+        if (result == null || result.executeScriptResponse() == null) {
             return;
         }
 
         String name = object.isExecutable() ? "action" : object.getName();
-        String content = result.consoleOutput();
+
+        ExecuteScriptOutputType output = result.executeScriptResponse().getOutput();
+
+        Set<OperationResultStatusType> itemStatuses = new HashSet<>();
+        if (output != null && output.getDataOutput() != null) {
+            itemStatuses = output.getDataOutput().getItem().stream()
+                    .map(i -> i.getResult())
+                    .filter(r -> r != null && r.getStatus() != null)
+                    .map(r -> r.getStatus())
+                    .collect(Collectors.toSet());
+        }
+
+        String consoleOutput = output.getConsoleOutput();
 
         MidPointService ms = MidPointService.get(project);
-        ms.printToConsole(environment, caller, "Console output for " + name + ":\n" + content + "\n");
+        ms.printToConsole(environment, caller, "Raw console output for " + name + ":\n" + consoleOutput + "\n");
+
+        NotificationType type = NotificationType.INFORMATION;
+        if (itemStatuses.isEmpty()
+                || itemStatuses.stream().anyMatch(s -> s != OperationResultStatusType.SUCCESS)) {
+            type = NotificationType.WARNING;
+        }
+
+        if (itemStatuses.stream().anyMatch(s -> s == OperationResultStatusType.FATAL_ERROR)) {
+            type = NotificationType.ERROR;
+        }
 
         MidPointUtils.publishNotification(
                 project,
-                notificationKey, "Action output", StringUtils.abbreviate(content, 100),
-                NotificationType.WARNING,
+                notificationKey, "Action output", StringUtils.abbreviate(consoleOutput, 100),
+                type,
                 new ShowConsoleNotificationAction(project));
     }
 
@@ -81,18 +107,13 @@ public interface UploadTaskMixin {
             throws AuthenticationException, IOException, SchemaException {
 
         OperationResult result = null;
-        String consoleOutput = null;
+        ExecuteScriptResponseType executeScriptResponse = null;
         if (obj.isExecutable()) {
-            ExecuteScriptResponseType response = client.execute(obj.getContent());
+            executeScriptResponse = client.execute(obj.getContent());
 
-            if (response != null) {
-                OperationResultType res = response.getResult();
+            if (executeScriptResponse != null) {
+                OperationResultType res = executeScriptResponse.getResult();
                 result = OperationResult.createOperationResult(res);
-
-                ExecuteScriptOutputType output = response.getOutput();
-                if (output != null && output.getConsoleOutput() != null) {
-                    consoleOutput = output.getConsoleOutput();
-                }
             }
         } else {
             File file = obj.getFile();
@@ -116,7 +137,7 @@ public interface UploadTaskMixin {
             }
         }
 
-        return new UploadExecuteResult(result, consoleOutput);
+        return new UploadExecuteResult(result, executeScriptResponse);
     }
 
     static OperationResult recompute(MidPointClient client, MidPointObject object)
