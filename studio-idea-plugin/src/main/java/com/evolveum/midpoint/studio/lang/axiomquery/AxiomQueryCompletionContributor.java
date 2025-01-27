@@ -5,7 +5,6 @@ import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.impl.query.lang.Filter;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
-import com.evolveum.midpoint.prism.query.Suggestion;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
@@ -27,7 +26,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import com.intellij.util.ProcessingContext;
-import kotlinx.html.P;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
@@ -254,11 +252,9 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
 
         // paring tokens
         HashMap<String, String> pairTokens = new HashMap<>();
-        pairTokens.put("(", ")");
-        pairTokens.put("[", "]");
-        pairTokens.put("{", "}");
-        pairTokens.put("'", "'");
-        pairTokens.put("\"", "\"");
+        Arrays.stream(Filter.Token.Pair.values()).forEach(pair -> {
+            pairTokens.put(pair.getOpen(), pair.getClose());
+        });
 
         if (pairTokens.containsKey(key)) {
             return new LookupElementDecorator<>(element) {
