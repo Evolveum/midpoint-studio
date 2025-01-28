@@ -27,12 +27,12 @@ public class Environment implements Serializable, Comparable<Environment> {
         DEMO.setUsername("administrator");
         DEMO.setPassword("IGA4ever");
 
-        DEMO.setName("Default");
-        DEMO.setUrl("http://localhost:8080/midpoint");
-        DEMO.setAwtColor(MidPointUtils.generateAwtColor());
-        DEMO.setIgnoreSslErrors(false);
-        DEMO.setUsername("administrator");
-        DEMO.setPassword("5ecr3t");
+        DEFAULT.setName("Default");
+        DEFAULT.setUrl("http://localhost:8080/midpoint");
+        DEFAULT.setAwtColor(MidPointUtils.generateAwtColor());
+        DEFAULT.setIgnoreSslErrors(false);
+        DEFAULT.setUsername("administrator");
+        DEFAULT.setPassword("5ecr3t");
     }
 
     private String id;
