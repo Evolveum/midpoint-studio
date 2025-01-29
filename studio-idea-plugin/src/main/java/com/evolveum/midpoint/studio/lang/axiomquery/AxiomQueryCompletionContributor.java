@@ -5,7 +5,6 @@ import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.impl.query.lang.Filter;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
-import com.evolveum.midpoint.prism.query.Suggestion;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
@@ -27,7 +26,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import com.intellij.util.ProcessingContext;
-import kotlinx.html.P;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
