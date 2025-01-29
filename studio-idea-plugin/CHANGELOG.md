@@ -2,11 +2,13 @@
 
 ## [4.9.2]
 ### Added
-
+- Support for Intellij Idea 2025.1
+- MID-9769 Added configuration option to remove metadata during cleanup
 ### Changed
-
+- MID-9691 Improved bulk action result handling when no object has been processed
 ### Fixed
-- MID-10275 cleanup configuration fixed illegal state exception
+- MID-10275 Cleanup configuration fixed illegal state exception
+- MID-9627 Fixing multiple places causing prism context not being available
 
 ## [4.9.1]
 ### Changed

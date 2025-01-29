@@ -15,7 +15,7 @@ dependencyResolutionManagement {
             // versions of plugins used in build
             version("kotlin", "2.1.0")
             version("changelog", "2.2.1")
-            version("intelliJPlatform", "2.1.0")
+            version("intelliJPlatform", "2.2.1")
             version("kover", "0.8.3")
             version("qodana", "2024.2.3")
 
