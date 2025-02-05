@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.schema.util.ObjectTypeUtil;
 import com.evolveum.midpoint.studio.client.ClientException;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
@@ -1209,5 +1210,18 @@ public class MidPointUtils {
         String content = expander.expand(object.getContent(), file);
 
         return ClientUtils.parseText(content, object.getFile()).get(0);
+    }
+
+    public static String getDisplayNameOrName(ObjectType object) {
+        if (object == null) {
+            return null;
+        }
+
+        PolyStringType name = ObjectTypeUtil.getDisplayName(object);
+        if (name == null) {
+            name = object.getName();
+        }
+
+        return name != null ? name.getOrig() : null;
     }
 }

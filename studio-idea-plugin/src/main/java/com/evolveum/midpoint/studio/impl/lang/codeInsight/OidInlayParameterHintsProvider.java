@@ -1,14 +1,17 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
+import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
+import com.evolveum.midpoint.studio.impl.cache.InitialObjectsCache;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.codeInsight.hints.InlayInfo;
 import com.intellij.codeInsight.hints.InlayParameterHintsProvider;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -42,8 +45,8 @@ public class OidInlayParameterHintsProvider implements InlayParameterHintsProvid
 
         int offset = inlayOffset(element, false);
         List<OidNameValue> result = ObjectFileBasedIndexImpl.getOidNamesByOid(oid, element.getProject());
-        if (result == null || result.isEmpty()) {
-            return Collections.emptyList();
+        if (result.isEmpty()) {
+            return createInitialObjectInlay(element.getProject(), oid, offset);
         }
 
         String label;
@@ -71,6 +74,25 @@ public class OidInlayParameterHintsProvider implements InlayParameterHintsProvid
         }
 
         return List.of(new InlayInfo(label, offset, false, true, false));
+    }
+
+    private List<InlayInfo> createInitialObjectInlay(Project project, String oid, int offset) {
+        InitialObjectsCache cache = EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_INITIAL_OBJECTS);
+        if (cache == null) {
+            return Collections.emptyList();
+        }
+
+        ObjectType object = cache.get(oid);
+        if (object == null) {
+            return Collections.emptyList();
+        }
+
+        String name = MidPointUtils.getDisplayNameOrName(object);
+        if (name == null) {
+            name = "Undefined";
+        }
+
+        return List.of(new InlayInfo(name, offset, false, true, false));
     }
 
     private int inlayOffset(PsiElement expr, boolean atEnd) {

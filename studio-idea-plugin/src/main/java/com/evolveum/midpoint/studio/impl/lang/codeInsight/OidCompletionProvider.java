@@ -1,11 +1,14 @@
 package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
+import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
+import com.evolveum.midpoint.studio.impl.cache.InitialObjectsCache;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
@@ -30,11 +33,29 @@ public class OidCompletionProvider extends CompletionProvider<CompletionParamete
             return;
         }
 
-        List<OidNameValue> oids = ObjectFileBasedIndexImpl.getAllOidNames(parameters.getEditor().getProject());
+        Project project = parameters.getEditor().getProject();
+
+        List<OidNameValue> oids = ObjectFileBasedIndexImpl.getAllOidNames(project);
         Collections.sort(oids, (o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.getName(), o2.getName()));
 
         if (!oids.isEmpty()) {
-            oids.forEach(o -> result.addElement(MidPointUtils.buildLookupElement(o.getName(), o.getOid(), o.getSource(), 100)));
+            oids.forEach(
+                    o -> result.addElement(
+                            MidPointUtils.buildLookupElement(o.getName(), o.getOid(), o.getSource(), 100)));
+        }
+
+        InitialObjectsCache cache = EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_INITIAL_OBJECTS);
+        if (cache != null) {
+            cache.list().forEach(
+                    o -> {
+                        String name = MidPointUtils.getDisplayNameOrName(o);
+                        if (name == null) {
+                            name = "Undefined";
+                        }
+
+                        result.addElement(
+                                MidPointUtils.buildLookupElement(name, o.getOid(), "Initial object", 90));
+                    });
         }
     }
 }
