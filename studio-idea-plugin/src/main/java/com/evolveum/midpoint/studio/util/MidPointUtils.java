@@ -60,6 +60,7 @@ import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
@@ -164,14 +165,17 @@ public class MidPointUtils {
         return Color.getHSBColor(hue, saturation, 0.9f);
     }
 
-    public static LookupElement buildLookupElement(String name, String oid, String source, int priority) {
-        LookupElementBuilder builder = buildLookupElement(name, oid, source);
+public static LookupElement buildOidLookupElement(String name, String oid, QName type, String source, int priority) {
+        LookupElementBuilder builder = buildOidLookupElement(name, oid, source);
+        if (type != null) {
+            builder = builder.withInsertHandler(new OidTypeInsertHandler(type));
+        }
         LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
 
         return PrioritizedLookupElement.withPriority(element, priority);
     }
 
-    public static LookupElementBuilder buildLookupElement(String name, String oid, String source) {
+    public static LookupElementBuilder buildOidLookupElement(String name, String oid, String source) {
         return LookupElementBuilder.create(oid)
                 .withTailText("(" + name + ")")
                 .withLookupString(name)
