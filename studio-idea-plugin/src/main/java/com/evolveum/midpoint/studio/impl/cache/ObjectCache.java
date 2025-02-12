@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
+import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.RetrieveOption;
 import com.evolveum.midpoint.schema.SelectorOptions;
@@ -77,13 +78,17 @@ public class ObjectCache<O extends ObjectType> extends Cache {
                     GetOperationOptions.createRetrieve(RetrieveOption.INCLUDE)));
         }
 
-        SearchResult result = client.search(type, null, options);
+        SearchResult result = client.search(type, createReloadQuery(), options);
         cacheObjects(result.getObjects());
 
         lastReloadTime = System.currentTimeMillis();
 
         LOG.debug("Cache reloaded for {}: {}, size: {} in {}ms",
                 getClass().getSimpleName(), type.getSimpleName(), cache.size(), (System.currentTimeMillis() - time));
+    }
+
+    protected ObjectQuery createReloadQuery() {
+        return null;
     }
 
     protected void cacheObjects(Collection<MidPointObject> objects) {

@@ -3,8 +3,12 @@
 ## [4.10.0]
 ### Added
 - Support for Intellij 2024.3
+- Support for Intellij 2025.1
+- MID-9712 Reference "type" attribute populated as well during oid autocompletion
+- MID-9841 Autocomplete/inlays also for initial objects (now cached from environment)
 
 ### Changed
+- Cleanup removes object version
 
 ### Fixed
 - MID-10157 cleanup path custom action can't be edited fix

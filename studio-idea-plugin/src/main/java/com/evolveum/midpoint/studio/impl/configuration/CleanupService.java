@@ -94,6 +94,7 @@ public class CleanupService extends ServiceBase<CleanupConfiguration> {
 
     public ObjectCleaner createCleanupProcessor() {
         ObjectCleaner processor = new ObjectCleaner();
+        processor.setRemoveObjectVersion(true);
         processor.setIgnoreNamespaces(true);
         processor.setPaths(getCleanupPaths());
         processor.setRemoveAskActionItemsByDefault(getAskActionOverride() == CleanupPathAction.REMOVE);

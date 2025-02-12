@@ -55,7 +55,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     /**
      * Default prism context initialized when class is loaded, will not change throughout the application lifecycle.
      */
-    private static final PrismContext DEFAULT_PRISM_CONTEXT;
+    public static final PrismContext DEFAULT_PRISM_CONTEXT;
 
     static {
         LOG.info("Creating default prism context");
