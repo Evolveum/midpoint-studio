@@ -32,7 +32,8 @@ public class SyncActionCompletionProvider extends CompletionProvider<CompletionP
         List<LookupElement> list = new ArrayList<>();
         for (String s : actions) {
             QName name = QNameUtil.uriToQName(s);
-            list.add(MidPointUtils.buildLookupElement(name.getLocalPart(), s,
+            // todo this buildOidLookupElement is not very nice reuse of builder
+            list.add(MidPointUtils.buildOidLookupElement(name.getLocalPart(), s, null,
                     SyncAction.class.getSimpleName(), 100));
         }
 

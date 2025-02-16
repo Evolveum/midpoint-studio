@@ -1,6 +1,8 @@
 package com.evolveum.midpoint.studio.impl.lang.annotation;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
+import com.evolveum.midpoint.studio.impl.cache.InitialObjectsCache;
 import com.evolveum.midpoint.studio.impl.psi.search.ObjectFileBasedIndexImpl;
 import com.evolveum.midpoint.studio.impl.psi.search.OidNameValue;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -68,6 +70,12 @@ public class RefOidAnnotator implements Annotator {
         String oid = value.getValue();
         XmlTag tag = getTag(value);
         String type = getTypeFromReference(tag);
+
+        InitialObjectsCache cache = EnvironmentCacheManager.getCache(value.getProject(), EnvironmentCacheManager.KEY_INITIAL_OBJECTS);
+        if (cache != null && cache.get(oid) != null) {
+            // it's initial object
+            return;
+        }
 
         List<VirtualFile> result = ObjectFileBasedIndexImpl.getVirtualFiles(value.getValue(), value.getProject(), true);
         if (result.isEmpty()) {
