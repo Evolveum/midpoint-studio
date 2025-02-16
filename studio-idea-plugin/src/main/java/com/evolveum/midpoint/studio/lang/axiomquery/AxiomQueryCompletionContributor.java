@@ -1,5 +1,8 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
+import com.evolveum.axiom.lang.antlr.AxiomStrings;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.impl.query.lang.Filter;
@@ -19,6 +22,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.codeInsight.lookup.LookupElementDecorator;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
@@ -211,9 +215,9 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
         axiomQueryContentAssist.process(def, content, cursorPosition).autocomplete()
                 .forEach(suggestion -> {
                     if (Arrays.stream(Filter.Alias.values()).map(Filter.Alias::getName).toList().contains(suggestion.name())) {
-                        aliases.add(build(suggestion.name(), suggestion.alias()));
+                        aliases.add(build(suggestion.name(), suggestion.alias(), suggestion.priority()));
                     } else {
-                        suggestions.add(build(suggestion.name(), suggestion.alias()));
+                        suggestions.add(build(suggestion.name(), suggestion.alias(), suggestion.priority()));
                     }
                 });
 
@@ -237,7 +241,7 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
         return parentTag;
     }
 
-    private LookupElement build(String key, String alias) {
+    private LookupElement build(String key, String alias, int priority) {
         if (alias == null) {
             alias = key;
         }
@@ -246,7 +250,21 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                 .withTypeText(alias)
                 .withLookupStrings(Arrays.asList(key, key.toLowerCase(), alias, alias.toLowerCase()))
                 .withBoldness(true)
-                .withCaseSensitivity(true);
+                .withCaseSensitivity(true)
+//                .withInsertHandler((insertionContext, item) -> {
+//                    Document document = insertionContext.getDocument();
+//                    int startOffset = insertionContext.getStartOffset();
+//
+//                    if (document.getText().charAt(startOffset - 1) == AxiomStrings.fromOptionallySingleQuoted(
+//                            AxiomQueryParser.VOCABULARY.getDisplayName(AxiomQueryLexer.AT_SIGN)).charAt(0)) {
+//                        document.replaceString(startOffset - 1, insertionContext.getTailOffset(), item.getLookupString());
+//                    } else {
+//                        // Normal insertion
+//                        document.insertString(startOffset, item.getLookupString());
+//                    }
+//                    insertionContext.commitDocument();
+//                })
+                ;
 
         LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
 
@@ -257,7 +275,7 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
         });
 
         if (pairTokens.containsKey(key)) {
-            return new LookupElementDecorator<>(element) {
+            return PrioritizedLookupElement.withPriority(new LookupElementDecorator<>(element) {
                 @Override
                 public void handleInsert(@NotNull InsertionContext context) {
                     Editor editor = context.getEditor();
@@ -266,9 +284,9 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                     editor.getCaretModel().moveToOffset(offset);
                     PsiDocumentManager.getInstance(context.getProject()).commitDocument(editor.getDocument());
                 }
-            };
+            }, priority);
         } else {
-            return PrioritizedLookupElement.withPriority(element, 90);
+            return PrioritizedLookupElement.withPriority(element, priority);
         }
     }
 }
