@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.axiom.lang.antlr.AxiomStrings;
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
@@ -17,12 +16,8 @@ import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.codeInsight.completion.*;
-import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.codeInsight.lookup.LookupElementDecorator;
+import com.intellij.codeInsight.lookup.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiDocumentManager;
@@ -34,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -61,8 +57,16 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
 
     private void addCompletions(CompletionParameters parameters, CompletionResultSet resultSet) {
         PsiElement element = parameters.getPosition();
-
         String content = parameters.getOriginalFile().getText();
+
+        var prefixElement = findItemNameElement(element);
+        if (prefixElement != null) {
+            String prefix = prefixElement.getText().replace(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED, "");
+
+            if (prefix.startsWith(AxiomStrings.fromOptionallySingleQuoted(AxiomQueryParser.VOCABULARY.getDisplayName(AxiomQueryParser.AT_SIGN)))) {
+                resultSet = resultSet.withPrefixMatcher(new PlainPrefixMatcher(prefix));
+            }
+        }
 
         var cursorPosition = parameters.getOffset();
         PsiElement outer = PsiUtils.getOuterPsiElement(element);
@@ -199,14 +203,12 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
 
     private void addSuggestionsFromEditorHint(Editor editor, String content, int cursorPosition, CompletionResultSet resultSet) {
         ItemDefinition<?> def = getObjectDefinitionFromHint(editor);
-
         addSuggestions(def, content, cursorPosition, resultSet);
     }
 
     private void addSuggestions(ItemDefinition<?> def, String content, int cursorPosition, CompletionResultSet resultSet) {
         if (def == null) return;
 
-        CompletionResultSet customResultSet = resultSet.withPrefixMatcher("");
         AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(PrismContext.get());
 
         List<LookupElement> aliases = new ArrayList<>();
@@ -222,6 +224,8 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                 });
 
         resultSet.addAllElements(suggestions);
+        // This always shows filter Aliases
+        CompletionResultSet customResultSet = resultSet.withPrefixMatcher("");
         customResultSet.addAllElements(aliases);
     }
 
@@ -250,21 +254,7 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                 .withTypeText(alias)
                 .withLookupStrings(Arrays.asList(key, key.toLowerCase(), alias, alias.toLowerCase()))
                 .withBoldness(true)
-                .withCaseSensitivity(true)
-//                .withInsertHandler((insertionContext, item) -> {
-//                    Document document = insertionContext.getDocument();
-//                    int startOffset = insertionContext.getStartOffset();
-//
-//                    if (document.getText().charAt(startOffset - 1) == AxiomStrings.fromOptionallySingleQuoted(
-//                            AxiomQueryParser.VOCABULARY.getDisplayName(AxiomQueryLexer.AT_SIGN)).charAt(0)) {
-//                        document.replaceString(startOffset - 1, insertionContext.getTailOffset(), item.getLookupString());
-//                    } else {
-//                        // Normal insertion
-//                        document.insertString(startOffset, item.getLookupString());
-//                    }
-//                    insertionContext.commitDocument();
-//                })
-                ;
+                .withCaseSensitivity(true);
 
         LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
 
@@ -288,5 +278,18 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
         } else {
             return PrioritizedLookupElement.withPriority(element, priority);
         }
+    }
+
+    private PsiElement findItemNameElement(PsiElement element) {
+        if (element == null) return null;
+
+        while (!element.getNode().getElementType().toString().equals(AxiomQueryParser.ruleNames[AxiomQueryParser.RULE_itemName])) {
+            if (element.getNode().getElementType().toString().equals(AxiomQueryParser.ruleNames[AxiomQueryParser.RULE_root])) {
+                break;
+            }
+            element = element.getParent();
+        }
+
+        return element;
     }
 }
