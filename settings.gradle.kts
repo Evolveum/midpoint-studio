@@ -21,7 +21,7 @@ dependencyResolutionManagement {
 
             // versions of midpoint libraries
             version("midpoint", "4.9.2-SNAPSHOT")
-            version("midscribe", "4.9.1-SNAPSHOT")
+            version("midscribe", "4.9.2-SNAPSHOT")
 
             // versions of third-party libraries
             version("annotations", "24.1.0")
