@@ -9,6 +9,7 @@
 ### Fixed
 - MID-10275 Cleanup configuration fixed illegal state exception
 - MID-9627 Fixing multiple places causing prism context not being available
+- MID-10324 - Fixed suggestions for `@metadata` in  Midpoint Query 
 
 ## [4.9.1]
 ### Changed
