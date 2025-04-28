@@ -77,6 +77,8 @@
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
+        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.assistant.StartupActivity"/>
+
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <framework.detector implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFacetFrameworkDetector"/>
@@ -124,6 +126,13 @@
                           order="last"
                           icon="AllIcons.Actions.Refresh"
                           factoryClass="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationToolWindowFactory"/>
+
+        <facet.toolWindow id="ConnectorAssistant"
+                          facetIdList="MidPointFacet"
+                          anchor="right"
+                          order="last"
+                          icon="/icons/toolwindow_midpoint.svg"
+                          factoryClass="com.evolveum.midpoint.studio.ui.assistant.AssistantToolWindowFactory"/>
 
         <fileType
                 name="MPTrace"
