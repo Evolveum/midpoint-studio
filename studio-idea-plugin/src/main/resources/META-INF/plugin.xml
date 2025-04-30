@@ -77,7 +77,7 @@
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
-        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.assistant.StartupActivity"/>
+        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.assistant.ConnectorAssistantActivity"/>
 
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
@@ -686,6 +686,13 @@
             <add-to-group anchor="last" group-id="ProjectViewPopupMenu"/>
             <add-to-group anchor="last" group-id="StructureViewPopupMenu"/>
         </group>
+
+        <action id="WizardAction"
+                class="com.evolveum.midpoint.studio.ui.wizard.LaunchWizardAction"
+                text="Run Wizard"
+                description="Launches the custom wizard">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
 
     </actions>
 </idea-plugin>

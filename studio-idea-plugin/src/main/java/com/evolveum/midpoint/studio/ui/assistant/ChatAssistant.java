@@ -2,10 +2,18 @@ package com.evolveum.midpoint.studio.ui.assistant;
 
 import com.evolveum.midpoint.studio.impl.MarkdownParser;
 import com.evolveum.midpoint.studio.impl.MidpointCopilotService;
+import com.github.weisj.jsvg.D;
+import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.project.Project;
+import com.intellij.ui.EditorTextField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -14,13 +22,16 @@ import java.util.concurrent.CompletableFuture;
  */
 public class ChatAssistant {
 
+    private final Project project;
     private final JPanel contentPanel = new JPanel(new BorderLayout());
     private final JPanel chatArea = new JPanel();
     private final JTextField inputField = new JTextField();
 
     private final MidpointCopilotService midpointCopilotService = new MidpointCopilotService();
 
-    public ChatAssistant() {
+    public ChatAssistant(Project project) {
+        this.project = project;
+
         chatArea.setLayout(new BoxLayout(chatArea, BoxLayout.Y_AXIS));
         JButton sendButton = new JButton("Send");
         JPanel inputPanel = new JPanel(new BorderLayout());
@@ -39,91 +50,106 @@ public class ChatAssistant {
     private void sendMessage() {
         String userInput = inputField.getText().trim();
         if (!userInput.isEmpty()) {
-            addMessage("You: " + userInput + "\n", true);
+            addMessage(userInput, true);
             inputField.setText("");
 
             JLabel loadingLabel = new JLabel("Thinking...");
             loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            loadingLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-            loadingLabel.setVisible(true);
             JPanel loadingWrapper = new JPanel(new BorderLayout());
-            loadingWrapper.setBackground(chatArea.getBackground());
-            loadingWrapper.add(loadingLabel, BorderLayout.CENTER);
+            loadingWrapper.setLayout(new BoxLayout(loadingWrapper, BoxLayout.Y_AXIS));
+            loadingWrapper.setBorder(BorderFactory.createEmptyBorder(300, 600, 600, 300));
+            loadingWrapper.add(loadingLabel);
 
             chatArea.add(loadingWrapper);
             chatArea.revalidate();
             chatArea.repaint();
 
-            CompletableFuture.supplyAsync(() -> generateFakeResponse(userInput)).thenAccept(response -> {
+            CompletableFuture.supplyAsync(() -> generateResponse(userInput)).thenAccept(response -> {
                 ApplicationManager.getApplication().invokeLater(() -> {
                     SwingUtilities.invokeLater(() -> {
                         chatArea.remove(loadingWrapper);
-                        addMessage("AI: " + response + "\n", false);
+                        addMessage(response, false);
                     });
                 });
             });
         }
     }
 
-    private JPanel createBlock(String markdown, boolean isUser) {
-        JPanel wrapper = new JPanel();
-//        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.X_AXIS));
-//        wrapper.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-
-        JTextPane textPane = new JTextPane();
-        int width = 400;
-
-        MarkdownParser.extractBlocks(markdown).forEach(blockContent -> {
-            textPane.setText(blockContent.text());
-//            textPane.setText(blockContent.language());
-//            textPane.setText(blockContent.code());
-        });
-//        textPane.add(Box.createVerticalStrut(10));
-
-        textPane.setEditable(false);
-        textPane.setOpaque(false);
-        textPane.setBorder(null);
-
-//        textPane.setSize(new Dimension(width, Short.MAX_VALUE));
-//        Dimension d = textPane.getPreferredSize();
-//        textPane.setPreferredSize(new Dimension(width, d.height));
-//        textPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, d.height));
-
-        wrapper.add(textPane);
-        wrapper.add(Box.createVerticalStrut(0));
-        wrapper.setSize(new Dimension(width, Short.MAX_VALUE));
-        Dimension dd = wrapper.getPreferredSize();
-        wrapper.setPreferredSize(new Dimension(width, dd.height));
-        wrapper.setMaximumSize(new Dimension(Integer.MAX_VALUE, dd.height));
-
-        return wrapper;
-    }
-
     public void addMessage(String text, boolean isUser) {
-        JPanel messagePanel = new JPanel();
-        messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.X_AXIS));
-        messagePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        messagePanel.setBackground(UIManager.getColor("Panel.background"));
-        messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        int maxWidth = 600;
 
-        JLabel label = new JLabel(text);
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
+        wrapper.setBackground(UIManager.getColor("Panel.background"));
+        wrapper.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        wrapper.setBackground(isUser
+                ? ChatColors.MESSAGE_BACKGROUND_USER
+                : ChatColors.MESSAGE_BACKGROUND_BOT);
+
+        JLabel label = new JLabel();
         label.setOpaque(true);
         label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        label.setForeground(ChatColors.MESSAGE_TEXT_COLOR);
+        label.setBackground(isUser
+                ? ChatColors.MESSAGE_BACKGROUND_USER
+                : ChatColors.MESSAGE_BACKGROUND_BOT);
 
-        messagePanel.add(label);
+        if (isUser) {
+            label.setText("<html><b>" + text + "</b></html>");
+            wrapper.add(label);
+        } else {
+            MarkdownParser.extractBlocks(text).forEach(blockContent -> {
+                if (blockContent.html() != null) {
+                    JLabel AILabel = new JLabel();
+                    AILabel.setOpaque(true);
+                    AILabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
+                    AILabel.setForeground(ChatColors.MESSAGE_TEXT_COLOR);
+                    AILabel.setMaximumSize(new Dimension(maxWidth, Integer.MAX_VALUE));
+                    AILabel.setVerticalAlignment(1);
+                    AILabel.setText("<html>" + blockContent.html() + "</html>");
+                    wrapper.add(AILabel);
+                }
 
-        messagePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, messagePanel.getPreferredSize().height));
+                if (blockContent.language() != null) {
+                    wrapper.add(new JLabel("<html><b>Language: </b>" + blockContent.language() + "</html>"));
+                }
 
-        chatArea.add(messagePanel);
+                if (blockContent.code() != null) {
+                    wrapper.add(createCodeSnippetBlock(blockContent.code(), project, JavaLanguage.INSTANCE.getAssociatedFileType()));
+                }
+            });
+        }
 
-        JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
-        chatArea.add(separator);
+//        label.setSize(maxWidth, Integer.MAX_VALUE);
+//        Dimension preferredSize = label.getPreferredSize();
+//        label.setPreferredSize(new Dimension(maxWidth, preferredSize.height));
+//        wrapper.setMaximumSize(new Dimension(maxWidth, preferredSize.height));
+//        wrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        chatArea.add(wrapper);
         chatArea.revalidate();
         chatArea.repaint();
     }
 
-    private String generateFakeResponse(String input) {
+    public JComponent createCodeSnippetBlock(String code, Project project, FileType fileType) {
+        Document document = EditorFactory.getInstance().createDocument(code);
+        EditorTextField editorField = new EditorTextField(document, project, fileType, true, false);
+//        editorField.setMaximumSize(new Dimension(500, 200));
+
+//        if (editorField instanceof EditorEx editorEx) {
+//            editorEx.setViewer(true);
+//            editorEx.setCaretEnabled(false);
+//            editorEx.setHorizontalScrollbarVisible(true);
+//            editorEx.setVerticalScrollbarVisible(true);
+//        }
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.add(editorField);
+        wrapper.setPreferredSize(new Dimension(500, 200));
+        return wrapper;
+    }
+
+    private String generateResponse(String input) {
         return midpointCopilotService.generate(input, "generate");
     }
 

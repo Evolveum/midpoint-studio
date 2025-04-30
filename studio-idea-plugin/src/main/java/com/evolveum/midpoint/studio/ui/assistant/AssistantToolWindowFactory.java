@@ -5,27 +5,18 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
 /**
  * Created by Dominik.
  */
 public class AssistantToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        ChatAssistant chatAssistant = new ChatAssistant();
+        ChatAssistant chatAssistant = new ChatAssistant(project);
         toolWindow.getComponent().add(chatAssistant.getContent());
-
-//        toolWindow.getComponent().addComponentListener(new ComponentAdapter() {
-//            @Override
-//            public void componentResized(ComponentEvent e) {
-//                int newWidth = toolWindow.getComponent().getWidth();
-//                for (Component comp :  chat.getContent().getComponents()) {
-//                    if (comp instanceof JPanel) {
-//                        int bubbleWidth = newWidth - 40;
-//                        comp.setMaximumSize(new Dimension(bubbleWidth, Integer.MAX_VALUE));
-//                        comp.setPreferredSize(new Dimension(bubbleWidth, comp.getPreferredSize().height));
-//                    }
-//                }
-//            }
-//        });
     }
 }

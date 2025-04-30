@@ -133,6 +133,7 @@ dependencies {
     }
     implementation("org.antlr:antlr4-runtime:4.10.1")
     implementation("org.antlr:antlr4-intellij-adaptor:0.1")
+    implementation("org.commonmark:commonmark:0.21.0")
 
     implementation(projects.midpointClient)
 
@@ -175,6 +176,9 @@ dependencies {
     implementation(libs.commons.lang)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
+
+    implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
+    implementation("com.fifesoft:rsyntaxtextarea:3.3.3")
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {

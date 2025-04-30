@@ -39,9 +39,15 @@ public class AssistantTypedHandler implements TypedActionHandler {
     private void fetchSuggestionAsync(Editor editor, String context) {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             String suggestion = callAI(context);
-            if (!suggestion.isEmpty()) {
+
+            if (context.equals("def ")) {
                 ApplicationManager.getApplication().invokeLater(() ->
-                        showSuggestion(editor, suggestion));
+                        showSuggestion(editor, ""));
+            } else {
+                if (!suggestion.isEmpty()) {
+                    ApplicationManager.getApplication().invokeLater(() ->
+                            showSuggestion(editor, suggestion));
+                }
             }
         });
     }
