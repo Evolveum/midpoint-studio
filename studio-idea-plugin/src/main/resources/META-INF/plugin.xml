@@ -323,6 +323,11 @@
             <descriptionDirectoryName>ProtectedStringAnnotatorIntention</descriptionDirectoryName>
             <skipBeforeAfter>false</skipBeforeAfter>
         </intentionAction>
+
+        <!-- Groovy dsl schema support-->
+        <completion.contributor language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaContributor"/>
+        <psi.referenceContributor language="Groovy" implementation="com.evolveum.midpoint.studio.lang.groovy.SchemaReferenceContributor"/>
+        <annotator language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaAnnotator"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
