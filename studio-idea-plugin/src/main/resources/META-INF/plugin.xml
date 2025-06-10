@@ -35,6 +35,8 @@
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager"/>
 
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.OpenApiTypeMappingCacheService"/>
+
         <projectConfigurable
                 parentId="language"
                 instance="com.evolveum.midpoint.studio.ui.configuration.MidPointConfigurable"
@@ -325,6 +327,7 @@
         </intentionAction>
 
         <!-- Groovy dsl schema support-->
+        <postStartupActivity implementation="com.evolveum.midpoint.studio.lang.groovy.GroovySchemaStartupActivity" />
         <completion.contributor language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaContributor"/>
         <psi.referenceContributor language="Groovy" implementation="com.evolveum.midpoint.studio.lang.groovy.SchemaReferenceContributor"/>
         <annotator language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaAnnotator"/>

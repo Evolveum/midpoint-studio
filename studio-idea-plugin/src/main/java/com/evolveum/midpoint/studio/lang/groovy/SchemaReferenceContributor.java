@@ -19,7 +19,6 @@ public class SchemaReferenceContributor extends PsiReferenceContributor {
                     @Override
                     public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
                                                                            @NotNull ProcessingContext context) {
-                        // You parse the PSI tree here and match attribute references
                         return PsiReference.EMPTY_ARRAY;
                     }
                 });
