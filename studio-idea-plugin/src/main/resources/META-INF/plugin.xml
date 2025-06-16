@@ -7,6 +7,7 @@
     <depends>com.intellij.modules.java</depends>
     <depends>org.intellij.groovy</depends>
     <depends>org.jetbrains.idea.maven</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
 
     <resource-bundle>messages.MidPointStudio</resource-bundle>
 
@@ -216,7 +217,13 @@
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
 
-        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
+        <psi.referenceContributor language="XML" implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
+
+
+        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.validator.XNodeExternalAnnotator"/>
+        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.validator.XNodeExternalAnnotator"/>
+        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.validator.XNodeExternalAnnotator"/>
+
 
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>
