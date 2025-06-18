@@ -1,9 +1,12 @@
 package com.evolveum.midpoint.studio.impl.lang.converter;
 
+import com.evolveum.midpoint.prism.impl.xnode.ListXNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.xnode.*;
 import com.intellij.json.psi.*;
 import com.intellij.psi.PsiElement;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
@@ -14,50 +17,69 @@ import javax.xml.namespace.QName;
 public class JsonToXNode implements XNodeConverter {
 
     @Override
-    public @Nullable XNode convertFromPsi(@NotNull PsiElement element) {
+    public @Nullable XNode convertFromPsi(PsiElement element) {
+
         if (element instanceof JsonObject jsonObject) {
             return convertObject(jsonObject);
         } else if (element instanceof JsonArray jsonArray) {
             return convertArray(jsonArray);
         } else if (element instanceof JsonProperty jsonProperty) {
-            return convertFromPsi(jsonProperty);
+            return convertProperty(jsonProperty);
         } else if (element instanceof JsonLiteral jsonLiteral) {
             return convertLiteral(jsonLiteral);
-        } else if (element instanceof JsonValue jsonValue) {
-            return convertFromPsi(jsonValue);
         }
 
         return null;
     }
 
-    private MapXNode convertObject(JsonObject jsonObject) {
-        MapXNode map = xNodeFactory.map();
-        for (JsonProperty property : jsonObject.getPropertyList()) {
-            String name = property.getName();
+    private MapXNodeImpl convertObject(JsonObject obj) {
+        MapXNodeImpl map = new MapXNodeImpl();
 
-            XNode valueNode = convertFromPsi(property.getValue());
-            if (valueNode != null) {
-                // FIXME missing put method in XNode interface
-//                map.put(new QName(name), valueNode);
+        for (JsonProperty property : obj.getPropertyList()) {
+            String key = property.getName();
+            PsiElement valueElement = property.getValue();
+            if (valueElement != null) {
+                XNode valueNode = convertFromPsi(valueElement);
+
+                if (valueNode != null) {
+                    map.put(new QName(key), (XNodeImpl) valueNode);
+                }
             }
         }
+
         return map;
     }
 
-    private ListXNode convertArray(JsonArray jsonArray) {
-        ListXNode list = xNodeFactory.list();
-        for (JsonValue value : jsonArray.getValueList()) {
-            XNode item = convertFromPsi(value);
-            if (item != null) {
-//                list.add(item);
+    private ListXNodeImpl convertArray(JsonArray array) {
+        ListXNodeImpl list = new ListXNodeImpl();
+        for (JsonValue value : array.getValueList()) {
+            XNode itemNode = convertFromPsi(value);
+            if (itemNode != null) {
+                list.add((XNodeImpl) itemNode);
             }
         }
         return list;
     }
 
-    private PrimitiveXNode<?> convertLiteral(JsonLiteral literal) {
-        Object value = literal.getText();
-        return xNodeFactory.primitive(value);
+    public XNode convertProperty(JsonProperty property) {
+        String key = property.getName();
+        JsonValue value = property.getValue();
+
+        if (value == null) {
+            return null;
+        }
+
+        XNode valueNode = convertFromPsi(value);
+        if (valueNode == null) {
+            return null;
+        }
+
+        MapXNodeImpl result = new MapXNodeImpl();
+        result.put(new QName(key), (XNodeImpl) valueNode);
+        return result;
     }
 
+    private PrimitiveXNodeImpl<?> convertLiteral(JsonLiteral literal) {
+        return (PrimitiveXNodeImpl<?>) xNodeFactory.primitive(literal.getText());
+    }
 }

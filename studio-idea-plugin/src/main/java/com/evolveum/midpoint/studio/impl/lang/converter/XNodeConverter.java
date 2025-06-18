@@ -11,8 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 public interface XNodeConverter {
 
-     XNodeFactory xNodeFactory = new XNodeFactoryImpl();
+    XNodeFactory xNodeFactory = new XNodeFactoryImpl();
 
     @Nullable
-    XNode convertFromPsi(@NotNull PsiElement element);
+    XNode convertFromPsi(PsiElement element);
 }

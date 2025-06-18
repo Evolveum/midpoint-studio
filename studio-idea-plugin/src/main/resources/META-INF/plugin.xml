@@ -217,8 +217,7 @@
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
 
-        <psi.referenceContributor language="XML" implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
-
+        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
 
         <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.validator.XNodeExternalAnnotator"/>
         <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.validator.XNodeExternalAnnotator"/>

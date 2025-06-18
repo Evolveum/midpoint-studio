@@ -6,6 +6,7 @@ import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.lang.converter.JsonToXNode;
 import com.evolveum.midpoint.studio.impl.lang.converter.XNodeConverter;
 import com.evolveum.midpoint.studio.impl.lang.converter.XmlToXNode;
+import com.evolveum.midpoint.studio.impl.lang.converter.YamlToXNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.lang.Language;
 import com.intellij.lang.annotation.ExternalAnnotator;
@@ -40,7 +41,7 @@ public class XNodeExternalAnnotator extends ExternalAnnotator<PsiFile, List<Stri
         } else if (lang.equals(JsonLanguage.INSTANCE)) {
             xNodeConverterImpl = new JsonToXNode();
         } else if (lang.equals(YAMLLanguage.INSTANCE)) {
-            xNodeConverterImpl = new XmlToXNode();
+            xNodeConverterImpl = new YamlToXNode();
         }
 
         return file;
@@ -54,55 +55,29 @@ public class XNodeExternalAnnotator extends ExternalAnnotator<PsiFile, List<Stri
         psiFile.accept(new PsiRecursiveElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {
-                super.visitElement(element);
                 XNode xNode = xNodeConverterImpl.convertFromPsi(element);
 
                 if (xNode != null) {
                     try {
                         validate(xNode);
                     } catch (SchemaException | IOException e) {
-                        System.out.println("EXCEPTION: " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                 }
 
+                super.visitElement(element);
             }
         });
 
         return super.doAnnotate(psiFile);
     }
 
-    private void walkPsiElement(@NotNull PsiElement element) {
-        System.out.println("PSI ELEMENT: " + element.getText());
-
-        for (PsiElement child : element.getChildren()) {
-            walkPsiElement(child);
-        }
-    }
-
-    private void printPsiElement(@NotNull PsiElement element, int indent) {
-        String indentStr = "  ".repeat(indent);
-        String text = element.getText().replace("\n", "\\n");
-        if (text.length() > 60) text = text.substring(0, 60) + "...";
-
-        System.out.println(indentStr + "- " + element.getClass().getSimpleName() + ": '" + text + "'");
-        for (PsiElement child : element.getChildren()) {
-            printPsiElement(child, indent + 1);
-        }
-    }
-
     private void validate(XNode xNode) throws SchemaException, IOException {
-
-        prismContext.getSchemaRegistry().findItemDefinitionByElementName(xNode.getTypeQName());
-
         var parsingCtx = prismContext.createParsingContextForCompatibilityMode();
-        var parser = prismContext.parserFor(xNode.toRootXNode()).context(parsingCtx);
+        prismContext.parserFor(xNode.toRootXNode()).context(parsingCtx);
 
-        var object = parser.parseRealValue();
-
-        parsingCtx.getWarnings().forEach(warning -> {
-            System.out.println("ERROR: " + warning);
+        parsingCtx.getWarnings().forEach(error -> {
+            System.out.println("ERROR: " + error);
         });
-
     }
 }

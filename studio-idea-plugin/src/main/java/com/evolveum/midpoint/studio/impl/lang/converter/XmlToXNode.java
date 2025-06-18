@@ -1,71 +1,83 @@
 package com.evolveum.midpoint.studio.impl.lang.converter;
 
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.impl.xnode.XNodeDefinition;
-import com.evolveum.midpoint.prism.impl.xnode.XNodeFactoryImpl;
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
-import com.evolveum.midpoint.prism.xnode.MapXNode;
-import com.evolveum.midpoint.prism.xnode.PrimitiveXNode;
-import com.evolveum.midpoint.prism.xnode.XNode;
-import com.evolveum.midpoint.prism.xnode.XNodeFactory;
+import com.evolveum.midpoint.prism.impl.xnode.ListXNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
+import com.evolveum.midpoint.prism.xnode.*;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlTag;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.psi.xml.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * Created by Dominik.
  */
 public class XmlToXNode implements XNodeConverter {
+
     @Override
-    public @Nullable XNode convertFromPsi(@NotNull PsiElement element) {
+    public @Nullable XNode convertFromPsi(PsiElement element) {
 
         if (element instanceof XmlTag tag) {
-
-            QName qName = new QName(tag.getName());
-            XNode processingNode = xNodeFactory.primitive(qName);
-
-
-
-//            for (XmlTag child : children) {
-//                processTag(child, current);
-//            }
-
-            return xNodeFactory.map(new QName(tag.getNamespace(), tag.getName()), xNodeFactory.primitive(tag.getValue()));
+            return xNodeFactory.map(new QName(tag.getName()), convertTag(tag));
         }
 
         return null;
     }
 
-    private void processTag(XmlTag tag, MapXNode parent) {
-        QName tagName = new QName(tag.getNamespace(), tag.getName());
-        MapXNode current = xNodeFactory.map();
-
-//         FIXME add attr to xnode
-//        for (XmlAttribute attr : tag.getAttributes()) {
-//            String name = attr.getName();
-//            String value = attr.getValue();
-//            if (value != null) {
-//                PrimitiveXNode<?> attrNode = xNodeFactory.primitive(value);
-//                QName attrName   = new QName("@" + name);
-////                current.put(attrName, attrNode);
-//            }
-//        }
-
+    public XNode convertTag(XmlTag tag) {
+        XmlTag[] children = tag.getSubTags();
+        XmlAttribute[] attributes = tag.getAttributes();
         String text = tag.getValue().getTrimmedText();
 
-        if (!text.isEmpty()) {
-            PrimitiveXNode<?> valueNode = xNodeFactory.primitive(text);
+        boolean hasChildren = children.length > 0;
+        boolean hasAttributes = attributes.length > 0;
 
+        if (!hasChildren && !hasAttributes) {
+            return xNodeFactory.primitive(text);
         }
 
-        for (XmlTag child : tag.getSubTags()) {
-            processTag(child, current);
+        MapXNodeImpl map = new MapXNodeImpl();
+
+        // Attributes
+        for (XmlAttribute attr : attributes) {
+            String name = attr.getName();
+            String value = attr.getValue();
+            if (value != null) {
+                QName attrQName = new QName(name);
+                map.put(attrQName, (XNodeImpl) xNodeFactory.primitive(value));
+            }
         }
+
+        // If exists subTag and primitive value of tag
+        if (!text.isEmpty() && hasChildren) {
+            map.put(new QName(tag.getName()), (XNodeImpl) xNodeFactory.primitive(text));
+        }
+
+        // Children
+        Map<String, List<XmlTag>> grouped = new LinkedHashMap<>();
+        for (XmlTag child : children) {
+            grouped.computeIfAbsent(child.getName(), k -> new ArrayList<>()).add(child);
+        }
+
+        for (Map.Entry<String, List<XmlTag>> entry : grouped.entrySet()) {
+            QName key = new QName(entry.getKey());
+            List<XmlTag> valueSabTags = entry.getValue();
+
+            if (valueSabTags.size() == 1) {
+                map.put(key, (XNodeImpl) convertTag(valueSabTags.get(0)));
+            } else {
+                ListXNodeImpl list = new ListXNodeImpl();
+
+                for (XmlTag subTag : valueSabTags) {
+                    list.add((XNodeImpl) convertTag(subTag));
+                }
+
+                map.put(key, list);
+            }
+        }
+
+        return map;
     }
-
 }
