@@ -12,6 +12,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface XNodeConverter {
@@ -26,24 +27,19 @@ public interface XNodeConverter {
     }
 
     @Nullable
-    default Position calculatePosition(PsiElement element) {
+    default Position calculatePosition(PsiElement element, @NotNull Document document) {
         TextRange range = element.getTextRange();
-        Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
 
         int startOffset = range.getStartOffset();
         int endOffset = range.getEndOffset();
 
-        if (document != null) {
-            int startLine = document.getLineNumber(startOffset);
-            int endLine = document.getLineNumber(endOffset);
+        int startLine = document.getLineNumber(startOffset);
+        int endLine = document.getLineNumber(endOffset);
 
-            int startColumn = startOffset - document.getLineStartOffset(startLine);
-            int endColumn = endOffset - document.getLineStartOffset(endLine);
+        int startColumn = startOffset - document.getLineStartOffset(startLine);
+        int endColumn = endOffset - document.getLineStartOffset(endLine);
 
-            return new Position(startLine, endLine, startColumn,endColumn);
-        } else {
-            return null;
-        }
+        return new Position(startLine, endLine, startColumn,endColumn);
     }
 
 }
