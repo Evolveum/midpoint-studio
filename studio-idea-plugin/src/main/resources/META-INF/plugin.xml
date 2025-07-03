@@ -219,10 +219,13 @@
 
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
 
-        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.validator.XNodeExternalAnnotator"/>
-        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.validator.XNodeExternalAnnotator"/>
-        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.validator.XNodeExternalAnnotator"/>
+        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.XNodeExternalAnnotator"/>
+        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.XNodeExternalAnnotator"/>
+        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.XNodeExternalAnnotator"/>
 
+        <completion.contributor language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.XNodeContributor"/>
+        <completion.contributor language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.XNodeContributor"/>
+        <completion.contributor language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.XNodeContributor"/>
 
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>

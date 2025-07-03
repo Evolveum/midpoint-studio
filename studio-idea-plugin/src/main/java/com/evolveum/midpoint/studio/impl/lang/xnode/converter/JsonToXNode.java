@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.lang.converter;
+package com.evolveum.midpoint.studio.impl.lang.xnode.converter;
 
 import com.evolveum.midpoint.prism.impl.xnode.ListXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;

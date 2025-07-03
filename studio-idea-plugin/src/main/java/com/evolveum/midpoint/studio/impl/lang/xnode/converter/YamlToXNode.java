@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.lang.converter;
+package com.evolveum.midpoint.studio.impl.lang.xnode.converter;
 
 
 import com.evolveum.midpoint.prism.impl.xnode.ListXNodeImpl;
@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.xnode.*;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

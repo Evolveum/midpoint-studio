@@ -1,9 +1,14 @@
-package com.evolveum.midpoint.studio.impl.lang.converter;
+package com.evolveum.midpoint.studio.impl.lang.xnode.converter;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.xnode.ListXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.XNodeDefinition;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.xnode.*;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.*;
 import org.jetbrains.annotations.Nullable;
@@ -17,9 +22,15 @@ import java.util.*;
 public class XmlToXNode implements XNodeConverter {
 
     @Override
-    public @Nullable XNode convertFromPsi(PsiElement element) {
+    public @Nullable XNode convertFromPsi(PsiElement element) throws SchemaException {
+        PrismContext prismContext = StudioPrismContextService.getPrismContext(element.getProject());
+        XNodeDefinition schema = XNodeDefinition.root(prismContext.getSchemaRegistry());
 
         if (element instanceof XmlTag tag) {
+            XNode xNode = convertTag(tag);
+            xNode.setPosition(calculatePosition(element));
+            XNodeDefinition xNodeDefinition = resolveXNodeDefinition(tag.getName(), schema, prismContext.getSchemaRegistry().staticNamespaceContext());
+            xNode.setDefinition(xNodeDefinition.itemDefinition());
             return xNodeFactory.map(new QName(tag.getName()), convertTag(tag));
         }
 
@@ -35,7 +46,10 @@ public class XmlToXNode implements XNodeConverter {
         boolean hasAttributes = attributes.length > 0;
 
         if (!hasChildren && !hasAttributes) {
-            return xNodeFactory.primitive(text);
+            PrimitiveXNode<?> primitiveXNode = xNodeFactory.primitive(text);
+            primitiveXNode.setPosition(calculatePosition(tag));
+
+            return primitiveXNode;
         }
 
         MapXNodeImpl map = new MapXNodeImpl();
@@ -46,13 +60,17 @@ public class XmlToXNode implements XNodeConverter {
             String value = attr.getValue();
             if (value != null) {
                 QName attrQName = new QName(name);
-                map.put(attrQName, (XNodeImpl) xNodeFactory.primitive(value));
+                PrimitiveXNode<?> primitiveXNode = xNodeFactory.primitive(value);
+                primitiveXNode.setPosition(calculatePosition(attr));
+                map.put(attrQName, (XNodeImpl) primitiveXNode);
             }
         }
 
         // If exists subTag and primitive value of tag
         if (!text.isEmpty() && hasChildren) {
-            map.put(new QName(tag.getName()), (XNodeImpl) xNodeFactory.primitive(text));
+            PrimitiveXNode<?> primitiveXNode = xNodeFactory.primitive(text);
+            primitiveXNode.setPosition(calculatePosition(tag));
+            map.put(new QName(tag.getName()), (XNodeImpl) primitiveXNode);
         }
 
         // Children
@@ -66,11 +84,14 @@ public class XmlToXNode implements XNodeConverter {
             List<XmlTag> valueSabTags = entry.getValue();
 
             if (valueSabTags.size() == 1) {
-                map.put(key, (XNodeImpl) convertTag(valueSabTags.get(0)));
+                XNode xNode = convertTag(valueSabTags.get(0));
+                xNode.setPosition(calculatePosition(tag.getNavigationElement()));
+                map.put(key, (XNodeImpl) xNode);
             } else {
                 ListXNodeImpl list = new ListXNodeImpl();
-
                 for (XmlTag subTag : valueSabTags) {
+                    XNode xNode = convertTag(subTag);
+                    xNode.setPosition(calculatePosition(subTag));
                     list.add((XNodeImpl) convertTag(subTag));
                 }
 
