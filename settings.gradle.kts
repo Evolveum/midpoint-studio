@@ -13,11 +13,11 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             // versions of plugins used in build
-            version("kotlin", "2.1.20")
-            version("changelog", "2.2.1")
-            version("intelliJPlatform", "2.6.0")
+            version("kotlin", "2.2.0")
+            version("changelog", "2.3.0")
+            version("intelliJPlatform", "2.7.0")
             version("kover", "0.9.1")
-            version("qodana", "2024.3.4")
+            version("qodana", "2025.1.1")
 
             // versions of midpoint libraries
             version("midpoint", "4.10-SNAPSHOT")
