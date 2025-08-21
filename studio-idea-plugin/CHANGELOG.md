@@ -1,5 +1,9 @@
 # MidPoint Studio
 
+## [4.9.3]
+### Added
+- Support for Intellij Idea 2025.2
+
 ## [4.9.2]
 ### Added
 - Support for Intellij Idea 2025.1
