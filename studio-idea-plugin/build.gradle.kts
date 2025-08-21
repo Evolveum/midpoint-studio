@@ -341,6 +341,7 @@ tasks {
 
 tasks.getByName("compileKotlin").dependsOn("generateGrammarSource")
 
+tasks.getByName("compileTestKotlin").dependsOn("generateTestGrammarSource")
 /**
  * This scripts remove all IntelliJ Platform extracted copies from the Gradle Transformer Cache.
  * Needed because of https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1601
