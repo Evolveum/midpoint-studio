@@ -77,7 +77,7 @@ dependencyResolutionManagement {
             library("jcommander", "com.beust", "jcommander").versionRef("jcommander")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
             library("okhttp-logging", "com.squareup.okhttp3", "logging-interceptor").versionRef("okhttp")
-            library("okhttp3", "com.squareup.okhttp3", "okhttp").versionRef("okhttp")
+            library("okhttp3", "com.squareup.okhttp3", "okhttp-jvm").versionRef("okhttp")
             library("openkeepass", "de.slackspace", "openkeepass").versionRef("openkeepass")
             library("spring-core", "org.springframework", "spring-core").versionRef("spring")
             library("stax", "stax", "stax").versionRef("stax")
