@@ -13,15 +13,15 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             // versions of plugins used in build
-            version("kotlin", "2.1.0")
-            version("changelog", "2.2.1")
-            version("intelliJPlatform", "2.2.1")
-            version("kover", "0.8.3")
-            version("qodana", "2024.2.3")
+            version("kotlin", "2.2.0")
+            version("changelog", "2.3.0")
+            version("intelliJPlatform", "2.7.0")
+            version("kover", "0.9.1")
+            version("qodana", "2025.1.1")
 
             // versions of midpoint libraries
-            version("midpoint", "4.9.2-SNAPSHOT")
-            version("midscribe", "4.9.2-SNAPSHOT")
+            version("midpoint", "4.9.4")
+            version("midscribe", "4.9.5-SNAPSHOT")
 
             // versions of third-party libraries
             version("annotations", "24.1.0")
@@ -31,7 +31,7 @@ dependencyResolutionManagement {
             version("jaxb-runtime", "2.3.2")
             version("jcommander", "1.81")
             version("logback", "1.2.3")
-            version("okhttp", "4.10.0")
+            version("okhttp", "5.1.0")
             version("openkeepass", "0.8.1")
             version("spring", "5.3.8")
             version("stax", "1.2.0")
@@ -77,7 +77,7 @@ dependencyResolutionManagement {
             library("jcommander", "com.beust", "jcommander").versionRef("jcommander")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
             library("okhttp-logging", "com.squareup.okhttp3", "logging-interceptor").versionRef("okhttp")
-            library("okhttp3", "com.squareup.okhttp3", "okhttp").versionRef("okhttp")
+            library("okhttp3", "com.squareup.okhttp3", "okhttp-jvm").versionRef("okhttp")
             library("openkeepass", "de.slackspace", "openkeepass").versionRef("openkeepass")
             library("spring-core", "org.springframework", "spring-core").versionRef("spring")
             library("stax", "stax", "stax").versionRef("stax")
