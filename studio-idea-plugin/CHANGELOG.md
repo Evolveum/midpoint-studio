@@ -6,6 +6,8 @@
 ### Changed
 
 ### Fixed
+- MID-10688 Fixed diff not ignoring operational elements when it should
+- Fixed midPoint version when creating new project
 
 ## [4.9.3]
 ### Added
