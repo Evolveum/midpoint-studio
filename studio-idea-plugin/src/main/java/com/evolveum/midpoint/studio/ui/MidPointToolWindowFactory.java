@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.ui.converter.ConverterPanel;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -40,6 +41,9 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
 
         Content propertiesContent = buildEncryptedProperties(project);
         contentManager.addContent(propertiesContent);
+
+        Content converter = buildConverter(project);
+        contentManager.addContent(converter);
     }
 
     private Content buildBrowser(Project project) {
@@ -78,6 +82,13 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
         root.add(toolbar.getComponent(), BorderLayout.WEST);
 
         return ContentFactory.getInstance().createContent(root, "Encrypted Properties", false);
+    }
+
+    private Content buildConverter(Project project) {
+        ConverterPanel converterPanel = new ConverterPanel(project);
+
+        return ContentFactory.getInstance()
+                .createContent(converterPanel, "Converter", false);
     }
 
     @Override
