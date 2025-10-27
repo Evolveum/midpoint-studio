@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.assistant;
+package com.evolveum.midpoint.studio.ui.prototype.vaia.assistant;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;

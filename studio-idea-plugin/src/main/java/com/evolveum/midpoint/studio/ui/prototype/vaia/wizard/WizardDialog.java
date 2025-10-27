@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.wizard;
+package com.evolveum.midpoint.studio.ui.prototype.vaia.wizard;
 
 import com.intellij.openapi.ui.DialogWrapper;
 import org.jetbrains.annotations.NotNull;

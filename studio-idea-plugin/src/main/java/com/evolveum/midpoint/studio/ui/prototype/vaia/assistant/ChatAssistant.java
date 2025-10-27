@@ -1,8 +1,7 @@
-package com.evolveum.midpoint.studio.ui.assistant;
+package com.evolveum.midpoint.studio.ui.prototype.vaia.assistant;
 
 import com.evolveum.midpoint.studio.impl.MarkdownParser;
 import com.evolveum.midpoint.studio.impl.MidpointCopilotService;
-import com.github.weisj.jsvg.D;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
@@ -13,7 +12,6 @@ import com.intellij.ui.EditorTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 /**

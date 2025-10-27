@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.assistant;
+package com.evolveum.midpoint.studio.ui.prototype.vaia.assistant;
 
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
