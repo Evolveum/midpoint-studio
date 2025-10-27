@@ -80,7 +80,8 @@
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
-        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.assistant.ConnectorAssistantActivity"/>
+<!--        Prototyping for VAIA -->
+<!--        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.vaia.assistant.assistant.ConnectorAssistantActivity"/>-->
 
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
@@ -130,12 +131,13 @@
                           icon="AllIcons.Actions.Refresh"
                           factoryClass="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationToolWindowFactory"/>
 
-        <facet.toolWindow id="ConnectorAssistant"
-                          facetIdList="MidPointFacet"
-                          anchor="right"
-                          order="last"
-                          icon="/icons/toolwindow_midpoint.svg"
-                          factoryClass="com.evolveum.midpoint.studio.ui.assistant.AssistantToolWindowFactory"/>
+<!--        Prototyping for VAIA -->
+<!--        <facet.toolWindow id="ConnectorAssistant"-->
+<!--                          facetIdList="MidPointFacet"-->
+<!--                          anchor="right"-->
+<!--                          order="last"-->
+<!--                          icon="/icons/toolwindow_midpoint.svg"-->
+<!--                          factoryClass="com.evolveum.midpoint.studio.ui.prototype.vaia.assistant.AssistantToolWindowFactory"/>-->
 
         <fileType
                 name="MPTrace"
@@ -219,13 +221,13 @@
 
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
 
-        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.XNodeExternalAnnotator"/>
-        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.XNodeExternalAnnotator"/>
-        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.XNodeExternalAnnotator"/>
+        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>
+        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>
+        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>
 
-        <completion.contributor language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.XNodeContributor"/>
-        <completion.contributor language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.XNodeContributor"/>
-        <completion.contributor language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.XNodeContributor"/>
+        <completion.contributor language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.XNodeContributor"/>
+        <completion.contributor language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.XNodeContributor"/>
+        <completion.contributor language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.XNodeContributor"/>
 
         <annotator language="XML"
                    implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>
@@ -483,6 +485,32 @@
         <action id="MidPoint.Action.ComboEnvironmentAction"
                 class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
 
+        <!-- converters actions -->
+        <action id="MidPoint.Action.Converter.ConvertToJson"
+                class="com.evolveum.midpoint.studio.action.ConvertAction"
+                text="JSON"
+                description="Convert to JSON">
+        </action>
+
+        <action id="MidPoint.Action.Converter.ConvertToXml"
+                class="com.evolveum.midpoint.studio.action.ConvertAction"
+                text="XML"
+                description="Convert to XML">
+        </action>
+
+        <action id="MidPoint.Action.Converter.ConvertToYaml"
+                class="com.evolveum.midpoint.studio.action.ConvertAction"
+                text="YAML"
+                description="Convert to YAML">
+        </action>
+
+        <!-- suggestion -->
+        <action id="MidPoint.Action.Suggestion.ResourceObjectType"
+                class="com.evolveum.midpoint.studio.action.smart.SuggestionAction"
+                text="Resource Object Type"
+                description="Suggestion for resource object type">
+        </action>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
@@ -525,6 +553,21 @@
                 <reference ref="MidPoint.Action.DeleteRaw"/>
                 <reference ref="MidPoint.Action.Delete"/>
 
+                <group id="MidPoint.Group.Menu.TransferRelated.Converter"
+                       text="Convert"
+                       description="Convert file to another format"
+                       popup="true">
+                    <reference ref="MidPoint.Action.Converter.ConvertToXml"/>
+                    <reference ref="MidPoint.Action.Converter.ConvertToJson"/>
+                    <reference ref="MidPoint.Action.Converter.ConvertToYaml"/>
+                </group>
+
+                <group id="MidPoint.Group.Menu.TransferRelated.Suggestion"
+                       text="Suggestion"
+                       description="Suggestion"
+                       popup="true">
+                    <reference ref="MidPoint.Action.Suggestion.ResourceObjectType"/>
+                </group>
             </group>
 
             <group id="MidPoint.Group.Menu.ServerLog"
@@ -704,12 +747,13 @@
             <add-to-group anchor="last" group-id="StructureViewPopupMenu"/>
         </group>
 
-        <action id="WizardAction"
-                class="com.evolveum.midpoint.studio.ui.wizard.LaunchWizardAction"
-                text="Run Wizard"
-                description="Launches the custom wizard">
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-        </action>
+<!--        Prototype for VAIA experiments -->
+<!--        <action id="WizardAction"-->
+<!--                class="com.evolveum.midpoint.studio.ui.prototwizard.LaunchWizardAction"-->
+<!--                text="Run Wizard"-->
+<!--                description="Launches the custom wizard">-->
+<!--            <add-to-group group-id="ToolsMenu" anchor="last"/>-->
+<!--        </action>-->
 
     </actions>
 </idea-plugin>
