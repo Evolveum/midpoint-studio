@@ -131,7 +131,15 @@
                           icon="AllIcons.Actions.Refresh"
                           factoryClass="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationToolWindowFactory"/>
 
-<!--        Prototyping for VAIA -->
+        
+        <facet.toolWindow facetIdList="MidPointFacet"
+                          factoryClass="com.evolveum.midpoint.studio.ui.smart.suggestion.SmartSuggestionToolWindowFactory"
+                          id="SmartSuggestionToolWindow"
+                          order="last"
+                          anchor="right"
+                          icon="/icons/toolwindow_midpoint.svg"/>
+        
+            <!--        Prototyping for VAIA-->
 <!--        <facet.toolWindow id="ConnectorAssistant"-->
 <!--                          facetIdList="MidPointFacet"-->
 <!--                          anchor="right"-->
@@ -342,6 +350,8 @@
         <completion.contributor language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaContributor"/>
         <psi.referenceContributor language="Groovy" implementation="com.evolveum.midpoint.studio.lang.groovy.SchemaReferenceContributor"/>
         <annotator language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaAnnotator"/>
+
+        <notificationGroup id="midpointSmartSuggestion" displayType="BALLOON" />
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
@@ -506,9 +516,22 @@
 
         <!-- suggestion -->
         <action id="MidPoint.Action.Suggestion.ResourceObjectType"
-                class="com.evolveum.midpoint.studio.action.smart.SuggestionAction"
+                class="com.evolveum.midpoint.studio.action.smart.ResourceObjectTypeSuggestionAction"
                 text="Resource Object Type"
                 description="Suggestion for resource object type">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt R"/>
+        </action>
+        <action id="MidPoint.Action.Suggestion.CorrelationRule"
+                class="com.evolveum.midpoint.studio.action.smart.CorrelationRuleSuggestionAction"
+                text="Correlation Rule"
+                description="Suggestion for correlation rule object type">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt C"/>
+        </action>
+        <action id="MidPoint.Action.Suggestion.Mapping"
+                class="com.evolveum.midpoint.studio.action.smart.MappingSuggestionAction"
+                text="Mapping"
+                description="Suggestion for mapping object type">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt M"/>
         </action>
 
         <!-- GROUPS -->
@@ -567,6 +590,8 @@
                        description="Suggestion"
                        popup="true">
                     <reference ref="MidPoint.Action.Suggestion.ResourceObjectType"/>
+                    <reference ref="MidPoint.Action.Suggestion.CorrelationRule"/>
+                    <reference ref="MidPoint.Action.Suggestion.Mapping"/>
                 </group>
             </group>
 
@@ -749,7 +774,7 @@
 
 <!--        Prototype for VAIA experiments -->
 <!--        <action id="WizardAction"-->
-<!--                class="com.evolveum.midpoint.studio.ui.prototwizard.LaunchWizardAction"-->
+<!--                class="com.evolveum.midpoint.studio.ui.prototype.vaia.wizard.LaunchWizardAction"-->
 <!--                text="Run Wizard"-->
 <!--                description="Launches the custom wizard">-->
 <!--            <add-to-group group-id="ToolsMenu" anchor="last"/>-->

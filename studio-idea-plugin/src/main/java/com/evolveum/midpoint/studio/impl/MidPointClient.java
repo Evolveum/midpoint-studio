@@ -24,6 +24,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -487,5 +488,15 @@ public class MidPointClient {
 
     public void setSuppressNotifications(boolean suppressNotifications) {
         this.suppressNotifications = suppressNotifications;
+    }
+
+    public ObjectTypesSuggestionType getSuggestObjectTypes(String oid, QName objectClass) {
+        try {
+            return client.getSuggestObjectType(oid, objectClass);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
     }
 }

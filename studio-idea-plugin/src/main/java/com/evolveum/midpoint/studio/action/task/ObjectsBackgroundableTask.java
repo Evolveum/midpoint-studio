@@ -344,7 +344,7 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
         return true;
     }
 
-    private boolean hasFailures() {
+    public boolean hasFailures() {
         return state.getFailed() > 0 || state.getSkipped() > 0 || state.getSkippedFile() > 0;
     }
 
