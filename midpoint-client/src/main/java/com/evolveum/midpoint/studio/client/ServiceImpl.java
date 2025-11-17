@@ -12,6 +12,7 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.smart.api.info.StatusInfo;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -22,8 +23,12 @@ import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import jakarta.xml.bind.JAXBElement;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
+import javax.xml.namespace.QName;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -532,4 +537,50 @@ public class ServiceImpl implements Service {
         return executeRequest(req, SchemaFilesType.class);
     }
 
+    @Override
+    public ObjectTypesSuggestionType getSuggestObjectType(String oid, QName objectClass) throws ClientException, SchemaException, AuthenticationException, IOException {
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("resourceOid", oid);
+        params.put("objectClass", objectClass.toString());
+
+        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestObjectTypes", params)
+                .get();
+
+        Request req = builder.build();
+
+        return executeRequest(req, ObjectTypesSuggestionType.class);
+    }
+
+    @Override
+    public CorrelationSuggestionsType getSuggestCorrelation(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("resourceOid", oid);
+        params.put("kind", kind);
+        params.put("intent", intent);
+
+        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestCorrelations", params)
+                .get();
+
+        Request req = builder.build();
+
+        return executeRequest(req, CorrelationSuggestionsType.class);
+    }
+
+    @Override
+    public MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("resourceOid", oid);
+        params.put("kind", kind);
+        params.put("intent", intent);
+
+        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestMappings", params)
+                .get();
+
+        Request req = builder.build();
+
+        return executeRequest(req, MappingsSuggestionType.class);
+    }
 }

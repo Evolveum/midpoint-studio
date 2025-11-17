@@ -15,8 +15,10 @@ import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.resource.ObjectTypeSuggestionTable;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceObjectTypeWizard;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectTypesSuggestionType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.json.psi.JsonFile;
 import com.intellij.json.psi.JsonObject;
 import com.intellij.json.psi.JsonProperty;
@@ -28,7 +30,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.JBColor;
@@ -55,7 +56,7 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
         PsiFile psiFile = e.getData(CommonDataKeys.PSI_FILE);
 
         if (psiFile != null) {
-            resourceOid = findResourceOid(psiFile);
+            resourceOid = MidPointUtils.findResourceOidByPsi(psiFile);
 
             if (resourceOid == null) {
                 presentation.setEnabled(false);
@@ -122,7 +123,7 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
 
         ResourceDialogContext resourceDialogContext = new ResourceDialogContext();
         resourceDialogContext.setResources(foundResources);
-        resourceDialogContext.setUploadedResourceOid(uploadedResourceOid);
+        resourceDialogContext.setResourceOid(uploadedResourceOid);
 
         new ResourceObjectTypeWizard(
                 project,
@@ -132,7 +133,7 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
 
                     @Override
                     public boolean isOkButtonEnabled() {
-                        return resourceDialogContext.getResourceObjectType() != null &&
+                        return resourceDialogContext.getResourceOid() != null &&
                                 resourceDialogContext.getObjectClass() != null;
                     }
 
@@ -157,12 +158,12 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
                                 @Override
                                 public void run(@NotNull ProgressIndicator progressIndicator) {
                                     objectSuggestion = client.getSuggestObjectTypes(
-                                            resourceDialogContext.getResourceObjectType().getOid(),
+                                            resourceDialogContext.getResourceOid(),
                                             resourceDialogContext.getObjectClass()
                                     );
 
                                     DownloadTask downloadTask = new DownloadTask(project,
-                                            List.of(new Pair<>(resourceDialogContext.getResourceObjectType().getOid(), ObjectTypes.RESOURCE)),
+                                            List.of(new Pair<>(resourceDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
                                             false,
                                             true,
                                             true);
@@ -175,8 +176,16 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
                                 public void onFinished() {
                                     if (objectSuggestion != null) {
                                         contentManager.addContent(ContentFactory.getInstance().createContent(
-                                                new ObjectTypeSuggestionTable(project, prismContext, resourceDialogContext.getResourceObjectType(), objectSuggestion), "Resource Object Type", false));
-
+                                                new ObjectTypeSuggestionTable(
+                                                        project,
+                                                        prismContext,
+                                                        resourceDialogContext.getResources().stream()
+                                                                .filter(o -> o instanceof ResourceType)
+                                                                .map(o -> (ResourceType) o)
+                                                                .filter(r -> resourceDialogContext.getResourceOid().equals(r.getOid()))
+                                                                .findFirst()
+                                                                .orElse(null)
+                                                        , objectSuggestion), "Resource Object Type", false));
                                         toolWindow.activate(() -> {
                                             log.info("Content of tool window with ID '" + toolWindowId + "' was update");
                                         });
@@ -210,25 +219,5 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
         }
 
         return false;
-    }
-
-    // find oid value in a resource element (a necessary condition is the first element must be resource)
-    // current working just for XML objects
-    public static String findResourceOid(@NotNull PsiFile psiFile) {
-        if (!(psiFile instanceof XmlFile xmlFile)) {
-            return null;
-        }
-
-        XmlTag rootTag = xmlFile.getRootTag();
-        if (rootTag == null) {
-            return null;
-        }
-
-        if (!"resource".equals(rootTag.getName())) {
-            return null;
-        }
-
-        XmlAttribute oidAttr = rootTag.getAttribute("oid");
-        return oidAttr != null ? oidAttr.getValue() : null;
     }
 }

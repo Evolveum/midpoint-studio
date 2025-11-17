@@ -9,6 +9,7 @@
 package com.evolveum.midpoint.studio.ui.smart.suggestion.component.resource;
 
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.SerializationOptions;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectTypesSuggestionType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectTypeDefinitionType;
@@ -156,30 +157,61 @@ public class ObjectTypeSuggestionTable extends JPanel {
                 if (currentRow >= 0) {
                     Item item = model.getItemAt(currentRow);
                     if (!item.applied) {
-                        try {
-                            SchemaHandlingType schemaHandlingType = resource.getSchemaHandling();
-                            schemaHandlingType.getObjectType().add(item.object);
-                            String xml = prismContext.xmlSerializer()
-                                    .serialize(resource.asPrismObject());
+                        SchemaHandlingType schemaHandlingType = resource.getSchemaHandling();
 
-                            FileEditorManager editorManager = FileEditorManager.getInstance(project);
-                            VirtualFile[] openFiles = editorManager.getSelectedFiles();
-
-                            if (openFiles.length > 0) {
-                                VirtualFile currentOpenFile = openFiles[0];
-                                if (currentOpenFile.getName().contains(resource.getName().getNorm())) {
-                                    WriteCommandAction.runWriteCommandAction(project, () -> {
-                                        try {
-                                            currentOpenFile.setBinaryContent(xml.getBytes(StandardCharsets.UTF_8));
-                                        } catch (Exception ex) {
-                                            ex.printStackTrace();
-                                        }
-                                    });
-                                }
-                            }
-                        } catch (SchemaException ex) {
-                            throw new RuntimeException(ex);
+                        if (schemaHandlingType == null) {
+                            schemaHandlingType = new SchemaHandlingType();
                         }
+
+
+                        try {
+                            schemaHandlingType.getObjectType().add(item.object);
+                        } catch (Exception ex) {
+                            System.out.println("EXCEPTION MSG: " + ex.getMessage());
+                        }
+
+                        resource.setSchemaHandling(schemaHandlingType);
+
+
+
+//                        try {
+//                            String xml = prismContext
+//                                    .xmlSerializer()
+//                                    .options(SerializationOptions.createSerializeReferenceNames())
+//                                    .serialize(resource.asPrismObject());
+//
+//                            System.out.println("KAKSAKSK>>> " + xml);
+//                        } catch (SchemaException ex) {
+//                            System.out.println("AKSKAKKS::: " + ex.getMessage());
+//                            throw new RuntimeException(ex);
+//                        }
+
+//                        try {
+//                            SchemaHandlingType schemaHandlingType = resource.getSchemaHandling();
+//                            schemaHandlingType.getObjectType().add(item.object);
+//                            resource.setSchemaHandling(schemaHandlingType);
+//
+//                            String xml = prismContext.xmlSerializer()
+//                                    .serialize(resource.asPrismObject());
+//
+//                            FileEditorManager editorManager = FileEditorManager.getInstance(project);
+//                            VirtualFile[] openFiles = editorManager.getSelectedFiles();
+//
+//                            if (openFiles.length > 0) {
+//                                VirtualFile currentOpenFile = openFiles[0];
+//                                if (currentOpenFile.getName().contains(resource.getName().getNorm())) {
+//                                    WriteCommandAction.runWriteCommandAction(project, () -> {
+//                                        try {
+//                                            currentOpenFile.setBinaryContent(xml.getBytes(StandardCharsets.UTF_8));
+//                                        } catch (Exception ex) {
+//                                            ex.printStackTrace();
+//                                        }
+//                                    });
+//                                }
+//                            }
+//                        } catch (SchemaException ex) {
+//                            throw new RuntimeException(ex);
+//                        }
 
                         item.applied = true;
                         model.fireTableRowsUpdated(currentRow, currentRow);

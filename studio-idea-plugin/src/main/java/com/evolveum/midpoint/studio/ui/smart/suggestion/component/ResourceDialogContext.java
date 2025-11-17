@@ -18,9 +18,7 @@ public class ResourceDialogContext {
 
     SearchResultList<ObjectType> resources;
 
-    String uploadedResourceOid;
-
-    ResourceType resourceObjectType;
+    String resourceOid;
 
     QName objectClass;
 
@@ -32,20 +30,12 @@ public class ResourceDialogContext {
         this.resources = resources;
     }
 
-    public String getUploadedResourceOid() {
-        return uploadedResourceOid;
+    public String getResourceOid() {
+        return resourceOid;
     }
 
-    public void setUploadedResourceOid(String uploadedResourceOid) {
-        this.uploadedResourceOid = uploadedResourceOid;
-    }
-
-    public ResourceType getResourceObjectType() {
-        return resourceObjectType;
-    }
-
-    public void setResourceObjectType(ResourceType resourceObjectType) {
-        this.resourceObjectType = resourceObjectType;
+    public void setResourceOid(String resourceOid) {
+        this.resourceOid = resourceOid;
     }
 
     public QName getObjectClass() {

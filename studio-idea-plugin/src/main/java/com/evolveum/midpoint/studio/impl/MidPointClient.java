@@ -10,6 +10,7 @@ import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.action.smart.MappingSuggestionAction;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
@@ -493,6 +494,26 @@ public class MidPointClient {
     public ObjectTypesSuggestionType getSuggestObjectTypes(String oid, QName objectClass) {
         try {
             return client.getSuggestObjectType(oid, objectClass);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public CorrelationSuggestionsType getSuggestCorrelationRule(String oid, String kind, String intent) {
+        try {
+            return client.getSuggestCorrelation(oid, kind, intent);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public MappingsSuggestionType getSuggestMapping(String oid, String kind, String intent) {
+        try {
+            return client.getSuggestionMapping(oid, kind, intent);
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }

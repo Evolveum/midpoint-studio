@@ -9,9 +9,9 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaFileType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 
+import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -66,4 +66,10 @@ public interface Service {
     PrismContext prismContext();
 
     Map<SchemaFileType, String> getExtensionSchemas() throws IOException, SchemaException, AuthenticationException, ClientException;
+
+    ObjectTypesSuggestionType getSuggestObjectType(String oid, QName objectClas) throws SchemaException, AuthenticationException, IOException;
+
+    CorrelationSuggestionsType getSuggestCorrelation(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException;
+
+    MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException;
 }
