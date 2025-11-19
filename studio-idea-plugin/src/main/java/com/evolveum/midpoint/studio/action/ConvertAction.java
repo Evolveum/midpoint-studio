@@ -9,12 +9,11 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +23,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class ConvertAction extends AnAction {
 
-    private static final Logger log = LoggerFactory.getLogger(ConvertAction.class);
+    private static final Logger log = Logger.getInstance(ConvertAction.class);
 
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {

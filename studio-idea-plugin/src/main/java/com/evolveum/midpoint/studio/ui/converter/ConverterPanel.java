@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.evolveum.midpoint.studio.ui.editor.EditorPanel;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.JBColor;
@@ -60,7 +61,6 @@ public class ConverterPanel extends SimpleToolWindowPanel {
         split.setSecondComponent(rightContainer);
 
         // Convert button
-
         JPanel banner = new JPanel();
         banner.setBackground(JBColor.LIGHT_GRAY);
         banner.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

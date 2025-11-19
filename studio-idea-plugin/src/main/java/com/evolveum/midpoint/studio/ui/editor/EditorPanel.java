@@ -1,4 +1,12 @@
-package com.evolveum.midpoint.studio.ui.converter;
+/*
+ *
+ *  * Copyright (C) 2010-2025 Evolveum and contributors
+ *  *
+ *  * Licensed under the EUPL-1.2 or later.
+ *
+ */
+
+package com.evolveum.midpoint.studio.ui.editor;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -18,7 +26,7 @@ import java.awt.*;
 public class EditorPanel extends JPanel {
 
     private final Project project;
-    private Editor editor;
+    private EditorEx editor;
 
     public EditorPanel(Project project, String initialText, String langExtension) {
         super(new BorderLayout());
@@ -39,7 +47,7 @@ public class EditorPanel extends JPanel {
         }
 
         Document document = EditorFactory.getInstance().createDocument(text);
-        editor = EditorFactory.getInstance().createEditor(document, project, fileType, false);
+        editor = (EditorEx) EditorFactory.getInstance().createEditor(document, project, fileType, false);
 
         EditorEx editorEx = (EditorEx) editor;
         editorEx.getSettings().setLineNumbersShown(true);
@@ -54,6 +62,14 @@ public class EditorPanel extends JPanel {
 
     public String getText() {
         return editor.getDocument().getText();
+    }
+
+    public void setText(String text) {
+        editor.getDocument().setText(text);
+    }
+
+    public void setViewer(boolean isOnlyViewer) {
+        this.editor.setViewer(isOnlyViewer);
     }
 
     public void dispose() {
