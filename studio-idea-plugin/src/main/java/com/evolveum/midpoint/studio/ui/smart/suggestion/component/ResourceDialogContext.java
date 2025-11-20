@@ -10,17 +10,28 @@ package com.evolveum.midpoint.studio.ui.smart.suggestion.component;
 
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectTypeDefinitionType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 
 import javax.xml.namespace.QName;
 
 public class ResourceDialogContext {
 
+    public enum ResourceDialogContextMode {
+        OBJECT_TYPE,
+        CORRELATION,
+        MAPPING
+    }
+
+    ResourceDialogContextMode mode;
+
     SearchResultList<ObjectType> resources;
 
     String resourceOid;
 
     QName objectClass;
+
+    ResourceObjectTypeDefinitionType objectType;
 
     public SearchResultList<ObjectType> getResources() {
         return resources;
@@ -44,5 +55,21 @@ public class ResourceDialogContext {
 
     public void setObjectClass(QName objectClass) {
         this.objectClass = objectClass;
+    }
+
+    public ResourceObjectTypeDefinitionType getObjectType() {
+        return objectType;
+    }
+
+    public void setObjectType(ResourceObjectTypeDefinitionType objectType) {
+        this.objectType = objectType;
+    }
+
+    public ResourceDialogContextMode getMode() {
+        return mode;
+    }
+
+    public void setMode(ResourceDialogContextMode mode) {
+        this.mode = mode;
     }
 }

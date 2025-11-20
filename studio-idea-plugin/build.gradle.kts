@@ -156,6 +156,11 @@ dependencies {
         exclude("ch.qos.logback")
         exclude("xerces")
     }
+
+    implementation(libs.midpoint.model.smart.api) {
+        isTransitive = false
+    }
+
     implementation(libs.midpoint.security.api) {
         isTransitive = false
     }

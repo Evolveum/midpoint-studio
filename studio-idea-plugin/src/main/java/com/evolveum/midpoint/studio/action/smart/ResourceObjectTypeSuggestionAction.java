@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.action.smart;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.query.QueryFactory;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.task.DownloadTask;
 import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
@@ -51,9 +50,9 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
     private String resourceOid = null;
 
     @Override
-    public void update(@NotNull AnActionEvent e) {
-        var presentation = e.getPresentation();
-        PsiFile psiFile = e.getData(CommonDataKeys.PSI_FILE);
+    public void update(@NotNull AnActionEvent anActionEvent) {
+        var presentation = anActionEvent.getPresentation();
+        PsiFile psiFile = anActionEvent.getData(CommonDataKeys.PSI_FILE);
 
         if (psiFile != null) {
             resourceOid = MidPointUtils.findResourceOidByPsi(psiFile);
@@ -89,7 +88,7 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
                             @Override
                             public void onFinished() {
                                 if (!task.hasFailures()) {
-                                    showSelectResourceDialogWin(anActionEvent, env, resourceOid);
+                                    showSelectResourceDialogWindow(anActionEvent, env, resourceOid);
                                 }
                             }
                         });
@@ -97,7 +96,7 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
                 }
             ).show();
         } else {
-            showSelectResourceDialogWin(anActionEvent, env, null);
+            showSelectResourceDialogWindow(anActionEvent, env, null);
         }
     }
 
@@ -106,8 +105,8 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
         return ActionUpdateThread.BGT;
     }
 
-    private void showSelectResourceDialogWin(@NotNull AnActionEvent anAction, Environment env, String uploadedResourceOid) {
-        var project = anAction.getProject();
+    private void showSelectResourceDialogWindow(@NotNull AnActionEvent anActionEvent, Environment env, String uploadedResourceOid) {
+        var project = anActionEvent.getProject();
 
         if (project == null) {
             log.error("Project is null");
@@ -116,12 +115,12 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
 
         MidPointClient client = new MidPointClient(project, env);
         PrismContext prismContext = StudioPrismContextService.getPrismContext(project);
-        QueryFactory qf = prismContext.queryFactory();
 
         @Deprecated
-        var foundResources = client.list(ObjectTypes.RESOURCE.getClassDefinition(), qf.createQuery(), true);
+        var foundResources = client.list(ObjectTypes.RESOURCE.getClassDefinition(), prismContext.queryFactory().createQuery(), true);
 
         ResourceDialogContext resourceDialogContext = new ResourceDialogContext();
+        resourceDialogContext.setMode(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE);
         resourceDialogContext.setResources(foundResources);
         resourceDialogContext.setResourceOid(uploadedResourceOid);
 
@@ -184,8 +183,8 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
                                                                 .map(o -> (ResourceType) o)
                                                                 .filter(r -> resourceDialogContext.getResourceOid().equals(r.getOid()))
                                                                 .findFirst()
-                                                                .orElse(null)
-                                                        , objectSuggestion), "Resource Object Type", false));
+                                                                .orElse(null),
+                                                        objectSuggestion), "Resource Object Type", false));
                                         toolWindow.activate(() -> {
                                             log.info("Content of tool window with ID '" + toolWindowId + "' was update");
                                         });

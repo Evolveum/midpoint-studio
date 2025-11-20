@@ -109,7 +109,11 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                 .findFirst()
                 .orElse(null);
 
-            displayObjectClassTable(panel, resource);
+            if (context.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+                displayObjectClassTable(panel, resource);
+            } else {
+                displayObjectTypeTable(panel, resource);
+            }
         } else {
             resourceTable.getSelectionModel().addListSelectionListener(resourceEvent -> {
                 if (!resourceEvent.getValueIsAdjusting()) {
@@ -126,7 +130,11 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                                 .findFirst()
                                 .orElse(null);
 
-                        displayObjectClassTable(panel, resource);
+                        if (context.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+                            displayObjectClassTable(panel, resource);
+                        } else {
+                            displayObjectTypeTable(panel, resource);
+                        }
                     }
                 }
             });
@@ -149,19 +157,72 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
         };
     }
 
+    public void displayObjectTypeTable(JPanel panel, ResourceType resource) {
+        removeComponent(panel, OBJECT_CLASS_TABLE_COMPONENT_ID);
+        removeComponent(panel, OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID);
+
+        if (resource == null) {
+            return;
+        }
+
+        SchemaHandlingType schemaHandling = resource.getSchemaHandling();
+
+        if (schemaHandling != null) {
+            var objectTypeList = schemaHandling.getObjectType();
+            String[] objTypeNameColumns = new String[]{"Value", "Name", "Description"};
+            Object[][] objTypeResourceRows = new Object[objectTypeList.size()][objTypeNameColumns.length];
+
+            DefaultTableModel objTypeTableModel = new DefaultTableModel(objTypeResourceRows, objTypeNameColumns) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+            int i = 0;
+            for (ResourceObjectTypeDefinitionType objectType : objectTypeList) {
+                objTypeTableModel.setValueAt(objectType, i, 0);
+                objTypeTableModel.setValueAt(objectType.getDisplayName(), i, 1);
+                objTypeTableModel.setValueAt(objectType.getDescription(), i, 2);
+                i++;
+            }
+
+            JBTable objTypeTable = createTableComponent(objTypeTableModel);
+            hideColumn(objTypeTable, 0);
+
+            objTypeTable.getSelectionModel().addListSelectionListener(objTypeEvent -> {
+                int objTypeSelectedRow = objTypeTable.getSelectedRow();
+                if (!objTypeEvent.getValueIsAdjusting() && objTypeSelectedRow >= 0) {
+                    context.setObjectType((ResourceObjectTypeDefinitionType) objTypeTable.getValueAt(objTypeSelectedRow, 0));
+                    setOKActionEnabled(context.getResourceOid() != null && context.getObjectType() != null);
+                }
+            });
+
+            JPanel objTypeTablePanel = ToolbarDecorator.createDecorator(objTypeTable).createPanel();
+            TitledBorder objTypeTitleBorder = BorderFactory.createTitledBorder("Object type:");
+            objTypeTitleBorder.setTitleFont(objTypeTitleBorder.getTitleFont().deriveFont(Font.BOLD));
+            objTypeTitleBorder.setTitleFont(objTypeTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
+            objTypeTablePanel.setBorder(objTypeTitleBorder);
+            objTypeTablePanel.setName(OBJECT_CLASS_TABLE_COMPONENT_ID);
+            panel.add(objTypeTablePanel);
+        } else {
+            printErrorMsg(panel, "Not found schemaHandling in resource '" + resource.getOid() + "'");
+        }
+    }
+
     public void displayObjectClassTable(JPanel panel, ResourceType resource) {
         removeComponent(panel, OBJECT_CLASS_TABLE_COMPONENT_ID);
         removeComponent(panel, OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID);
 
         try {
             assert resource != null;
+
             ResourceSchema resourceSchema = ResourceSchemaFactory.parseCompleteSchema(resource);
             // create object class table
             if (resourceSchema != null) {
                 var definitions = resourceSchema.getObjectClassDefinitions();
                 String[] objClassNameColumns = new String[]{"Value", "Name", "Description"};
                 Object[][] objClassResourceRows = new Object[definitions.size()][objClassNameColumns.length];
-                int ii = 0;
 
                 DefaultTableModel objClassTableModel = new DefaultTableModel(objClassResourceRows, objClassNameColumns) {
                     @Override
@@ -170,11 +231,12 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                     }
                 };
 
+                int i = 0;
                 for (ResourceObjectClassDefinition def : definitions) {
-                    objClassTableModel.setValueAt(def.getObjectClassName(), ii, 0);
-                    objClassTableModel.setValueAt(def.getObjectClassName().getLocalPart(), ii, 1);
-                    objClassTableModel.setValueAt(def.getDescription(), ii, 2);
-                    ii++;
+                    objClassTableModel.setValueAt(def.getObjectClassName(), i, 0);
+                    objClassTableModel.setValueAt(def.getObjectClassName().getLocalPart(), i, 1);
+                    objClassTableModel.setValueAt(def.getDescription(), i, 2);
+                    i++;
                 }
 
                 JBTable objectClassTable = createTableComponent(objClassTableModel);
@@ -184,7 +246,11 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                     int objectClassSelectedRow = objectClassTable.getSelectedRow();
                     if (!objectClassEvent.getValueIsAdjusting() && objectClassSelectedRow >= 0) {
                         var objectClassValue = objectClassTable.getValueAt(objectClassSelectedRow, 0);
-                        context.setObjectClass(QName.valueOf(objectClassValue.toString()));
+
+                        if (objectClassValue != null) {
+                            context.setObjectClass(QName.valueOf(objectClassValue.toString()));
+                        }
+
                         setOKActionEnabled(context.getResourceOid() != null && context.getObjectClass() != null);
                     }
                 });

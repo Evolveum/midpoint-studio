@@ -569,12 +569,13 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
+    public MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException {
         Map<String, Object> params = new HashMap<>();
 
         params.put("resourceOid", oid);
         params.put("kind", kind);
         params.put("intent", intent);
+        params.put("isInbound", isInbound);
 
         Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestMappings", params)
                 .get();

@@ -38,6 +38,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -58,8 +59,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.patterns.XmlTagPattern;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
@@ -1249,5 +1253,66 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
 
         XmlAttribute oidAttr = rootTag.getAttribute("oid");
         return oidAttr != null ? oidAttr.getValue() : null;
+    }
+
+    public static PsiFile findPsiFileByOid(Project project, String oid) {
+        if (oid == null || oid.isEmpty()) {
+            return null;
+        }
+
+        PrismContext prism = StudioPrismContextService.getPrismContext(project);
+        Collection<VirtualFile> xmlFiles =
+                FilenameIndex.getAllFilesByExt(project, "xml");
+
+        for (VirtualFile vf : xmlFiles) {
+            PsiFile psi = PsiManager.getInstance(project).findFile(vf);
+            if (psi == null) {
+                continue;
+            }
+
+            String xml = psi.getText().trim();
+
+            try {
+                PrismObject<?> po = prism.parserFor(xml)
+                        .language(PrismContext.LANG_XML)
+                        .parse();
+
+                if (po == null) {
+                    continue;
+                }
+
+                if (oid.equals(po.getOid())) {
+                    return psi;
+                }
+
+            } catch (Exception ex) {
+                // Ignore invalid XML files
+            }
+        }
+
+        return null;
+    }
+
+    public static void rewritePsiFile(Project project, PsiFile psiFile, String newContent) {
+        if (psiFile == null || newContent == null) {
+            return;
+        }
+
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            Document doc = PsiDocumentManager.getInstance(project).getDocument(psiFile);
+            if (doc != null) {
+                doc.setText(newContent);
+                PsiDocumentManager.getInstance(project).commitDocument(doc);
+            }
+        });
+    }
+
+    public static void openInEditor(Project project, PsiFile psiFile) {
+        if (psiFile == null || project == null) {
+            return;
+        }
+
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        fileEditorManager.openFile(psiFile.getVirtualFile(), true);
     }
 }

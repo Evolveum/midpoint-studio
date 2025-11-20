@@ -15,6 +15,10 @@ dependencies {
         exclude("xerces")
     }
 
+    implementation(libs.midpoint.model.smart.api) {
+        isTransitive = false
+    }
+
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
 

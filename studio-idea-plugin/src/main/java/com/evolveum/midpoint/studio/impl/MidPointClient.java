@@ -511,9 +511,9 @@ public class MidPointClient {
         return null;
     }
 
-    public MappingsSuggestionType getSuggestMapping(String oid, String kind, String intent) {
+    public MappingsSuggestionType getSuggestMapping(String oid, String kind, String intent, boolean isInbound) {
         try {
-            return client.getSuggestionMapping(oid, kind, intent);
+            return client.getSuggestionMapping(oid, kind, intent, isInbound);
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }

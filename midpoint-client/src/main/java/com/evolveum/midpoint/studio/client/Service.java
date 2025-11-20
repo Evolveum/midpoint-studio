@@ -71,5 +71,5 @@ public interface Service {
 
     CorrelationSuggestionsType getSuggestCorrelation(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException;
 
-    MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException;
+    MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException;
 }
