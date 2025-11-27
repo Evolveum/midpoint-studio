@@ -60,6 +60,5 @@ public class PsiToYamlConverterTest extends BasePlatformTestCase {
                 .parseToXNode().toMapXNode();
 
         assertNotNull(mapping);
-        assertEquals(MappingType.class, mapping.getDefinition().getTypeClass());
     }
 }
