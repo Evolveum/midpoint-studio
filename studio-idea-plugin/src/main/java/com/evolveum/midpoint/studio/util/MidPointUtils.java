@@ -1315,4 +1315,22 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         fileEditorManager.openFile(psiFile.getVirtualFile(), true);
     }
+
+    public static XmlTag findObjectTypeById(@NotNull XmlTag tag, @NotNull String idValue) {
+        if ("objectType".equals(tag.getName())) {
+            String id = tag.getAttributeValue("id");
+            if (idValue.equals(id)) {
+                return tag;
+            }
+        }
+
+        for (XmlTag child : tag.getSubTags()) {
+            XmlTag result = findObjectTypeById(child, idValue);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        return null;
+    }
 }

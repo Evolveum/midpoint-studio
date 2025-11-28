@@ -147,7 +147,7 @@ public class CorrelationRuleSuggestionAction extends AnAction {
                             var contentManager = toolWindow.getContentManager();
                             contentManager.removeAllContents(true);
 
-                            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generate suggestion...", true) {
+                            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generate suggestion", true) {
 
                                 CorrelationSuggestionsType correlationSuggestions;
 
@@ -182,6 +182,7 @@ public class CorrelationRuleSuggestionAction extends AnAction {
                                                                 .filter(r -> resourceDialogContext.getResourceOid().equals(r.getOid()))
                                                                 .findFirst()
                                                                 .orElse(null),
+                                                        resourceDialogContext.getObjectType(),
                                                         correlationSuggestions), "Correlations Suggestion", false));
                                         toolWindow.activate(() -> {
                                             log.info("Content of tool window with ID '" + toolWindowId + "' was update");

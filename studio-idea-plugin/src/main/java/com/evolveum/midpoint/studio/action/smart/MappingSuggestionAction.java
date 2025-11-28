@@ -17,7 +17,7 @@ import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceObjectTypeWizard;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.mapping.MappingSuggestionList;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.mapping.MappingSuggestionTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.MappingsSuggestionType;
@@ -147,7 +147,7 @@ public class MappingSuggestionAction extends AnAction {
                             var contentManager = toolWindow.getContentManager();
                             contentManager.removeAllContents(true);
 
-                            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generate suggestion...", true) {
+                            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generate suggestion", true) {
 
                                 MappingsSuggestionType mappingsSuggestions;
 
@@ -157,7 +157,7 @@ public class MappingSuggestionAction extends AnAction {
                                             resourceDialogContext.getResourceOid(),
                                             resourceDialogContext.getObjectType().getKind().value(),
                                             resourceDialogContext.getObjectType().getIntent(),
-                                            true
+                                            resourceDialogContext.getDirection().equals(ResourceDialogContext.Direction.INBOUND)
                                     );
 
                                     DownloadTask downloadTask = new DownloadTask(project,
@@ -173,8 +173,11 @@ public class MappingSuggestionAction extends AnAction {
                                 @Override
                                 public void onFinished() {
                                     if (mappingsSuggestions != null) {
+
+                                        System.out.println("ASKAKSK>>> " + resourceDialogContext.getDirection());
+
                                         contentManager.addContent(ContentFactory.getInstance().createContent(
-                                                new MappingSuggestionList(
+                                                new MappingSuggestionTable(
                                                         project,
                                                         prismContext,
                                                         resourceDialogContext.getResources().stream()
@@ -183,7 +186,8 @@ public class MappingSuggestionAction extends AnAction {
                                                                 .filter(r -> resourceDialogContext.getResourceOid().equals(r.getOid()))
                                                                 .findFirst()
                                                                 .orElse(null),
-                                                        mappingsSuggestions), "Mappings Suggestion", false));
+                                                        mappingsSuggestions,
+                                                        resourceDialogContext.getDirection()), "Mappings Suggestion", false));
                                         toolWindow.activate(() -> {
                                             log.info("Content of tool window with ID '" + toolWindowId + "' was update");
                                         });

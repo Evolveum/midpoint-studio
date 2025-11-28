@@ -18,6 +18,8 @@ import com.evolveum.midpoint.util.exception.ConfigurationException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBScrollPane;
@@ -31,11 +33,15 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.xml.namespace.QName;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext> {
 
     private final String OBJECT_CLASS_TABLE_COMPONENT_ID = "object_class_table_component";
     private final String OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID = "object_class_error_label_component";
+    private final String DIRECTION_COMPONENT_ID = "direction_component_id";
 
     public ResourceObjectTypeWizard(
             Project project,
@@ -49,7 +55,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
 
     @Override
     protected void buildSteps(ResourceDialogContext resource) {
-        steps.add(createResourceSelectPanel(context.getResources(), context.resourceOid));
+        steps.add(createResourceSelectPanel(dialogWizardContext.getResources()));
     }
 
     @Override
@@ -57,7 +63,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
 
     }
 
-    public JPanel createResourceSelectPanel(SearchResultList<ObjectType> resources, String uploadedResourceOid) {
+    private JPanel createResourceSelectPanel(SearchResultList<ObjectType> resources) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         int defaultSelectedRow = -1;
@@ -74,7 +80,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
 
         int i = 0;
         for (ObjectType obj : resources) {
-            if (obj.getOid().equals(context.getResourceOid())) {
+            if (obj.getOid().equals(dialogWizardContext.getResourceOid())) {
                 defaultSelectedRow = i;
             }
 
@@ -105,11 +111,11 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
             ResourceType resource = resources.stream()
                 .filter(o -> o instanceof ResourceType)
                 .map(o -> (ResourceType) o)
-                .filter(r -> context.getResourceOid().equals(r.getOid()))
+                .filter(r -> dialogWizardContext.getResourceOid().equals(r.getOid()))
                 .findFirst()
                 .orElse(null);
 
-            if (context.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+            if (dialogWizardContext.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
                 displayObjectClassTable(panel, resource);
             } else {
                 displayObjectTypeTable(panel, resource);
@@ -121,7 +127,10 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
 
                     if (selectedRow >= 0) {
                         String resourceOid = (String) resourceTable.getValueAt(selectedRow, 0);
-                        context.setResourceOid(resourceOid);
+                        dialogWizardContext.setResourceOid(resourceOid);
+                        dialogWizardContext.setObjectType(null);
+                        dialogWizardContext.setObjectClass(null);
+                        setOKActionEnabled(false);
 
                         ResourceType resource = resources.stream()
                                 .filter(o -> o instanceof ResourceType)
@@ -130,7 +139,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                                 .findFirst()
                                 .orElse(null);
 
-                        if (context.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+                        if (dialogWizardContext.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
                             displayObjectClassTable(panel, resource);
                         } else {
                             displayObjectTypeTable(panel, resource);
@@ -157,7 +166,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
         };
     }
 
-    public void displayObjectTypeTable(JPanel panel, ResourceType resource) {
+    private void displayObjectTypeTable(JPanel panel, ResourceType resource) {
         removeComponent(panel, OBJECT_CLASS_TABLE_COMPONENT_ID);
         removeComponent(panel, OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID);
 
@@ -193,8 +202,8 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
             objTypeTable.getSelectionModel().addListSelectionListener(objTypeEvent -> {
                 int objTypeSelectedRow = objTypeTable.getSelectedRow();
                 if (!objTypeEvent.getValueIsAdjusting() && objTypeSelectedRow >= 0) {
-                    context.setObjectType((ResourceObjectTypeDefinitionType) objTypeTable.getValueAt(objTypeSelectedRow, 0));
-                    setOKActionEnabled(context.getResourceOid() != null && context.getObjectType() != null);
+                    dialogWizardContext.setObjectType((ResourceObjectTypeDefinitionType) objTypeTable.getValueAt(objTypeSelectedRow, 0));
+                    setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectType() != null);
                 }
             });
 
@@ -208,9 +217,24 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
         } else {
             printErrorMsg(panel, "Not found schemaHandling in resource '" + resource.getOid() + "'");
         }
+
+        removeComponent(panel, DIRECTION_COMPONENT_ID);
+
+        if (dialogWizardContext.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.MAPPING)) {
+            String[] names = {"Inbound", "Outbound"};
+            ResourceDialogContext.Direction[] values = {ResourceDialogContext.Direction.INBOUND, ResourceDialogContext.Direction.OUTBOUND};
+
+            LabeledComponent<JComboBox<String>> dropdown =
+                    createDropdown("Inbound/Outbound mapping", names, values);
+            dropdown.setName(DIRECTION_COMPONENT_ID);
+            dropdown.setMaximumSize(new Dimension(Integer.MAX_VALUE, dropdown.getHeight()));
+            dialogWizardContext.setDirection(getSelectedValue(dropdown));
+
+            panel.add(dropdown);
+        }
     }
 
-    public void displayObjectClassTable(JPanel panel, ResourceType resource) {
+    private void displayObjectClassTable(JPanel panel, ResourceType resource) {
         removeComponent(panel, OBJECT_CLASS_TABLE_COMPONENT_ID);
         removeComponent(panel, OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID);
 
@@ -248,10 +272,10 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                         var objectClassValue = objectClassTable.getValueAt(objectClassSelectedRow, 0);
 
                         if (objectClassValue != null) {
-                            context.setObjectClass(QName.valueOf(objectClassValue.toString()));
+                            dialogWizardContext.setObjectClass(QName.valueOf(objectClassValue.toString()));
                         }
 
-                        setOKActionEnabled(context.getResourceOid() != null && context.getObjectClass() != null);
+                        setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectClass() != null);
                     }
                 });
 
@@ -270,7 +294,41 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
         }
     }
 
-    public JBTable createTableComponent(DefaultTableModel model) {
+    private LabeledComponent<JComboBox<String>> createDropdown(String label, String[] names, ResourceDialogContext.Direction[] values) {
+        if (names.length != values.length) {
+            throw new IllegalArgumentException("Names and values must have the same length");
+        }
+
+        Map<String, ResourceDialogContext.Direction> valueMap = new LinkedHashMap<>();
+        for (int i = 0; i < names.length; i++) {
+            valueMap.put(names[i], values[i]);
+        }
+
+        JComboBox<String> comboBox = new ComboBox<>(names);
+        comboBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        comboBox.putClientProperty("valueMap", valueMap);
+
+        comboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                dialogWizardContext.setDirection(valueMap.get(e.getItem()));
+            }
+        });
+
+        return LabeledComponent.create(comboBox, label);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getSelectedValue(LabeledComponent<JComboBox<String>> dropdown) {
+        JComboBox<String> combo = dropdown.getComponent();
+        String key = (String) combo.getSelectedItem();
+
+        Map<String, T> valueMap =
+                (Map<String, T>) combo.getClientProperty("valueMap");
+
+        return valueMap.get(key);
+    }
+
+    private JBTable createTableComponent(DefaultTableModel model) {
         JBTable table = new JBTable(model);
         table.setStriped(true);
         table.setAutoCreateRowSorter(true);
@@ -283,8 +341,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
 
     private void removeComponent(JPanel panel, String id) {
         for (Component c : panel.getComponents()) {
-            if (c.getName() != null && (c.getName().equals(id) ||
-                    c.getName().equals(id))) {
+            if (c.getName() != null && (c.getName().equals(id))) {
                 panel.remove(c);
             }
         }

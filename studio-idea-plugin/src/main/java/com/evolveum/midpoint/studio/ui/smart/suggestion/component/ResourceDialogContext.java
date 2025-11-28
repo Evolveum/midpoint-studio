@@ -17,11 +17,18 @@ import javax.xml.namespace.QName;
 
 public class ResourceDialogContext {
 
+    public enum Direction {
+        INBOUND,
+        OUTBOUND
+    }
+
     public enum ResourceDialogContextMode {
         OBJECT_TYPE,
         CORRELATION,
         MAPPING
     }
+
+    Direction direction;
 
     ResourceDialogContextMode mode;
 
@@ -71,5 +78,13 @@ public class ResourceDialogContext {
 
     public void setMode(ResourceDialogContextMode mode) {
         this.mode = mode;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
     }
 }

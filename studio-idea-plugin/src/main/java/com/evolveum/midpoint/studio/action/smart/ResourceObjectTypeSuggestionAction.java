@@ -150,7 +150,7 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
                             var contentManager = toolWindow.getContentManager();
                             contentManager.removeAllContents(true);
 
-                            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generate suggestion...", true) {
+                            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generate suggestion", true) {
 
                                 ObjectTypesSuggestionType objectSuggestion;
 

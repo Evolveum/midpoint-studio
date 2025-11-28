@@ -10,25 +10,39 @@ package com.evolveum.midpoint.studio.ui.smart.suggestion.component.correlation;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.ui.editor.EditorPanel;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.resource.ObjectTypeSuggestionTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import com.intellij.codeInsight.highlighting.HighlightManager;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.ScrollType;
+import com.intellij.openapi.editor.colors.EditorColors;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.editor.markup.*;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.XmlElementFactory;
-import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.WrapLayout;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,7 +57,7 @@ public class CorrelationRuleSuggestionList extends JPanel {
 
     List<SuggestionTile> tiles = new ArrayList<>();
 
-    public CorrelationRuleSuggestionList(Project project, PrismContext prismContext, ResourceType resource, CorrelationSuggestionsType correlationSuggestionType) {
+    public CorrelationRuleSuggestionList(Project project, PrismContext prismContext, ResourceType resource, ResourceObjectTypeDefinitionType objectType, CorrelationSuggestionsType correlationSuggestionType) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setOpaque(false);
 
@@ -70,8 +84,7 @@ public class CorrelationRuleSuggestionList extends JPanel {
 
                 tiles.add(tile);
                 tile.onToggle(e -> handleToggle(tile, tiles));
-
-                tile.onApply(e -> handleApply(project, resource.getOid(), tile));
+                tile.onApply(e -> handleApply(project, resource.getOid(), objectType, tile));
             }
         }
 
@@ -113,28 +126,28 @@ public class CorrelationRuleSuggestionList extends JPanel {
 
             JLabel title = new JLabel(itemsSubCorrelatorType.getDisplayName());
             title.setFont(title.getFont().deriveFont(Font.BOLD, 18f));
-            JLabel subtitle = new JLabel(itemsSubCorrelatorType.getDescription());
-            subtitle.setForeground(JBColor.GRAY);
+            JLabel description = new JLabel(itemsSubCorrelatorType.getDescription());
+            description.setForeground(JBColor.GRAY);
 
             JPanel titlePanel = new JPanel();
             titlePanel.setOpaque(false);
             titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
             titlePanel.add(title);
             titlePanel.add(Box.createVerticalStrut(5));
-            titlePanel.add(subtitle);
+            titlePanel.add(description);
 
             contentPanel.add(titlePanel, BorderLayout.NORTH);
 
             JPanel pillPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             pillPanel.setOpaque(false);
 
-            itemsSubCorrelatorType.getItem().forEach(item -> {
-                JButton pill = new JButton(item.getName());
-                pill.setFocusable(false);
-                pill.setBorder(JBUI.Borders.empty(5, 10));
-                pillPanel.add(pill);
-                contentPanel.add(pillPanel, BorderLayout.CENTER);
-            });
+//            itemsSubCorrelatorType.getItem().forEach(item -> {
+//                JButton pill = new JButton(item.getRef().getItemPath().firstToVariableNameOrNull().getLocalPart());
+//                pill.setFocusable(false);
+//                pill.setBorder(JBUI.Borders.empty(5, 10));
+//                pillPanel.add(pill);
+//                contentPanel.add(pillPanel, BorderLayout.CENTER);
+//            });
 
             JPanel statsPanel = new JPanel();
             statsPanel.setOpaque(false);
@@ -229,54 +242,136 @@ public class CorrelationRuleSuggestionList extends JPanel {
         repaint();
     }
 
-    private void handleApply(Project project, String resourceOid, SuggestionTile tile) {
+    private void handleApply(Project project, String resourceOid, ResourceObjectTypeDefinitionType objectType, SuggestionTile tile) {
         if (tile.getFocusTraversalKeysEnabled()) {
             PsiFile psiFile = MidPointUtils.findPsiFileByOid(project, resourceOid);
             if (psiFile instanceof XmlFile xmlFile) {
                 XmlTag root = xmlFile.getRootTag();
-
                 if (root == null || !root.getName().equals("resource")) {
                     MidPointUtils.publishNotification(
                             project,
                             "Apply generated suggestion",
                             "Apply generated suggestion",
-                            "Object with oid '"  + resourceOid + "' is not a resource",
+                            "Object with oid '" + resourceOid + "' is not a resource",
                             NotificationType.ERROR
                     );
                     return;
                 }
 
+                XmlTag objectTypeElement = MidPointUtils.findObjectTypeById(root, objectType.getId().toString());
+
+//                WriteCommandAction.runWriteCommandAction(project, () -> {
+//                    XmlElementFactory factory = XmlElementFactory.getInstance(project);
+//
+//                    assert objectTypeElement != null;
+//                    XmlTag correlations = objectTypeElement.findFirstSubTag("correlation");
+//                    if (correlations == null) {
+//                        correlations = factory.createTagFromText("<correlation/>");
+//                        correlations = objectTypeElement.addSubTag(correlations, false);
+//                    }
+//
+//                    XmlTag correlation = correlations.findFirstSubTag("correlator");
+//                    if (correlation == null) {
+//                        correlation = factory.createTagFromText("<correlator/>");
+//                        correlation = correlations.addSubTag(correlation, false);
+//                    }
+//
+//                    XmlTag newItemsXml = factory.createTagFromText(tile.getRawXml().trim());
+//                    correlation.addSubTag(newItemsXml, false);
+//
+//                    Document doc = PsiDocumentManager.getInstance(project).getDocument(xmlFile);
+//                    if (doc != null) {
+//                        PsiDocumentManager.getInstance(project).commitDocument(doc);
+//                    }
+//
+//                    tile.applyBtn.setEnabled(false);
+//                });
+
+
                 WriteCommandAction.runWriteCommandAction(project, () -> {
                     XmlElementFactory factory = XmlElementFactory.getInstance(project);
 
-                    XmlTag correlations = root.findFirstSubTag("correlations");
+                    assert objectTypeElement != null;
+
+                    XmlTag correlations = objectTypeElement.findFirstSubTag("correlation");
                     if (correlations == null) {
-                        correlations = factory.createTagFromText("<correlations/>");
-                        correlations = root.addSubTag(correlations, false);
+                        correlations = factory.createTagFromText("<correlation/>");
+                        correlations = objectTypeElement.addSubTag(correlations, false);
                     }
 
-                    XmlTag correlation = correlations.findFirstSubTag("correlation");
+                    XmlTag correlation = correlations.findFirstSubTag("correlator");
                     if (correlation == null) {
-                        correlation = factory.createTagFromText("<correlation/>");
+                        correlation = factory.createTagFromText("<correlator/>");
                         correlation = correlations.addSubTag(correlation, false);
                     }
 
-                    XmlTag newItemsXml = factory.createTagFromText(tile.getRawXml().trim());
-                    correlation.addSubTag(newItemsXml, false);
-
+                    String rawXml = tile.getRawXml().trim();
+                    XmlTag newItemsXml = factory.createTagFromText(rawXml);
+                    int startOffset = correlation.getTextRange().getEndOffset();
+                    XmlTag addedTag = correlation.addSubTag(newItemsXml, false);
+                    int endOffset = addedTag.getTextRange().getEndOffset();
                     Document doc = PsiDocumentManager.getInstance(project).getDocument(xmlFile);
+
                     if (doc != null) {
                         PsiDocumentManager.getInstance(project).commitDocument(doc);
                     }
 
                     tile.applyBtn.setEnabled(false);
+
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+                        if (editor == null) return;
+
+                        MarkupModel markup = editor.getMarkupModel();
+                        TextAttributes attrs = EditorColorsManager.getInstance()
+                                .getGlobalScheme()
+                                .getAttributes(EditorColors.SEARCH_RESULT_ATTRIBUTES);
+
+                        RangeHighlighter highlighter = markup.addRangeHighlighter(
+                                startOffset,
+                                endOffset,
+                                HighlighterLayer.SELECTION - 1,
+                                attrs,
+                                HighlighterTargetArea.EXACT_RANGE
+                        );
+
+                        Runnable removeHighlighter = () -> {
+                            if (highlighter.isValid()) {
+                                markup.removeHighlighter(highlighter);
+                            }
+                        };
+
+                        DocumentListener docListener = new DocumentListener() {
+                            @Override
+                            public void beforeDocumentChange(@NotNull DocumentEvent event) {
+                                removeHighlighter.run();
+                            }
+                        };
+                        EditorFactory.getInstance().getEventMulticaster().addDocumentListener(docListener, project);
+
+                        MessageBusConnection connection = project.getMessageBus().connect();
+                        connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
+                            @Override
+                            public void fileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
+                                VirtualFile currentFile = FileDocumentManager.getInstance().getFile(editor.getDocument());
+                                if (currentFile != null && currentFile.equals(file)) {
+                                    removeHighlighter.run();
+                                    connection.disconnect();
+                                }
+                            }
+                        });
+
+                        editor.getCaretModel().moveToOffset(startOffset);
+                        editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
+                    });
                 });
+
             } else {
                 MidPointUtils.publishNotification(
                         project,
                         "Apply generated suggestion",
                         "Apply generated suggestion",
-                        "File not found with oid '"  + resourceOid + "'",
+                        "File not found with oid '" + resourceOid + "'",
                         NotificationType.ERROR
                 );
             }

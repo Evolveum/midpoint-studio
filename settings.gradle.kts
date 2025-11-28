@@ -4,6 +4,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
+        mavenLocal()
         maven("https://nexus.evolveum.com/nexus/repository/gradle-plugins/")
         maven("https://nexus.evolveum.com/nexus/repository/sonatype-snapshots/")
     }
@@ -20,7 +21,7 @@ dependencyResolutionManagement {
             version("qodana", "2024.3.4")
 
             // versions of midpoint libraries
-            version("midpoint", "4.10-SNAPSHOT")
+            version("midpoint", "4.11-SNAPSHOT")
             version("midscribe", "4.10-SNAPSHOT")
 
             // versions of third-party libraries
@@ -61,6 +62,7 @@ dependencyResolutionManagement {
             library("midpoint-security-api", "com.evolveum.midpoint.repo", "security-api").versionRef("midpoint")
             library("notifications-api", "com.evolveum.midpoint.model", "notifications-api").versionRef("midpoint")
             library("midscribe-core", "com.evolveum.midpoint", "midscribe-core").versionRef("midscribe")
+            library("midpoint-model-smart-api", "com.evolveum.midpoint.model", "smart-api").versionRef("midpoint")
 
             // third-party libraries
             library("annotations", "org.jetbrains", "annotations").versionRef("annotations")

@@ -20,6 +20,7 @@ import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectListType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.xml.bind.JAXBElement;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
@@ -539,13 +540,14 @@ public class ServiceImpl implements Service {
 
     @Override
     public ObjectTypesSuggestionType getSuggestObjectType(String oid, QName objectClass) throws ClientException, SchemaException, AuthenticationException, IOException {
-        Map<String, Object> params = new HashMap<>();
+        ObjectMapper mapper = new ObjectMapper();
+        String content = mapper.writeValueAsString(Map.of(
+                "resourceOid", oid,
+                "objectClass", objectClass.toString()
+        ));
 
-        params.put("resourceOid", oid);
-        params.put("objectClass", objectClass.toString());
-
-        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestObjectTypes", params)
-                .get();
+        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestObjectTypes", null)
+                .post(RequestBody.create(content, ServiceContext.APPLICATION_JSON));
 
         Request req = builder.build();
 

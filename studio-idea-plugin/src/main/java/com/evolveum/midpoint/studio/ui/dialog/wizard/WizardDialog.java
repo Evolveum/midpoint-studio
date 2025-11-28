@@ -25,17 +25,17 @@ public abstract class WizardDialog<T> extends DialogWrapper {
     protected final Project project;
     protected final List<JPanel> steps = new ArrayList<>();
     protected int currentStep = 0;
-    protected final T context;
+    protected final T dialogWizardContext;
     private final DialogWindowActionHandler actionHandler;
 
     private final JPanel contentPanel = new JPanel(new BorderLayout());
     protected final JButton nextButton = new JButton("Next");
     protected final JButton prevButton = new JButton("Back");
 
-    public WizardDialog(Project project, String title, T context, DialogWindowActionHandler actionHandler) {
+    public WizardDialog(Project project, String title, T dialogWizardContext, DialogWindowActionHandler actionHandler) {
         super(project);
         this.project = project;
-        this.context = context;
+        this.dialogWizardContext = dialogWizardContext;
         this.actionHandler = actionHandler;
         setTitle(title);
         init();
@@ -53,7 +53,7 @@ public abstract class WizardDialog<T> extends DialogWrapper {
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
-        buildSteps(context);
+        buildSteps(dialogWizardContext);
         if (!steps.isEmpty()) {
             contentPanel.add(steps.get(0), BorderLayout.CENTER);
         }

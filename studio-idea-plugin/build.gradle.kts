@@ -111,6 +111,11 @@ val useInstaller = !platformVersion.contains("SNAPSHOT")
 
 dependencies {
     // implementation(libs.annotations)
+    // Local midpoint smart-api
+//    implementation(files("../local/smart_api_jar/smart-api.jar"))
+    // Local prism api & api .jar
+//    implementation(files("../local/prism/prism-api.jar"))
+//    implementation(files("../local/prism/prism-impl.jar"))
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {

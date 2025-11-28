@@ -229,9 +229,9 @@
 
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
 
-        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>
-        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>
-        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>
+<!--        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>-->
+<!--        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>-->
+<!--        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>-->
 
         <completion.contributor language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.XNodeContributor"/>
         <completion.contributor language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.XNodeContributor"/>

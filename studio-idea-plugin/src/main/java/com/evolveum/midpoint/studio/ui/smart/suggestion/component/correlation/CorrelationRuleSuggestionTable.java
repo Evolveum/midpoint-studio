@@ -6,7 +6,7 @@
  *
  */
 
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component.resource;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.correlation;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.ui.editor.EditorPanel;
@@ -29,43 +29,49 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
-public class ObjectTypeSuggestionTable extends JPanel {
+public class CorrelationRuleSuggestionTable extends JPanel {
 
     private final EditorPanel detailsArea;
     private final JPanel detailsPanel = new JPanel(new BorderLayout());
 
-    public ObjectTypeSuggestionTable(
+    public CorrelationRuleSuggestionTable(
             Project project,
             PrismContext prismContext,
             ResourceType resource,
-            ObjectTypesSuggestionType objectTypesSuggestionType
+            ResourceObjectTypeDefinitionType objectType,
+            CorrelationSuggestionsType correlationSuggestionType
     ) {
         setLayout(new BorderLayout());
         SuggestionTableModel model = new SuggestionTableModel();
         this.detailsArea = new EditorPanel(project, "", "xml");
 
-        for (ResourceObjectTypeDefinitionType o : objectTypesSuggestionType.getObjectType()) {
-            String rawXml = "";
-            try {
-                rawXml = prismContext.serializerFor(PrismContext.LANG_XML).serializeRealValue(o);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to serialize object", e);
-            }
+        for (CorrelationSuggestionType correlation : correlationSuggestionType.getSuggestion()) {
+            for (ItemsSubCorrelatorType itemsSubCorrelatorType : correlation.getCorrelation().getCorrelators().getItems()) {
+                CorrelationRuleSuggestionList.SuggestionTile tile = new CorrelationRuleSuggestionList.SuggestionTile(itemsSubCorrelatorType);
+                tile.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-            model.addRow(new Item(o, rawXml));
+                String rawXml = "";
+                try {
+                    rawXml = prismContext.serializerFor(PrismContext.LANG_XML).serializeRealValue(itemsSubCorrelatorType);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to serialize object", e);
+                }
+
+                model.addRow(new Item(itemsSubCorrelatorType, rawXml));
+            }
         }
 
         JBTable table = new JBTable(model);
         table.setRowHeight(30);
 
-        TableColumn activityColumn = table.getColumnModel().getColumn(0);
+        TableColumn activityColumn = table.getColumnModel().getColumn(5);
         activityColumn.setCellRenderer(new ButtonRenderer());
         activityColumn.setCellEditor(new ApplyButtonEditor(new JCheckBox(), model, project, resource));
 
-        TableColumn toggleColumn = table.getColumnModel().getColumn(5);
+        TableColumn toggleColumn = table.getColumnModel().getColumn(6);
         toggleColumn.setCellRenderer(new ButtonRenderer());
         toggleColumn.setCellEditor(new ToggleButtonEditor(new JCheckBox(), project, model, this));
 
@@ -79,19 +85,19 @@ public class ObjectTypeSuggestionTable extends JPanel {
     }
 
     class Item {
-        ResourceObjectTypeDefinitionType object;
+        ItemsSubCorrelatorType object;
         String rawCode;
         boolean applied = false;
         boolean expanded = false;
 
-        Item(ResourceObjectTypeDefinitionType object, String xml) {
+        Item(ItemsSubCorrelatorType object, String xml) {
             this.object = object;
             this.rawCode = xml;
         }
     }
 
     class SuggestionTableModel extends AbstractTableModel {
-        private final String[] columns = {"Name", "Kind", "Intent", "Description", "Details", "Activity", "Activity"};
+        private final String[] columns = {"Name", "Description", "Items", "Weight", "Efficiency", "Actions"};
         private final List<Item> data = new ArrayList<>();
 
         public void addRow(Item item) {
@@ -120,13 +126,18 @@ public class ObjectTypeSuggestionTable extends JPanel {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             Item item = data.get(rowIndex);
+
+            item.object.getItem().forEach(i -> {
+                System.out.println("ALSALS::: " + i.getRef().getItemPath());
+            });
+
             return switch (columnIndex) {
                 case 0 -> item.object.getDisplayName();
-                case 1 -> item.object.getKind().value();
-                case 2 -> item.object.getIntent();
-                case 3 -> item.object.getDescription();
-                case 4 -> item.applied ? "Applied" : "Apply";
-                case 5 -> item.applied ? "Discarded" : "Discard";
+                case 1 -> item.object.getDescription();
+                case 2 -> item.object.getItem();
+                case 3 -> item.object.getComposition().getWeight();
+                case 4 -> "1000";
+                case 5 -> item.applied ? "Applied" : "Apply";
                 case 6 -> item.expanded ? "Hide" : "Show";
                 default -> null;
             };
@@ -134,7 +145,7 @@ public class ObjectTypeSuggestionTable extends JPanel {
 
         @Override
         public boolean isCellEditable(int row, int col) {
-            return col == 4 || col == 5;
+            return col == 5 || col == 6;
         }
     }
 
@@ -151,6 +162,7 @@ public class ObjectTypeSuggestionTable extends JPanel {
             return this;
         }
     }
+
 
     class ApplyButtonEditor extends DefaultCellEditor {
         private final JButton button;
@@ -211,6 +223,7 @@ public class ObjectTypeSuggestionTable extends JPanel {
                 }
             });
         }
+
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                                                      boolean isSelected, int row, int column) {
@@ -234,7 +247,7 @@ public class ObjectTypeSuggestionTable extends JPanel {
                 JCheckBox checkBox,
                 Project project,
                 SuggestionTableModel model,
-                ObjectTypeSuggestionTable parent
+                CorrelationRuleSuggestionTable parent
         ) {
             super(checkBox);
             this.model = model;
