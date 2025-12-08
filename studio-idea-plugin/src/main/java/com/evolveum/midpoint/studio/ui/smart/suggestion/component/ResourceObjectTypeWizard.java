@@ -60,14 +60,14 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
 
     @Override
     protected void onFinish(ResourceDialogContext context) {
-
     }
 
     private JPanel createResourceSelectPanel(SearchResultList<ObjectType> resources) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         int defaultSelectedRow = -1;
-        int rowCount = resources.size();
+        int rowCount = resources != null ? resources.size() : 0;
+
         String[] nameColumns = new String[]{"Value", "Name", "Display name", "Description"};
         Object[][] resourceRows = new Object[rowCount][nameColumns.length];
 
@@ -94,13 +94,13 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
         JBTable resourceTable = createTableComponent(resourceTableModel);
         hideColumn(resourceTable, 0);
         JBScrollPane scrollPane = new JBScrollPane(resourceTable);
+        scrollPane.setPreferredSize(new Dimension(scrollPane.getWidth(), 300));
         scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
         TitledBorder resourceTitleBorder = BorderFactory.createTitledBorder("Resource object type:");
         resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(Font.BOLD));
         resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
         Border resourceSpaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);
         scrollPane.setBorder(BorderFactory.createCompoundBorder(resourceSpaceBorder, resourceTitleBorder));
-
         panel.add(scrollPane);
 
         if (defaultSelectedRow > -1) {
@@ -179,7 +179,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
         if (schemaHandling != null) {
             var objectTypeList = schemaHandling.getObjectType();
             String[] objTypeNameColumns = new String[]{"Value", "Name", "Description"};
-            Object[][] objTypeResourceRows = new Object[objectTypeList.size()][objTypeNameColumns.length];
+            Object[][] objTypeResourceRows = new Object[15][objTypeNameColumns.length];
 
             DefaultTableModel objTypeTableModel = new DefaultTableModel(objTypeResourceRows, objTypeNameColumns) {
                 @Override
@@ -198,6 +198,16 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
 
             JBTable objTypeTable = createTableComponent(objTypeTableModel);
             hideColumn(objTypeTable, 0);
+            JBScrollPane objTypeScrollPane = new JBScrollPane(objTypeTable);
+            objTypeScrollPane.setPreferredSize(new Dimension(objTypeScrollPane.getWidth(), 200));
+            objTypeScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
+            TitledBorder titleBorder = BorderFactory.createTitledBorder("Object type:");
+            titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(Font.BOLD));
+            titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
+            Border spaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);
+            objTypeScrollPane.setBorder(BorderFactory.createCompoundBorder(spaceBorder, titleBorder));
+            objTypeScrollPane.setName(OBJECT_CLASS_TABLE_COMPONENT_ID);
+            panel.add(objTypeScrollPane);
 
             objTypeTable.getSelectionModel().addListSelectionListener(objTypeEvent -> {
                 int objTypeSelectedRow = objTypeTable.getSelectedRow();
@@ -206,14 +216,6 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                     setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectType() != null);
                 }
             });
-
-            JPanel objTypeTablePanel = ToolbarDecorator.createDecorator(objTypeTable).createPanel();
-            TitledBorder objTypeTitleBorder = BorderFactory.createTitledBorder("Object type:");
-            objTypeTitleBorder.setTitleFont(objTypeTitleBorder.getTitleFont().deriveFont(Font.BOLD));
-            objTypeTitleBorder.setTitleFont(objTypeTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
-            objTypeTablePanel.setBorder(objTypeTitleBorder);
-            objTypeTablePanel.setName(OBJECT_CLASS_TABLE_COMPONENT_ID);
-            panel.add(objTypeTablePanel);
         } else {
             printErrorMsg(panel, "Not found schemaHandling in resource '" + resource.getOid() + "'");
         }
@@ -265,6 +267,16 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
 
                 JBTable objectClassTable = createTableComponent(objClassTableModel);
                 hideColumn(objectClassTable, 0);
+                JBScrollPane objectClassScrollPane = new JBScrollPane(objectClassTable);
+                objectClassScrollPane.setPreferredSize(new Dimension(objectClassScrollPane.getWidth(), 200));
+                objectClassScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
+                TitledBorder titleBorder = BorderFactory.createTitledBorder("Object class:");
+                titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(Font.BOLD));
+                titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
+                Border spaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);
+                objectClassScrollPane.setBorder(BorderFactory.createCompoundBorder(spaceBorder, titleBorder));
+                objectClassScrollPane.setName(OBJECT_CLASS_TABLE_COMPONENT_ID);
+                panel.add(objectClassScrollPane);
 
                 objectClassTable.getSelectionModel().addListSelectionListener(objectClassEvent -> {
                     int objectClassSelectedRow = objectClassTable.getSelectedRow();
@@ -278,14 +290,6 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                         setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectClass() != null);
                     }
                 });
-
-                JPanel objectClassTablePanel = ToolbarDecorator.createDecorator(objectClassTable).createPanel();
-                TitledBorder objectClassTitleBorder = BorderFactory.createTitledBorder("Object class:");
-                objectClassTitleBorder.setTitleFont(objectClassTitleBorder.getTitleFont().deriveFont(Font.BOLD));
-                objectClassTitleBorder.setTitleFont(objectClassTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
-                objectClassTablePanel.setBorder(objectClassTitleBorder);
-                objectClassTablePanel.setName(OBJECT_CLASS_TABLE_COMPONENT_ID);
-                panel.add(objectClassTablePanel);
             } else {
                 printErrorMsg(panel, "Not found schema in resource '" + resource.getOid() + "'");
             }

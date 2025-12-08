@@ -6,13 +6,12 @@
  *
  */
 
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component.correlation;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.ui.editor.EditorPanel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
-import com.intellij.codeInsight.highlighting.HighlightManager;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -29,7 +28,6 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
@@ -232,7 +230,7 @@ public class CorrelationRuleSuggestionList extends JPanel {
             detailsPanel.setVisible(true);
 
             ApplicationManager.getApplication().runWriteAction(() -> {
-                detailsArea.setText(clickedTile.getRawXml());
+                detailsArea.setContent(clickedTile.getRawXml());
             });
         } else {
             detailsPanel.setVisible(false);

@@ -6,16 +6,31 @@
  *
  */
 
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component.resource;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.ui.editor.EditorPanel;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionPanel;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionRenderer;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.ScrollType;
+import com.intellij.openapi.editor.colors.EditorColors;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.editor.markup.*;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.XmlElementFactory;
@@ -23,10 +38,12 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
+import com.intellij.util.messages.MessageBusConnection;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.List;
@@ -59,15 +76,13 @@ public class ObjectTypeSuggestionTable extends JPanel {
         }
 
         JBTable table = new JBTable(model);
-        table.setRowHeight(30);
+//        FIXME oversize content in cell of table
+//        OversizeCellPreview.install(table);
+        table.setRowHeight(50);
 
-        TableColumn activityColumn = table.getColumnModel().getColumn(0);
-        activityColumn.setCellRenderer(new ButtonRenderer());
-        activityColumn.setCellEditor(new ApplyButtonEditor(new JCheckBox(), model, project, resource));
-
-        TableColumn toggleColumn = table.getColumnModel().getColumn(5);
-        toggleColumn.setCellRenderer(new ButtonRenderer());
-        toggleColumn.setCellEditor(new ToggleButtonEditor(new JCheckBox(), project, model, this));
+        TableColumn column = table.getColumnModel().getColumn(4);
+        column.setCellRenderer(new ActionRenderer());
+        column.setCellEditor(new ButtonsEditor(project, resource, this));
 
         detailsPanel.add(detailsArea, BorderLayout.CENTER);
         detailsPanel.setPreferredSize(new Dimension(700, 500));
@@ -78,11 +93,11 @@ public class ObjectTypeSuggestionTable extends JPanel {
         setPreferredSize(new Dimension(700, 350));
     }
 
-    class Item {
+    static class Item {
         ResourceObjectTypeDefinitionType object;
         String rawCode;
         boolean applied = false;
-        boolean expanded = false;
+        boolean details = false;
 
         Item(ResourceObjectTypeDefinitionType object, String xml) {
             this.object = object;
@@ -90,8 +105,8 @@ public class ObjectTypeSuggestionTable extends JPanel {
         }
     }
 
-    class SuggestionTableModel extends AbstractTableModel {
-        private final String[] columns = {"Name", "Kind", "Intent", "Description", "Details", "Activity", "Activity"};
+    static class SuggestionTableModel extends AbstractTableModel {
+        private final String[] columns = {"Name", "Kind", "Intent", "Description", "Activities"};
         private final List<Item> data = new ArrayList<>();
 
         public void addRow(Item item) {
@@ -125,9 +140,6 @@ public class ObjectTypeSuggestionTable extends JPanel {
                 case 1 -> item.object.getKind().value();
                 case 2 -> item.object.getIntent();
                 case 3 -> item.object.getDescription();
-                case 4 -> item.applied ? "Applied" : "Apply";
-                case 5 -> item.applied ? "Discarded" : "Discard";
-                case 6 -> item.expanded ? "Hide" : "Show";
                 default -> null;
             };
         }
@@ -138,31 +150,16 @@ public class ObjectTypeSuggestionTable extends JPanel {
         }
     }
 
-    class ButtonRenderer extends JButton implements TableCellRenderer {
-        public ButtonRenderer() {
-            setOpaque(true);
-        }
+    static class ButtonsEditor extends AbstractCellEditor implements TableCellEditor {
 
-        @Override
-        public Component getTableCellRendererComponent(
-                JTable table, Object value, boolean isSelected,
-                boolean hasFocus, int row, int column) {
-            setText(value == null ? "" : value.toString());
-            return this;
-        }
-    }
-
-    class ApplyButtonEditor extends DefaultCellEditor {
-        private final JButton button;
+        private final ActionPanel panel;
+        private SuggestionTableModel model;
         private int currentRow = -1;
 
-        public ApplyButtonEditor(JCheckBox checkBox, SuggestionTableModel model, Project project, ResourceType resource) {
-            super(checkBox);
-            this.button = new JButton();
-            this.button.setOpaque(true);
+        public ButtonsEditor(Project project, ResourceType resource, ObjectTypeSuggestionTable parent) {
+            panel = new ActionPanel();
 
-            this.button.addActionListener(e -> {
-                fireEditingStopped();
+            panel.getApply().addActionListener(e -> {
                 if (currentRow >= 0) {
                     Item item = model.getItemAt(currentRow);
                     if (!item.applied) {
@@ -190,14 +187,66 @@ public class ObjectTypeSuggestionTable extends JPanel {
                                     schemaHandling = root.addSubTag(schemaHandling, false);
                                 }
 
-                                XmlTag objectTypeTag = factory.createTagFromText(item.rawCode.trim());
-                                schemaHandling.addSubTag(objectTypeTag, false);
+                                String rawXml = item.rawCode.trim();
+                                XmlTag newItemsXml = factory.createTagFromText(rawXml);
+                                int startOffset = schemaHandling.getTextRange().getEndOffset();
+                                XmlTag addedTag = schemaHandling.addSubTag(newItemsXml, false);
+                                int endOffset = addedTag.getTextRange().getEndOffset();
                                 Document doc = PsiDocumentManager.getInstance(project).getDocument(xmlFile);
+
                                 if (doc != null) {
                                     PsiDocumentManager.getInstance(project).commitDocument(doc);
                                 }
-                            });
 
+                                item.applied = false;
+
+                                ApplicationManager.getApplication().invokeLater(() -> {
+                                    Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+                                    if (editor == null) return;
+
+                                    MarkupModel markup = editor.getMarkupModel();
+                                    TextAttributes attrs = EditorColorsManager.getInstance()
+                                            .getGlobalScheme()
+                                            .getAttributes(EditorColors.SEARCH_RESULT_ATTRIBUTES);
+
+                                    RangeHighlighter highlighter = markup.addRangeHighlighter(
+                                            startOffset,
+                                            endOffset,
+                                            HighlighterLayer.SELECTION - 1,
+                                            attrs,
+                                            HighlighterTargetArea.EXACT_RANGE
+                                    );
+
+                                    Runnable removeHighlighter = () -> {
+                                        if (highlighter.isValid()) {
+                                            markup.removeHighlighter(highlighter);
+                                        }
+                                    };
+
+                                    DocumentListener docListener = new DocumentListener() {
+                                        @Override
+                                        public void beforeDocumentChange(@NotNull DocumentEvent event) {
+                                            removeHighlighter.run();
+                                        }
+                                    };
+                                    EditorFactory.getInstance().getEventMulticaster().addDocumentListener(docListener, project);
+
+                                    MessageBusConnection connection = project.getMessageBus().connect();
+                                    connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
+                                        @Override
+                                        public void fileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
+                                            VirtualFile currentFile = FileDocumentManager.getInstance().getFile(editor.getDocument());
+                                            if (currentFile != null && currentFile.equals(file)) {
+                                                removeHighlighter.run();
+                                                connection.disconnect();
+                                            }
+                                        }
+                                    });
+
+                                    editor.getCaretModel().moveToOffset(startOffset);
+                                    editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
+                                });
+                            });
                         } else {
                             MidPointUtils.publishNotification(
                                     project,
@@ -209,42 +258,16 @@ public class ObjectTypeSuggestionTable extends JPanel {
                         }
                     }
                 }
-            });
-        }
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                                                     boolean isSelected, int row, int column) {
-            currentRow = row;
-            button.setText(value == null ? "" : value.toString());
-            return button;
-        }
 
-        @Override
-        public Object getCellEditorValue() {
-            return button.getText();
-        }
-    }
-
-    class ToggleButtonEditor extends DefaultCellEditor {
-        private final JButton button;
-        private int currentRow = -1;
-        private final SuggestionTableModel model;
-
-        public ToggleButtonEditor(
-                JCheckBox checkBox,
-                Project project,
-                SuggestionTableModel model,
-                ObjectTypeSuggestionTable parent
-        ) {
-            super(checkBox);
-            this.model = model;
-
-            this.button = new JButton();
-            this.button.setOpaque(true);
-
-            this.button.addActionListener(e -> {
                 fireEditingStopped();
+            });
 
+            panel.getDiscard().addActionListener(e -> {
+                // TODO discard action impl
+                fireEditingStopped();
+            });
+
+            panel.getDetails().addActionListener(e -> {
                 if (currentRow < 0) return;
 
                 Item clickedItem = model.getItemAt(currentRow);
@@ -252,38 +275,43 @@ public class ObjectTypeSuggestionTable extends JPanel {
                 for (int i = 0; i < model.getRowCount(); i++) {
                     if (i != currentRow) {
                         Item it = model.getItemAt(i);
-                        if (it.expanded) {
-                            it.expanded = false;
+                        if (it.details) {
+                            it.details = false;
                             parent.hideDetails();
                             model.fireTableRowsUpdated(i, i);
                         }
                     }
                 }
 
-                clickedItem.expanded = !clickedItem.expanded;
+                clickedItem.details = !clickedItem.details;
                 model.fireTableRowsUpdated(currentRow, currentRow);
 
-                if (clickedItem.expanded) {
+                if (clickedItem.details) {
                     parent.showDetails(clickedItem, project);
+                    panel.getDetails().setText("Hide Xml");
                 } else {
                     parent.hideDetails();
+                    panel.getDetails().setText("Show Xml");
                 }
+
+
+                fireEditingStopped();
             });
         }
 
         @Override
-        public Component getTableCellEditorComponent(
-                JTable table, Object value, boolean isSelected, int row, int column
-        ) {
-            currentRow = row;
-            Item item = model.getItemAt(row);
-            button.setText(item.expanded ? "Hide" : "Show");
-            return button;
+        public Object getCellEditorValue() {
+            return null;
         }
 
         @Override
-        public Object getCellEditorValue() {
-            return button.getText();
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            if (table.getModel() instanceof SuggestionTableModel suggestionTableModel) {
+                this.model = suggestionTableModel;
+            }
+
+            currentRow = row;
+            return panel;
         }
     }
 
@@ -291,7 +319,7 @@ public class ObjectTypeSuggestionTable extends JPanel {
         if (item == null) return;
 
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            detailsArea.setText(item.rawCode != null ? item.rawCode : "");
+            detailsArea.setContent(item.rawCode != null ? item.rawCode : "");
         });
         detailsArea.setViewer(true);
         detailsPanel.setVisible(true);

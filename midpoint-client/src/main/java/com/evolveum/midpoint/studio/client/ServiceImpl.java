@@ -540,18 +540,32 @@ public class ServiceImpl implements Service {
 
     @Override
     public ObjectTypesSuggestionType getSuggestObjectType(String oid, QName objectClass) throws ClientException, SchemaException, AuthenticationException, IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        String content = mapper.writeValueAsString(Map.of(
-                "resourceOid", oid,
-                "objectClass", objectClass.toString()
-        ));
 
-        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestObjectTypes", null)
-                .post(RequestBody.create(content, ServiceContext.APPLICATION_JSON));
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("resourceOid", oid);
+        params.put("objectClass", objectClass.toString());
+
+        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestObjectTypes", params)
+                .get();
 
         Request req = builder.build();
 
         return executeRequest(req, ObjectTypesSuggestionType.class);
+
+
+//        ObjectMapper mapper = new ObjectMapper();
+//        String content = mapper.writeValueAsString(Map.of(
+//                "resourceOid", oid,
+//                "objectClass", objectClass.toString()
+//        ));
+//
+//        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestObjectTypes", null)
+//                .post(RequestBody.create(content, ServiceContext.APPLICATION_JSON));
+//
+//        Request req = builder.build();
+//
+//        return executeRequest(req, ObjectTypesSuggestionType.class);
     }
 
     @Override

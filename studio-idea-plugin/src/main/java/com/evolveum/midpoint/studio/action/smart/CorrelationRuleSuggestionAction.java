@@ -17,7 +17,7 @@ import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceObjectTypeWizard;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.correlation.CorrelationRuleSuggestionList;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.CorrelationRuleSuggestionTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.CorrelationSuggestionsType;
@@ -173,7 +173,7 @@ public class CorrelationRuleSuggestionAction extends AnAction {
                                 public void onFinished() {
                                     if (correlationSuggestions != null) {
                                         contentManager.addContent(ContentFactory.getInstance().createContent(
-                                                new CorrelationRuleSuggestionList(
+                                                new CorrelationRuleSuggestionTable(
                                                         project,
                                                         prismContext,
                                                         resourceDialogContext.getResources().stream()
@@ -183,7 +183,8 @@ public class CorrelationRuleSuggestionAction extends AnAction {
                                                                 .findFirst()
                                                                 .orElse(null),
                                                         resourceDialogContext.getObjectType(),
-                                                        correlationSuggestions), "Correlations Suggestion", false));
+                                                        correlationSuggestions
+                                                ), "Correlations Suggestion", false));
                                         toolWindow.activate(() -> {
                                             log.info("Content of tool window with ID '" + toolWindowId + "' was update");
                                         });

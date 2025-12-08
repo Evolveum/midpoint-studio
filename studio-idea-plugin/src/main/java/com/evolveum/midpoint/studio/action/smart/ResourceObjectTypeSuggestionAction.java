@@ -11,7 +11,7 @@ import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.resource.ObjectTypeSuggestionTable;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.ObjectTypeSuggestionTable;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceObjectTypeWizard;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
