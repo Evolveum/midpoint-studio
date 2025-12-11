@@ -2,17 +2,19 @@
 
 ## [4.10.0]
 ### Added
-- Support for Intellij 2024.3, 2025.1, 2025.2
+- Support for Intellij 2024.3, 2025.1, 2025.2, 2025.3
 - MID-9712 Reference "type" attribute populated as well during oid autocompletion
 - MID-9841 Autocomplete/inlays also for initial objects (now cached from environment)
 - MID-10688 Fixed diff not ignoring operational elements when it should
+- MID-9769 configuration option to allow removing metadata during cleanup
 
 ### Changed
 - Cleanup removes object version
 
 ### Fixed
-- MID-10157 cleanup path custom action can't be edited fix
-- MID-10275 cleanup configuration fixed illegal state exception
+- MID-9627 Removing more prism context not available exceptions
+- MID-10157 Cleanup path custom action can't be edited fix
+- MID-10275 Cleanup configuration fixed illegal state exception
 
 ## [4.9.0]
 ### Added
