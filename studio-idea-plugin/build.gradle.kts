@@ -251,9 +251,10 @@ intellijPlatform {
         hidden = true
     }
 
-    verifyPlugin {
+    pluginVerification {
         ides {
             select {
+                // since community edition was available until 252
                 types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
                 channels = listOf(
                     ProductRelease.Channel.RELEASE,
@@ -263,6 +264,19 @@ intellijPlatform {
                 )
 
                 sinceBuild = properties("pluginSinceBuild")
+                untilBuild = "252.*"
+            }
+            select {
+                // after 252 only one distribution is available
+                types = listOf(IntelliJPlatformType.IntellijIdeaUltimate)
+                channels = listOf(
+                    ProductRelease.Channel.RELEASE,
+                    ProductRelease.Channel.EAP,
+                    ProductRelease.Channel.BETA,
+                    ProductRelease.Channel.RC
+                )
+
+                sinceBuild = "253"
                 untilBuild = properties("pluginUntilBuild")
             }
         }

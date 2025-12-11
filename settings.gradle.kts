@@ -13,21 +13,21 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             // versions of plugins used in build
-            version("kotlin", "2.2.0")
-            version("changelog", "2.3.0")
-            version("intelliJPlatform", "2.7.0")
-            version("kover", "0.9.1")
-            version("qodana", "2025.1.1")
+            version("kotlin", "2.2.21")
+            version("changelog", "2.5.0")
+            version("intelliJPlatform", "2.10.5")
+            version("kover", "0.9.3")
+            version("qodana", "2025.2.2")
 
             // versions of midpoint libraries
-            version("midpoint", "4.10-SNAPSHOT")
-            version("midscribe", "4.10-SNAPSHOT")
+            version("midpoint", "4.10")
+            version("midscribe", "4.10")
 
             // versions of third-party libraries
             version("annotations", "24.1.0")
             version("asciidoctorj-tabbed-code", "0.3")
-            version("commons-io", "2.11.0")
-            version("commons-lang", "3.10")
+            version("commons-io", "2.21.0")
+            version("commons-lang3", "3.20.0")
             version("jaxb-runtime", "2.3.2")
             version("jcommander", "1.81")
             version("logback", "1.2.3")
@@ -72,7 +72,7 @@ dependencyResolutionManagement {
                 "asciidoctorj-tabbed-code-extension"
             ).versionRef("asciidoctorj-tabbed-code")
             library("commons-io", "commons-io", "commons-io").versionRef("commons-io")
-            library("commons-lang", "org.apache.commons", "commons-lang3").versionRef("commons-lang")
+            library("commons-lang", "org.apache.commons", "commons-lang3").versionRef("commons-lang3")
             library("jaxb-runtime", "org.glassfish.jaxb", "jaxb-runtime").versionRef("jaxb-runtime")
             library("jcommander", "com.beust", "jcommander").versionRef("jcommander")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
