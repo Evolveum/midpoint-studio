@@ -9,9 +9,10 @@
 package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.studio.ui.editor.EditorPanel;
+import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -49,7 +50,7 @@ import java.util.List;
 
 public class CorrelationRuleSuggestionTable extends JPanel {
 
-    private final EditorPanel detailsArea;
+    private final SmartEditorComponent smartEditor;
     private final JPanel detailsPanel = new JPanel(new BorderLayout());
 
     public CorrelationRuleSuggestionTable(
@@ -61,7 +62,7 @@ public class CorrelationRuleSuggestionTable extends JPanel {
     ) {
         setLayout(new BorderLayout());
         SuggestionTableModel model = new SuggestionTableModel();
-        this.detailsArea = new EditorPanel(project, "", "xml");
+        this.smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE);
 
         for (CorrelationSuggestionType correlation : correlationSuggestionType.getSuggestion()) {
             for (ItemsSubCorrelatorType itemsSubCorrelatorType : correlation.getCorrelation().getCorrelators().getItems()) {
@@ -90,7 +91,7 @@ public class CorrelationRuleSuggestionTable extends JPanel {
         toggleColumn.setCellRenderer(new ButtonRenderer());
         toggleColumn.setCellEditor(new ToggleButtonEditor(new JCheckBox(), project, model, this));
 
-        detailsPanel.add(detailsArea, BorderLayout.CENTER);
+        detailsPanel.add(smartEditor, BorderLayout.CENTER);
         detailsPanel.setPreferredSize(new Dimension(700, 500));
         detailsPanel.setVisible(false);
 
@@ -377,9 +378,9 @@ public class CorrelationRuleSuggestionTable extends JPanel {
         if (item == null) return;
 
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            detailsArea.setContent(item.rawCode != null ? item.rawCode : "");
+//            detailsArea.writeText(item.rawCode != null ? item.rawCode : "");
         });
-        detailsArea.setViewer(true);
+        smartEditor.setViewer(true);
         detailsPanel.setVisible(true);
         revalidate();
         repaint();

@@ -9,11 +9,12 @@
 package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.studio.ui.editor.EditorPanel;
+import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionPanel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionRenderer;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -51,7 +52,7 @@ import java.util.ArrayList;
 
 public class ObjectTypeSuggestionTable extends JPanel {
 
-    private final EditorPanel detailsArea;
+    private final SmartEditorComponent smartEditor;
     private final JPanel detailsPanel = new JPanel(new BorderLayout());
 
     public ObjectTypeSuggestionTable(
@@ -62,7 +63,7 @@ public class ObjectTypeSuggestionTable extends JPanel {
     ) {
         setLayout(new BorderLayout());
         SuggestionTableModel model = new SuggestionTableModel();
-        this.detailsArea = new EditorPanel(project, "", "xml");
+        this.smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE);
 
         for (ResourceObjectTypeDefinitionType o : objectTypesSuggestionType.getObjectType()) {
             String rawXml = "";
@@ -84,7 +85,7 @@ public class ObjectTypeSuggestionTable extends JPanel {
         column.setCellRenderer(new ActionRenderer());
         column.setCellEditor(new ButtonsEditor(project, resource, this));
 
-        detailsPanel.add(detailsArea, BorderLayout.CENTER);
+        detailsPanel.add(smartEditor, BorderLayout.CENTER);
         detailsPanel.setPreferredSize(new Dimension(700, 500));
         detailsPanel.setVisible(false);
 
@@ -319,9 +320,9 @@ public class ObjectTypeSuggestionTable extends JPanel {
         if (item == null) return;
 
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            detailsArea.setContent(item.rawCode != null ? item.rawCode : "");
+            smartEditor.setText(item.rawCode != null ? item.rawCode : "");
         });
-        detailsArea.setViewer(true);
+        smartEditor.setViewer(true);
         detailsPanel.setVisible(true);
         revalidate();
         repaint();

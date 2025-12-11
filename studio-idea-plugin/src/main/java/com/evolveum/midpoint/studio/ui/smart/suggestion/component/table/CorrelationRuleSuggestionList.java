@@ -9,9 +9,10 @@
 package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.studio.ui.editor.EditorPanel;
+import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -50,7 +51,7 @@ import java.util.ArrayList;
 
 public class CorrelationRuleSuggestionList extends JPanel {
 
-    private final EditorPanel detailsArea;
+    private final SmartEditorComponent smartEditor;
     private final JPanel detailsPanel = new JPanel(new BorderLayout());
 
     List<SuggestionTile> tiles = new ArrayList<>();
@@ -59,7 +60,7 @@ public class CorrelationRuleSuggestionList extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setOpaque(false);
 
-        this.detailsArea = new EditorPanel(project, "", "xml");
+        this.smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE);
 
         JPanel listPanel = new JPanel(new WrapLayout());
         listPanel.setBackground(JBColor.PanelBackground);
@@ -89,7 +90,7 @@ public class CorrelationRuleSuggestionList extends JPanel {
         JPanel viewport = new JPanel(new BorderLayout());
         viewport.add(listPanel, BorderLayout.NORTH);
 
-        detailsPanel.add(detailsArea, BorderLayout.CENTER);
+        detailsPanel.add(smartEditor, BorderLayout.CENTER);
         detailsPanel.setPreferredSize(new Dimension(700, 500));
         detailsPanel.setVisible(false);
 
@@ -230,7 +231,7 @@ public class CorrelationRuleSuggestionList extends JPanel {
             detailsPanel.setVisible(true);
 
             ApplicationManager.getApplication().runWriteAction(() -> {
-                detailsArea.setContent(clickedTile.getRawXml());
+                smartEditor.setText(clickedTile.getRawXml());
             });
         } else {
             detailsPanel.setVisible(false);
