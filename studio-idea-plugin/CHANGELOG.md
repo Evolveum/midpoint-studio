@@ -1,5 +1,12 @@
 # MidPoint Studio
 
+## [4.10.1]
+### Added
+
+### Changed
+
+### Fixed
+
 ## [4.10.0]
 ### Added
 - Support for Intellij 2024.3, 2025.1, 2025.2, 2025.3
