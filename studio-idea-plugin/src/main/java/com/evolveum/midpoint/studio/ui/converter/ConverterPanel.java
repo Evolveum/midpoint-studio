@@ -74,16 +74,16 @@ public class ConverterPanel extends SimpleToolWindowPanel {
             PrismContext prismCtx = StudioPrismContextService.getPrismContext(project);
             ParsingContext parsingCtx = prismCtx.createParsingContextForCompatibilityMode();
 
-            if (code.isEmpty()) {
-                throw new Exception("Body input is empty.");
+            if (code != null && !code.isEmpty()) {
+                RootXNodeImpl root = (RootXNodeImpl) prismCtx.parserFor(code)
+                        .language(LanguageUtils.detectLanguage(code).getID().toLowerCase())
+                        .context(parsingCtx)
+                        .parseToXNode();
+
+                return prismCtx.serializerFor(targetLang).serialize(root);
+            } else {
+                return "";
             }
-
-            RootXNodeImpl root = (RootXNodeImpl) prismCtx.parserFor(code)
-                    .language(LanguageUtils.detectLanguage(code).getID().toLowerCase())
-                    .context(parsingCtx)
-                    .parseToXNode();
-
-            return prismCtx.serializerFor(targetLang).serialize(root);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

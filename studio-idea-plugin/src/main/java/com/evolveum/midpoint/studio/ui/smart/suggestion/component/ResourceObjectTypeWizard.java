@@ -31,6 +31,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -96,7 +97,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
         JBScrollPane scrollPane = new JBScrollPane(resourceTable);
         scrollPane.setPreferredSize(new Dimension(scrollPane.getWidth(), 300));
         scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
-        TitledBorder resourceTitleBorder = BorderFactory.createTitledBorder("Resource object type:");
+        TitledBorder resourceTitleBorder = BorderFactory.createTitledBorder("Resource:");
         resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(Font.BOLD));
         resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
         Border resourceSpaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);

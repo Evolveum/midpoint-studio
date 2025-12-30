@@ -29,9 +29,9 @@ import java.util.*;
 /**
  * Created by Dominik.
  */
-public class XNodeContributor extends CompletionContributorBase {
+public class PrismXNodeContributor extends CompletionContributorBase {
 
-    public XNodeContributor() {
+    public PrismXNodeContributor() {
         extend(CompletionType.BASIC,
                 PlatformPatterns.psiElement(),
                 new CompletionProvider<CompletionParameters>() {

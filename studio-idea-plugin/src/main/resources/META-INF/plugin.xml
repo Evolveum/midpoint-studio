@@ -227,41 +227,45 @@
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
 
-        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
+<!--        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>-->
 
-<!--        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>-->
-<!--        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>-->
-<!--        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>-->
+        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>
+        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>
+        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.validator.PrismExternalAnnotator"/>
 
-        <completion.contributor language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.XNodeContributor"/>
-        <completion.contributor language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.XNodeContributor"/>
-        <completion.contributor language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.XNodeContributor"/>
+<!--        <completion.contributor language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.PrismXNodeContributor"/>-->
+<!--        <completion.contributor language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.PrismXNodeContributor"/>-->
+<!--        <completion.contributor language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.contributor.PrismXNodeContributor"/>-->
 
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.TaskHandlerAnnotatorCompletionProvider"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotator"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>
+<!--        <localInspection language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.DefinitionLocalInspection"/>-->
+<!--        <localInspection language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.DefinitionLocalInspection"/>-->
+<!--        <localInspection language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.xnode.DefinitionLocalInspection"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.TaskHandlerAnnotatorCompletionProvider"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotator"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"
-                                order="before xmlLocation"/>
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"-->
+<!--                                order="before xmlLocation"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.EnumerationRefCompletionContributor"/>
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>-->
+
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.EnumerationRefCompletionContributor"/>-->
 
         <xml.tagNameProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
@@ -517,7 +521,7 @@
         <!-- suggestion -->
         <action id="MidPoint.Action.Suggestion.ResourceObjectType"
                 class="com.evolveum.midpoint.studio.action.smart.ResourceObjectTypeSuggestionAction"
-                text="Resource Object Type"
+                text="Resource"
                 description="Suggestion for resource object type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt R"/>
         </action>

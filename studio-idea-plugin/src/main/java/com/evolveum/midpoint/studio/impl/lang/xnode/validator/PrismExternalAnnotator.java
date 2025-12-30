@@ -1,14 +1,11 @@
 package com.evolveum.midpoint.studio.impl.lang.xnode.validator;
 
-import com.evolveum.concepts.SourceLocation;
-import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLog;
-import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.xnode.*;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.evolveum.midpoint.studio.impl.lang.xnode.PrismIntentionAction;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.exception.ValidationException;
 import com.intellij.json.JsonLanguage;
 import com.intellij.json.psi.JsonProperty;
 import com.intellij.lang.Language;
@@ -16,7 +13,6 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.lang.xml.XMLLanguage;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -29,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 import org.jetbrains.yaml.psi.YAMLValue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,35 +45,19 @@ public class PrismExternalAnnotator extends ExternalAnnotator<Editor, List<Valid
     @Override
     public @Nullable List<ValidationLog> doAnnotate(Editor collectedInfo) {
         var parsingCtx = prismContext.createParsingContextForCompatibilityMode().validation();
-        List<ValidationLog> annotationResult = new ArrayList<>();
 
-        ApplicationManager.getApplication().runReadAction(() -> {
-            try {
-                RootXNode root = prismContext.parserFor(collectedInfo.getDocument().getText())
-                        .language(language.getDisplayName().toLowerCase())
-                        .context(parsingCtx)
-                        .parseToXNode();
+        try {
+            RootXNode root = prismContext.parserFor(collectedInfo.getDocument().getText())
+                    .language(language.getDisplayName().toLowerCase())
+                    .context(parsingCtx)
+                    .parseToXNode();
 
-                prismContext.parserFor(root)
-                        .context(parsingCtx)
-                        .parse();
+            prismContext.parserFor(root)
+                    .context(parsingCtx)
+                    .parse();
+        } catch (SchemaException ignore) { }
 
-                annotationResult.addAll(parsingCtx.getValidationLogs());
-
-            } catch (ValidationException e) {
-                annotationResult.addAll(e.getValidationLogs());
-            } catch (SchemaException e) {
-                annotationResult.add(
-                        new ValidationLog(
-                                ValidationLogType.ERROR,
-                                SourceLocation.unknown(),
-                                new TechnicalMessage(""),
-                                e.getMessage())
-                );
-            }
-        });
-
-        return annotationResult;
+        return parsingCtx.getValidationLogs();
     }
 
     @Override
@@ -88,17 +67,17 @@ public class PrismExternalAnnotator extends ExternalAnnotator<Editor, List<Valid
         for (ValidationLog log : annotationResult) {
             PsiElement positionElement = null;
 
-            if (log.location() != null && !log.location().equals(SourceLocation.unknown())) {
+            if (log.location() != null) {
                 int line = log.location().getLine();
                 int column = log.location().getChar();
-                var result = getElementAtLineColumn(file, line, column);
+                var elementAtLineColumn = getElementAtLineColumn(file, line, column);
 
                 if (language.isKindOf(XMLLanguage.INSTANCE)) {
-                    positionElement = findXmlTagParent(result);
+                    positionElement = findXmlTagParent(elementAtLineColumn);
                 } else if (language.isKindOf(JsonLanguage.INSTANCE)) {
-                    positionElement = findJsonParent(result);
+                    positionElement = findJsonParent(elementAtLineColumn);
                 } else if (language.isKindOf(YAMLLanguage.INSTANCE)) {
-                    positionElement = findYamlKeyValueParent(result);
+                    positionElement = findYamlKeyValueParent(elementAtLineColumn);
                 }
             }
 
@@ -112,6 +91,7 @@ public class PrismExternalAnnotator extends ExternalAnnotator<Editor, List<Valid
             if (positionElement != null) {
                 holder.newAnnotation(HighlightSeverity.ERROR, log.message())
                         .range(positionElement)
+                        .withFix(new PrismIntentionAction(log))
                         .create();
             }
         }

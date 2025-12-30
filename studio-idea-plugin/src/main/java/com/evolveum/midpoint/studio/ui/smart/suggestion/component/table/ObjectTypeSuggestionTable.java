@@ -44,6 +44,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import java.awt.*;
@@ -77,11 +78,15 @@ public class ObjectTypeSuggestionTable extends JPanel {
         }
 
         JBTable table = new JBTable(model);
-//        FIXME oversize content in cell of table
-//        OversizeCellPreview.install(table);
+
+        JTableHeader header = table.getTableHeader();
+        header.setFont(header.getFont().deriveFont(Font.BOLD, 14f));
+
         table.setRowHeight(50);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
         TableColumn column = table.getColumnModel().getColumn(4);
+        column.setPreferredWidth(150);
         column.setCellRenderer(new ActionRenderer());
         column.setCellEditor(new ButtonsEditor(project, resource, this));
 
@@ -161,106 +166,106 @@ public class ObjectTypeSuggestionTable extends JPanel {
             panel = new ActionPanel();
 
             panel.getApply().addActionListener(e -> {
-                if (currentRow >= 0) {
-                    Item item = model.getItemAt(currentRow);
-                    if (!item.applied) {
-                        PsiFile psiFile = MidPointUtils.findPsiFileByOid(project, resource.getOid());
-                        if (psiFile instanceof XmlFile xmlFile) {
-                            XmlTag root = xmlFile.getRootTag();
-
-                            if (root == null || !root.getName().equals("resource")) {
-                                MidPointUtils.publishNotification(
-                                        project,
-                                        "Apply generated suggestion",
-                                        "Apply generated suggestion",
-                                        "Object with oid '"  + resource.getOid() + "' is not a resource",
-                                        NotificationType.ERROR
-                                );
-                                return;
-                            }
-
-                            WriteCommandAction.runWriteCommandAction(project, () -> {
-                                XmlElementFactory factory = XmlElementFactory.getInstance(project);
-                                XmlTag schemaHandling = root.findFirstSubTag("schemaHandling");
-
-                                if (schemaHandling == null) {
-                                    schemaHandling = factory.createTagFromText("<schemaHandling/>");
-                                    schemaHandling = root.addSubTag(schemaHandling, false);
-                                }
-
-                                String rawXml = item.rawCode.trim();
-                                XmlTag newItemsXml = factory.createTagFromText(rawXml);
-                                int startOffset = schemaHandling.getTextRange().getEndOffset();
-                                XmlTag addedTag = schemaHandling.addSubTag(newItemsXml, false);
-                                int endOffset = addedTag.getTextRange().getEndOffset();
-                                Document doc = PsiDocumentManager.getInstance(project).getDocument(xmlFile);
-
-                                if (doc != null) {
-                                    PsiDocumentManager.getInstance(project).commitDocument(doc);
-                                }
-
-                                item.applied = false;
-
-                                ApplicationManager.getApplication().invokeLater(() -> {
-                                    Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-                                    if (editor == null) return;
-
-                                    MarkupModel markup = editor.getMarkupModel();
-                                    TextAttributes attrs = EditorColorsManager.getInstance()
-                                            .getGlobalScheme()
-                                            .getAttributes(EditorColors.SEARCH_RESULT_ATTRIBUTES);
-
-                                    RangeHighlighter highlighter = markup.addRangeHighlighter(
-                                            startOffset,
-                                            endOffset,
-                                            HighlighterLayer.SELECTION - 1,
-                                            attrs,
-                                            HighlighterTargetArea.EXACT_RANGE
-                                    );
-
-                                    Runnable removeHighlighter = () -> {
-                                        if (highlighter.isValid()) {
-                                            markup.removeHighlighter(highlighter);
-                                        }
-                                    };
-
-                                    DocumentListener docListener = new DocumentListener() {
-                                        @Override
-                                        public void beforeDocumentChange(@NotNull DocumentEvent event) {
-                                            removeHighlighter.run();
-                                        }
-                                    };
-                                    EditorFactory.getInstance().getEventMulticaster().addDocumentListener(docListener, project);
-
-                                    MessageBusConnection connection = project.getMessageBus().connect();
-                                    connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
-                                        @Override
-                                        public void fileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-                                            VirtualFile currentFile = FileDocumentManager.getInstance().getFile(editor.getDocument());
-                                            if (currentFile != null && currentFile.equals(file)) {
-                                                removeHighlighter.run();
-                                                connection.disconnect();
-                                            }
-                                        }
-                                    });
-
-                                    editor.getCaretModel().moveToOffset(startOffset);
-                                    editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
-                                });
-                            });
-                        } else {
-                            MidPointUtils.publishNotification(
-                                    project,
-                                    "Apply generated suggestion",
-                                    "Apply generated suggestion",
-                                    "File not found with oid '"  + resource.getOid() + "'",
-                                    NotificationType.ERROR
-                            );
-                        }
-                    }
-                }
-
-                fireEditingStopped();
+//                if (currentRow >= 0) {
+//                    Item item = model.getItemAt(currentRow);
+//                    if (!item.applied) {
+//                        PsiFile psiFile = MidPointUtils.findPsiFileByOid(project, resource.getOid());
+//                        if (psiFile instanceof XmlFile xmlFile) {
+//                            XmlTag root = xmlFile.getRootTag();
+//
+//                            if (root == null || !root.getName().equals("resource")) {
+//                                MidPointUtils.publishNotification(
+//                                        project,
+//                                        "Apply generated suggestion",
+//                                        "Apply generated suggestion",
+//                                        "Object with oid '"  + resource.getOid() + "' is not a resource",
+//                                        NotificationType.ERROR
+//                                );
+//                                return;
+//                            }
+//
+//                            WriteCommandAction.runWriteCommandAction(project, () -> {
+//                                XmlElementFactory factory = XmlElementFactory.getInstance(project);
+//                                XmlTag schemaHandling = root.findFirstSubTag("schemaHandling");
+//
+//                                if (schemaHandling == null) {
+//                                    schemaHandling = factory.createTagFromText("<schemaHandling/>");
+//                                    schemaHandling = root.addSubTag(schemaHandling, false);
+//                                }
+//
+//                                String rawXml = item.rawCode.trim();
+//                                XmlTag newItemsXml = factory.createTagFromText(rawXml);
+//                                int startOffset = schemaHandling.getTextRange().getEndOffset();
+//                                XmlTag addedTag = schemaHandling.addSubTag(newItemsXml, false);
+//                                int endOffset = addedTag.getTextRange().getEndOffset();
+//                                Document doc = PsiDocumentManager.getInstance(project).getDocument(xmlFile);
+//
+//                                if (doc != null) {
+//                                    PsiDocumentManager.getInstance(project).commitDocument(doc);
+//                                }
+//
+//                                item.applied = false;
+//
+//                                ApplicationManager.getApplication().invokeLater(() -> {
+//                                    Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+//                                    if (editor == null) return;
+//
+//                                    MarkupModel markup = editor.getMarkupModel();
+//                                    TextAttributes attrs = EditorColorsManager.getInstance()
+//                                            .getGlobalScheme()
+//                                            .getAttributes(EditorColors.SEARCH_RESULT_ATTRIBUTES);
+//
+//                                    RangeHighlighter highlighter = markup.addRangeHighlighter(
+//                                            startOffset,
+//                                            endOffset,
+//                                            HighlighterLayer.SELECTION - 1,
+//                                            attrs,
+//                                            HighlighterTargetArea.EXACT_RANGE
+//                                    );
+//
+//                                    Runnable removeHighlighter = () -> {
+//                                        if (highlighter.isValid()) {
+//                                            markup.removeHighlighter(highlighter);
+//                                        }
+//                                    };
+//
+//                                    DocumentListener docListener = new DocumentListener() {
+//                                        @Override
+//                                        public void beforeDocumentChange(@NotNull DocumentEvent event) {
+//                                            removeHighlighter.run();
+//                                        }
+//                                    };
+//                                    EditorFactory.getInstance().getEventMulticaster().addDocumentListener(docListener, project);
+//
+//                                    MessageBusConnection connection = project.getMessageBus().connect();
+//                                    connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
+//                                        @Override
+//                                        public void fileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
+//                                            VirtualFile currentFile = FileDocumentManager.getInstance().getFile(editor.getDocument());
+//                                            if (currentFile != null && currentFile.equals(file)) {
+//                                                removeHighlighter.run();
+//                                                connection.disconnect();
+//                                            }
+//                                        }
+//                                    });
+//
+//                                    editor.getCaretModel().moveToOffset(startOffset);
+//                                    editor.getScrollingModel().scrollToCaret(ScrollType.CENTER);
+//                                });
+//                            });
+//                        } else {
+//                            MidPointUtils.publishNotification(
+//                                    project,
+//                                    "Apply generated suggestion",
+//                                    "Apply generated suggestion",
+//                                    "File not found with oid '"  + resource.getOid() + "'",
+//                                    NotificationType.ERROR
+//                            );
+//                        }
+//                    }
+//                }
+//
+//                fireEditingStopped();
             });
 
             panel.getDiscard().addActionListener(e -> {
@@ -269,34 +274,34 @@ public class ObjectTypeSuggestionTable extends JPanel {
             });
 
             panel.getDetails().addActionListener(e -> {
-                if (currentRow < 0) return;
-
-                Item clickedItem = model.getItemAt(currentRow);
-
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    if (i != currentRow) {
-                        Item it = model.getItemAt(i);
-                        if (it.details) {
-                            it.details = false;
-                            parent.hideDetails();
-                            model.fireTableRowsUpdated(i, i);
-                        }
-                    }
-                }
-
-                clickedItem.details = !clickedItem.details;
-                model.fireTableRowsUpdated(currentRow, currentRow);
-
-                if (clickedItem.details) {
-                    parent.showDetails(clickedItem, project);
-                    panel.getDetails().setText("Hide Xml");
-                } else {
-                    parent.hideDetails();
-                    panel.getDetails().setText("Show Xml");
-                }
-
-
-                fireEditingStopped();
+//                if (currentRow < 0) return;
+//
+//                Item clickedItem = model.getItemAt(currentRow);
+//
+//                for (int i = 0; i < model.getRowCount(); i++) {
+//                    if (i != currentRow) {
+//                        Item it = model.getItemAt(i);
+//                        if (it.details) {
+//                            it.details = false;
+//                            parent.hideDetails();
+//                            model.fireTableRowsUpdated(i, i);
+//                        }
+//                    }
+//                }
+//
+//                clickedItem.details = !clickedItem.details;
+//                model.fireTableRowsUpdated(currentRow, currentRow);
+//
+//                if (clickedItem.details) {
+//                    parent.showDetails(clickedItem, project);
+//                    panel.getDetails().setText("Hide XML");
+//                } else {
+//                    parent.hideDetails();
+//                    panel.getDetails().setText("Show XML");
+//                }
+//
+//
+//                fireEditingStopped();
             });
         }
 

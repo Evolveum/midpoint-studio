@@ -59,16 +59,13 @@ public class SmartEditorComponent extends JComponent {
         editor.getSettings().setFoldingOutlineShown(true);
         editor.getSettings().setIndentGuidesShown(true);
         editor.getSettings().setRightMarginShown(false);
-        editor.getSettings().setWhitespacesShown(false);
+        editor.getSettings().setWhitespacesShown(true);
         editor.getSettings().setAnimatedScrolling(true);
-        editor.getSettings().setAutoCodeFoldingEnabled(true);
+        editor.getSettings().setAutoCodeFoldingEnabled(false);
+        editor.getSettings().setUseSoftWraps(true);
 
         editor.setVerticalScrollbarVisible(true);
         editor.setHorizontalScrollbarVisible(true);
-
-        editor.getSettings().setUseSoftWraps(true);
-        editor.getSettings().setRightMarginShown(false);
-        editor.getSettings().setWhitespacesShown(true);
     }
 
     private LanguageTextField createField(Language lang, String content) {
