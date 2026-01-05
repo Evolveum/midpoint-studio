@@ -31,12 +31,66 @@ public class LanguageUtils {
     }
 
     public static Language detectLanguage(String text) {
-        text = text.trim();
+        String s = stripLeadingNoise(text);
 
-        if (text.startsWith("{") || text.startsWith("[")) return JsonLanguage.INSTANCE;
-        if (text.startsWith("<")) return XMLLanguage.INSTANCE;
-        if (text.contains(":") && !text.contains("{") && !text.contains("<")) return YAMLLanguage.INSTANCE;
+        if (s.isEmpty()) return null;
+
+        // XML
+        if (s.startsWith("<")) {
+            return XMLLanguage.INSTANCE;
+        }
+
+        // JSON
+        if (s.startsWith("{") || s.startsWith("[")) {
+            return JsonLanguage.INSTANCE;
+        }
+
+        // YAML document start or YAML mapping key
+        if (s.startsWith("---") || s.matches("^[A-Za-z_][\\w-]*\\s*:.*")) {
+            return YAMLLanguage.INSTANCE;
+        }
 
         return PlainTextLanguage.INSTANCE;
+    }
+
+    public static String stripLeadingNoise(String text) {
+        int i = 0;
+        int n = text.length();
+
+        while (i < n) {
+            // whitespace
+            while (i < n && Character.isWhitespace(text.charAt(i))) {
+                i++;
+            }
+
+            // comments
+            if (i < n && text.charAt(i) == '#') {
+                while (i < n && text.charAt(i) != '\n') i++;
+                continue;
+            }
+
+            if (i + 3 < n && text.startsWith("<!--", i)) {
+                int end = text.indexOf("-->", i + 4);
+                if (end == -1) return "";
+                i = end + 3;
+                continue;
+            }
+
+            if (i + 1 < n && text.startsWith("//", i)) {
+                while (i < n && text.charAt(i) != '\n') i++;
+                continue;
+            }
+
+            if (i + 1 < n && text.startsWith("/*", i)) {
+                int end = text.indexOf("*/", i + 2);
+                if (end == -1) return "";
+                i = end + 2;
+                continue;
+            }
+
+            break;
+        }
+
+        return text.substring(i);
     }
 }

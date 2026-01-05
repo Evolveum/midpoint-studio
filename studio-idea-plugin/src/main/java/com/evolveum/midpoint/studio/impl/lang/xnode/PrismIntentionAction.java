@@ -13,6 +13,7 @@ import com.evolveum.concepts.ValidationLog;
 import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.Definition;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.json.JsonLanguage;
 import com.intellij.json.psi.JsonElementGenerator;
@@ -21,7 +22,6 @@ import com.intellij.json.psi.JsonObject;
 import com.intellij.json.psi.JsonProperty;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
@@ -29,22 +29,21 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlDocument;
-import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementGenerator;
 import org.jetbrains.yaml.YAMLLanguage;
+import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
-import org.jetbrains.yaml.psi.YAMLValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
 import org.jetbrains.yaml.psi.impl.YAMLBlockMappingImpl;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Quick fix in editor for MidPoint XML JSON YAML objects with use PRISM framework
@@ -80,24 +79,24 @@ public class PrismIntentionAction implements IntentionAction {
             @NotNull Project project,
             Editor editor,
             PsiFile file) {
-        var elementAtLineColumn = getElementAtLineColumn(file, validationLog.location().getLine(), validationLog.location().getChar());
+        var elementAtLineColumn = PsiUtils.getElementAtLineColumn(file, validationLog.location().getLine(), validationLog.location().getChar());
         var language = file.getLanguage();
         PsiElement positionElement = null;
 
         if (language.isKindOf(XMLLanguage.INSTANCE)) {
-            positionElement = findXmlTagParent(elementAtLineColumn);
+            positionElement = PsiUtils.findXmlTagParent(elementAtLineColumn);
             if (positionElement.getParent() instanceof XmlDocument) {
                 rootElement = positionElement;
             }
         } else if (language.isKindOf(JsonLanguage.INSTANCE)) {
-            positionElement = findJsonParent(elementAtLineColumn);
+            positionElement = PsiUtils.findJsonParent(elementAtLineColumn);
 
             if ((positionElement != null && positionElement.getParent() instanceof JsonFile) ||
                     ((positionElement != null && positionElement.getParent() != null) && positionElement.getParent().getParent() instanceof JsonFile)) {
                 rootElement = positionElement;
             }
         } else if (language.isKindOf(YAMLLanguage.INSTANCE)) {
-            positionElement = findYamlKeyValueParent(elementAtLineColumn);
+            positionElement = PsiUtils.findYamlKeyValueParent(elementAtLineColumn);
 
             if ((positionElement != null && positionElement.getParent() != null && positionElement.getParent().getParent() != null) &&
                     positionElement.getParent().getParent().getParent() instanceof YAMLDocument) {
@@ -157,9 +156,6 @@ public class PrismIntentionAction implements IntentionAction {
                                 if (attr != null) {
                                     attr.setValue(choice.getTypeName().getLocalPart());
                                 } else {
-                                    if (xmlTag.getNamespaceByPrefix("xsi") == null) {
-                                        xmlTag.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                                    }
                                     xmlTag.setAttribute("xsi:type", choice.getTypeName().getLocalPart());
                                 }
                             });
@@ -172,85 +168,40 @@ public class PrismIntentionAction implements IntentionAction {
                                 WriteCommandAction.runWriteCommandAction(project, () -> {
                                     JsonElementGenerator generator = new JsonElementGenerator(project);
                                     if (prop != null) {
-                                        prop.getValue().replace(generator.createValue("\"" + choice.getTypeName().getLocalPart() + "\""));
+                                        Objects.requireNonNull(prop.getValue()).replace(generator.createValue("\"" +
+                                                choice.getTypeName().getLocalPart() + "\""));
                                     } else {
                                         PsiElement firstProperty = jsonObject.getFirstChild();
                                         jsonObject.addAfter(generator.createComma(), firstProperty);
-                                        jsonObject.addAfter(generator.createProperty("@type", "\"" + choice.getTypeName().getLocalPart() + "\""), firstProperty);
+                                        jsonObject.addAfter(generator.createProperty("@type", "\"" +
+                                                choice.getTypeName().getLocalPart() + "\""), firstProperty);
                                     }
                                 });
                             }
                         }
                     } else if (file.getFileType().getName().equalsIgnoreCase(PrismContext.LANG_YAML)) {
                         if (rootElement instanceof YAMLBlockMappingImpl yamlBlockMapping) {
-                            if (yamlBlockMapping.getParent() instanceof YAMLKeyValue yamlKeyValue) {
-                                WriteCommandAction.runWriteCommandAction(project, () -> {
-                                    if (yamlKeyValue.getName() != null && yamlKeyValue.getValue() != null) {
-                                        YAMLElementGenerator generator = YAMLElementGenerator.getInstance(project);
-                                        YAMLKeyValue taggedValue = generator.createYamlKeyValue(yamlKeyValue.getName(), "!<" + choice.getTypeName().getLocalPart() + ">\n" + yamlKeyValue.getValue().getText());
-                                        yamlKeyValue.replace(taggedValue);
-                                    }
-                                });
+                            if (yamlBlockMapping.getText() != null) {
+                                YAMLElementGenerator generator = YAMLElementGenerator.getInstance(project);
+                                YAMLMapping mapping = PsiTreeUtil.findChildOfType(generator.createDummyYamlWithText(
+                                        "!<" + choice.getTypeName().getLocalPart() + ">\n   " +
+                                                (
+                                                    yamlBlockMapping.getTag() != null
+                                                        ? yamlBlockMapping.getText().replace(Objects.requireNonNull(yamlBlockMapping.getTag()).getText(), "")
+                                                        : yamlBlockMapping.getText()
+                                                )
+                                ), YAMLMapping.class);
+
+                                if (mapping != null) {
+                                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                                        yamlBlockMapping.replace(mapping);
+                                    });
+                                }
                             }
                         }
                     }
                 })
                 .createPopup()
                 .showInBestPositionFor(editor);
-    }
-
-    private PsiElement getElementAtLineColumn(PsiFile file, int line, int column) {
-        if (file == null) return null;
-
-        Document document = PsiDocumentManager.getInstance(file.getProject()).getDocument(file);
-        if (document == null) return null;
-
-        int lineIndex = line - 1;
-        int columnIndex = column - 1;
-
-        if (lineIndex < 0 || lineIndex >= document.getLineCount()) return null;
-
-        int lineStartOffset = document.getLineStartOffset(lineIndex);
-        int offset = lineStartOffset + columnIndex;
-
-        if (offset >= document.getTextLength()) offset = document.getTextLength() - 1;
-        if (offset < 0) offset = 0;
-
-        return file.findElementAt(offset);
-    }
-
-    private XmlTag findXmlTagParent(PsiElement element) {
-        if (element == null) {
-            return null;
-        }
-        return PsiTreeUtil.getParentOfType(element, XmlTag.class, false);
-    }
-
-    private JsonProperty findJsonParent(PsiElement element) {
-        if (element == null) {
-            return null;
-        }
-        return PsiTreeUtil.getParentOfType(element, JsonProperty.class, false);
-    }
-
-    private YAMLValue findYamlKeyValueParent(PsiElement element) {
-        if (element == null) {
-            return null;
-        }
-        return PsiTreeUtil.getParentOfType(element, YAMLValue.class, false);
-    }
-
-    public static JsonObject getObjectByPropertyName(JsonFile file, String propertyName) {
-        if (file == null) return null;
-
-        Collection<JsonProperty> properties = PsiTreeUtil.findChildrenOfType(file, JsonProperty.class);
-
-        for (JsonProperty prop : properties) {
-            if (propertyName.equals(prop.getName())) {
-                return PsiTreeUtil.getParentOfType(prop, JsonObject.class);
-            }
-        }
-
-        return null;
     }
 }
