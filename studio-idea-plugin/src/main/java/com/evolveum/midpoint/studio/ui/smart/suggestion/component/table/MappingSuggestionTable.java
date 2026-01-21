@@ -65,7 +65,7 @@ public class MappingSuggestionTable extends JPanel {
     ) {
         setLayout(new BorderLayout());
         SuggestionTableModel model = new SuggestionTableModel();
-        this.smartEditor =  new SmartEditorComponent(project, XMLLanguage.INSTANCE);
+        this.smartEditor =  new SmartEditorComponent(project, XMLLanguage.INSTANCE, "");
 
         for (AttributeMappingsSuggestionType o : mappingsSuggestionType.getAttributeMappings()) {
             String rawXml = "";

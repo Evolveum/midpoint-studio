@@ -60,7 +60,7 @@ public class CorrelationRuleSuggestionList extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setOpaque(false);
 
-        this.smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE);
+        this.smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE, "");
 
         JPanel listPanel = new JPanel(new WrapLayout());
         listPanel.setBackground(JBColor.PanelBackground);

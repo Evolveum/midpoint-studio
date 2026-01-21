@@ -1,10 +1,10 @@
-package com.evolveum.midpoint.studio.impl.lang.xnode.validator;
+package com.evolveum.midpoint.studio.impl.lang.prism.validator;
 
 import com.evolveum.concepts.ValidationLog;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.xnode.*;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
-import com.evolveum.midpoint.studio.impl.lang.xnode.PrismIntentionAction;
+import com.evolveum.midpoint.studio.impl.lang.prism.PrismIntentionAction;
 import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.json.JsonLanguage;
@@ -49,9 +49,10 @@ public class PrismExternalAnnotator extends ExternalAnnotator<Editor, List<Valid
             prismContext.parserFor(root)
                     .context(parsingCtx)
                     .parse();
-        } catch (SchemaException ignore) { }
+        } catch (Exception ignore) {
+        }
 
-        return parsingCtx.getValidationLogs();
+        return parsingCtx.getWarnings();
     }
 
     @Override

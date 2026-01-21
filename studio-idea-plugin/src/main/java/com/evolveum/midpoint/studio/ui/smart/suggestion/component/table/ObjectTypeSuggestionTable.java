@@ -64,7 +64,7 @@ public class ObjectTypeSuggestionTable extends JPanel {
     ) {
         setLayout(new BorderLayout());
         SuggestionTableModel model = new SuggestionTableModel();
-        this.smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE);
+        this.smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE, "");
 
         for (ResourceObjectTypeDefinitionType o : objectTypesSuggestionType.getObjectType()) {
             String rawXml = "";

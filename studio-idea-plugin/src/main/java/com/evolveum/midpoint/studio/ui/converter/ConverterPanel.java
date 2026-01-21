@@ -30,12 +30,12 @@ public class ConverterPanel extends SimpleToolWindowPanel {
     }
 
     private void initLayout() {
-        SmartEditorComponent leftEditor = new SmartEditorComponent(project, PlainTextLanguage.INSTANCE);
-        SmartEditorComponent rightEditor = new SmartEditorComponent(project, PlainTextLanguage.INSTANCE);
+        SmartEditorComponent leftEditor = new SmartEditorComponent(project, PlainTextLanguage.INSTANCE, "");
+        SmartEditorComponent rightEditor = new SmartEditorComponent(project, PlainTextLanguage.INSTANCE, "");
         LanguageSelectorPanel targetLangSelector = new LanguageSelectorPanel("Target language");
 
         targetLangSelector.onLanguageChange(e -> {
-            rightEditor.updateLanguage(LanguageUtils.findLanguageByID(targetLangSelector.getSelectedLanguage()));
+            rightEditor.switchLanguage(LanguageUtils.findLanguageByID(targetLangSelector.getSelectedLanguage()), rightEditor.getText());
         });
 
         JPanel leftContainer = new JPanel(new BorderLayout());
@@ -57,11 +57,8 @@ public class ConverterPanel extends SimpleToolWindowPanel {
         JButton button = new JButton("Convert");
         button.setPreferredSize(new Dimension(150, 30));
         button.addActionListener(e -> {
-            rightEditor.updateLanguage(LanguageUtils.findLanguageByID(targetLangSelector.getSelectedLanguage()));
-            rightEditor.setText(convert(project,
-                    leftEditor.getText(),
-                    targetLangSelector.getSelectedLanguage()
-            ));
+            rightEditor.switchLanguage(LanguageUtils.findLanguageByID(targetLangSelector.getSelectedLanguage()),
+                    convert(project, leftEditor.getText(), targetLangSelector.getSelectedLanguage()));
         });
         banner.add(button, BorderLayout.CENTER);
         add(banner, BorderLayout.SOUTH);

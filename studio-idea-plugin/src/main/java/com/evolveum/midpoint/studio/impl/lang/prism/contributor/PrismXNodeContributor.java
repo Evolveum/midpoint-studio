@@ -1,13 +1,13 @@
-package com.evolveum.midpoint.studio.impl.lang.xnode.contributor;
+package com.evolveum.midpoint.studio.impl.lang.prism.contributor;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismPropertyDefinitionImpl;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
-import com.evolveum.midpoint.studio.impl.lang.xnode.converter.PsiToJsonConverter;
-import com.evolveum.midpoint.studio.impl.lang.xnode.converter.PsiConverter;
-import com.evolveum.midpoint.studio.impl.lang.xnode.converter.PsiToXmlConverter;
-import com.evolveum.midpoint.studio.impl.lang.xnode.converter.PsiToYamlConverter;
+import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiToJsonConverter;
+import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiConverter;
+import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiToXmlConverter;
+import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiToYamlConverter;
 import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.codeInsight.completion.*;

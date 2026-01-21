@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.impl.lang.xnode.converter;
+package com.evolveum.midpoint.studio.impl.lang.prism.converter;
 
 import com.intellij.json.psi.*;
 import com.intellij.psi.PsiElement;

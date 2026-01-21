@@ -12,7 +12,12 @@ import com.intellij.json.JsonLanguage;
 import com.intellij.lang.Language;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.fileTypes.PlainTextLanguage;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.psi.PsiFileFactory;
 import org.jetbrains.yaml.YAMLLanguage;
+
+import java.util.Collection;
 
 public class LanguageUtils {
 
@@ -35,18 +40,11 @@ public class LanguageUtils {
 
         if (s.isEmpty()) return null;
 
-        // XML
         if (s.startsWith("<")) {
             return XMLLanguage.INSTANCE;
-        }
-
-        // JSON
-        if (s.startsWith("{") || s.startsWith("[")) {
+        } else if (s.startsWith("{") || s.startsWith("[")) {
             return JsonLanguage.INSTANCE;
-        }
-
-        // YAML document start or YAML mapping key
-        if (s.startsWith("---") || s.matches("^[A-Za-z_][\\w-]*\\s*:.*")) {
+        } else if (s.startsWith("---") || s.matches("(?s).*^\\s*[\\w.-]+\\s*:.*$.*")) {
             return YAMLLanguage.INSTANCE;
         }
 

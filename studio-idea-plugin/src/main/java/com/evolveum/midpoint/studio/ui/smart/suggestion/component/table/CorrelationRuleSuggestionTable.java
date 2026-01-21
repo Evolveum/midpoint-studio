@@ -62,7 +62,7 @@ public class CorrelationRuleSuggestionTable extends JPanel {
     ) {
         setLayout(new BorderLayout());
         SuggestionTableModel model = new SuggestionTableModel();
-        this.smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE);
+        this.smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE, "");
 
         for (CorrelationSuggestionType correlation : correlationSuggestionType.getSuggestion()) {
             for (ItemsSubCorrelatorType itemsSubCorrelatorType : correlation.getCorrelation().getCorrelators().getItems()) {

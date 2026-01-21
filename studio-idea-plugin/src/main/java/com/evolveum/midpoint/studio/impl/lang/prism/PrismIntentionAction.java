@@ -6,7 +6,7 @@
  *
  */
 
-package com.evolveum.midpoint.studio.impl.lang.xnode;
+package com.evolveum.midpoint.studio.impl.lang.prism;
 
 import com.evolveum.concepts.Argument;
 import com.evolveum.concepts.ValidationLog;
@@ -33,9 +33,7 @@ import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementGenerator;
 import org.jetbrains.yaml.YAMLLanguage;
-import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLDocument;
-import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
 import org.jetbrains.yaml.psi.impl.YAMLBlockMappingImpl;
 
