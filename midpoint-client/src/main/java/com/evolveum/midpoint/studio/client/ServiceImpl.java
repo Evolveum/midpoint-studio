@@ -607,7 +607,7 @@ public class ServiceImpl implements Service {
 
         params.put("resourceOid", oid);
 
-        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestAssociation", params)
+        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestAssociations", params)
                 .get();
 
         Request req = builder.build();
