@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.client;
 
+import com.evolveum.midpoint.model.api.util.SmartIntegrationConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -12,7 +13,6 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.info.StatusInfo;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -20,16 +20,12 @@ import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectListType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.xml.bind.JAXBElement;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -546,7 +542,7 @@ public class ServiceImpl implements Service {
         params.put("resourceOid", oid);
         params.put("objectClass", objectClass.toString());
 
-        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestObjectTypes", params)
+        Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_OBJECT_TYPES, params)
                 .get();
 
         Request req = builder.build();
@@ -576,7 +572,7 @@ public class ServiceImpl implements Service {
         params.put("kind", kind);
         params.put("intent", intent);
 
-        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestCorrelations", params)
+        Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_CORRELATIONS, params)
                 .get();
 
         Request req = builder.build();
@@ -593,7 +589,7 @@ public class ServiceImpl implements Service {
         params.put("intent", intent);
         params.put("isInbound", isInbound);
 
-        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestMappings", params)
+        Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_MAPPINGS, params)
                 .get();
 
         Request req = builder.build();
@@ -607,7 +603,9 @@ public class ServiceImpl implements Service {
 
         params.put("resourceOid", oid);
 
-        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestAssociations", params)
+
+
+        Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_ASSOCIATION_TYPE, params)
                 .get();
 
         Request req = builder.build();
