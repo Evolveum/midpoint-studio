@@ -600,4 +600,18 @@ public class ServiceImpl implements Service {
 
         return executeRequest(req, MappingsSuggestionType.class);
     }
+
+    @Override
+    public AssociationSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException {
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("resourceOid", oid);
+
+        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestAssociation", params)
+                .get();
+
+        Request req = builder.build();
+
+        return executeRequest(req, AssociationSuggestionType.class);
+    }
 }

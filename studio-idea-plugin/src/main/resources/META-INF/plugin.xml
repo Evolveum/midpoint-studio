@@ -533,6 +533,12 @@
                 description="Suggestion for mapping object type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt M"/>
         </action>
+        <action id="MidPoint.Action.Suggestion.AssociationType"
+                class="com.evolveum.midpoint.studio.action.smart.AssociationSuggestionAction"
+                text="Association Type"
+                description="Suggestion for association type">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt A"/>
+        </action>
 
         <!-- GROUPS -->
 
@@ -592,6 +598,7 @@
                     <reference ref="MidPoint.Action.Suggestion.ResourceObjectType"/>
                     <reference ref="MidPoint.Action.Suggestion.CorrelationRule"/>
                     <reference ref="MidPoint.Action.Suggestion.Mapping"/>
+                    <reference ref="MidPoint.Action.Suggestion.AssociationType"/>
                 </group>
             </group>
 
