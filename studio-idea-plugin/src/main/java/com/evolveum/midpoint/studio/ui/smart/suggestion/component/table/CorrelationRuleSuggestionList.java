@@ -140,13 +140,13 @@ public class CorrelationRuleSuggestionList extends JPanel {
             JPanel pillPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
             pillPanel.setOpaque(false);
 
-//            itemsSubCorrelatorType.getItem().forEach(item -> {
-//                JButton pill = new JButton(item.getRef().getItemPath().firstToVariableNameOrNull().getLocalPart());
-//                pill.setFocusable(false);
-//                pill.setBorder(JBUI.Borders.empty(5, 10));
-//                pillPanel.add(pill);
-//                contentPanel.add(pillPanel, BorderLayout.CENTER);
-//            });
+            itemsSubCorrelatorType.getItem().forEach(item -> {
+                JButton pill = new JButton(item.getRef().getItemPath().firstToVariableNameOrNull().getLocalPart());
+                pill.setFocusable(false);
+                pill.setBorder(JBUI.Borders.empty(5, 10));
+                pillPanel.add(pill);
+                contentPanel.add(pillPanel, BorderLayout.CENTER);
+            });
 
             JPanel statsPanel = new JPanel();
             statsPanel.setOpaque(false);
@@ -243,7 +243,8 @@ public class CorrelationRuleSuggestionList extends JPanel {
 
     private void handleApply(Project project, String resourceOid, ResourceObjectTypeDefinitionType objectType, SuggestionTile tile) {
         if (tile.getFocusTraversalKeysEnabled()) {
-            PsiFile psiFile = MidPointUtils.findPsiFileByOid(project, resourceOid);
+//            MidPointUtils.findPsiFileByOid(project, resourceOid);
+            PsiFile psiFile = null;
             if (psiFile instanceof XmlFile xmlFile) {
                 XmlTag root = xmlFile.getRootTag();
                 if (root == null || !root.getName().equals("resource")) {
@@ -259,32 +260,32 @@ public class CorrelationRuleSuggestionList extends JPanel {
 
                 XmlTag objectTypeElement = MidPointUtils.findObjectTypeById(root, objectType.getId().toString());
 
-//                WriteCommandAction.runWriteCommandAction(project, () -> {
-//                    XmlElementFactory factory = XmlElementFactory.getInstance(project);
-//
-//                    assert objectTypeElement != null;
-//                    XmlTag correlations = objectTypeElement.findFirstSubTag("correlation");
-//                    if (correlations == null) {
-//                        correlations = factory.createTagFromText("<correlation/>");
-//                        correlations = objectTypeElement.addSubTag(correlations, false);
-//                    }
-//
-//                    XmlTag correlation = correlations.findFirstSubTag("correlator");
-//                    if (correlation == null) {
-//                        correlation = factory.createTagFromText("<correlator/>");
-//                        correlation = correlations.addSubTag(correlation, false);
-//                    }
-//
-//                    XmlTag newItemsXml = factory.createTagFromText(tile.getRawXml().trim());
-//                    correlation.addSubTag(newItemsXml, false);
-//
-//                    Document doc = PsiDocumentManager.getInstance(project).getDocument(xmlFile);
-//                    if (doc != null) {
-//                        PsiDocumentManager.getInstance(project).commitDocument(doc);
-//                    }
-//
-//                    tile.applyBtn.setEnabled(false);
-//                });
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    XmlElementFactory factory = XmlElementFactory.getInstance(project);
+
+                    assert objectTypeElement != null;
+                    XmlTag correlations = objectTypeElement.findFirstSubTag("correlation");
+                    if (correlations == null) {
+                        correlations = factory.createTagFromText("<correlation/>");
+                        correlations = objectTypeElement.addSubTag(correlations, false);
+                    }
+
+                    XmlTag correlation = correlations.findFirstSubTag("correlator");
+                    if (correlation == null) {
+                        correlation = factory.createTagFromText("<correlator/>");
+                        correlation = correlations.addSubTag(correlation, false);
+                    }
+
+                    XmlTag newItemsXml = factory.createTagFromText(tile.getRawXml().trim());
+                    correlation.addSubTag(newItemsXml, false);
+
+                    Document doc = PsiDocumentManager.getInstance(project).getDocument(xmlFile);
+                    if (doc != null) {
+                        PsiDocumentManager.getInstance(project).commitDocument(doc);
+                    }
+
+                    tile.applyBtn.setEnabled(false);
+                });
 
 
                 WriteCommandAction.runWriteCommandAction(project, () -> {

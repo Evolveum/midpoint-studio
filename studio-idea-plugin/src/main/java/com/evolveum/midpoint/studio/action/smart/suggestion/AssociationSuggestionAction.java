@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.action.smart;
+package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
@@ -8,20 +8,19 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
-
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.ObjectTypeSuggestionTable;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceDialogContext;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceObjectTypeWizard;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionWizard;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.AssociationSuggestionTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectTypesSuggestionType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.AssociationSuggestionType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
-import com.intellij.json.psi.JsonFile;
-import com.intellij.json.psi.JsonObject;
-import com.intellij.json.psi.JsonProperty;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -29,8 +28,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.xml.XmlFile;
-import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
@@ -40,14 +37,11 @@ import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Created by Dominik.
- */
-public class ResourceObjectTypeSuggestionAction extends AnAction {
+public class AssociationSuggestionAction extends AnAction {
 
-    private static final Logger log = Logger.getInstance(ResourceObjectTypeSuggestionAction.class);
+    private static final Logger log = Logger.getInstance(AssociationSuggestionAction.class);
 
-    private String resourceOid = null;
+    private String resourceOid;
 
     @Override
     public void update(@NotNull AnActionEvent anActionEvent) {
@@ -72,37 +66,32 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
 
         if (resourceOid != null) {
             new DialogAlert(
-                anActionEvent.getProject(),
-                "Upload (Full Processing)",
-                "Upload resource with oid: '" + resourceOid + "'",
-                new DialogWindowActionHandler() {
-                    @Override
-                    public void onOk() {
-                        var task = new UploadFullProcessingTask(anActionEvent.getProject(), anActionEvent::getDataContext, env);
-                        ProgressManager.getInstance().run(new Task.Backgroundable(anActionEvent.getProject(), "Uploading") {
-                            @Override
-                            public void run(@NotNull ProgressIndicator indicator) {
-                                task.run(indicator);
-                            }
-
-                            @Override
-                            public void onFinished() {
-                                if (!task.hasFailures()) {
-                                    showSelectResourceDialogWindow(anActionEvent, env, resourceOid);
+                    anActionEvent.getProject(),
+                    "Upload (Full Processing)",
+                    "Upload resource with oid: '" + resourceOid + "'",
+                    new DialogWindowActionHandler() {
+                        @Override
+                        public void onOk() {
+                            var task = new UploadFullProcessingTask(anActionEvent.getProject(), anActionEvent::getDataContext, env);
+                            ProgressManager.getInstance().run(new Task.Backgroundable(anActionEvent.getProject(), "Uploading") {
+                                @Override
+                                public void run(@NotNull ProgressIndicator indicator) {
+                                    task.run(indicator);
                                 }
-                            }
-                        });
+
+                                @Override
+                                public void onFinished() {
+                                    if (!task.hasFailures()) {
+                                        showSelectResourceDialogWindow(anActionEvent, env, resourceOid);
+                                    }
+                                }
+                            });
+                        }
                     }
-                }
             ).show();
         } else {
             showSelectResourceDialogWindow(anActionEvent, env, null);
         }
-    }
-
-    @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
     }
 
     private void showSelectResourceDialogWindow(@NotNull AnActionEvent anActionEvent, Environment env, String uploadedResourceOid) {
@@ -119,21 +108,21 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
         @Deprecated
         var foundResources = client.list(ObjectTypes.RESOURCE.getClassDefinition(), prismContext.queryFactory().createQuery(), true);
 
-        ResourceDialogContext resourceDialogContext = new ResourceDialogContext();
-        resourceDialogContext.setMode(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE);
-        resourceDialogContext.setResources(foundResources);
-        resourceDialogContext.setResourceOid(uploadedResourceOid);
+        GenerateSuggestionDialogContext generateSuggestionDialogContext = new GenerateSuggestionDialogContext();
+        generateSuggestionDialogContext.setMode(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE);
+        generateSuggestionDialogContext.setResources(foundResources);
+        generateSuggestionDialogContext.setResourceOid(uploadedResourceOid);
 
-        new ResourceObjectTypeWizard(
+        new GenerateSuggestionWizard(
                 project,
-                "Smart suggestion - resource object type",
-                resourceDialogContext,
+                "Smart suggestion - association type",
+                generateSuggestionDialogContext,
                 new DialogWindowActionHandler() {
 
                     @Override
                     public boolean isOkButtonEnabled() {
-                        return resourceDialogContext.getResourceOid() != null &&
-                                resourceDialogContext.getObjectClass() != null;
+                        return generateSuggestionDialogContext.getResourceOid() != null &&
+                                generateSuggestionDialogContext.getObjectClass() != null;
                     }
 
                     @Override
@@ -152,17 +141,16 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
 
                             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generate suggestion", true) {
 
-                                ObjectTypesSuggestionType objectSuggestion;
+                                AssociationSuggestionType associationSuggestion;
 
                                 @Override
                                 public void run(@NotNull ProgressIndicator progressIndicator) {
-                                    objectSuggestion = client.getSuggestObjectTypes(
-                                            resourceDialogContext.getResourceOid(),
-                                            resourceDialogContext.getObjectClass()
+                                    associationSuggestion = client.getSuggestAssociations(
+                                            generateSuggestionDialogContext.getResourceOid()
                                     );
 
                                     DownloadTask downloadTask = new DownloadTask(project,
-                                            List.of(new Pair<>(resourceDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
+                                            List.of(new Pair<>(generateSuggestionDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
                                             false,
                                             true,
                                             true);
@@ -173,18 +161,22 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
 
                                 @Override
                                 public void onFinished() {
-                                    if (objectSuggestion != null) {
+                                    if (associationSuggestion != null) {
                                         contentManager.addContent(ContentFactory.getInstance().createContent(
-                                                new ObjectTypeSuggestionTable(
+                                                new AssociationSuggestionTable(
                                                         project,
                                                         prismContext,
-                                                        resourceDialogContext.getResources().stream()
+                                                        generateSuggestionDialogContext.getResources().stream()
                                                                 .filter(o -> o instanceof ResourceType)
                                                                 .map(o -> (ResourceType) o)
-                                                                .filter(r -> resourceDialogContext.getResourceOid().equals(r.getOid()))
+                                                                .filter(r -> generateSuggestionDialogContext.getResourceOid().equals(r.getOid()))
                                                                 .findFirst()
                                                                 .orElse(null),
-                                                        objectSuggestion), "Resource Object Type", false));
+                                                        null,
+                                                        associationSuggestion.getDefinition().getAssociationObject().getAssociation(),
+                                                        generateSuggestionDialogContext.getDirection()
+                                                        ),
+                                                "Association Object Type", false));
                                         toolWindow.activate(() -> {
                                             log.info("Content of tool window with ID '" + toolWindowId + "' was update");
                                         });
@@ -205,18 +197,13 @@ public class ResourceObjectTypeSuggestionAction extends AnAction {
         ).show();
     }
 
-    // method checks it if the content of a file is a resource object (for XML, JSON, YAML file types)
-    private boolean isResourceObject(@NotNull PsiFile psiFile) {
-        if (psiFile instanceof XmlFile xmlFile) {
-            XmlTag rootTag = xmlFile.getRootTag();
-            return rootTag != null && "resource".equals(rootTag.getName());
-        } else if (psiFile instanceof JsonFile jsonFile) {
-            JsonObject jsonObject = (JsonObject) jsonFile.getTopLevelValue();
-            if (jsonObject == null || jsonObject.getPropertyList().isEmpty()) return false;
-            JsonProperty first = jsonObject.getPropertyList().get(0);
-            return "resource".equals(first.getName());
-        }
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
+    }
 
-        return false;
+    private boolean possibleActionAssociationTypeSuggest(@NotNull PsiFile psiFile) {
+        // TODO implement conditions when can an association type be called ???
+        return true;
     }
 }

@@ -189,7 +189,8 @@ public class CorrelationRuleSuggestionTable extends JPanel {
                 if (currentRow >= 0) {
                     Item item = model.getItemAt(currentRow);
                     if (!item.applied) {
-                        PsiFile psiFile = MidPointUtils.findPsiFileByOid(project, resource.getOid());
+                        //MidPointUtils.findPsiFileByOid(project, resource.getOid());
+                        PsiFile psiFile = null;
                         if (psiFile instanceof XmlFile xmlFile) {
                             XmlTag root = xmlFile.getRootTag();
 

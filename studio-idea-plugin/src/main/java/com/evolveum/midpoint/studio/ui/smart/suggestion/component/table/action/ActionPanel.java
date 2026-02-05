@@ -6,9 +6,8 @@
  *
  */
 
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component.action;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.action;
 
-import com.intellij.ui.JBColor;
 import com.intellij.ui.components.ActionLink;
 
 import javax.swing.*;
@@ -17,11 +16,10 @@ import java.awt.*;
 public class ActionPanel extends JPanel {
     private final JButton apply = new JButton("Apply");
     private final JButton discard = new JButton("Discard");
-    private final ActionLink details = new ActionLink("Show xml");
+    private final ActionLink details = new ActionLink("Show XML");
 
     public ActionPanel() {
-        super(new FlowLayout(FlowLayout.LEFT, 5, 2));
-        setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        super(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
         add(apply);
         add(discard);

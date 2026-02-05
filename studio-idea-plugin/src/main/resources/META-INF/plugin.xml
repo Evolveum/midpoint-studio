@@ -516,25 +516,25 @@
 
         <!-- suggestion -->
         <action id="MidPoint.Action.Suggestion.ResourceObjectType"
-                class="com.evolveum.midpoint.studio.action.smart.ResourceObjectTypeSuggestionAction"
+                class="com.evolveum.midpoint.studio.action.smart.suggestion.ObjectTypeSuggestionAction"
                 text="Resource"
                 description="Suggestion for resource object type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt R"/>
         </action>
         <action id="MidPoint.Action.Suggestion.CorrelationRule"
-                class="com.evolveum.midpoint.studio.action.smart.CorrelationRuleSuggestionAction"
+                class="com.evolveum.midpoint.studio.action.smart.suggestion.CorrelationRuleSuggestionAction"
                 text="Correlation Rule"
                 description="Suggestion for correlation rule object type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt C"/>
         </action>
         <action id="MidPoint.Action.Suggestion.Mapping"
-                class="com.evolveum.midpoint.studio.action.smart.MappingSuggestionAction"
+                class="com.evolveum.midpoint.studio.action.smart.suggestion.MappingSuggestionAction"
                 text="Mapping"
                 description="Suggestion for mapping object type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt M"/>
         </action>
         <action id="MidPoint.Action.Suggestion.AssociationType"
-                class="com.evolveum.midpoint.studio.action.smart.AssociationSuggestionAction"
+                class="com.evolveum.midpoint.studio.action.smart.suggestion.AssociationSuggestionAction"
                 text="Association Type"
                 description="Suggestion for association type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt A"/>

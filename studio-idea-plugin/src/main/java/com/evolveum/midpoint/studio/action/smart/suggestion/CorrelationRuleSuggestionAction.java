@@ -6,7 +6,7 @@
  *
  */
 
-package com.evolveum.midpoint.studio.action.smart;
+package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
@@ -15,8 +15,8 @@ import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceDialogContext;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceObjectTypeWizard;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionWizard;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.CorrelationRuleSuggestionTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
@@ -46,7 +46,7 @@ import java.util.Objects;
 
 public class CorrelationRuleSuggestionAction extends AnAction {
 
-    private static final Logger log = Logger.getInstance(ResourceObjectTypeSuggestionAction.class);
+    private static final Logger log = Logger.getInstance(ObjectTypeSuggestionAction.class);
 
     private String resourceOid;
 
@@ -116,21 +116,21 @@ public class CorrelationRuleSuggestionAction extends AnAction {
         @Deprecated
         var foundResources = client.list(ObjectTypes.RESOURCE.getClassDefinition(), prismContext.queryFactory().createQuery(), true);
 
-        ResourceDialogContext resourceDialogContext = new ResourceDialogContext();
-        resourceDialogContext.setMode(ResourceDialogContext.ResourceDialogContextMode.CORRELATION);
-        resourceDialogContext.setResources(foundResources);
-        resourceDialogContext.setResourceOid(uploadedResourceOid);
+        GenerateSuggestionDialogContext generateSuggestionDialogContext = new GenerateSuggestionDialogContext();
+        generateSuggestionDialogContext.setMode(GenerateSuggestionDialogContext.ResourceDialogContextMode.CORRELATION);
+        generateSuggestionDialogContext.setResources(foundResources);
+        generateSuggestionDialogContext.setResourceOid(uploadedResourceOid);
 
-        new ResourceObjectTypeWizard(
+        new GenerateSuggestionWizard(
                 project,
                 "Smart suggestion - correlation rule",
-                resourceDialogContext,
+                generateSuggestionDialogContext,
                 new DialogWindowActionHandler() {
 
                     @Override
                     public boolean isOkButtonEnabled() {
-                        return resourceDialogContext.getResourceOid() != null &&
-                                resourceDialogContext.getObjectType() != null;
+                        return generateSuggestionDialogContext.getResourceOid() != null &&
+                                generateSuggestionDialogContext.getObjectType() != null;
                     }
 
                     @Override
@@ -154,13 +154,13 @@ public class CorrelationRuleSuggestionAction extends AnAction {
                                 @Override
                                 public void run(@NotNull ProgressIndicator progressIndicator) {
                                     correlationSuggestions = client.getSuggestCorrelationRule(
-                                            resourceDialogContext.getResourceOid(),
-                                            resourceDialogContext.getObjectType().getKind().value(),
-                                            resourceDialogContext.getObjectType().getIntent()
+                                            generateSuggestionDialogContext.getResourceOid(),
+                                            generateSuggestionDialogContext.getObjectType().getKind().value(),
+                                            generateSuggestionDialogContext.getObjectType().getIntent()
                                     );
 
                                     DownloadTask downloadTask = new DownloadTask(project,
-                                            List.of(new Pair<>(resourceDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
+                                            List.of(new Pair<>(generateSuggestionDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
                                             false,
                                             true,
                                             true);
@@ -176,13 +176,13 @@ public class CorrelationRuleSuggestionAction extends AnAction {
                                                 new CorrelationRuleSuggestionTable(
                                                         project,
                                                         prismContext,
-                                                        resourceDialogContext.getResources().stream()
+                                                        generateSuggestionDialogContext.getResources().stream()
                                                                 .filter(o -> o instanceof ResourceType)
                                                                 .map(o -> (ResourceType) o)
-                                                                .filter(r -> resourceDialogContext.getResourceOid().equals(r.getOid()))
+                                                                .filter(r -> generateSuggestionDialogContext.getResourceOid().equals(r.getOid()))
                                                                 .findFirst()
                                                                 .orElse(null),
-                                                        resourceDialogContext.getObjectType(),
+                                                        generateSuggestionDialogContext.getObjectType(),
                                                         correlationSuggestions
                                                 ), "Correlations Suggestion", false));
                                         toolWindow.activate(() -> {

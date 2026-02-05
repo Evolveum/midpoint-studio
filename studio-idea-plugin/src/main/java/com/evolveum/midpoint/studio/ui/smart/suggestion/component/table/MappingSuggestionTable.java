@@ -10,7 +10,7 @@ package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
@@ -61,7 +61,7 @@ public class MappingSuggestionTable extends JPanel {
             ResourceType resource,
             ResourceObjectTypeDefinitionType objectType,
             MappingsSuggestionType mappingsSuggestionType,
-            ResourceDialogContext.Direction direction
+            GenerateSuggestionDialogContext.Direction direction
     ) {
         setLayout(new BorderLayout());
         SuggestionTableModel model = new SuggestionTableModel();
@@ -99,13 +99,13 @@ public class MappingSuggestionTable extends JPanel {
     }
 
     class Item {
-        ResourceDialogContext.Direction direction;
+        GenerateSuggestionDialogContext.Direction direction;
         AttributeMappingsSuggestionType object;
         String rawCode;
         boolean applied = false;
         boolean expanded = false;
 
-        Item(AttributeMappingsSuggestionType object, String xml, ResourceDialogContext.Direction direction) {
+        Item(AttributeMappingsSuggestionType object, String xml, GenerateSuggestionDialogContext.Direction direction) {
             this.object = object;
             this.rawCode = xml;
             this.direction = direction;
@@ -143,7 +143,7 @@ public class MappingSuggestionTable extends JPanel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             Item item = data.get(rowIndex);
 
-            if (item.direction.equals(ResourceDialogContext.Direction.INBOUND)) {
+            if (item.direction.equals(GenerateSuggestionDialogContext.Direction.INBOUND)) {
 
                 String sourcePath = "";
                 var source = item.object.getDefinition().getInbound().get(0).getSource();
@@ -161,7 +161,7 @@ public class MappingSuggestionTable extends JPanel {
                     case 4 -> item.expanded ? "Hide" : "Show";
                     default -> null;
                 };
-            } else if (item.direction.equals(ResourceDialogContext.Direction.OUTBOUND)) {
+            } else if (item.direction.equals(GenerateSuggestionDialogContext.Direction.OUTBOUND)) {
 
                 String sourcePath = "";
                 var source = item.object.getDefinition().getOutbound().getSource();
@@ -218,7 +218,8 @@ public class MappingSuggestionTable extends JPanel {
                 if (currentRow >= 0) {
                     Item item = model.getItemAt(currentRow);
                     if (!item.applied) {
-                        PsiFile psiFile = MidPointUtils.findPsiFileByOid(project, resource.getOid());
+                        // MidPointUtils.findPsiFileByOid(project, resource.getOid());
+                        PsiFile psiFile = null;
                         if (psiFile instanceof XmlFile xmlFile) {
                             XmlTag root = xmlFile.getRootTag();
 

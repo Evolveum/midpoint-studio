@@ -5,7 +5,9 @@ import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
+import com.evolveum.midpoint.studio.client.LocalizationServiceImpl;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.evolveum.midpoint.util.LocalizableMessage;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.lang.annotation.HighlightSeverity;
@@ -18,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Function;
 
 /**
  * Created by Dominik.
@@ -52,7 +56,7 @@ public class AxiomQueryValidationExternalAnnotator
                       @NotNull AnnotationHolder holder) {
         for (AxiomQueryError error : errors) {
             TextRange range = new TextRange(error.charPositionInLineStart(), error.charPositionInLineStop());
-            holder.newAnnotation(HighlightSeverity.ERROR, error.message())
+            holder.newAnnotation(HighlightSeverity.ERROR, error.message() == null ? " " : error.message())
                     .range(range)
                     .create();
         }

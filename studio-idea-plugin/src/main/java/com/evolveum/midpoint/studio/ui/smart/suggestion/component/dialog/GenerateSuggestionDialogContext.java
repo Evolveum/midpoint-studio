@@ -6,16 +6,15 @@
  *
  */
 
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog;
 
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectTypeDefinitionType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 
 import javax.xml.namespace.QName;
 
-public class ResourceDialogContext {
+public class GenerateSuggestionDialogContext {
 
     public enum Direction {
         INBOUND,

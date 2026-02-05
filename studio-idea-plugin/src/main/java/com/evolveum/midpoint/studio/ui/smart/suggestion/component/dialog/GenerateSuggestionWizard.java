@@ -6,7 +6,7 @@
  *
  */
 
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog;
 
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
@@ -21,7 +21,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
@@ -31,23 +30,22 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext> {
+public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDialogContext> {
 
     private final String OBJECT_CLASS_TABLE_COMPONENT_ID = "object_class_table_component";
     private final String OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID = "object_class_error_label_component";
     private final String DIRECTION_COMPONENT_ID = "direction_component_id";
 
-    public ResourceObjectTypeWizard(
+    public GenerateSuggestionWizard(
             Project project,
             String title,
-            ResourceDialogContext context,
+            GenerateSuggestionDialogContext context,
             DialogWindowActionHandler actionHandler
     ) {
         super(project, title, context, actionHandler);
@@ -55,12 +53,12 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
     }
 
     @Override
-    protected void buildSteps(ResourceDialogContext resource) {
+    protected void buildSteps(GenerateSuggestionDialogContext resource) {
         steps.add(createResourceSelectPanel(dialogWizardContext.getResources()));
     }
 
     @Override
-    protected void onFinish(ResourceDialogContext context) {
+    protected void onFinish(GenerateSuggestionDialogContext context) {
     }
 
     private JPanel createResourceSelectPanel(SearchResultList<ObjectType> resources) {
@@ -116,7 +114,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                 .findFirst()
                 .orElse(null);
 
-            if (dialogWizardContext.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+            if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
                 displayObjectClassTable(panel, resource);
             } else {
                 displayObjectTypeTable(panel, resource);
@@ -140,7 +138,7 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
                                 .findFirst()
                                 .orElse(null);
 
-                        if (dialogWizardContext.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+                        if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
                             displayObjectClassTable(panel, resource);
                         } else {
                             displayObjectTypeTable(panel, resource);
@@ -223,9 +221,9 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
 
         removeComponent(panel, DIRECTION_COMPONENT_ID);
 
-        if (dialogWizardContext.getMode().equals(ResourceDialogContext.ResourceDialogContextMode.MAPPING)) {
+        if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.MAPPING)) {
             String[] names = {"Inbound", "Outbound"};
-            ResourceDialogContext.Direction[] values = {ResourceDialogContext.Direction.INBOUND, ResourceDialogContext.Direction.OUTBOUND};
+            GenerateSuggestionDialogContext.Direction[] values = {GenerateSuggestionDialogContext.Direction.INBOUND, GenerateSuggestionDialogContext.Direction.OUTBOUND};
 
             LabeledComponent<JComboBox<String>> dropdown =
                     createDropdown("Inbound/Outbound mapping", names, values);
@@ -299,12 +297,12 @@ public class ResourceObjectTypeWizard extends WizardDialog<ResourceDialogContext
         }
     }
 
-    private LabeledComponent<JComboBox<String>> createDropdown(String label, String[] names, ResourceDialogContext.Direction[] values) {
+    private LabeledComponent<JComboBox<String>> createDropdown(String label, String[] names, GenerateSuggestionDialogContext.Direction[] values) {
         if (names.length != values.length) {
             throw new IllegalArgumentException("Names and values must have the same length");
         }
 
-        Map<String, ResourceDialogContext.Direction> valueMap = new LinkedHashMap<>();
+        Map<String, GenerateSuggestionDialogContext.Direction> valueMap = new LinkedHashMap<>();
         for (int i = 0; i < names.length; i++) {
             valueMap.put(names[i], values[i]);
         }

@@ -2,10 +2,9 @@ package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.ResourceDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
-import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
@@ -53,7 +52,7 @@ public class AssociationSuggestionTable extends JPanel {
             ResourceType resource,
             ResourceObjectTypeDefinitionType objectType,
             List<ResourceObjectAssociationType> objectAssociationTypeList,
-            ResourceDialogContext.Direction direction
+            GenerateSuggestionDialogContext.Direction direction
     ) {
         setLayout(new BorderLayout());
         AssociationSuggestionTable.SuggestionTableModel model = new SuggestionTableModel();
@@ -91,13 +90,13 @@ public class AssociationSuggestionTable extends JPanel {
     }
 
     static class Item {
-        ResourceDialogContext.Direction direction;
+        GenerateSuggestionDialogContext.Direction direction;
         ResourceObjectAssociationType object;
         String rawCode;
         boolean applied = false;
         boolean expanded = false;
 
-        Item(ResourceObjectAssociationType object, String xml, ResourceDialogContext.Direction direction) {
+        Item(ResourceObjectAssociationType object, String xml, GenerateSuggestionDialogContext.Direction direction) {
             this.object = object;
             this.rawCode = xml;
             this.direction = direction;
@@ -181,7 +180,8 @@ public class AssociationSuggestionTable extends JPanel {
                 if (currentRow >= 0) {
                     AssociationSuggestionTable.Item item = model.getItemAt(currentRow);
                     if (!item.applied) {
-                        PsiFile psiFile = MidPointUtils.findPsiFileByOid(project, resource.getOid());
+//                        PsiFile psiFile = MidPointUtils.findPsiFileByOid(project, resource.getOid());
+                        PsiFile psiFile = null;
                         if (psiFile instanceof XmlFile xmlFile) {
                             XmlTag root = xmlFile.getRootTag();
 
