@@ -1,6 +1,6 @@
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.model;
 
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.SmartSuggestionObject;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.intellij.util.ui.ColumnInfo;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;

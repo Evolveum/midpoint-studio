@@ -13,16 +13,17 @@ import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionWizard;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.action.ActionsEditor;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.action.ActionsRenderer;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.SmartSuggestionObject;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectTypesSuggestionType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectTypeDefinitionType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.json.psi.JsonFile;
 import com.intellij.json.psi.JsonObject;
 import com.intellij.json.psi.JsonProperty;
@@ -237,8 +238,17 @@ public class ObjectTypeSuggestionAction extends AnAction {
                                                 }
                                         ));
 
+                                        ResourceType resource = generateSuggestionDialogContext.getResources().stream()
+                                                .filter(o -> o.getOid().equals(generateSuggestionDialogContext.getResourceOid()))
+                                                .filter(ResourceType.class::isInstance)
+                                                .map(ResourceType.class::cast)
+                                                .findFirst()
+                                                .orElseThrow(
+                                                        () -> new RuntimeException("Object ResourceType with oid '" + generateSuggestionDialogContext.getResourceOid() + "' not found")
+                                                );
+
                                         model.setData(objectSuggestion.getObjectType().stream()
-                                                .map(o -> new SmartSuggestionObject<>(o, generateSuggestionDialogContext.getResourceOid()))
+                                                .map(o -> new SmartSuggestionObject<>(o, resource))
                                                 .toList());
 
                                         var table = new DefaultTreeTable<>(model);

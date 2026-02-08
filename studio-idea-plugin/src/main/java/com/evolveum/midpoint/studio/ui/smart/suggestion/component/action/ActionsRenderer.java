@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.action;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.action;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

@@ -548,20 +548,6 @@ public class ServiceImpl implements Service {
         Request req = builder.build();
 
         return executeRequest(req, ObjectTypesSuggestionType.class);
-
-
-//        ObjectMapper mapper = new ObjectMapper();
-//        String content = mapper.writeValueAsString(Map.of(
-//                "resourceOid", oid,
-//                "objectClass", objectClass.toString()
-//        ));
-//
-//        Request.Builder builder = context.build("/ws/smart-integration", "/rpc/suggestObjectTypes", null)
-//                .post(RequestBody.create(content, ServiceContext.APPLICATION_JSON));
-//
-//        Request req = builder.build();
-//
-//        return executeRequest(req, ObjectTypesSuggestionType.class);
     }
 
     @Override
@@ -598,18 +584,16 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public AssociationSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException {
+    public AssociationsSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException {
         Map<String, Object> params = new HashMap<>();
 
         params.put("resourceOid", oid);
-
-
 
         Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_ASSOCIATION_TYPE, params)
                 .get();
 
         Request req = builder.build();
 
-        return executeRequest(req, AssociationSuggestionType.class);
+        return executeRequest(req, AssociationsSuggestionType.class);
     }
 }

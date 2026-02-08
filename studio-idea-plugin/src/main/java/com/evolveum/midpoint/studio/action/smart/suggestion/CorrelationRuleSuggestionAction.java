@@ -8,6 +8,7 @@
 
 package com.evolveum.midpoint.studio.action.smart.suggestion;
 
+import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.task.DownloadTask;
@@ -15,13 +16,17 @@ import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionWizard;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.CorrelationRuleSuggestionTable;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.model.SmartSuggestionTableModel;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.CorrelationSuggestionsType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -36,11 +41,16 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,7 +67,7 @@ public class CorrelationRuleSuggestionAction extends AnAction {
 
         if (psiFile != null) {
             resourceOid = MidPointUtils.findResourceOidByPsi(psiFile);
-            presentation.setEnabled(resourceOid != null && isCorrelationRule(psiFile));
+            presentation.setEnabled(resourceOid != null && correlationRuleAllowed(psiFile));
         } else {
             resourceOid = null;
         }
@@ -153,12 +163,6 @@ public class CorrelationRuleSuggestionAction extends AnAction {
 
                                 @Override
                                 public void run(@NotNull ProgressIndicator progressIndicator) {
-                                    correlationSuggestions = client.getSuggestCorrelationRule(
-                                            generateSuggestionDialogContext.getResourceOid(),
-                                            generateSuggestionDialogContext.getObjectType().getKind().value(),
-                                            generateSuggestionDialogContext.getObjectType().getIntent()
-                                    );
-
                                     DownloadTask downloadTask = new DownloadTask(project,
                                             List.of(new Pair<>(generateSuggestionDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
                                             false,
@@ -167,24 +171,115 @@ public class CorrelationRuleSuggestionAction extends AnAction {
                                     downloadTask.setEnvironment(env);
                                     downloadTask.setOpenAfterDownload(true);
                                     ProgressManager.getInstance().run(downloadTask);
+
+                                    correlationSuggestions = client.getSuggestCorrelationRule(
+                                            generateSuggestionDialogContext.getResourceOid(),
+                                            generateSuggestionDialogContext.getObjectType().getKind().value(),
+                                            generateSuggestionDialogContext.getObjectType().getIntent()
+                                    );
                                 }
 
                                 @Override
                                 public void onFinished() {
                                     if (correlationSuggestions != null) {
+                                        var model = new SmartSuggestionTableModel<ItemsSubCorrelatorType>(List.of(
+                                                new DefaultColumnInfo<>("Name", obj -> {
+                                                    if (obj instanceof SmartSuggestionObject<?> sso) {
+                                                        return ((ItemsSubCorrelatorType) sso.getObject()).getName();
+                                                    }
+                                                    return null;
+                                                }),
+                                                new DefaultColumnInfo<>("Weight", obj -> {
+                                                    if (obj instanceof SmartSuggestionObject<?> sso) {
+                                                        return ((ItemsSubCorrelatorType) sso.getObject()).getComposition().getWeight();
+                                                    }
+                                                    return null;
+                                                }),
+                                                new DefaultColumnInfo<>("Tier", obj -> {
+                                                    if (obj instanceof SmartSuggestionObject<?> sso) {
+                                                        return ((ItemsSubCorrelatorType) sso.getObject()).getComposition().getTier();
+                                                    }
+                                                    return null;
+                                                }),
+                                                new DefaultColumnInfo<>("Efficiency", obj -> {
+                                                    if (obj instanceof SmartSuggestionObject<?> sso) {
+                                                        if (sso.getParent() instanceof CorrelationSuggestionType correlationSuggestionType) {
+                                                            Double quality = correlationSuggestionType.getQuality();
+                                                            return (quality != null && quality != -1) ? String.valueOf((quality * 100)) : "-";
+                                                        }
+                                                    }
+                                                    return null;
+                                                }),
+                                                new DefaultColumnInfo<>("Description", obj -> {
+                                                    if (obj instanceof SmartSuggestionObject<?> sso) {
+                                                        return ((ItemsSubCorrelatorType) sso.getObject()).getDescription();
+                                                    }
+                                                    return null;
+                                                }),
+                                                new DefaultColumnInfo<>("Activities") {
+                                                    @Override
+                                                    public @Nullable Object valueOf(DefaultMutableTreeTableNode node) {
+                                                        return node.getUserObject();
+                                                    }
+
+                                                    @Override
+                                                    public boolean isCellEditable(DefaultMutableTreeTableNode node) {
+                                                        return true;
+                                                    }
+
+                                                    @Override
+                                                    public TableCellRenderer getCustomizedRenderer(DefaultMutableTreeTableNode node, TableCellRenderer renderer) {
+                                                        return new ActionsRenderer();
+                                                    }
+
+                                                    @Override
+                                                    public @NotNull TableCellRenderer getRenderer(DefaultMutableTreeTableNode o) {
+                                                        return new ActionsRenderer();
+                                                    }
+
+                                                    @Override
+                                                    public TableCellEditor getEditor(DefaultMutableTreeTableNode o) {
+                                                        return new ActionsEditor(project, prismContext);
+                                                    }
+                                                }
+                                        ));
+
+                                        ResourceType resource = generateSuggestionDialogContext.getResources().stream()
+                                                .filter(o -> o.getOid().equals(generateSuggestionDialogContext.getResourceOid()))
+                                                .filter(ResourceType.class::isInstance)
+                                                .map(ResourceType.class::cast)
+                                                .findFirst()
+                                                .orElseThrow(
+                                                        () -> new RuntimeException("Object ResourceType with oid '" + generateSuggestionDialogContext.getResourceOid() + "' not found")
+                                                );
+
+                                        model.setData(correlationSuggestions.getSuggestion().stream()
+                                                .flatMap(correlationSuggestionType ->
+                                                        correlationSuggestionType.getCorrelation()
+                                                                .getCorrelators()
+                                                                .getItems()
+                                                                .stream()
+                                                                .map(o -> new SmartSuggestionObject<>(
+                                                                            o,
+                                                                            correlationSuggestionType,
+                                                                            resource,
+                                                                            generateSuggestionDialogContext.getObjectType()
+                                                                        )
+                                                                )
+                                                )
+                                                .toList());
+
+                                        var table = new DefaultTreeTable<>(model);
+                                        table.setShowColumns(true);
+                                        table.setRootVisible(false);
+                                        table.setDragEnabled(false);
+                                        table.setRowHeight(50);
+
                                         contentManager.addContent(ContentFactory.getInstance().createContent(
-                                                new CorrelationRuleSuggestionTable(
-                                                        project,
-                                                        prismContext,
-                                                        generateSuggestionDialogContext.getResources().stream()
-                                                                .filter(o -> o instanceof ResourceType)
-                                                                .map(o -> (ResourceType) o)
-                                                                .filter(r -> generateSuggestionDialogContext.getResourceOid().equals(r.getOid()))
-                                                                .findFirst()
-                                                                .orElse(null),
-                                                        generateSuggestionDialogContext.getObjectType(),
-                                                        correlationSuggestions
-                                                ), "Correlations Suggestion", false));
+                                                new JBScrollPane(table),
+                                                "Correlations Suggestion",
+                                                false
+                                        ));
                                         toolWindow.activate(() -> {
                                             log.info("Content of tool window with ID '" + toolWindowId + "' was update");
                                         });
@@ -205,7 +300,7 @@ public class CorrelationRuleSuggestionAction extends AnAction {
         ).show();
     }
 
-    private boolean isCorrelationRule(PsiFile psiFile) {
+    private boolean correlationRuleAllowed(PsiFile psiFile) {
         if (!(psiFile instanceof XmlFile)) {
             return false;
         }

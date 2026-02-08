@@ -73,5 +73,5 @@ public interface Service {
 
     MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException;
 
-    AssociationSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException;
+    AssociationsSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException;
 }

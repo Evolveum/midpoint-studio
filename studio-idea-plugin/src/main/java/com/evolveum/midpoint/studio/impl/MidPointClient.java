@@ -520,7 +520,7 @@ public class MidPointClient {
         return null;
     }
 
-    public AssociationSuggestionType getSuggestAssociations(String oid) {
+    public AssociationsSuggestionType getSuggestAssociations(String oid) {
         try {
             return client.getSuggestionAssociation(oid);
         } catch (Exception ex) {

@@ -8,6 +8,7 @@
 
 package com.evolveum.midpoint.studio.ui.smart.suggestion;
 
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -17,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class SmartSuggestionToolWindowFactory implements ToolWindowFactory {
+public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {

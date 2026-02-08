@@ -15,13 +15,17 @@ import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionWizard;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.MappingSuggestionTable;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.model.SmartSuggestionTableModel;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.MappingsSuggestionType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -36,11 +40,16 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,7 +66,7 @@ public class MappingSuggestionAction extends AnAction {
 
         if (psiFile != null) {
             resourceOid = MidPointUtils.findResourceOidByPsi(psiFile);
-            presentation.setEnabled(resourceOid != null && isMapping(psiFile));
+            presentation.setEnabled(resourceOid != null && mappingAllowed(psiFile));
         } else {
             resourceOid = null;
         }
@@ -153,13 +162,6 @@ public class MappingSuggestionAction extends AnAction {
 
                                 @Override
                                 public void run(@NotNull ProgressIndicator progressIndicator) {
-                                    mappingsSuggestions = client.getSuggestMapping(
-                                            generateSuggestionDialogContext.getResourceOid(),
-                                            generateSuggestionDialogContext.getObjectType().getKind().value(),
-                                            generateSuggestionDialogContext.getObjectType().getIntent(),
-                                            generateSuggestionDialogContext.getDirection().equals(GenerateSuggestionDialogContext.Direction.INBOUND)
-                                    );
-
                                     DownloadTask downloadTask = new DownloadTask(project,
                                             List.of(new Pair<>(generateSuggestionDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
                                             false,
@@ -168,24 +170,101 @@ public class MappingSuggestionAction extends AnAction {
                                     downloadTask.setEnvironment(env);
                                     downloadTask.setOpenAfterDownload(true);
                                     ProgressManager.getInstance().run(downloadTask);
+
+                                    mappingsSuggestions = client.getSuggestMapping(
+                                            generateSuggestionDialogContext.getResourceOid(),
+                                            generateSuggestionDialogContext.getObjectType().getKind().value(),
+                                            generateSuggestionDialogContext.getObjectType().getIntent(),
+                                            generateSuggestionDialogContext.getDirection().equals(GenerateSuggestionDialogContext.Direction.INBOUND)
+                                    );
                                 }
 
                                 @Override
                                 public void onFinished() {
                                     if (mappingsSuggestions != null) {
-                                        contentManager.addContent(ContentFactory.getInstance().createContent(
-                                                new MappingSuggestionTable(
-                                                        project,
-                                                        prismContext,
-                                                        generateSuggestionDialogContext.getResources().stream()
-                                                                .filter(o -> o instanceof ResourceType)
-                                                                .map(o -> (ResourceType) o)
-                                                                .filter(r -> generateSuggestionDialogContext.getResourceOid().equals(r.getOid()))
+                                        var model = new SmartSuggestionTableModel<AttributeMappingsSuggestionType>(List.of(
+                                                new DefaultColumnInfo<>("Name", obj -> {
+                                                    if (obj instanceof SmartSuggestionObject<?> sso) {
+                                                        return ((AttributeMappingsSuggestionType) sso.getObject()).getDefinition().getInbound().get(0).getName();
+                                                    }
+                                                    return null;
+                                                }),
+                                                new DefaultColumnInfo<>("To resource attribute", obj -> {
+                                                    if (obj instanceof SmartSuggestionObject<?> sso) {
+                                                        return ((AttributeMappingsSuggestionType) sso.getObject()).getDefinition().getRef();
+                                                    }
+                                                    return null;
+                                                }),
+                                                new DefaultColumnInfo<>("Source", obj -> {
+                                                    if (obj instanceof SmartSuggestionObject<?> sso) {
+                                                        return ((AttributeMappingsSuggestionType) sso.getObject()).getDefinition().getInbound().stream()
                                                                 .findFirst()
-                                                                .orElse(null),
-                                                        generateSuggestionDialogContext.getObjectType(),
-                                                        mappingsSuggestions,
-                                                        generateSuggestionDialogContext.getDirection()), "Mappings Suggestion", false));
+                                                                .map(AbstractMappingType::getSource)
+                                                                .flatMap(source -> source.stream().findFirst())
+                                                                .map(VariableBindingDefinitionType::getPath)
+                                                                .map(p -> p.getItemPath().toString())
+                                                                .orElse("");
+                                                    }
+                                                    return null;
+                                                }),
+                                                new DefaultColumnInfo<>("Activities") {
+                                                    @Override
+                                                    public @Nullable Object valueOf(DefaultMutableTreeTableNode node) {
+                                                        return node.getUserObject();
+                                                    }
+
+                                                    @Override
+                                                    public boolean isCellEditable(DefaultMutableTreeTableNode node) {
+                                                        return true;
+                                                    }
+
+                                                    @Override
+                                                    public TableCellRenderer getCustomizedRenderer(DefaultMutableTreeTableNode node, TableCellRenderer renderer) {
+                                                        return new ActionsRenderer();
+                                                    }
+
+                                                    @Override
+                                                    public @NotNull TableCellRenderer getRenderer(DefaultMutableTreeTableNode o) {
+                                                        return new ActionsRenderer();
+                                                    }
+
+                                                    @Override
+                                                    public TableCellEditor getEditor(DefaultMutableTreeTableNode o) {
+                                                        return new ActionsEditor(project, prismContext);
+                                                    }
+                                                }
+                                        ));
+
+                                        ResourceType resource = generateSuggestionDialogContext.getResources().stream()
+                                                .filter(o -> o.getOid().equals(generateSuggestionDialogContext.getResourceOid()))
+                                                .filter(ResourceType.class::isInstance)
+                                                .map(ResourceType.class::cast)
+                                                .findFirst()
+                                                .orElseThrow(
+                                                        () -> new RuntimeException("Object ResourceType with oid '" + generateSuggestionDialogContext.getResourceOid() + "' not found")
+                                                );
+
+                                        model.setData(mappingsSuggestions.getAttributeMappings().stream()
+                                                .map(o -> new SmartSuggestionObject<>(
+                                                            o,
+                                                            null,
+                                                            resource,
+                                                            generateSuggestionDialogContext.getObjectType()
+                                                        )
+                                                )
+                                                .toList());
+
+                                        var table = new DefaultTreeTable<>(model);
+                                        table.setShowColumns(true);
+                                        table.setRootVisible(false);
+                                        table.setDragEnabled(false);
+                                        table.setRowHeight(50);
+
+                                        contentManager.addContent(ContentFactory.getInstance().createContent(
+                                                new JBScrollPane(table),
+                                                "Mappings Suggestion",
+                                                false
+                                        ));
                                         toolWindow.activate(() -> {
                                             log.info("Content of tool window with ID '" + toolWindowId + "' was update");
                                         });
@@ -206,7 +285,7 @@ public class MappingSuggestionAction extends AnAction {
         ).show();
     }
 
-    private boolean isMapping(PsiFile psiFile) {
+    private boolean mappingAllowed(PsiFile psiFile) {
         if (!(psiFile instanceof XmlFile)) {
             return false;
         }
