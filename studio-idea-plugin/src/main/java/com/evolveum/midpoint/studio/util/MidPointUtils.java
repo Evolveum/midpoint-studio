@@ -1237,7 +1237,7 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
     // TODO it works only for resource objects
     // find oid value in a resource element (a necessary condition is the first element must be resource)
     // current working just for XML objects
-    public static String findResourceOidByPsi(@NotNull PsiFile psiFile) {
+    public static String findResourceOidByPsi(PsiFile psiFile) {
         if (!(psiFile instanceof XmlFile xmlFile)) {
             return null;
         }

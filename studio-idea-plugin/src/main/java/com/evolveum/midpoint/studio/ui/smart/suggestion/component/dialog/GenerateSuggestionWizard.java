@@ -17,10 +17,16 @@ import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardDialog;
 import com.evolveum.midpoint.util.exception.ConfigurationException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.LabeledComponent;
+import com.intellij.openapi.ui.popup.JBPopup;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.SearchTextField;
+import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
@@ -29,12 +35,16 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.*;
 import javax.xml.namespace.QName;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.*;
+import java.util.List;
 
 public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDialogContext> {
 
@@ -334,10 +344,30 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
     private JBTable createTableComponent(DefaultTableModel model) {
         JBTable table = new JBTable(model);
         table.setStriped(true);
-        table.setAutoCreateRowSorter(true);
+        table.setAutoCreateRowSorter(false);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setRowSelectionAllowed(true);
         table.setColumnSelectionAllowed(false);
+
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
+        table.setRowSorter(sorter);
+
+        JTableHeader header = table.getTableHeader();
+        TableCellRenderer originalRenderer = header.getDefaultRenderer();
+        header.setDefaultRenderer(new FilterHeaderRenderer(originalRenderer));
+
+        Map<Integer, String> columnFilters = new HashMap<>();
+
+        header.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int viewIdx = table.columnAtPoint(e.getPoint());
+                if (viewIdx != -1) {
+                    int modelIdx = table.convertColumnIndexToModel(viewIdx);
+                    showFilterPopup(columnFilters, sorter, modelIdx, e);
+                }
+            }
+        });
 
         return table;
     }
@@ -365,5 +395,71 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
         errorLabel.setForeground(JBColor.RED);
         errorLabel.setName(OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID);
         panel.add(errorLabel);
+    }
+
+    private void showFilterPopup(Map<Integer, String> columnFilters, TableRowSorter<TableModel> sorter, int modelColumnIndex, MouseEvent e) {
+        SearchTextField searchField = new SearchTextField();
+        searchField.setText(columnFilters.getOrDefault(modelColumnIndex, ""));
+        searchField.setBorder(JBUI.Borders.empty(5));
+
+        JBPopup popup = JBPopupFactory.getInstance()
+                .createComponentPopupBuilder(searchField, searchField.getTextEditor())
+                .setRequestFocus(true)
+                .setCancelOnClickOutside(true)
+                .setResizable(false)
+                .createPopup();
+
+        searchField.addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { update(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { update(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { update(); }
+
+            private void update() {
+                String text = searchField.getText().trim();
+                if (text.isEmpty()) {
+                    columnFilters.remove(modelColumnIndex);
+                } else {
+                    columnFilters.put(modelColumnIndex, text);
+                }
+                applyFilters(columnFilters, sorter);
+            }
+        });
+
+        popup.show(new RelativePoint(e.getComponent(), new Point(e.getX(), e.getComponent().getHeight())));
+    }
+
+    private void applyFilters(Map<Integer, String> columnFilters, TableRowSorter<TableModel> sorter) {
+        List<RowFilter<Object, Object>> filters = new ArrayList<>();
+        for (Map.Entry<Integer, String> entry : columnFilters.entrySet()) {
+            filters.add(RowFilter.regexFilter("(?i)" + entry.getValue(), entry.getKey()));
+        }
+
+        if (filters.isEmpty()) {
+            sorter.setRowFilter(null);
+        } else {
+            sorter.setRowFilter(RowFilter.andFilter(filters));
+        }
+    }
+
+    private static class FilterHeaderRenderer implements TableCellRenderer {
+        private final TableCellRenderer delegate;
+
+        public FilterHeaderRenderer(TableCellRenderer delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
+            Component c = delegate.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (c instanceof JLabel label) {
+                label.setIcon(AllIcons.General.Filter);
+                label.setHorizontalTextPosition(SwingConstants.LEADING);
+            }
+            return c;
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component.model;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model;
 
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;

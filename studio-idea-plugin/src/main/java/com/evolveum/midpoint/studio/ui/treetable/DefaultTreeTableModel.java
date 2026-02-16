@@ -10,7 +10,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTableModel {
 
@@ -20,14 +23,23 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
 
     private T data;
 
+    private final Object originalRoot;
+    private Object filteredRoot;
+
     public DefaultTreeTableModel() {
         super(new DefaultMutableTreeNode());
+
+        originalRoot = getRoot();
+        filteredRoot = getRoot();
     }
 
     public DefaultTreeTableModel(@NotNull List<ColumnInfo> columns) {
         super(new DefaultMutableTreeTableNode());
 
         this.columns = columns;
+
+        originalRoot = getRoot();
+        filteredRoot = getRoot();
     }
 
     public void setColumns(@NotNull List<ColumnInfo> columns) {
@@ -87,4 +99,60 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
     public void setData(T data) {
         this.data = data;
     }
+
+    public void applyFilter(String searchText) {
+        String lower = searchText == null ? "" : searchText.toLowerCase();
+
+        if (lower.isEmpty()) {
+            filteredRoot = originalRoot;
+            setRoot((TreeNode) originalRoot);
+            reload();
+            return;
+        }
+
+        filteredRoot = filterNode((DefaultMutableTreeTableNode) originalRoot, node -> {
+                    for (ColumnInfo column : columns) {
+                        if (column instanceof FilterableColumnInfo<?, ?> filterableColumnInfo) {
+                            Object value = filterableColumnInfo.valueOf(node);
+                            if (value instanceof String s) {
+                                if (s.toLowerCase().contains(lower)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                });
+
+        setRoot(filteredRoot != null
+                ? (TreeNode) filteredRoot
+                : new DefaultMutableTreeTableNode("No results of filtering"));
+        reload();
+    }
+
+    private DefaultMutableTreeTableNode filterNode(DefaultMutableTreeTableNode node, Predicate<DefaultMutableTreeTableNode> filter) {
+        boolean matches = filter.test(node);
+
+        DefaultMutableTreeTableNode filteredNode = new DefaultMutableTreeTableNode(node.getUserObject());
+
+        Enumeration<?> children = node.children();
+        while (children.hasMoreElements()) {
+            DefaultMutableTreeTableNode child =
+                    (DefaultMutableTreeTableNode) children.nextElement();
+
+            DefaultMutableTreeTableNode filteredChild =
+                    filterNode(child, filter);
+
+            if (filteredChild != null) {
+                filteredNode.add(filteredChild);
+            }
+        }
+
+        if (matches || filteredNode.getChildCount() > 0) {
+            return filteredNode;
+        }
+
+        return null;
+    }
+
 }

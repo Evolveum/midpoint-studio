@@ -20,12 +20,17 @@ import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.Actions
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionWizard;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.model.SmartSuggestionTableModel;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
+import com.evolveum.midpoint.studio.ui.treetable.FilterableColumnInfo;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import com.intellij.ide.util.treeView.TreeState;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -39,17 +44,22 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 
@@ -183,19 +193,19 @@ public class MappingSuggestionAction extends AnAction {
                                 public void onFinished() {
                                     if (mappingsSuggestions != null) {
                                         var model = new SmartSuggestionTableModel<AttributeMappingsSuggestionType>(List.of(
-                                                new DefaultColumnInfo<>("Name", obj -> {
+                                                new FilterableColumnInfo<>("Name", obj -> {
                                                     if (obj instanceof SmartSuggestionObject<?> sso) {
                                                         return ((AttributeMappingsSuggestionType) sso.getObject()).getDefinition().getInbound().get(0).getName();
                                                     }
                                                     return null;
                                                 }),
-                                                new DefaultColumnInfo<>("To resource attribute", obj -> {
+                                                new FilterableColumnInfo<>("To resource attribute", obj -> {
                                                     if (obj instanceof SmartSuggestionObject<?> sso) {
                                                         return ((AttributeMappingsSuggestionType) sso.getObject()).getDefinition().getRef();
                                                     }
                                                     return null;
                                                 }),
-                                                new DefaultColumnInfo<>("Source", obj -> {
+                                                new FilterableColumnInfo<>("Source", obj -> {
                                                     if (obj instanceof SmartSuggestionObject<?> sso) {
                                                         return ((AttributeMappingsSuggestionType) sso.getObject()).getDefinition().getInbound().stream()
                                                                 .findFirst()
@@ -260,20 +270,47 @@ public class MappingSuggestionAction extends AnAction {
                                         table.setDragEnabled(false);
                                         table.setRowHeight(50);
 
+                                        SearchTextField searchTextField = new SearchTextField();
+                                        searchTextField.addDocumentListener(new DocumentAdapter() {
+                                            @Override
+                                            protected void textChanged(@NotNull DocumentEvent e) {
+                                                TreeState state = TreeState.createOn(table.getTree());
+                                                model.applyFilter(searchTextField.getText());
+                                                TreeUtil.expandAll(table.getTree());
+                                                state.applyTo(table.getTree());
+                                            }
+                                        });
+
+                                        JPanel panel = new JPanel(new BorderLayout());
+                                        panel.add(searchTextField, BorderLayout.NORTH);
+                                        panel.add(new JBScrollPane(table), BorderLayout.CENTER);
+
                                         contentManager.addContent(ContentFactory.getInstance().createContent(
-                                                new JBScrollPane(table),
+                                                panel,
                                                 "Mappings Suggestion",
                                                 false
                                         ));
                                         toolWindow.activate(() -> {
                                             log.info("Content of tool window with ID '" + toolWindowId + "' was update");
                                         });
+
+                                        String msg = "Generate Smart suggestion successful";
+                                        log.info(msg);
+
+                                        Notification notification = new Notification(
+                                                "midpointSmartSuggestion",
+                                                "Midpoint Smart suggestion",
+                                                msg,
+                                                NotificationType.INFORMATION
+                                        );
+                                        Notifications.Bus.notify(notification, project);
                                     } else {
-                                        JLabel errorLabel = new JLabel("Object suggestion is null");
+                                        JLabel errorLabel = new JLabel("Suggestion not found");
                                         errorLabel.setForeground(JBColor.RED);
                                         errorLabel.setBorder(JBUI.Borders.empty(10, 15));
                                         contentManager.addContent(ContentFactory.getInstance().createContent(
                                                 errorLabel, "Smart Suggestion", false));
+                                        log.warn(errorLabel.getText());
                                     }
                                 }
                             });

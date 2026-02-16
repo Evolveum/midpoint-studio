@@ -352,6 +352,10 @@
         <annotator language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaAnnotator"/>
 
         <notificationGroup id="midpointSmartSuggestion" displayType="BALLOON" />
+
+        <lang.foldingBuilder language="XML" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
+        <lang.foldingBuilder language="JSON" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
+        <lang.foldingBuilder language="yaml" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
@@ -514,28 +518,28 @@
                 description="Convert to YAML">
         </action>
 
-        <!-- suggestion -->
+        <!-- smart suggestion -->
         <action id="MidPoint.Action.Suggestion.ResourceObjectType"
                 class="com.evolveum.midpoint.studio.action.smart.suggestion.ObjectTypeSuggestionAction"
-                text="Resource"
+                text="Resource Object Types"
                 description="Suggestion for resource object type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt R"/>
         </action>
         <action id="MidPoint.Action.Suggestion.CorrelationRule"
                 class="com.evolveum.midpoint.studio.action.smart.suggestion.CorrelationRuleSuggestionAction"
-                text="Correlation Rule"
+                text="Correlation Rules"
                 description="Suggestion for correlation rule object type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt C"/>
         </action>
         <action id="MidPoint.Action.Suggestion.Mapping"
                 class="com.evolveum.midpoint.studio.action.smart.suggestion.MappingSuggestionAction"
-                text="Mapping"
+                text="Mappings"
                 description="Suggestion for mapping object type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt M"/>
         </action>
         <action id="MidPoint.Action.Suggestion.AssociationType"
                 class="com.evolveum.midpoint.studio.action.smart.suggestion.AssociationSuggestionAction"
-                text="Association Type"
+                text="Association Types"
                 description="Suggestion for association type">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt A"/>
         </action>
@@ -591,7 +595,7 @@
                     <reference ref="MidPoint.Action.Converter.ConvertToYaml"/>
                 </group>
 
-                <group id="MidPoint.Group.Menu.TransferRelated.Suggestion"
+                <group id="MidPoint.Group.Menu.TransferRelated.SmartSuggestion"
                        text="Suggestion"
                        description="Suggestion"
                        popup="true">
@@ -786,6 +790,11 @@
 <!--                description="Launches the custom wizard">-->
 <!--            <add-to-group group-id="ToolsMenu" anchor="last"/>-->
 <!--        </action>-->
-
     </actions>
+
+    <projectListeners>
+        <listener
+                class="com.evolveum.midpoint.studio.ui.smart.suggestion.listener.EditorFileOpenListener"
+                topic="com.intellij.openapi.fileEditor.FileEditorManagerListener"/>
+    </projectListeners>
 </idea-plugin>

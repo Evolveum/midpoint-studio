@@ -9,12 +9,19 @@
 package com.evolveum.midpoint.studio.util;
 
 import com.intellij.json.JsonLanguage;
+import com.intellij.json.psi.JsonFile;
+import com.intellij.json.psi.JsonObject;
+import com.intellij.json.psi.JsonProperty;
 import com.intellij.lang.Language;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLLanguage;
 
 import java.util.Collection;
@@ -90,5 +97,19 @@ public class LanguageUtils {
         }
 
         return text.substring(i);
+    }
+
+    public static boolean isResourceObject(@NotNull PsiFile psiFile) {
+        if (psiFile instanceof XmlFile xmlFile) {
+            XmlTag rootTag = xmlFile.getRootTag();
+            return rootTag != null && "resource".equals(rootTag.getName());
+        } else if (psiFile instanceof JsonFile jsonFile) {
+            JsonObject jsonObject = (JsonObject) jsonFile.getTopLevelValue();
+            if (jsonObject == null || jsonObject.getPropertyList().isEmpty()) return false;
+            JsonProperty first = jsonObject.getPropertyList().get(0);
+            return "resource".equals(first.getName());
+        }
+
+        return false;
     }
 }
