@@ -11,7 +11,6 @@ package com.evolveum.midpoint.studio.ui.smart.suggestion.component.action;
 import com.intellij.ui.components.ActionLink;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class ActionPanel extends JPanel {
     private final JButton apply = new JButton("Apply");
@@ -19,10 +18,12 @@ public class ActionPanel extends JPanel {
     private final ActionLink details = new ActionLink("Show XML");
 
     public ActionPanel() {
-        super(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         add(apply);
+        add(Box.createHorizontalStrut(5));
         add(discard);
+        add(Box.createHorizontalStrut(5));
         add(details);
     }
 

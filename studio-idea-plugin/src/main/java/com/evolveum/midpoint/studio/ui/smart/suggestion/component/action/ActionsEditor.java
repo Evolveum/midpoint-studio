@@ -102,8 +102,7 @@ public class ActionsEditor extends AbstractCellEditor implements TableCellEditor
                 resource.setSchemaHandling(new SchemaHandlingType());
             }
             resource.getSchemaHandling().getObjectType().add(resourceObjectTypeDefinitionType.clone());
-        }
-        else if (value.getObject() instanceof AttributeMappingsSuggestionType attributeMappingsSuggestionType) {
+        } else if (value.getObject() instanceof AttributeMappingsSuggestionType attributeMappingsSuggestionType) {
             ResourceObjectTypeDefinitionType objectType =
                     resource.getSchemaHandling().getObjectType().stream()
                             .filter(ot ->
@@ -180,8 +179,7 @@ public class ActionsEditor extends AbstractCellEditor implements TableCellEditor
                 "Preview Changes at Smart Suggestion",
                 DiffContentFactory.getInstance().create(
                         project,
-                        originalPsiFile.getText(),
-                        originalPsiFile.getFileType()
+                        originalPsiFile.getFileDocument()
                 ),
                 DiffContentFactory.getInstance().create(
                         project,
@@ -193,8 +191,8 @@ public class ActionsEditor extends AbstractCellEditor implements TableCellEditor
         );
 
         AnAction acceptAction = new AnAction(
-                "Accept Suggestion",
-                "Accept smart suggestion",
+                "Accept All Suggestions",
+                "Accept all generated smart suggestions for this resource",
                 AllIcons.Actions.ShowWriteAccess
         ) {
             @Override

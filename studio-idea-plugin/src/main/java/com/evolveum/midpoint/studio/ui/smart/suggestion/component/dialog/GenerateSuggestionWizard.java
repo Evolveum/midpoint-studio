@@ -23,7 +23,6 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.awt.RelativePoint;
@@ -87,17 +86,19 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
             }
         };
 
-        int i = 0;
-        for (ObjectType obj : resources) {
-            if (obj.getOid().equals(dialogWizardContext.getResourceOid())) {
-                defaultSelectedRow = i;
-            }
+        if(resources != null) {
+            int i = 0;
+            for (ObjectType obj : resources) {
+                if (obj.getOid().equals(dialogWizardContext.getResourceOid())) {
+                    defaultSelectedRow = i;
+                }
 
-            resourceTableModel.setValueAt(obj.getOid(), i, 0);
-            resourceTableModel.setValueAt(obj.getName().getOrig(), i, 1);
-            resourceTableModel.setValueAt(obj.asPrismContainer().getDisplayName(), i, 2);
-            resourceTableModel.setValueAt(obj.getDescription(), i, 3);
-            i++;
+                resourceTableModel.setValueAt(obj.getOid(), i, 0);
+                resourceTableModel.setValueAt(obj.getName().getOrig(), i, 1);
+                resourceTableModel.setValueAt(obj.asPrismContainer().getDisplayName(), i, 2);
+                resourceTableModel.setValueAt(obj.getDescription(), i, 3);
+                i++;
+            }
         }
 
         JBTable resourceTable = createTableComponent(resourceTableModel);
