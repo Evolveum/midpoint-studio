@@ -31,6 +31,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -63,6 +64,7 @@ public class AssociationSuggestionAction extends AnAction {
 
     private static final Logger log = Logger.getInstance(AssociationSuggestionAction.class);
 
+    private PsiFile resourceFile;
     private String resourceOid;
 
     @Override
@@ -73,6 +75,7 @@ public class AssociationSuggestionAction extends AnAction {
         if (psiFile != null) {
             resourceOid = MidPointUtils.findResourceOidByPsi(psiFile);
             presentation.setEnabled(resourceOid != null && associationAllowed(psiFile));
+            resourceFile = psiFile;
         } else {
             resourceOid = null;
         }
@@ -164,14 +167,18 @@ public class AssociationSuggestionAction extends AnAction {
 
                                 @Override
                                 public void run(@NotNull ProgressIndicator progressIndicator) {
-                                    DownloadTask downloadTask = new DownloadTask(project,
-                                            List.of(new Pair<>(generateSuggestionDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
-                                            false,
-                                            true,
-                                            true);
-                                    downloadTask.setEnvironment(env);
-                                    downloadTask.setOpenAfterDownload(true);
-                                    ProgressManager.getInstance().run(downloadTask);
+//                                    FIXME XML object syntax is overwritten when downloading resources
+//                                    DownloadTask downloadTask = new DownloadTask(project,
+//                                            List.of(new Pair<>(generateSuggestionDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
+//                                            false,
+//                                            true,
+//                                            true);
+//                                    downloadTask.setEnvironment(env);
+//                                    downloadTask.setOpenAfterDownload(true);
+//                                    ProgressManager.getInstance().run(downloadTask);
+
+                                    ApplicationManager.getApplication().invokeAndWait(
+                                            () -> MidPointUtils.openFile(project, resourceFile.getVirtualFile()));
 
                                     associationSuggestion = client.getSuggestAssociations(
                                             generateSuggestionDialogContext.getResourceOid()
