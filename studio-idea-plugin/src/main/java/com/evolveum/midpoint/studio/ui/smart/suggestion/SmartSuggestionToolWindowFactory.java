@@ -19,6 +19,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.ActionLink;
+import com.intellij.ui.components.JBTextArea;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBFont;
@@ -64,7 +65,7 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
             panel.setOpaque(false);
 
-            JLabel title = new JLabel("MidPilot - Generate Smart Suggestions");
+            JLabel title = new JLabel("MidPoint - Generate Smart Suggestions");
             title.setFont(JBFont.h1().asBold());
             title.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -94,25 +95,21 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
             );
 
             for (AnAction child : group.getChildren(event)) {
-                panel.add(
-                        featureItem(project, child));
+                JComponent itemComponent = featureItem(project, child);
+                // FIXME description text responsive
+                itemComponent.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+                panel.add(itemComponent);
             }
 
             return panel;
         }
 
-        private JComponent featureItem(Project project,
-                                       AnAction action) {
-
+        private JComponent featureItem(Project project, AnAction action) {
             var presentation = action.getTemplatePresentation();
 
-            JPanel row = new JPanel(new BorderLayout());
+            JPanel row = new JPanel();
             row.setOpaque(false);
-            row.setBorder(JBUI.Borders.empty(8, 0));
-
-            JPanel textPanel = new JPanel();
-            textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-            textPanel.setOpaque(false);
+            row.setLayout(new BoxLayout(row, BoxLayout.Y_AXIS));
 
             ActionLink titleLink = new ActionLink(presentation.getText(), e -> {
                 DataContext context = SimpleDataContext.builder()
@@ -132,33 +129,19 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
                     action.actionPerformed(event);
                 }
             });
-
             titleLink.setFont(JBFont.medium());
             titleLink.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-            textPanel.add(titleLink);
-
-//            Print shortcuts
-//            String actionId = ActionManager.getInstance().getId(action);
-//            if (actionId != null) {
-//                Shortcut[] shortcuts = KeymapManager.getInstance()
-//                        .getActiveKeymap()
-//                        .getShortcuts(actionId);
-//                textPanel.add(new JLabel("( " + KeymapUtil.getShortcutsText(shortcuts) + " )"));
-//            }
-
-            JLabel description = new JLabel(presentation.getDescription());
+            JBTextArea description = new JBTextArea(presentation.getDescription());
             description.setFont(JBFont.small());
             description.setForeground(JBColor.GRAY);
+            description.setLineWrap(true);
+            description.setWrapStyleWord(true);
+            description.setEditable(false);
             description.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-            textPanel.add(description);
-            textPanel.add(Box.createVerticalStrut(2));
-            textPanel.add(description);
-
-            row.add(textPanel, BorderLayout.NORTH);
-            row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
-            row.setAlignmentX(Component.LEFT_ALIGNMENT);
+            row.add(titleLink);
+            row.add(description);
 
             return row;
         }

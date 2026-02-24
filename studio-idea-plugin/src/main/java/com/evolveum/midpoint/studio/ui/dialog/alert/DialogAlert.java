@@ -25,16 +25,26 @@ public class DialogAlert extends DialogWrapper {
         this.message = message;
         this.handler = handler;
 
-        setTitle(title);
         init();
+        setTitle(title);
     }
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        JLabel label = new JLabel(message, SwingConstants.CENTER);
-        label.setPreferredSize(new Dimension(250, 80));
-        panel.add(label, BorderLayout.CENTER);
+
+        JTextArea textArea = new JTextArea(message);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        textArea.setOpaque(false);
+        textArea.setFocusable(false);
+
+        textArea.setFont(UIManager.getFont("Label.font"));
+        textArea.setForeground(UIManager.getColor("Label.foreground"));
+
+        panel.add(textArea, BorderLayout.CENTER);
+
         return panel;
     }
 
@@ -52,5 +62,10 @@ public class DialogAlert extends DialogWrapper {
         if (handler != null) {
             handler.onCancel();
         }
+    }
+
+    @Override
+    public @Nullable Dimension getInitialSize() {
+        return new Dimension(600, 80);
     }
 }

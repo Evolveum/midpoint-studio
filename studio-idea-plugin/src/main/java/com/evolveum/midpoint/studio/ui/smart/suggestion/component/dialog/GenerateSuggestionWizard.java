@@ -10,33 +10,31 @@ package com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog;
 
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
+import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinitionImpl;
 import com.evolveum.midpoint.schema.processor.ResourceSchema;
 import com.evolveum.midpoint.schema.processor.ResourceSchemaFactory;
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardDialog;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.DialogWizardTableModel;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
+import com.evolveum.midpoint.studio.ui.treetable.FilterableColumnInfo;
 import com.evolveum.midpoint.util.exception.ConfigurationException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.LabeledComponent;
-import com.intellij.openapi.ui.popup.JBPopup;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.SearchTextField;
-import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.table.JBTable;
+import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.ui.JBUI;
-import org.jetbrains.annotations.NotNull;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.*;
+import javax.swing.tree.TreePath;
 import javax.xml.namespace.QName;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -47,9 +45,9 @@ import java.util.List;
 
 public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDialogContext> {
 
-    private final String OBJECT_CLASS_TABLE_COMPONENT_ID = "object_class_table_component";
-    private final String OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID = "object_class_error_label_component";
-    private final String DIRECTION_COMPONENT_ID = "direction_component_id";
+    private final String OBJECT_CLASS_TABLE_COMPONENT_ID = "OBJECT_CLASS_TABLE_COMPONENT";
+    private final String OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID = "OBJECT_CLASS_ERROR_LABEL_COMPONENT";
+    private final String DIRECTION_COMPONENT_ID = "DIRECTION_COMPONENT";
 
     public GenerateSuggestionWizard(
             Project project,
@@ -71,72 +69,42 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
     }
 
     private JPanel createResourceSelectPanel(SearchResultList<ObjectType> resources) {
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        int defaultSelectedRow = -1;
-        int rowCount = resources != null ? resources.size() : 0;
 
-        String[] nameColumns = new String[]{"Value", "Name", "Display name", "Description"};
-        Object[][] resourceRows = new Object[rowCount][nameColumns.length];
+        DialogWizardTableModel<ObjectType> model = new DialogWizardTableModel<>(List.of(
+                new FilterableColumnInfo<>("Name", obj -> {
+                    if (obj instanceof ResourceType resourceType) {
+                        return resourceType.getName().getOrig();
+                    }
 
-        DefaultTableModel resourceTableModel = new DefaultTableModel(resourceRows, nameColumns) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+                    return null;
+                }, true),
+                new FilterableColumnInfo<>("Description", obj -> {
+                    if (obj instanceof ResourceType resourceType) {
+                        return resourceType.getDescription();
+                    }
 
-        if(resources != null) {
-            int i = 0;
-            for (ObjectType obj : resources) {
-                if (obj.getOid().equals(dialogWizardContext.getResourceOid())) {
-                    defaultSelectedRow = i;
-                }
+                    return null;
+                }, false)
+        ));
+        var table = createTableComponent(model);
 
-                resourceTableModel.setValueAt(obj.getOid(), i, 0);
-                resourceTableModel.setValueAt(obj.getName().getOrig(), i, 1);
-                resourceTableModel.setValueAt(obj.asPrismContainer().getDisplayName(), i, 2);
-                resourceTableModel.setValueAt(obj.getDescription(), i, 3);
-                i++;
-            }
-        }
+        if (resources != null) {
+            model.setData(resources.getList());
 
-        JBTable resourceTable = createTableComponent(resourceTableModel);
-        hideColumn(resourceTable, 0);
-        JBScrollPane scrollPane = new JBScrollPane(resourceTable);
-        scrollPane.setPreferredSize(new Dimension(scrollPane.getWidth(), 300));
-        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
-        TitledBorder resourceTitleBorder = BorderFactory.createTitledBorder("Resource:");
-        resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(Font.BOLD));
-        resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
-        Border resourceSpaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);
-        scrollPane.setBorder(BorderFactory.createCompoundBorder(resourceSpaceBorder, resourceTitleBorder));
-        panel.add(scrollPane);
-
-        if (defaultSelectedRow > -1) {
-            DefaultListSelectionModel model = getDefaultListSelectionModel(defaultSelectedRow);
-            resourceTable.setSelectionModel(model);
-            resourceTable.setRowSelectionInterval(defaultSelectedRow, defaultSelectedRow);
-
-            ResourceType resource = resources.stream()
-                .filter(o -> o instanceof ResourceType)
-                .map(o -> (ResourceType) o)
-                .filter(r -> dialogWizardContext.getResourceOid().equals(r.getOid()))
-                .findFirst()
-                .orElse(null);
-
-            if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
-                displayObjectClassTable(panel, resource);
-            } else {
-                displayObjectTypeTable(panel, resource);
-            }
-        } else {
-            resourceTable.getSelectionModel().addListSelectionListener(resourceEvent -> {
+            table.getSelectionModel().addListSelectionListener(resourceEvent -> {
                 if (!resourceEvent.getValueIsAdjusting()) {
-                    int selectedRow = resourceTable.getSelectedRow();
+                    int selectedRow = table.getSelectedRow();
 
                     if (selectedRow >= 0) {
-                        String resourceOid = (String) resourceTable.getValueAt(selectedRow, 0);
+                        String resourceOid = (String) table.getValueAt(selectedRow, 0);
+
+                        if (resourceOid == null) {
+                            return;
+                        }
+
                         dialogWizardContext.setResourceOid(resourceOid);
                         dialogWizardContext.setObjectType(null);
                         dialogWizardContext.setObjectClass(null);
@@ -159,21 +127,107 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
             });
         }
 
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = table.rowAtPoint(e.getPoint());
+                if (row >= 0) {
+                    TreePath path = table.getTree().getPathForRow(row);
+                    if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
+                        if (node.getUserObject() instanceof ResourceType resource) {
+                            if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+                                displayObjectClassTable(panel, resource);
+                            } else {
+                                displayObjectTypeTable(panel, resource);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        TitledBorder resourceTitleBorder = BorderFactory.createTitledBorder("Resource:");
+        resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(Font.BOLD));
+        resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
+
+        JBScrollPane scrollPane = new JBScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(0, 0, 25, 0),
+                resourceTitleBorder
+        ));
+
+        panel.add(scrollPane);
+
         return panel;
     }
 
-    private @NotNull DefaultListSelectionModel getDefaultListSelectionModel(int defaultSelectedRow) {
-        return new DefaultListSelectionModel() {
-            @Override
-            public void setSelectionInterval(int index0, int index1) {
-                super.setSelectionInterval(defaultSelectedRow, defaultSelectedRow);
-            }
+    private void displayObjectClassTable(JPanel panel, ResourceType resource) {
+        removeComponent(panel, OBJECT_CLASS_TABLE_COMPONENT_ID);
+        removeComponent(panel, OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID);
 
-            @Override
-            public void addSelectionInterval(int index0, int index1) {
-                super.setSelectionInterval(defaultSelectedRow, defaultSelectedRow);
+        if (resource == null) {
+            printErrorMsg(panel, "Not found resource");
+            return;
+        }
+
+        try {
+            ResourceSchema resourceSchema = ResourceSchemaFactory.parseCompleteSchema(resource);
+            if (resourceSchema != null) {
+                var definitions = resourceSchema.getObjectClassDefinitions();
+                DialogWizardTableModel<ResourceObjectClassDefinition> model = new DialogWizardTableModel<>(List.of(
+                        new FilterableColumnInfo<>("Name", obj -> {
+                            if (obj instanceof ResourceObjectClassDefinitionImpl objectTypeDefinitionType) {
+                                return objectTypeDefinitionType.getObjectClassName().getLocalPart();
+                            }
+
+                            return null;
+                        }, true),
+                        new FilterableColumnInfo<>("Description", obj -> {
+                            if (obj instanceof ResourceObjectClassDefinitionImpl objectTypeDefinitionType) {
+                                return objectTypeDefinitionType.getDescription();
+                            }
+
+                            return null;
+                        }, true)
+                ));
+
+                model.setData(definitions.stream().toList());
+
+                var table = createTableComponent(model);
+                table.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        int row = table.rowAtPoint(e.getPoint());
+                        if (row >= 0) {
+                            TreePath path = table.getTree().getPathForRow(row);
+                            if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
+                                if (node.getUserObject() instanceof ResourceObjectClassDefinition objectClassValue) {
+                                    dialogWizardContext.setObjectClass(objectClassValue.getObjectClassName());
+                                    setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectClass() != null);
+                                }
+                            }
+                        }
+                    }
+                });
+
+                JBScrollPane objectClassScrollPane = new JBScrollPane(table);
+                objectClassScrollPane.setPreferredSize(new Dimension(objectClassScrollPane.getWidth(), 200));
+                objectClassScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
+
+                TitledBorder titleBorder = BorderFactory.createTitledBorder("Object class:");
+                titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(Font.BOLD));
+                titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
+
+                Border spaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);
+                objectClassScrollPane.setBorder(BorderFactory.createCompoundBorder(spaceBorder, titleBorder));
+                objectClassScrollPane.setName(OBJECT_CLASS_TABLE_COMPONENT_ID);
+                panel.add(objectClassScrollPane);
+            } else {
+                printErrorMsg(panel, "Not found schema in resource '" + resource.getOid() + "'");
             }
-        };
+        } catch (SchemaException | ConfigurationException ex) {
+            printErrorMsg(panel, ex.getMessage());
+        }
     }
 
     private void displayObjectTypeTable(JPanel panel, ResourceType resource) {
@@ -181,6 +235,7 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
         removeComponent(panel, OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID);
 
         if (resource == null) {
+            printErrorMsg(panel, "Not found resource");
             return;
         }
 
@@ -188,44 +243,55 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
 
         if (schemaHandling != null) {
             var objectTypeList = schemaHandling.getObjectType();
-            String[] objTypeNameColumns = new String[]{"Value", "Name", "Description"};
-            Object[][] objTypeResourceRows = new Object[15][objTypeNameColumns.length];
 
-            DefaultTableModel objTypeTableModel = new DefaultTableModel(objTypeResourceRows, objTypeNameColumns) {
+            DialogWizardTableModel<ResourceObjectTypeDefinitionType> model = new DialogWizardTableModel<>(List.of(
+                    new FilterableColumnInfo<>("Name", obj -> {
+                        if (obj instanceof ResourceObjectTypeDefinitionType objectTypeDefinitionType) {
+                            return objectTypeDefinitionType.getDisplayName();
+                        }
+
+                        return null;
+                    }, true),
+                    new FilterableColumnInfo<>("Description", obj -> {
+                        if (obj instanceof ResourceObjectTypeDefinitionType objectTypeDefinitionType) {
+                            return objectTypeDefinitionType.getDescription();
+                        }
+
+                        return null;
+                    },true)
+            ));
+
+            model.setData(objectTypeList);
+
+            var table = createTableComponent(model);
+            table.addMouseListener(new MouseAdapter() {
                 @Override
-                public boolean isCellEditable(int row, int column) {
-                    return false;
+                public void mouseClicked(MouseEvent e) {
+                    int row = table.rowAtPoint(e.getPoint());
+                    if (row >= 0) {
+                        TreePath path = table.getTree().getPathForRow(row);
+                        if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
+                            if (node.getUserObject() instanceof ResourceObjectTypeDefinitionType objectTypeDefinitionType) {
+                                dialogWizardContext.setObjectType(objectTypeDefinitionType);
+                                setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectType() != null);
+                            }
+                        }
+                    }
                 }
-            };
+            });
 
-            int i = 0;
-            for (ResourceObjectTypeDefinitionType objectType : objectTypeList) {
-                objTypeTableModel.setValueAt(objectType, i, 0);
-                objTypeTableModel.setValueAt(objectType.getDisplayName(), i, 1);
-                objTypeTableModel.setValueAt(objectType.getDescription(), i, 2);
-                i++;
-            }
-
-            JBTable objTypeTable = createTableComponent(objTypeTableModel);
-            hideColumn(objTypeTable, 0);
-            JBScrollPane objTypeScrollPane = new JBScrollPane(objTypeTable);
+            JBScrollPane objTypeScrollPane = new JBScrollPane(table);
             objTypeScrollPane.setPreferredSize(new Dimension(objTypeScrollPane.getWidth(), 200));
             objTypeScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
+
             TitledBorder titleBorder = BorderFactory.createTitledBorder("Object type:");
             titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(Font.BOLD));
             titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
+
             Border spaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);
             objTypeScrollPane.setBorder(BorderFactory.createCompoundBorder(spaceBorder, titleBorder));
             objTypeScrollPane.setName(OBJECT_CLASS_TABLE_COMPONENT_ID);
             panel.add(objTypeScrollPane);
-
-            objTypeTable.getSelectionModel().addListSelectionListener(objTypeEvent -> {
-                int objTypeSelectedRow = objTypeTable.getSelectedRow();
-                if (!objTypeEvent.getValueIsAdjusting() && objTypeSelectedRow >= 0) {
-                    dialogWizardContext.setObjectType((ResourceObjectTypeDefinitionType) objTypeTable.getValueAt(objTypeSelectedRow, 0));
-                    setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectType() != null);
-                }
-            });
         } else {
             printErrorMsg(panel, "Not found schemaHandling in resource '" + resource.getOid() + "'");
         }
@@ -236,8 +302,7 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
             String[] names = {"Inbound", "Outbound"};
             GenerateSuggestionDialogContext.Direction[] values = {GenerateSuggestionDialogContext.Direction.INBOUND, GenerateSuggestionDialogContext.Direction.OUTBOUND};
 
-            LabeledComponent<JComboBox<String>> dropdown =
-                    createDropdown("Inbound/Outbound mapping", names, values);
+            LabeledComponent<JComboBox<String>> dropdown = createDropdown(names, values);
             dropdown.setName(DIRECTION_COMPONENT_ID);
             dropdown.setMaximumSize(new Dimension(Integer.MAX_VALUE, dropdown.getHeight()));
             dialogWizardContext.setDirection(getSelectedValue(dropdown));
@@ -246,69 +311,7 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
         }
     }
 
-    private void displayObjectClassTable(JPanel panel, ResourceType resource) {
-        removeComponent(panel, OBJECT_CLASS_TABLE_COMPONENT_ID);
-        removeComponent(panel, OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID);
-
-        try {
-            assert resource != null;
-
-            ResourceSchema resourceSchema = ResourceSchemaFactory.parseCompleteSchema(resource);
-            // create object class table
-            if (resourceSchema != null) {
-                var definitions = resourceSchema.getObjectClassDefinitions();
-                String[] objClassNameColumns = new String[]{"Value", "Name", "Description"};
-                Object[][] objClassResourceRows = new Object[definitions.size()][objClassNameColumns.length];
-
-                DefaultTableModel objClassTableModel = new DefaultTableModel(objClassResourceRows, objClassNameColumns) {
-                    @Override
-                    public boolean isCellEditable(int row, int column) {
-                        return false;
-                    }
-                };
-
-                int i = 0;
-                for (ResourceObjectClassDefinition def : definitions) {
-                    objClassTableModel.setValueAt(def.getObjectClassName(), i, 0);
-                    objClassTableModel.setValueAt(def.getObjectClassName().getLocalPart(), i, 1);
-                    objClassTableModel.setValueAt(def.getDescription(), i, 2);
-                    i++;
-                }
-
-                JBTable objectClassTable = createTableComponent(objClassTableModel);
-                hideColumn(objectClassTable, 0);
-                JBScrollPane objectClassScrollPane = new JBScrollPane(objectClassTable);
-                objectClassScrollPane.setPreferredSize(new Dimension(objectClassScrollPane.getWidth(), 200));
-                objectClassScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
-                TitledBorder titleBorder = BorderFactory.createTitledBorder("Object class:");
-                titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(Font.BOLD));
-                titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
-                Border spaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);
-                objectClassScrollPane.setBorder(BorderFactory.createCompoundBorder(spaceBorder, titleBorder));
-                objectClassScrollPane.setName(OBJECT_CLASS_TABLE_COMPONENT_ID);
-                panel.add(objectClassScrollPane);
-
-                objectClassTable.getSelectionModel().addListSelectionListener(objectClassEvent -> {
-                    int objectClassSelectedRow = objectClassTable.getSelectedRow();
-                    if (!objectClassEvent.getValueIsAdjusting() && objectClassSelectedRow >= 0) {
-                        var objectClassValue = objectClassTable.getValueAt(objectClassSelectedRow, 0);
-
-                        if (objectClassValue != null) {
-                            dialogWizardContext.setObjectClass(QName.valueOf(objectClassValue.toString()));
-                        }
-
-                        setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectClass() != null);
-                    }
-                });
-            } else {
-                printErrorMsg(panel, "Not found schema in resource '" + resource.getOid() + "'");
-            }
-        } catch (SchemaException | ConfigurationException ex) {
-            printErrorMsg(panel, ex.getMessage());
-        }
-    }
-
-    private LabeledComponent<JComboBox<String>> createDropdown(String label, String[] names, GenerateSuggestionDialogContext.Direction[] values) {
+    private LabeledComponent<JComboBox<String>> createDropdown(String[] names, GenerateSuggestionDialogContext.Direction[] values) {
         if (names.length != values.length) {
             throw new IllegalArgumentException("Names and values must have the same length");
         }
@@ -328,47 +331,24 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
             }
         });
 
-        return LabeledComponent.create(comboBox, label);
+        return LabeledComponent.create(comboBox, "Inbound/Outbound mapping");
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T getSelectedValue(LabeledComponent<JComboBox<String>> dropdown) {
+    public <T> T getSelectedValue(LabeledComponent<JComboBox<String>> dropdown) {
         JComboBox<String> combo = dropdown.getComponent();
         String key = (String) combo.getSelectedItem();
-
-        Map<String, T> valueMap =
-                (Map<String, T>) combo.getClientProperty("valueMap");
+        Map<String, T> valueMap = (Map<String, T>) combo.getClientProperty("valueMap");
 
         return valueMap.get(key);
     }
 
-    private JBTable createTableComponent(DefaultTableModel model) {
-        JBTable table = new JBTable(model);
-        table.setStriped(true);
-        table.setAutoCreateRowSorter(false);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setRowSelectionAllowed(true);
-        table.setColumnSelectionAllowed(false);
-
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
-        table.setRowSorter(sorter);
-
-        JTableHeader header = table.getTableHeader();
-        TableCellRenderer originalRenderer = header.getDefaultRenderer();
-        header.setDefaultRenderer(new FilterHeaderRenderer(originalRenderer));
-
-        Map<Integer, String> columnFilters = new HashMap<>();
-
-        header.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int viewIdx = table.columnAtPoint(e.getPoint());
-                if (viewIdx != -1) {
-                    int modelIdx = table.convertColumnIndexToModel(viewIdx);
-                    showFilterPopup(columnFilters, sorter, modelIdx, e);
-                }
-            }
-        });
+    private TreeTable createTableComponent(DialogWizardTableModel<?> model) {
+        var table = new DefaultTreeTable<>(model);
+        table.setShowColumns(true);
+        table.setRootVisible(false);
+        table.setDragEnabled(false);
+        table.setRowHeight(30);
 
         return table;
     }
@@ -384,83 +364,10 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
         panel.repaint();
     }
 
-    private void hideColumn(JBTable table, int idColumnIndex) {
-        table.getColumnModel().getColumn(idColumnIndex).setMinWidth(0);
-        table.getColumnModel().getColumn(idColumnIndex).setMaxWidth(0);
-        table.getColumnModel().getColumn(idColumnIndex).setPreferredWidth(0);
-        table.getColumnModel().getColumn(idColumnIndex).setWidth(0);
-    }
-
     private void printErrorMsg(JPanel panel, String msg) {
         JLabel errorLabel = new JLabel(msg);
         errorLabel.setForeground(JBColor.RED);
         errorLabel.setName(OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID);
         panel.add(errorLabel);
-    }
-
-    private void showFilterPopup(Map<Integer, String> columnFilters, TableRowSorter<TableModel> sorter, int modelColumnIndex, MouseEvent e) {
-        SearchTextField searchField = new SearchTextField();
-        searchField.setText(columnFilters.getOrDefault(modelColumnIndex, ""));
-        searchField.setBorder(JBUI.Borders.empty(5));
-
-        JBPopup popup = JBPopupFactory.getInstance()
-                .createComponentPopupBuilder(searchField, searchField.getTextEditor())
-                .setRequestFocus(true)
-                .setCancelOnClickOutside(true)
-                .setResizable(false)
-                .createPopup();
-
-        searchField.addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) { update(); }
-            @Override
-            public void removeUpdate(DocumentEvent e) { update(); }
-            @Override
-            public void changedUpdate(DocumentEvent e) { update(); }
-
-            private void update() {
-                String text = searchField.getText().trim();
-                if (text.isEmpty()) {
-                    columnFilters.remove(modelColumnIndex);
-                } else {
-                    columnFilters.put(modelColumnIndex, text);
-                }
-                applyFilters(columnFilters, sorter);
-            }
-        });
-
-        popup.show(new RelativePoint(e.getComponent(), new Point(e.getX(), e.getComponent().getHeight())));
-    }
-
-    private void applyFilters(Map<Integer, String> columnFilters, TableRowSorter<TableModel> sorter) {
-        List<RowFilter<Object, Object>> filters = new ArrayList<>();
-        for (Map.Entry<Integer, String> entry : columnFilters.entrySet()) {
-            filters.add(RowFilter.regexFilter("(?i)" + entry.getValue(), entry.getKey()));
-        }
-
-        if (filters.isEmpty()) {
-            sorter.setRowFilter(null);
-        } else {
-            sorter.setRowFilter(RowFilter.andFilter(filters));
-        }
-    }
-
-    private static class FilterHeaderRenderer implements TableCellRenderer {
-        private final TableCellRenderer delegate;
-
-        public FilterHeaderRenderer(TableCellRenderer delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-                                                       boolean hasFocus, int row, int column) {
-            Component c = delegate.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            if (c instanceof JLabel label) {
-                label.setIcon(AllIcons.General.Filter);
-                label.setHorizontalTextPosition(SwingConstants.LEADING);
-            }
-            return c;
-        }
     }
 }

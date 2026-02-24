@@ -1,17 +1,30 @@
 package com.evolveum.midpoint.studio.ui.treetable;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.openapi.ui.popup.JBPopup;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.NlsSafe;
+import com.intellij.ui.JBColor;
+import com.intellij.ui.SearchTextField;
+import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.JBUI;
+import org.apache.http.Header;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.*;
 import javax.swing.tree.TreeCellRenderer;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable {
 
@@ -50,6 +63,31 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
                 }
                 if (dci.getPreferredWidth() != null) {
                     column.setPreferredWidth(dci.getPreferredWidth());
+                }
+            }
+
+            if (ci instanceof FilterableColumnInfo<?, ?> filterableColumnInfo) {
+                if (filterableColumnInfo.hasFunnelFilter()) {
+                    JTableHeader header = getTableHeader();
+                    Map<Integer, String> columnFilters = new HashMap<>();
+
+                    var filterHeaderRenderer = new FilterHeaderRenderer(false);
+
+                    column.setHeaderRenderer(filterHeaderRenderer);
+
+                    header.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            int viewColumn = header.columnAtPoint(e.getPoint());
+                            if (viewColumn < 0) return;
+
+                            if (isClickOnFunnel(header, viewColumn, e.getX())) {
+                                filterHeaderRenderer.setActiveFilter(columnFilters.get(viewColumn) != null);
+                                showFilterPopup(columnFilters, viewColumn, e);
+                                header.repaint();
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -97,5 +135,124 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
 
     protected Icon customizeTreeCellIcon(Object value) {
         return null;
+    }
+
+    private boolean isClickOnFunnel(JTableHeader header, int viewColumn, int mouseX) {
+        Rectangle rect = header.getHeaderRect(viewColumn);
+        int iconWidth = 16;
+        int padding = 6;
+        int iconStartX = rect.x + rect.width - iconWidth - padding;
+        return mouseX >= iconStartX;
+    }
+
+    public void showFilterPopup(Map<Integer, String> columnFilters, int modelColumnIndex, MouseEvent e) {
+        SearchTextField searchField = new SearchTextField();
+        searchField.setText(columnFilters.getOrDefault(modelColumnIndex, ""));
+        searchField.setBorder(JBUI.Borders.empty(5));
+
+        JBPopup popup = JBPopupFactory.getInstance()
+                .createComponentPopupBuilder(searchField, searchField.getTextEditor())
+                .setRequestFocus(true)
+                .setCancelOnClickOutside(true)
+                .setResizable(false)
+                .createPopup();
+
+        searchField.addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { update(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { update(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { update(); }
+
+            private void update() {
+                String text = searchField.getText().trim();
+                columnFilters.put(modelColumnIndex, text);
+                getTableModel().applyFilter(text);
+            }
+        });
+
+        popup.show(new RelativePoint(e.getComponent(), new Point(e.getX(), e.getComponent().getHeight())));
+    }
+
+    private static class FilterHeaderRenderer implements TableCellRenderer {
+
+        boolean activeFilter;
+
+        public FilterHeaderRenderer(boolean activeFilter) {
+            this.activeFilter = activeFilter;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int column) {
+
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.setOpaque(true);
+            panel.setBackground(table.getTableHeader().getBackground());
+
+            JLabel label = new JLabel(value == null ? "" : value.toString());
+            label.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 4));
+
+            FilterIconLabel funnel = new FilterIconLabel(AllIcons.General.Filter, activeFilter);
+            funnel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 6));
+
+            panel.add(label, BorderLayout.WEST);
+            panel.add(funnel, BorderLayout.EAST);
+
+            return panel;
+        }
+
+        public void setActiveFilter(boolean activeFilter) {
+            this.activeFilter = activeFilter;
+        }
+    }
+
+    private static class FilterIconLabel extends JLabel {
+
+        boolean active;
+
+        public FilterIconLabel(Icon icon, boolean active) {
+            super(icon);
+            setOpaque(false);
+            this.active = active;
+        }
+
+        public void setActive(boolean active) {
+            this.active = active;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            if (!active) return;
+
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int dotSize = 6;
+            int haloSize = 10;
+
+            int x = getWidth() - haloSize - 5;
+            int y = 1;
+
+            g2.setColor(JBColor.namedColor("Panel.background", new JBColor(0xffffff, 0x3c3f41)));
+            g2.fillOval(x, y, haloSize, haloSize);
+
+            int innerX = x + (haloSize - dotSize) / 2;
+            int innerY = y + (haloSize - dotSize) / 2;
+
+            g2.setColor(JBColor.GREEN);
+            g2.fillOval(innerX, innerY, dotSize, dotSize);
+
+            g2.dispose();
+        }
     }
 }

@@ -24,7 +24,8 @@ public class GenerateSuggestionDialogContext {
     public enum ResourceDialogContextMode {
         OBJECT_TYPE,
         CORRELATION,
-        MAPPING
+        MAPPING,
+        ASSOCIATION
     }
 
     Direction direction;
