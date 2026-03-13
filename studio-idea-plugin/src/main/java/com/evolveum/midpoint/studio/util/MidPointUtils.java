@@ -1335,15 +1335,6 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
         });
     }
 
-    public static void openInEditor(Project project, PsiFile psiFile) {
-        if (psiFile == null || project == null) {
-            return;
-        }
-
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        fileEditorManager.openFile(psiFile.getVirtualFile(), true);
-    }
-
     public static XmlTag findObjectTypeById(@NotNull XmlTag tag, @NotNull String idValue) {
         if ("objectType".equals(tag.getName())) {
             String id = tag.getAttributeValue("id");

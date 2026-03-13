@@ -6,7 +6,7 @@
  *
  */
 
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard;
 
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
@@ -14,7 +14,7 @@ import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinitionImpl;
 import com.evolveum.midpoint.schema.processor.ResourceSchema;
 import com.evolveum.midpoint.schema.processor.ResourceSchemaFactory;
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
-import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardDialog;
+import com.evolveum.midpoint.studio.ui.dialog.wizard.MidpointWizardDialog;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.DialogWizardTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.ui.treetable.FilterableColumnInfo;
@@ -33,17 +33,16 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.*;
 import javax.swing.tree.TreePath;
-import javax.xml.namespace.QName;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+import java.util.stream.IntStream;
 
-public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDialogContext> {
+public class GenerateSuggestionWizard extends MidpointWizardDialog<GenerateSuggestionDialogContext> {
 
     private final String OBJECT_CLASS_TABLE_COMPONENT_ID = "OBJECT_CLASS_TABLE_COMPONENT";
     private final String OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID = "OBJECT_CLASS_ERROR_LABEL_COMPONENT";
@@ -55,108 +54,103 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
             GenerateSuggestionDialogContext context,
             DialogWindowActionHandler actionHandler
     ) {
-        super(project, title, context, actionHandler);
+        super(project, title, context, actionHandler, false);
         setSize(800, 600);
     }
 
     @Override
     protected void buildSteps(GenerateSuggestionDialogContext resource) {
-        steps.add(createResourceSelectPanel(dialogWizardContext.getResources()));
+//        steps.add(new MidpointWizardStep(null, createResourceTable(dialogWizardContext.getResources())));
     }
 
     @Override
     protected void onFinish(GenerateSuggestionDialogContext context) {
+        // TODO finished implementation
     }
 
-    private JPanel createResourceSelectPanel(SearchResultList<ObjectType> resources) {
-
+    private JPanel createResourceTable(SearchResultList<ObjectType> resources) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        DialogWizardTableModel<ObjectType> model = new DialogWizardTableModel<>(List.of(
-                new FilterableColumnInfo<>("Name", obj -> {
-                    if (obj instanceof ResourceType resourceType) {
-                        return resourceType.getName().getOrig();
-                    }
+        if (resources != null && !resources.isEmpty()) {
+            DialogWizardTableModel<ObjectType> model = new DialogWizardTableModel<>(List.of(
+                    new FilterableColumnInfo<>("Name", obj -> {
+                        if (obj instanceof ResourceType resourceType) {
+                            return resourceType.getName().getOrig();
+                        }
 
-                    return null;
-                }, true),
-                new FilterableColumnInfo<>("Description", obj -> {
-                    if (obj instanceof ResourceType resourceType) {
-                        return resourceType.getDescription();
-                    }
+                        return null;
+                    }, true),
+                    new FilterableColumnInfo<>("Description", obj -> {
+                        if (obj instanceof ResourceType resourceType) {
+                            return resourceType.getDescription();
+                        }
 
-                    return null;
-                }, false)
-        ));
-        var table = createTableComponent(model);
+                        return null;
+                    }, false)
+            ));
 
-        if (resources != null) {
+            var table = createTableComponent(model);
             model.setData(resources.getList());
 
-            table.getSelectionModel().addListSelectionListener(resourceEvent -> {
-                if (!resourceEvent.getValueIsAdjusting()) {
-                    int selectedRow = table.getSelectedRow();
+            TitledBorder resourceTitleBorder = BorderFactory.createTitledBorder("Resource:");
+            resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(Font.BOLD));
+            resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
 
-                    if (selectedRow >= 0) {
-                        String resourceOid = (String) table.getValueAt(selectedRow, 0);
+            JBScrollPane scrollPane = new JBScrollPane(table);
+            scrollPane.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createEmptyBorder(0, 0, 25, 0),
+                    resourceTitleBorder
+            ));
 
-                        if (resourceOid == null) {
-                            return;
-                        }
+            panel.add(scrollPane);
 
-                        dialogWizardContext.setResourceOid(resourceOid);
-                        dialogWizardContext.setObjectType(null);
-                        dialogWizardContext.setObjectClass(null);
-                        setOKActionEnabled(false);
+            table.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    int row = table.rowAtPoint(e.getPoint());
+                    if (row >= 0) {
+                        TreePath path = table.getTree().getPathForRow(row);
+                        if (path != null) {
+                            if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
+                                if (node.getUserObject() instanceof ResourceType resource) {
+                                    dialogWizardContext.setResourceOid(resource.getOid());
+                                    dialogWizardContext.setObjectType(null);
+                                    dialogWizardContext.setObjectClass(null);
 
-                        ResourceType resource = resources.stream()
-                                .filter(o -> o instanceof ResourceType)
-                                .map(o -> (ResourceType) o)
-                                .filter(r -> resourceOid.equals(r.getOid()))
-                                .findFirst()
-                                .orElse(null);
+                                    setOKActionEnabled(false);
 
-                        if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
-                            displayObjectClassTable(panel, resource);
-                        } else {
-                            displayObjectTypeTable(panel, resource);
-                        }
-                    }
-                }
-            });
-        }
-
-        table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int row = table.rowAtPoint(e.getPoint());
-                if (row >= 0) {
-                    TreePath path = table.getTree().getPathForRow(row);
-                    if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
-                        if (node.getUserObject() instanceof ResourceType resource) {
-                            if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
-                                displayObjectClassTable(panel, resource);
-                            } else {
-                                displayObjectTypeTable(panel, resource);
+                                    if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+                                        displayObjectClassTable(panel, resource);
+                                    } else {
+                                        displayObjectTypeTable(panel, resource);
+                                    }
+                                }
                             }
                         }
                     }
                 }
+            });
+
+            int initRow = IntStream.range(0, resources.size())
+                    .filter(i -> Objects.equals(
+                            resources.get(i).getOid(),
+                            dialogWizardContext.getResourceOid()
+                    ))
+                    .findFirst()
+                    .orElse(-1);
+
+            if (initRow >= 0 && initRow < table.getRowCount()) {
+                table.setRowSelectionInterval(initRow, initRow);
+
+                if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+                    displayObjectClassTable(panel, (ResourceType) resources.get(initRow));
+                } else {
+                    displayObjectTypeTable(panel, (ResourceType) resources.get(initRow));
+                }
             }
-        });
-
-        TitledBorder resourceTitleBorder = BorderFactory.createTitledBorder("Resource:");
-        resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(Font.BOLD));
-        resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
-
-        JBScrollPane scrollPane = new JBScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(0, 0, 25, 0),
-                resourceTitleBorder
-        ));
-
-        panel.add(scrollPane);
+        } else {
+            printErrorMsg(panel, "No resources found");
+        }
 
         return panel;
     }
@@ -192,7 +186,6 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
                 ));
 
                 model.setData(definitions.stream().toList());
-
                 var table = createTableComponent(model);
                 table.addMouseListener(new MouseAdapter() {
                     @Override
@@ -201,8 +194,8 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
                         if (row >= 0) {
                             TreePath path = table.getTree().getPathForRow(row);
                             if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
-                                if (node.getUserObject() instanceof ResourceObjectClassDefinition objectClassValue) {
-                                    dialogWizardContext.setObjectClass(objectClassValue.getObjectClassName());
+                                if (node.getUserObject() instanceof ResourceObjectClassDefinition objectClass) {
+                                    dialogWizardContext.setObjectClass(objectClass);
                                     setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectClass() != null);
                                 }
                             }
@@ -242,8 +235,6 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
         SchemaHandlingType schemaHandling = resource.getSchemaHandling();
 
         if (schemaHandling != null) {
-            var objectTypeList = schemaHandling.getObjectType();
-
             DialogWizardTableModel<ResourceObjectTypeDefinitionType> model = new DialogWizardTableModel<>(List.of(
                     new FilterableColumnInfo<>("Name", obj -> {
                         if (obj instanceof ResourceObjectTypeDefinitionType objectTypeDefinitionType) {
@@ -261,7 +252,7 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
                     },true)
             ));
 
-            model.setData(objectTypeList);
+            model.setData(schemaHandling.getObjectType());
 
             var table = createTableComponent(model);
             table.addMouseListener(new MouseAdapter() {
@@ -271,8 +262,8 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
                     if (row >= 0) {
                         TreePath path = table.getTree().getPathForRow(row);
                         if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
-                            if (node.getUserObject() instanceof ResourceObjectTypeDefinitionType objectTypeDefinitionType) {
-                                dialogWizardContext.setObjectType(objectTypeDefinitionType);
+                            if (node.getUserObject() instanceof ResourceObjectTypeDefinitionType objectTypeDefinition) {
+                                dialogWizardContext.setObjectType(objectTypeDefinition);
                                 setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectType() != null);
                             }
                         }

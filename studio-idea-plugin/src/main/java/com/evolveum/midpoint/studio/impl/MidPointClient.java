@@ -9,6 +9,7 @@ import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
@@ -490,9 +491,12 @@ public class MidPointClient {
         this.suppressNotifications = suppressNotifications;
     }
 
-    public ObjectTypesSuggestionType getSuggestObjectTypes(String oid, QName objectClass) {
+    public ObjectTypesSuggestionType getSuggestObjectTypes(
+            @NotNull String oid,
+            @NotNull ResourceObjectClassDefinition objectClass
+    ) {
         try {
-            return client.getSuggestObjectType(oid, objectClass);
+            return client.getSuggestObjectType(oid, objectClass.getObjectClassName());
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }
@@ -500,9 +504,12 @@ public class MidPointClient {
         return null;
     }
 
-    public CorrelationSuggestionsType getSuggestCorrelationRule(String oid, String kind, String intent) {
+    public CorrelationSuggestionsType getSuggestCorrelationRule(
+            @NotNull String oid,
+            @NotNull ResourceObjectTypeDefinitionType resourceObjectType
+    ) {
         try {
-            return client.getSuggestCorrelation(oid, kind, intent);
+            return client.getSuggestCorrelation(oid, resourceObjectType.getKind().value(), resourceObjectType.getIntent());
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }
@@ -510,9 +517,14 @@ public class MidPointClient {
         return null;
     }
 
-    public MappingsSuggestionType getSuggestMapping(String oid, String kind, String intent, boolean isInbound) {
+    public MappingsSuggestionType getSuggestMapping(
+            @NotNull String oid,
+            @NotNull ResourceObjectTypeDefinitionType resourceObjectType,
+            boolean isInbound
+    ) {
         try {
-            return client.getSuggestionMapping(oid, kind, intent, isInbound);
+            return client.getSuggestionMapping(
+                    oid, resourceObjectType.getKind().value(), resourceObjectType.getIntent(), isInbound);
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }
@@ -520,7 +532,7 @@ public class MidPointClient {
         return null;
     }
 
-    public AssociationsSuggestionType getSuggestAssociations(String oid) {
+    public AssociationsSuggestionType getSuggestAssociations(@NotNull String oid) {
         try {
             return client.getSuggestionAssociation(oid);
         } catch (Exception ex) {

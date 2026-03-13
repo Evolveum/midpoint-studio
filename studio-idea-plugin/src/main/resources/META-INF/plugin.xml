@@ -544,6 +544,14 @@
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt A"/>
         </action>
 
+        <!-- generate connector -->
+        <action id="MidPoint.Action.ConnectorGenerator"
+                class="com.evolveum.midpoint.studio.action.ConnectorGeneratorAction"
+                text="Connector Generator"
+                description="Connector generator">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt B"/>
+        </action>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">

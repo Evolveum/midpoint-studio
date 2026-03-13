@@ -13,7 +13,7 @@ import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.ui.treetable.FilterableColumnInfo;
@@ -27,15 +27,13 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*;
 import java.util.List;
 
 public class CorrelationRuleSuggestionAction extends SmartSuggestionAction<ItemsSubCorrelatorType> {
 
-    private static final Logger log = Logger.getInstance(ObjectTypeSuggestionAction.class);
+    private final Logger log = Logger.getInstance(this.getClass());
 
     @Override
     boolean isLockable() {
@@ -129,9 +127,12 @@ public class CorrelationRuleSuggestionAction extends SmartSuggestionAction<Items
     ) {
         var correlationSuggestions = client.getSuggestCorrelationRule(
                 generateSuggestionDialogContext.getResourceOid(),
-                generateSuggestionDialogContext.getObjectType().getKind().value(),
-                generateSuggestionDialogContext.getObjectType().getIntent()
+                generateSuggestionDialogContext.getObjectType()
         );
+
+        if (correlationSuggestions == null) {
+            return null;
+        }
 
         return correlationSuggestions.getSuggestion().stream()
                 .flatMap(correlationSuggestionType ->

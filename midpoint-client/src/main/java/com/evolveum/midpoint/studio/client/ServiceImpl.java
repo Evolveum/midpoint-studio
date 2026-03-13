@@ -540,7 +540,7 @@ public class ServiceImpl implements Service {
         Map<String, Object> params = new HashMap<>();
 
         params.put("resourceOid", oid);
-        params.put("objectClass", objectClass.toString());
+        params.put("objectClass", objectClass.getLocalPart());
 
         Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_OBJECT_TYPES, params)
                 .get();

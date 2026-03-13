@@ -6,13 +6,12 @@
  *
  */
 
-package com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog;
+package com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard;
 
 import com.evolveum.midpoint.schema.SearchResultList;
+import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectTypeDefinitionType;
-
-import javax.xml.namespace.QName;
 
 public class GenerateSuggestionDialogContext {
 
@@ -36,7 +35,7 @@ public class GenerateSuggestionDialogContext {
 
     String resourceOid;
 
-    QName objectClass;
+    ResourceObjectClassDefinition objectClass;
 
     ResourceObjectTypeDefinitionType objectType;
 
@@ -56,11 +55,11 @@ public class GenerateSuggestionDialogContext {
         this.resourceOid = resourceOid;
     }
 
-    public QName getObjectClass() {
+    public ResourceObjectClassDefinition getObjectClass() {
         return objectClass;
     }
 
-    public void setObjectClass(QName objectClass) {
+    public void setObjectClass(ResourceObjectClassDefinition objectClass) {
         this.objectClass = objectClass;
     }
 

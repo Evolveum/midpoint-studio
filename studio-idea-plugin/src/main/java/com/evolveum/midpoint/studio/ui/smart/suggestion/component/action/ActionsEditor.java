@@ -1,8 +1,6 @@
 package com.evolveum.midpoint.studio.ui.smart.suggestion.component.action;
 
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.studio.ui.diff.DiffPreviewController;
-import com.evolveum.midpoint.studio.ui.diff.LiveDiffPanel;
 import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -10,7 +8,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.diff.DiffContentFactory;
 import com.intellij.diff.DiffManager;
-import com.intellij.diff.DiffRequestPanel;
 import com.intellij.diff.comparison.ComparisonManager;
 import com.intellij.diff.comparison.ComparisonPolicy;
 import com.intellij.diff.fragments.LineFragment;
@@ -132,12 +129,9 @@ public class ActionsEditor extends AbstractCellEditor implements TableCellEditor
             resource.getSchemaHandling().getAssociationType().add(associationSuggestionType.getDefinition().clone());
         }
 
-        DiffPreviewController previewController = new DiffPreviewController(project, resourcePsiFile);
-        previewController.show(prismContext.xmlSerializer().serializeRealValue(resource.clone()));
-
-//        callDiffRequest(
-//                resourcePsiFile,
-//                prismContext.xmlSerializer().serializeRealValue(resource.clone()));
+        showDiff(
+                resourcePsiFile,
+                prismContext.xmlSerializer().serializeRealValue(resource.clone()));
     }
 
     private void discard() {
@@ -179,5 +173,89 @@ public class ActionsEditor extends AbstractCellEditor implements TableCellEditor
                 .createPopup();
 
         popup.show(new RelativePoint(table, point));
+    }
+
+    private void showDiff(@NotNull PsiFile originalPsiFile, @NotNull String updated) {
+        SimpleDiffRequest diffRequest = new SimpleDiffRequest(
+                "Preview Changes at Smart Suggestion",
+                DiffContentFactory.getInstance().create(
+                        project,
+                        originalPsiFile.getFileDocument()
+                ),
+                DiffContentFactory.getInstance().create(
+                        project,
+                        updated,
+                        originalPsiFile.getFileType()
+                ),
+                "Original",
+                "Suggested"
+        );
+
+        AnAction acceptAction = new AnAction(
+                "Accept All Suggestions",
+                "Accept all generated smart suggestions for this resource",
+                AllIcons.Actions.ShowWriteAccess
+        ) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                Project project = e.getProject();
+                if (project == null) return;
+
+                Document document = originalPsiFile.getViewProvider().getDocument();
+                if (document == null) return;
+
+                WriteCommandAction.runWriteCommandAction(project, () ->
+                        document.setText(updated)
+                );
+
+                VirtualFile file = originalPsiFile.getVirtualFile();
+                if (file != null) {
+                    FileEditorManager.getInstance(project).openFile(file, true);
+                }
+
+                for (VirtualFile openFile : FileEditorManager.getInstance(project).getOpenFiles()) {
+                    String name = openFile.getName();
+                    if (name.contains("Preview Changes at Smart Suggestion")) {
+                        FileEditorManager.getInstance(project).closeFile(openFile);
+                    }
+                }
+            }
+        };
+
+        diffRequest.putUserData(
+                DiffUserDataKeys.CONTEXT_ACTIONS,
+                List.of(acceptAction)
+        );
+
+        scrollToFirstNewBlock(originalPsiFile.getText(), updated, diffRequest);
+
+        DiffManager.getInstance().showDiff(project, diffRequest);
+    }
+
+    private void scrollToFirstNewBlock(
+            @NotNull String original,
+            @NotNull String updated,
+            @NotNull SimpleDiffRequest diffRequest
+    ) {
+        List<LineFragment> fragments = ComparisonManager.getInstance()
+                .compareLines(
+                        original,
+                        updated,
+                        ComparisonPolicy.DEFAULT,
+                        new EmptyProgressIndicator()
+                );
+
+        fragments.stream()
+                .filter(fragment ->
+                        fragment.getStartLine1() == fragment.getEndLine1()
+                                && fragment.getStartLine2() < fragment.getEndLine2()
+                )
+                .min(Comparator.comparingInt(LineFragment::getStartLine2))
+                .ifPresent(fragment ->
+                        diffRequest.putUserData(
+                                DiffUserDataKeys.SCROLL_TO_LINE,
+                                Pair.create(Side.RIGHT, fragment.getStartLine2())
+                        )
+                );
     }
 }

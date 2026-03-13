@@ -4,6 +4,8 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.ui.popup.JBPopupListener;
+import com.intellij.openapi.ui.popup.LightweightWindowEvent;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SearchTextField;
@@ -12,7 +14,6 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.JBUI;
-import org.apache.http.Header;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -30,7 +31,6 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
 
     public DefaultTreeTable(M model) {
         super(model);
-
         setupComponent();
     }
 
@@ -82,9 +82,7 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
                             if (viewColumn < 0) return;
 
                             if (isClickOnFunnel(header, viewColumn, e.getX())) {
-                                filterHeaderRenderer.setActiveFilter(columnFilters.get(viewColumn) != null);
-                                showFilterPopup(columnFilters, viewColumn, e);
-                                header.repaint();
+                                showFilterPopup(columnFilters, header, filterHeaderRenderer, viewColumn, e);
                             }
                         }
                     });
@@ -145,7 +143,7 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
         return mouseX >= iconStartX;
     }
 
-    public void showFilterPopup(Map<Integer, String> columnFilters, int modelColumnIndex, MouseEvent e) {
+    public void showFilterPopup(Map<Integer, String> columnFilters, JTableHeader header, FilterHeaderRenderer filterHeaderRenderer, int modelColumnIndex, MouseEvent e) {
         SearchTextField searchField = new SearchTextField();
         searchField.setText(columnFilters.getOrDefault(modelColumnIndex, ""));
         searchField.setBorder(JBUI.Borders.empty(5));
@@ -171,6 +169,17 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
                 getTableModel().applyFilter(text);
             }
         });
+
+        // change state of filter funnel
+//        popup.addListener(new JBPopupListener() {
+//            @Override
+//            public void onClosed(@NotNull LightweightWindowEvent event) {
+//                String text = searchField.getText();
+//                filterHeaderRenderer.setActiveFilter(text != null && !text.isEmpty());
+//                header.revalidate();
+//                header.repaint();
+//            }
+//        });
 
         popup.show(new RelativePoint(e.getComponent(), new Point(e.getX(), e.getComponent().getHeight())));
     }
@@ -199,7 +208,7 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
             JLabel label = new JLabel(value == null ? "" : value.toString());
             label.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 4));
 
-            FilterIconLabel funnel = new FilterIconLabel(AllIcons.General.Filter, activeFilter);
+            FunnelIconLabel funnel = new FunnelIconLabel(AllIcons.General.Filter, activeFilter);
             funnel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 6));
 
             panel.add(label, BorderLayout.WEST);
@@ -213,11 +222,11 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
         }
     }
 
-    private static class FilterIconLabel extends JLabel {
+    private static class FunnelIconLabel extends JLabel {
 
         boolean active;
 
-        public FilterIconLabel(Icon icon, boolean active) {
+        public FunnelIconLabel(Icon icon, boolean active) {
             super(icon);
             setOpaque(false);
             this.active = active;
@@ -225,6 +234,10 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
 
         public void setActive(boolean active) {
             this.active = active;
+            Graphics g = getGraphics();
+            if (g != null) {
+                paintComponent(g);
+            }
         }
 
         @Override
@@ -238,16 +251,16 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
             int dotSize = 6;
-            int haloSize = 10;
+            int borderSize = 10;
 
-            int x = getWidth() - haloSize - 5;
+            int x = getWidth() - borderSize - 5;
             int y = 1;
 
             g2.setColor(JBColor.namedColor("Panel.background", new JBColor(0xffffff, 0x3c3f41)));
-            g2.fillOval(x, y, haloSize, haloSize);
+            g2.fillOval(x, y, borderSize, borderSize);
 
-            int innerX = x + (haloSize - dotSize) / 2;
-            int innerY = y + (haloSize - dotSize) / 2;
+            int innerX = x + (borderSize - dotSize) / 2;
+            int innerY = y + (borderSize - dotSize) / 2;
 
             g2.setColor(JBColor.GREEN);
             g2.fillOval(innerX, innerY, dotSize, dotSize);

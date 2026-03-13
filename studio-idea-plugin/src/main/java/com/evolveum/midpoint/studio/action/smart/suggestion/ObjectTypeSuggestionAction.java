@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDialogContext;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceObjectTypeDefinitionType> {
 
-    private static final Logger log = Logger.getInstance(ObjectTypeSuggestionAction.class);
+    private final Logger log = Logger.getInstance(this.getClass());
 
     @Override
     boolean isLockable() {
@@ -114,6 +114,10 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
                 generateSuggestionDialogContext.getResourceOid(),
                 generateSuggestionDialogContext.getObjectClass()
         );
+
+        if (objectSuggestion == null) {
+            return null;
+        }
 
         return objectSuggestion.getObjectType().stream()
                 .map(o -> new SmartSuggestionObject<>(o, getResources(generateSuggestionDialogContext)))

@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.action.task.DownloadTask;
 import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
@@ -11,11 +10,12 @@ import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionDialogContext;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.dialog.GenerateSuggestionWizard;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionWizard;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.intellij.ide.util.treeView.TreeState;
 import com.intellij.notification.Notification;
@@ -26,7 +26,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.evolveum.midpoint.studio.util.Pair;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -171,14 +170,10 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
                                 @Override
                                 public void run(@NotNull ProgressIndicator progressIndicator) {
-                                    DownloadTask downloadTask = new DownloadTask(project,
-                                            List.of(new Pair<>(generateSuggestionDialogContext.getResourceOid(), ObjectTypes.RESOURCE)),
-                                            false,
-                                            true,
-                                            true);
-                                    downloadTask.setEnvironment(env);
-                                    downloadTask.setOpenAfterDownload(true);
-                                    ProgressManager.getInstance().run(downloadTask);
+                                    RunnableUtils.runWriteActionAndWait(() -> {
+                                        var psiFileResource = MidPointUtils.findPsiByOid(project, generateSuggestionDialogContext.getResourceOid());
+                                        MidPointUtils.openFile(project, psiFileResource.getVirtualFile());
+                                    });
 
                                     objectSuggestions = getSuggestions(client, generateSuggestionDialogContext);
                                 }
