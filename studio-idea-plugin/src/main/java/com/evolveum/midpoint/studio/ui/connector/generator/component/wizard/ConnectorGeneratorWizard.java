@@ -1,13 +1,21 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard;
 
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.InitialPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.BasicSettingPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.ConnectorIdentificationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.CreatingConnectorPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection.AuthMethodSupportPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection.BaseUrlSpecificationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection.CredentialsPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection.TestConnectionPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.next.NextPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.objectClass.*;
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.*;
 import com.intellij.openapi.project.Project;
 
-import javax.swing.*;
-import java.awt.*;
-
-public class ConnectorGeneratorWizard extends MidpointWizardDialog<ConnectorGeneratorDialogContext> {
+public class ConnectorGeneratorWizard extends WizardDialog<ConnectorGeneratorDialogContext> {
 
     public ConnectorGeneratorWizard(
             Project project,
@@ -16,84 +24,117 @@ public class ConnectorGeneratorWizard extends MidpointWizardDialog<ConnectorGene
             DialogWindowActionHandler actionHandler,
             boolean navigationMenuVisible
     ) {
-        super(project, title, dialogWizardContext, actionHandler, navigationMenuVisible);
-        setSize(800, 600);
+        super(
+                project,
+                title,
+                dialogWizardContext,
+                new WizardStep<>("", WizardStepStatus.NONE, new InitialPanel()),
+                actionHandler,
+                navigationMenuVisible
+        );
+        setSize(1200, 900);
     }
 
     @Override
     protected void buildSteps(ConnectorGeneratorDialogContext context) {
-        var first = new JPanel(new BorderLayout());
-        first.add(new JLabel("FIRST"));
+        WizardStep<ConnectorGeneratorDialogContext> basicGroup = new WizardStep<>("Basic settings", WizardStepStatus.NONE, new InitialPanel());
+        basicGroup.addChild(new WizardStep<>(
+                "Application identification",
+                WizardStepStatus.COMPLETE,
+                new BasicSettingPanel(context)
+        ));
 
-        var second = new JPanel(new BorderLayout());
-        second.add(new JLabel("SECOND"));
+        basicGroup.addChild(new WizardStep<>(
+                "Documentation",
+                WizardStepStatus.IN_PROGRESS,
+                new DocumentationPanel(context)
+        ));
 
-        var third = new JPanel(new BorderLayout());
-        third.add(new JLabel("THIRD"));
+        basicGroup.addChild(new WizardStep<>(
+                "Connector identification",
+                WizardStepStatus.PENDING,
+                new ConnectorIdentificationPanel(context)
+        ));
 
-        var four = new JPanel(new BorderLayout());
-        four.add(new JLabel("FOUR"));
+        basicGroup.addChild(new WizardStep<>(
+                "Creating connector",
+                WizardStepStatus.NONE,
+                new CreatingConnectorPanel(context)
+        ));
 
-        var five = new JPanel(new BorderLayout());
-        five.add(new JLabel("FIVE"));
+        WizardStep<ConnectorGeneratorDialogContext> connectionGroup = new WizardStep<>("Connection", WizardStepStatus.NONE, new InitialPanel());
+        connectionGroup.addChild(new WizardStep<>(
+                "Base URL specification",
+                WizardStepStatus.NONE,
+                new BaseUrlSpecificationPanel(context)
+        ));
 
-        var six = new JPanel(new BorderLayout());
-        six.add(new JLabel("SIX"));
+        connectionGroup.addChild(new WizardStep<>(
+                "Auth method support",
+                WizardStepStatus.NONE,
+                new AuthMethodSupportPanel(context)
+        ));
 
+        connectionGroup.addChild(new WizardStep<>(
+                "Credentials",
+                WizardStepStatus.NONE,
+                new CredentialsPanel(context)
+        ));
 
-        NavigationStep basic = new NavigationStep(
-                "Basic settings",
-                StepStatus.COMPLETE,
-                first
-        );
+        connectionGroup.addChild(new WizardStep<>(
+                "Test connection",
+                WizardStepStatus.NONE,
+                new TestConnectionPanel(context)
+        ));
 
-        NavigationStep connection = new NavigationStep(
-                "Connection",
-                StepStatus.COMPLETE,
-                second
-        );
-
-
-        NavigationStep connection1 = new NavigationStep(
-                "Connection1",
-                StepStatus.COMPLETE,
-                four
-        );
-
-
-        NavigationStep connection2 = new NavigationStep(
-                "Connection2",
-                StepStatus.COMPLETE,
-                five
-        );
-
-        NavigationStep objectGroup = new NavigationStep("Object class: User", StepStatus.PENDING, third);
-
-        objectGroup.addChild(new NavigationStep(
+        WizardStep<ConnectorGeneratorDialogContext> objectClassGroup = new WizardStep<>("Object class: User", WizardStepStatus.NONE, new InitialPanel());
+        objectClassGroup.addChild(new WizardStep<>(
                 "Object classes",
-                StepStatus.COMPLETE,
-                four
+                WizardStepStatus.NONE,
+                new ObjectClassesPanel(context)
         ));
 
-        objectGroup.addChild(new NavigationStep(
+        objectClassGroup.addChild(new WizardStep<>(
                 "Schema scripts validation",
-                StepStatus.COMPLETE,
-                five
+                WizardStepStatus.NONE,
+                new SchemaScriptValidatorPanel(context)
         ));
 
-        objectGroup.addChild(new NavigationStep(
+        objectClassGroup.addChild(new WizardStep<>(
                 "Schema validation",
-                StepStatus.IN_PROGRESS,
-                six
+                WizardStepStatus.NONE,
+                new SchemaValidationPanel(context)
         ));
 
-        rootStep.addChild(basic);
-        rootStep.addChild(connection);
+        objectClassGroup.addChild(new WizardStep<>(
+                "Search endpoints",
+                WizardStepStatus.NONE,
+                new SearchEndpointPanel(context)
+        ));
 
-        rootStep.addChild(connection1);
-        rootStep.addChild(connection2);
+        objectClassGroup.addChild(new WizardStep<>(
+                "Search all script validation",
+                WizardStepStatus.NONE,
+                new SearchAllScriptValidationPanel(context)
+        ));
 
-        rootStep.addChild(objectGroup);
+        objectClassGroup.addChild(new WizardStep<>(
+                "Search results",
+                WizardStepStatus.NONE,
+                new SearchResultPanel(context)
+        ));
+
+        WizardStep<ConnectorGeneratorDialogContext> nextGroup = new WizardStep<>("Next", WizardStepStatus.NONE, new InitialPanel());
+        nextGroup.addChild(new WizardStep<>(
+                "Next",
+                WizardStepStatus.NONE,
+                new NextPanel(context)
+        ));
+
+        rootStep.addChild(basicGroup);
+        rootStep.addChild(connectionGroup);
+        rootStep.addChild(objectClassGroup);
+        rootStep.addChild(nextGroup);
     }
 
     @Override

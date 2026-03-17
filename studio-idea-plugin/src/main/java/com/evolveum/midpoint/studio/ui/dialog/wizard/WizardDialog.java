@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.Consumer;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,45 +21,41 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.List;
 
-public abstract class MidpointWizardDialog<T> extends DialogWrapper {
+public abstract class WizardDialog<CT> extends DialogWrapper {
 
-    private final Project project;
-//    protected final List<MidpointWizardStep> steps = new ArrayList<>();
-    protected NavigationStep rootStep = new NavigationStep("Progress", StepStatus.PENDING, new JPanel());
-    public NavigationStep currentStep;
+    protected WizardStep<CT> rootStep;
+    public WizardStep<CT> currentStep;
 
-
-    protected int currentStepIndex = 0;
-    protected final T dialogWizardContext;
+    protected final CT dialogWizardContext;
     private final DialogWindowActionHandler actionHandler;
     private final boolean navigationBarVisible;
 
     private final JPanel contentPanel = new JPanel(new BorderLayout());
     protected final JButton nextButton = new JButton("Next");
     protected final JButton prevButton = new JButton("Back");
+    private JBPanel<?> panel;
 
     /**
      * Subclasses should override this to build wizard steps dynamically
      */
-    protected abstract void buildSteps(T context);
+    protected abstract void buildSteps(CT context);
 
-    protected abstract void onFinish(T context);
+    protected abstract void onFinish(CT context);
 
-    public MidpointWizardDialog(
+    public WizardDialog(
             Project project,
             String title,
-            T dialogWizardContext,
+            CT dialogWizardContext,
+            WizardStep<CT> rootStep,
             DialogWindowActionHandler actionHandler,
             boolean navigationBarVisible
     ) {
         super(project);
-        this.project = project;
         this.dialogWizardContext = dialogWizardContext;
         this.actionHandler = actionHandler;
         this.navigationBarVisible = navigationBarVisible;
-
+        this.rootStep = rootStep;
         this.currentStep = rootStep;
 
         setTitle(title);
@@ -79,37 +76,42 @@ public abstract class MidpointWizardDialog<T> extends DialogWrapper {
 
         if (rootStep.hasChildren()) {
             JPanel positionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-//            FIXME set enable prevButton if real does not exist prev step
-//            prevButton.setEnabled(false);
-            prevButton.addActionListener(e -> setCurrentStep(currentStep.getPreviousStep()));
+            prevButton.setEnabled(currentStep.getPreviousStep(rootStep) != null);
+
+            prevButton.addActionListener(e -> {
+                currentStep.getContentPanel().onStateChanged();
+                displayStep(currentStep.getPreviousStep(rootStep));
+            });
 
             nextButton.addActionListener(e -> {
-                setCurrentStep(currentStep.getNextStep(rootStep));
+                currentStep.getContentPanel().onStateChanged();
+                displayStep(currentStep.getNextStep(rootStep));
             });
 
             positionPanel.add(prevButton);
             positionPanel.add(nextButton);
-            displayStep(currentStep);
             wrapper.add(positionPanel, BorderLayout.SOUTH);
 
             if (navigationBarVisible) {
-                wrapper.add(createNavigationPanel(null), BorderLayout.WEST);
+                wrapper.add(createNavigationPanel(rootStep), BorderLayout.WEST);
             }
         } else {
-            wrapper.add(rootStep.getContentPanel(), BorderLayout.CENTER);
+            wrapper.add(rootStep.getContentPanel().getPanel(), BorderLayout.CENTER);
         }
 
         return wrapper;
     }
 
-    private void displayStep(NavigationStep step) {
+    private void displayStep(WizardStep<CT> step) {
         contentPanel.removeAll();
-        contentPanel.add(step.getContentPanel(), BorderLayout.CENTER);
+        contentPanel.add(step.getContentPanel().getPanel(), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
 
-//        prevButton.setEnabled(currentStep.getPreviousStep() != null);
-//        nextButton.setEnabled(currentStep.getNextStep() != null);
+        setCurrentStep(step);
+
+        prevButton.setEnabled(currentStep.getPreviousStep(rootStep) != null);
+        nextButton.setEnabled(currentStep.getNextStep(rootStep) != null);
     }
 
     @Override
@@ -170,78 +172,48 @@ public abstract class MidpointWizardDialog<T> extends DialogWrapper {
         return actions;
     }
 
-    public void setCurrentStep(NavigationStep currentStep) {
+    public void setCurrentStep(WizardStep<CT> currentStep) {
         this.currentStep = currentStep;
     }
 
-    private JComponent createNavigationPanel(List<NavigationStep> steps) {
+    private JComponent createNavigationPanel(WizardStep<CT> rootStep) {
         JBPanel<?> navigationPanel = new JBPanel<>();
         navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.Y_AXIS));
         navigationPanel.setBorder(JBUI.Borders.empty(15));
         navigationPanel.setPreferredSize(new Dimension(300, 300));
 
-        JLabel progressLabel = new JLabel("navigationTitle");
+        JLabel progressLabel = new JLabel(rootStep.getTitle());
         progressLabel.setFont(progressLabel.getFont().deriveFont(Font.BOLD, 15f));
         navigationPanel.add(progressLabel);
         navigationPanel.add(Box.createVerticalStrut(15));
 
-//        steps.forEach(midpointWizardStep -> {
-//            var navigationItem = midpointWizardStep.getNavigationItem();
-//            navigationItem.getTitleLabel().addActionListener(e -> showStep(navigationItem.getStepIndex()));
-//            navigationPanel.add(navigationItem);
-//            navigationPanel.add(Box.createVerticalStrut(10));
-//        });
+        renderNavigationItems(rootStep, navigationPanel);
 
         return new JBScrollPane(navigationPanel);
     }
 
-//    public void renderSteps(JPanel panel, NavigationStep step, int indent) {
-//        JPanel row = createStepRow(step, indent);
-//        panel.add(row);
-//
-//        for (NavigationStep child : step.getChildren()) {
-//            renderSteps(panel, child, indent + 20);
-//        }
-//    }
+    private void renderNavigationItems(
+            WizardStep<CT> rootStep,
+            JBPanel<?> navigationPanel
+    ) {
+        navigationPanel.removeAll();
+        navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.Y_AXIS));
+        navigationPanel.setOpaque(false);
 
-//    private JPanel createStepRow(NavigationStep step, int indent) {
-//        JPanel row = new JPanel(new BorderLayout());
-//        row.setBorder(BorderFactory.createEmptyBorder(6, indent, 6, 10));
-//
-//        JLabel label = new JLabel(step.getTitle());
-//
-//        JLabel status = new JLabel(step.getStatus().name());
-//        status.setOpaque(true);
-//
-//        switch (step.getStatus()) {
-//            case COMPLETE -> status.setBackground(new Color(76,175,80));
-//            case IN_PROGRESS -> status.setBackground(new Color(0,150,136));
-//            case PENDING -> status.setBackground(Color.GRAY);
-//        }
-//
-//        if (step.getNavigationAction() != null) {
-//            row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//            row.addMouseListener(new java.awt.event.MouseAdapter() {
-//                public void mouseClicked(java.awt.event.MouseEvent e) {
-//                    step.getNavigationAction().run();
-//                }
-//            });
-//        }
-//
-//        row.add(label, BorderLayout.WEST);
-//        row.add(status, BorderLayout.EAST);
-//
-//        return row;
-//    }
-//
-//    public JComponent buildNavigation(NavigationStep root) {
-//        JPanel panel = new JPanel();
-//        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-//
-//        for (NavigationStep step : root.getChildren()) {
-//            renderSteps(panel, step, 0);
-//        }
-//
-//        return panel;
-//    }
+        JBScrollPane scrollPane = new JBScrollPane(navigationPanel);
+        scrollPane.setBorder(null);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        Consumer<WizardStep<CT>> onSelect = step -> {
+            displayStep(step);
+            navigationPanel.revalidate();
+            navigationPanel.repaint();
+        };
+
+        for (WizardStep<CT> step : rootStep.getChildren()) {
+            navigationPanel.add(new NavigationItem<>(step, 0, onSelect));
+            navigationPanel.add(Box.createVerticalStrut(8));
+        }
+    }
 }

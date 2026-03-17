@@ -14,7 +14,9 @@ import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinitionImpl;
 import com.evolveum.midpoint.schema.processor.ResourceSchema;
 import com.evolveum.midpoint.schema.processor.ResourceSchemaFactory;
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
-import com.evolveum.midpoint.studio.ui.dialog.wizard.MidpointWizardDialog;
+import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardStepStatus;
+import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardDialog;
+import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardStep;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.DialogWizardTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.ui.treetable.FilterableColumnInfo;
@@ -42,7 +44,7 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class GenerateSuggestionWizard extends MidpointWizardDialog<GenerateSuggestionDialogContext> {
+public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDialogContext> {
 
     private final String OBJECT_CLASS_TABLE_COMPONENT_ID = "OBJECT_CLASS_TABLE_COMPONENT";
     private final String OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID = "OBJECT_CLASS_ERROR_LABEL_COMPONENT";
@@ -54,7 +56,7 @@ public class GenerateSuggestionWizard extends MidpointWizardDialog<GenerateSugge
             GenerateSuggestionDialogContext context,
             DialogWindowActionHandler actionHandler
     ) {
-        super(project, title, context, actionHandler, false);
+        super(project, title, context, new WizardStep<>("", WizardStepStatus.NONE, new InitialPanel()), actionHandler, false);
         setSize(800, 600);
     }
 
