@@ -232,7 +232,6 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = properties("pluginSinceBuild")
-            untilBuild = properties("pluginUntilBuild")
         }
     }
 
@@ -277,7 +276,6 @@ intellijPlatform {
                 )
 
                 sinceBuild = "253"
-                untilBuild = properties("pluginUntilBuild")
             }
         }
     }
@@ -349,7 +347,6 @@ tasks {
         types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
 
         sinceBuild = properties("pluginSinceBuild")
-        untilBuild = properties("pluginUntilBuild")
     }
 }
 
