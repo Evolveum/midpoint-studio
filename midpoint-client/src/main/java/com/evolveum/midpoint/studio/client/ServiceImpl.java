@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.client;
 
+import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
 import com.evolveum.midpoint.model.api.util.SmartIntegrationConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
@@ -13,6 +14,7 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -575,7 +577,8 @@ public class ServiceImpl implements Service {
         params.put("intent", intent);
         params.put("isInbound", isInbound);
 
-        Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_MAPPINGS, params)
+        Request.Builder builder = context.build(
+                "/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_MAPPINGS, params)
                 .get();
 
         Request req = builder.build();
@@ -595,5 +598,23 @@ public class ServiceImpl implements Service {
         Request req = builder.build();
 
         return executeRequest(req, AssociationsSuggestionType.class);
+    }
+
+    @Override
+    public ConnectorDevelopmentOperation connectorDevelopmentBasicSetting(ConnDevApplicationInfoType connDevApplicationInfoType) throws SchemaException, AuthenticationException, IOException {
+        String content = context.serialize(connDevApplicationInfoType);
+
+        System.out.println("CONTENT: " + content);
+
+        Request.Builder builder = context.build("/ws/connector-generator",
+                        ConnectorGeneratorConstants.RPC_CONNECTOR_GENERATOR_BASIC_SETTING, null)
+                .post(RequestBody.create(content, ServiceContext.APPLICATION_XML));
+
+        return executeRequest(builder.build(), ConnectorDevelopmentOperation.class);
+    }
+
+    @Override
+    public ConnDevDiscoverDocumentationResultType getConnectorDevelopmentDiscoverDocumentation(ConnectorDevelopmentOperation connectorDevelopmentOperation) throws SchemaException, AuthenticationException, IOException {
+        return null;
     }
 }

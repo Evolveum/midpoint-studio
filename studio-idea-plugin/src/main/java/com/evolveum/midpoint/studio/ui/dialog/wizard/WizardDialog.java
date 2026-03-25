@@ -9,6 +9,7 @@
 package com.evolveum.midpoint.studio.ui.dialog.wizard;
 
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
+import com.evolveum.midpoint.studio.ui.dialog.wizard.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBPanel;
@@ -93,7 +94,12 @@ public abstract class WizardDialog<CT> extends DialogWrapper {
             wrapper.add(positionPanel, BorderLayout.SOUTH);
 
             if (navigationBarVisible) {
-                wrapper.add(createNavigationPanel(rootStep), BorderLayout.WEST);
+                JBScrollPane navigationScrollPane = new JBScrollPane(createNavigationPanel(rootStep));
+                navigationScrollPane.setBorder(null);
+                navigationScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                navigationScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+                wrapper.add(navigationScrollPane, BorderLayout.WEST);
             }
         } else {
             wrapper.add(rootStep.getContentPanel().getPanel(), BorderLayout.CENTER);
@@ -189,21 +195,11 @@ public abstract class WizardDialog<CT> extends DialogWrapper {
 
         renderNavigationItems(rootStep, navigationPanel);
 
-        return new JBScrollPane(navigationPanel);
+        return navigationPanel;
     }
 
-    private void renderNavigationItems(
-            WizardStep<CT> rootStep,
-            JBPanel<?> navigationPanel
-    ) {
+    private void renderNavigationItems(WizardStep<CT> rootStep, JBPanel<?> navigationPanel) {
         navigationPanel.removeAll();
-        navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.Y_AXIS));
-        navigationPanel.setOpaque(false);
-
-        JBScrollPane scrollPane = new JBScrollPane(navigationPanel);
-        scrollPane.setBorder(null);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         Consumer<WizardStep<CT>> onSelect = step -> {
             displayStep(step);

@@ -3,6 +3,8 @@ package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ste
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevApplicationInfoType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDeploymentType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevIntegrationType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.components.JBPanel;
@@ -42,13 +44,8 @@ public class BasicSettingPanel extends JBPanel<BasicSettingPanel> implements Wiz
 
         var versionField = new JBTextField();
 
-        var integrationTypeCombo = new ComboBox<>(new String[]{
-                "Undefined", "REST", "SOAP", "Database", "Custom"
-        });
-
-        var deploymentTypeCombo = new ComboBox<>(new String[]{
-                "Undefined", "Cloud", "On-Premise", "Hybrid"
-        });
+        ComboBox<ConnDevIntegrationType> integrationTypeCombo = new ComboBox<>(ConnDevIntegrationType.values());
+        ComboBox<ConnDevDeploymentType> deploymentTypeCombo = new ComboBox<>(ConnDevDeploymentType.values());
 
         JScrollPane descriptionScroll = new JBScrollPane(descriptionArea);
 
@@ -89,7 +86,8 @@ public class BasicSettingPanel extends JBPanel<BasicSettingPanel> implements Wiz
     @Override
     public void onStateChanged() {
         this.updateDialogContext.run();
-
+        var a = dialogContext.getClient().connectorDevelopmentBasicSetting(dialogContext.getConnDevApplicationInfoType());
+        System.out.println("RESULT of endpoint " + a);
     }
 
     @Override

@@ -1,14 +1,9 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard;
 
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.InitialPanel;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.BasicSettingPanel;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.ConnectorIdentificationPanel;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.CreatingConnectorPanel;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DocumentationPanel;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection.AuthMethodSupportPanel;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection.BaseUrlSpecificationPanel;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection.CredentialsPanel;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection.TestConnectionPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.*;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection.*;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.next.InitialNextPanel;
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.next.NextPanel;
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.objectClass.*;
 import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
@@ -22,7 +17,7 @@ public class ConnectorGeneratorWizard extends WizardDialog<ConnectorGeneratorDia
             String title,
             ConnectorGeneratorDialogContext dialogWizardContext,
             DialogWindowActionHandler actionHandler,
-            boolean navigationMenuVisible
+            boolean navigationBarVisible
     ) {
         super(
                 project,
@@ -30,14 +25,14 @@ public class ConnectorGeneratorWizard extends WizardDialog<ConnectorGeneratorDia
                 dialogWizardContext,
                 new WizardStep<>("", WizardStepStatus.NONE, new InitialPanel()),
                 actionHandler,
-                navigationMenuVisible
+                navigationBarVisible
         );
         setSize(1200, 900);
     }
 
     @Override
     protected void buildSteps(ConnectorGeneratorDialogContext context) {
-        WizardStep<ConnectorGeneratorDialogContext> basicGroup = new WizardStep<>("Basic settings", WizardStepStatus.NONE, new InitialPanel());
+        WizardStep<ConnectorGeneratorDialogContext> basicGroup = new WizardStep<>("Basic settings", WizardStepStatus.NONE, new InitialBasicSettingPanel());
         basicGroup.addChild(new WizardStep<>(
                 "Application identification",
                 WizardStepStatus.COMPLETE,
@@ -62,7 +57,7 @@ public class ConnectorGeneratorWizard extends WizardDialog<ConnectorGeneratorDia
                 new CreatingConnectorPanel(context)
         ));
 
-        WizardStep<ConnectorGeneratorDialogContext> connectionGroup = new WizardStep<>("Connection", WizardStepStatus.NONE, new InitialPanel());
+        WizardStep<ConnectorGeneratorDialogContext> connectionGroup = new WizardStep<>("Connection", WizardStepStatus.NONE, new InitialConnectionPanel());
         connectionGroup.addChild(new WizardStep<>(
                 "Base URL specification",
                 WizardStepStatus.NONE,
@@ -87,7 +82,7 @@ public class ConnectorGeneratorWizard extends WizardDialog<ConnectorGeneratorDia
                 new TestConnectionPanel(context)
         ));
 
-        WizardStep<ConnectorGeneratorDialogContext> objectClassGroup = new WizardStep<>("Object class: User", WizardStepStatus.NONE, new InitialPanel());
+        WizardStep<ConnectorGeneratorDialogContext> objectClassGroup = new WizardStep<>("Object class: User", WizardStepStatus.NONE, new InitialObjectClassPanel());
         objectClassGroup.addChild(new WizardStep<>(
                 "Object classes",
                 WizardStepStatus.NONE,
@@ -124,7 +119,7 @@ public class ConnectorGeneratorWizard extends WizardDialog<ConnectorGeneratorDia
                 new SearchResultPanel(context)
         ));
 
-        WizardStep<ConnectorGeneratorDialogContext> nextGroup = new WizardStep<>("Next", WizardStepStatus.NONE, new InitialPanel());
+        WizardStep<ConnectorGeneratorDialogContext> nextGroup = new WizardStep<>("Next", WizardStepStatus.NONE, new InitialNextPanel());
         nextGroup.addChild(new WizardStep<>(
                 "Next",
                 WizardStepStatus.NONE,

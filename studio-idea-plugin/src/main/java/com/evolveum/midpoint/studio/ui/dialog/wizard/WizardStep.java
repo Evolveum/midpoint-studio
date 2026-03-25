@@ -44,7 +44,7 @@ public class WizardStep<CT> {
     }
 
     public WizardStep<CT> getPreviousStep(WizardStep<CT> rootStep) {
-        var flattened = flatten(rootStep);
+        var flattened = flatten(List.of(rootStep));
         int currentIndex = flattened.indexOf(this);
 
         if (currentIndex > 0) {
@@ -55,7 +55,7 @@ public class WizardStep<CT> {
     }
 
     public WizardStep<CT> getNextStep(WizardStep<CT> rootStep) {
-        var flattened = flatten(rootStep);
+        var flattened = flatten(List.of(rootStep));
         int currentIndex = flattened.indexOf(this);
 
         if (currentIndex != -1 && currentIndex < flattened.size() - 1) {
@@ -63,6 +63,24 @@ public class WizardStep<CT> {
         }
 
         return null;
+    }
+
+    private void traverse(WizardStep<CT> node, List<WizardStep<CT>> result) {
+        if (node == null) return;
+
+        result.add(node);
+
+        for (WizardStep<CT> child : node.children) {
+            traverse(child, result);
+        }
+    }
+
+    public List<WizardStep<CT>> flatten(List<WizardStep<CT>> roots) {
+        List<WizardStep<CT>> result = new ArrayList<>();
+        for (WizardStep<CT> root : roots) {
+            traverse(root, result);
+        }
+        return result;
     }
 
     private List<WizardStep<CT>> flatten(WizardStep<CT> rootStep) {

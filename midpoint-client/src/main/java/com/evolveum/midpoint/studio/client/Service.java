@@ -6,6 +6,7 @@ import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -74,4 +75,8 @@ public interface Service {
     MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException;
 
     AssociationsSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException;
+
+    ConnectorDevelopmentOperation connectorDevelopmentBasicSetting(ConnDevApplicationInfoType connDevApplicationInfoType) throws SchemaException, AuthenticationException, IOException;
+
+    ConnDevDiscoverDocumentationResultType getConnectorDevelopmentDiscoverDocumentation(ConnectorDevelopmentOperation connectorDevelopmentOperation) throws SchemaException, AuthenticationException, IOException;
 }

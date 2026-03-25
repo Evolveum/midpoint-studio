@@ -11,6 +11,7 @@ import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
@@ -535,6 +536,16 @@ public class MidPointClient {
     public AssociationsSuggestionType getSuggestAssociations(@NotNull String oid) {
         try {
             return client.getSuggestionAssociation(oid);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public ConnectorDevelopmentOperation connectorDevelopmentBasicSetting(ConnDevApplicationInfoType connDevApplicationInfoType) {
+        try {
+            return client.connectorDevelopmentBasicSetting(connDevApplicationInfoType);
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }
