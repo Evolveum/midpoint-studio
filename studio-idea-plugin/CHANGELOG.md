@@ -2,10 +2,10 @@
 
 ## [4.10.1]
 ### Added
+- Support for Intellij Idea 2026.1
 
 ### Changed
-
-### Fixed
+- Updated MidPoint libraries to version 4.10.2
 
 ## [4.10.0]
 ### Added
