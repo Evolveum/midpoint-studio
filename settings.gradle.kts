@@ -14,11 +14,11 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             // versions of plugins used in build
-            version("kotlin", "2.1.20")
-            version("changelog", "2.2.1")
-            version("intelliJPlatform", "2.5.0")
-            version("kover", "0.9.1")
-            version("qodana", "2024.3.4")
+            version("kotlin", "2.2.21")
+            version("changelog", "2.5.0")
+            version("intelliJPlatform", "2.10.5")
+            version("kover", "0.9.3")
+            version("qodana", "2025.2.2")
 
             // versions of midpoint libraries
             version("midpoint", "4.11-SNAPSHOT")
@@ -27,12 +27,12 @@ dependencyResolutionManagement {
             // versions of third-party libraries
             version("annotations", "24.1.0")
             version("asciidoctorj-tabbed-code", "0.3")
-            version("commons-io", "2.11.0")
-            version("commons-lang", "3.10")
+            version("commons-io", "2.21.0")
+            version("commons-lang3", "3.20.0")
             version("jaxb-runtime", "2.3.2")
             version("jcommander", "1.81")
             version("logback", "1.2.3")
-            version("okhttp", "4.10.0")
+            version("okhttp", "5.1.0")
             version("openkeepass", "0.8.1")
             version("spring", "5.3.8")
             version("stax", "1.2.0")
@@ -74,12 +74,12 @@ dependencyResolutionManagement {
                 "asciidoctorj-tabbed-code-extension"
             ).versionRef("asciidoctorj-tabbed-code")
             library("commons-io", "commons-io", "commons-io").versionRef("commons-io")
-            library("commons-lang", "org.apache.commons", "commons-lang3").versionRef("commons-lang")
+            library("commons-lang", "org.apache.commons", "commons-lang3").versionRef("commons-lang3")
             library("jaxb-runtime", "org.glassfish.jaxb", "jaxb-runtime").versionRef("jaxb-runtime")
             library("jcommander", "com.beust", "jcommander").versionRef("jcommander")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
             library("okhttp-logging", "com.squareup.okhttp3", "logging-interceptor").versionRef("okhttp")
-            library("okhttp3", "com.squareup.okhttp3", "okhttp").versionRef("okhttp")
+            library("okhttp3", "com.squareup.okhttp3", "okhttp-jvm").versionRef("okhttp")
             library("openkeepass", "de.slackspace", "openkeepass").versionRef("openkeepass")
             library("spring-core", "org.springframework", "spring-core").versionRef("spring")
             library("stax", "stax", "stax").versionRef("stax")

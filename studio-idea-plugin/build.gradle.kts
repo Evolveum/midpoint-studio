@@ -246,7 +246,6 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = properties("pluginSinceBuild")
-            untilBuild = properties("pluginUntilBuild")
         }
     }
 
@@ -265,9 +264,10 @@ intellijPlatform {
         hidden = true
     }
 
-    verifyPlugin {
+    pluginVerification {
         ides {
             select {
+                // since community edition was available until 252
                 types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
                 channels = listOf(
                     ProductRelease.Channel.RELEASE,
@@ -277,7 +277,19 @@ intellijPlatform {
                 )
 
                 sinceBuild = properties("pluginSinceBuild")
-                untilBuild = properties("pluginUntilBuild")
+                untilBuild = "252.*"
+            }
+            select {
+                // after 252 only one distribution is available
+                types = listOf(IntelliJPlatformType.IntellijIdeaUltimate)
+                channels = listOf(
+                    ProductRelease.Channel.RELEASE,
+                    ProductRelease.Channel.EAP,
+                    ProductRelease.Channel.BETA,
+                    ProductRelease.Channel.RC
+                )
+
+                sinceBuild = "253"
             }
         }
     }
@@ -349,12 +361,12 @@ tasks {
         types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
 
         sinceBuild = properties("pluginSinceBuild")
-        untilBuild = properties("pluginUntilBuild")
     }
 }
 
 tasks.getByName("compileKotlin").dependsOn("generateGrammarSource")
 
+tasks.getByName("compileTestKotlin").dependsOn("generateTestGrammarSource")
 /**
  * This scripts remove all IntelliJ Platform extracted copies from the Gradle Transformer Cache.
  * Needed because of https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1601

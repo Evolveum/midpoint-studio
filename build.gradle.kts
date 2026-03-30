@@ -4,8 +4,8 @@ fun environment(key: String) = providers.environmentVariable(key)
 allprojects {
     repositories {
         mavenLocal()
-        maven("https://nexus.evolveum.com/nexus/content/groups/public/")
-        maven("https://nexus.evolveum.com/nexus/content/repositories/snapshots/")
+        maven("https://nexus.evolveum.com/nexus/repository/public/")
+        maven("https://nexus.evolveum.com/nexus/repository/snapshots/")
     }
 }
 
