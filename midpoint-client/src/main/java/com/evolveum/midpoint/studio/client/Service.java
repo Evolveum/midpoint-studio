@@ -76,7 +76,11 @@ public interface Service {
 
     AssociationsSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException;
 
-    ConnectorDevelopmentOperation connectorDevelopmentBasicSetting(ConnDevApplicationInfoType connDevApplicationInfoType) throws SchemaException, AuthenticationException, IOException;
+    ConnectorDevelopmentType createConnectorDevelopmentType(ConnectorDevelopmentType connectorDevelopmentType) throws SchemaException, AuthenticationException, IOException;
 
-    ConnDevDiscoverDocumentationResultType getConnectorDevelopmentDiscoverDocumentation(ConnectorDevelopmentOperation connectorDevelopmentOperation) throws SchemaException, AuthenticationException, IOException;
+    ConnDevDiscoverDocumentationResultType discoverDocumentationConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+
+    ConnDevGenerateArtifactResultType createConnectorStatus(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+
+    ConnDevGenerateArtifactResultType generateConnectorArtifactStatus(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 }

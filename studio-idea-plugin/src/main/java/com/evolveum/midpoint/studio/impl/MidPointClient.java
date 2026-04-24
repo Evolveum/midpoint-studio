@@ -11,7 +11,6 @@ import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
@@ -26,7 +25,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -543,9 +541,29 @@ public class MidPointClient {
         return null;
     }
 
-    public ConnectorDevelopmentOperation connectorDevelopmentBasicSetting(ConnDevApplicationInfoType connDevApplicationInfoType) {
+    public ConnectorDevelopmentType createConnectorDevelopmentType(ConnectorDevelopmentType connectorDevelopmentType) {
         try {
-            return client.connectorDevelopmentBasicSetting(connDevApplicationInfoType);
+            return client.createConnectorDevelopmentType(connectorDevelopmentType);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public ConnDevDiscoverDocumentationResultType discoverDocumentationConnector(String connectorDevelopmentOid) {
+        try {
+            return client.discoverDocumentationConnector(connectorDevelopmentOid);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public ConnDevGenerateArtifactResultType createConnectorStatus(String connectorDevelopmentOid) {
+        try {
+            return client.createConnectorStatus(connectorDevelopmentOid);
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }

@@ -10,11 +10,19 @@ public class WizardStep<CT> {
     private final WizardStepStatus status;
     private final List<WizardStep<CT>> children = new ArrayList<>();
     private WizardContent contentPanel;
+    private boolean hideInNavigationMenu;
 
     public WizardStep(String title, WizardStepStatus status, @NotNull WizardContent contentPanel) {
         this.title = title;
         this.status = status;
         this.contentPanel = contentPanel;
+    }
+
+    public WizardStep(String title, WizardStepStatus status, @NotNull WizardContent contentPanel, boolean hideInNavigationMenu) {
+        this.title = title;
+        this.status = status;
+        this.contentPanel = contentPanel;
+        this.hideInNavigationMenu = hideInNavigationMenu;
     }
 
     public void addChild(WizardStep<CT> step) {
@@ -96,6 +104,19 @@ public class WizardStep<CT> {
         }
 
         return result;
+    }
+
+    public WizardStep<CT> getFirstStep(WizardStep<CT> rootStep) {
+        var flattened = flatten(List.of(rootStep));
+        return flattened.get(0);
+    }
+
+    public boolean isHideInNavigationMenu() {
+        return hideInNavigationMenu;
+    }
+
+    public void setHideInNavigationMenu(boolean hideInNavigationMenu) {
+        this.hideInNavigationMenu = hideInNavigationMenu;
     }
 
     public void printDump(String prefix) {

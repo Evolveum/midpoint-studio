@@ -548,9 +548,8 @@
         <action id="MidPoint.Action.ConnectorGenerator"
                 class="com.evolveum.midpoint.studio.action.ConnectorGeneratorAction"
                 text="Connector Generator"
-                description="Connector generator">
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt B"/>
-        </action>
+                description="Connector generator"
+                icon="AllIcons.Diff.MagicResolve"/>
 
         <!-- GROUPS -->
 
@@ -659,6 +658,7 @@
 
             <reference ref="MidPoint.Action.TestAction"/>
 
+            <reference ref="MidPoint.Action.ConnectorGenerator"/>
             <reference ref="MidPoint.Action.UploadFullProcessing"/>
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.SynchronizeObjects"/>
@@ -723,6 +723,7 @@
 
             <reference ref="MidPoint.Action.TestAction"/>
 
+            <reference ref="MidPoint.Action.ConnectorGenerator"/>
             <reference ref="MidPoint.Action.UploadFullProcessing"/>
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.SynchronizeObjects"/>

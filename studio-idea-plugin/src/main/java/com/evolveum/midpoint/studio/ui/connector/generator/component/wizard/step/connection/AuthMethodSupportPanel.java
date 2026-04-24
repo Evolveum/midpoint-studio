@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection;
 
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
@@ -12,7 +12,7 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 
-public class AuthMethodSupportPanel extends JBPanel<DocumentationPanel> implements WizardContent {
+public class AuthMethodSupportPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
 
     public AuthMethodSupportPanel(ConnectorGeneratorDialogContext context) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -86,7 +86,7 @@ public class AuthMethodSupportPanel extends JBPanel<DocumentationPanel> implemen
     }
 
     @Override
-    public void onStateChanged() {
+    public void beforeChangeAction() {
 
     }
 

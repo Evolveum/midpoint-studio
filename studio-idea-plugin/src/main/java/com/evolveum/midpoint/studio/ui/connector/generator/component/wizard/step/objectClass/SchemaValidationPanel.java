@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.objectClass;
 
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.VerticalFlowLayout;
@@ -18,7 +18,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-public class SchemaValidationPanel extends JBPanel<DocumentationPanel> implements WizardContent {
+public class SchemaValidationPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
 
     public SchemaValidationPanel(ConnectorGeneratorDialogContext context) {
         setLayout(new BorderLayout());
@@ -90,7 +90,7 @@ public class SchemaValidationPanel extends JBPanel<DocumentationPanel> implement
     }
 
     @Override
-    public void onStateChanged() {
+    public void beforeChangeAction() {
 
     }
 

@@ -89,6 +89,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                         @Override
                         public void onOk() {
                             var task = new UploadFullProcessingTask(anActionEvent.getProject(), anActionEvent::getDataContext, env);
+                            // FIXME processing task
                             ProgressManager.getInstance().run(new Task.Backgroundable(anActionEvent.getProject(), "Uploading") {
                                 @Override
                                 public void run(@NotNull ProgressIndicator indicator) {
@@ -142,6 +143,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                 project,
                 "Smart suggestion - " + getTemplatePresentation().getText(),
                 generateSuggestionDialogContext,
+                // FIXME replace to generateSUggestionWizard for no reason in Action class
                 new DialogWindowActionHandler() {
 
                     @Override
@@ -225,9 +227,8 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                 .filter(ResourceType.class::isInstance)
                 .map(ResourceType.class::cast)
                 .findFirst()
-                .orElseThrow(
-                        () -> new RuntimeException("Object ResourceType with oid '" + generateSuggestionDialogContext.getResourceOid() + "' not found")
-                );
+                .orElseThrow(() -> new RuntimeException("Object ResourceType with oid '" +
+                        generateSuggestionDialogContext.getResourceOid() + "' not found"));
     }
 
     private JPanel createTablePanel(SmartSuggestionTableModel<?> model) {

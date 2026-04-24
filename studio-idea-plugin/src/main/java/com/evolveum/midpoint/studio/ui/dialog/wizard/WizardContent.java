@@ -1,9 +1,14 @@
 package com.evolveum.midpoint.studio.ui.dialog.wizard;
 
-import com.intellij.ui.components.JBPanel;
+import javax.swing.JPanel;
 
 public interface WizardContent {
 
-    void onStateChanged();
-    JBPanel<?> getPanel();
+    JPanel getPanel();
+
+    default void beforeChangeAction() throws InterruptedException {
+    }
+
+    default void afterChangeAction() {
+    }
 }

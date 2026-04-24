@@ -12,11 +12,11 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 
-public class CreatingConnectorPanel extends JBPanel<DocumentationPanel> implements WizardContent {
+public class CreateConnectorPanel extends JBPanel<CreateConnectorPanel> implements WizardContent {
 
     private final JBLabel timerLabel;
 
-    public CreatingConnectorPanel(ConnectorGeneratorDialogContext context) {
+    public CreateConnectorPanel(ConnectorGeneratorDialogContext context) {
         setLayout(new VerticalFlowLayout(VerticalFlowLayout.CENTER, 0, 15, true, false));
         setBorder(JBUI.Borders.empty(120, 20));
         setBackground(UIUtil.getPanelBackground());
@@ -50,7 +50,7 @@ public class CreatingConnectorPanel extends JBPanel<DocumentationPanel> implemen
     }
 
     @Override
-    public void onStateChanged() {
+    public void beforeChangeAction() {
 
     }
 

@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection;
 
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.ui.components.JBLabel;
@@ -13,7 +13,7 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 
-public class ConnectionStatusPanel extends JBPanel<DocumentationPanel> implements WizardContent {
+public class ConnectionStatusPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
 
     private final JBLabel timerLabel;
 
@@ -51,7 +51,7 @@ public class ConnectionStatusPanel extends JBPanel<DocumentationPanel> implement
     }
 
     @Override
-    public void onStateChanged() {
+    public void beforeChangeAction() {
 
     }
 

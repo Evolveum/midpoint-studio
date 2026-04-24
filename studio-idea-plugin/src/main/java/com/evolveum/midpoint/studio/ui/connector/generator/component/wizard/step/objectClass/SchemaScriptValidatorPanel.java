@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.objectClass;
 
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -18,7 +18,7 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 
-public class SchemaScriptValidatorPanel extends JBPanel<DocumentationPanel> implements WizardContent {
+public class SchemaScriptValidatorPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
 
     public SchemaScriptValidatorPanel(ConnectorGeneratorDialogContext context) {
         setLayout(new BorderLayout());
@@ -72,7 +72,7 @@ public class SchemaScriptValidatorPanel extends JBPanel<DocumentationPanel> impl
     }
 
     @Override
-    public void onStateChanged() {
+    public void beforeChangeAction() {
 
     }
 

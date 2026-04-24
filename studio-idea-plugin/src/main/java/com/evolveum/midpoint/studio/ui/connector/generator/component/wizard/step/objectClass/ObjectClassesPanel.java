@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.objectClass;
 
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.VerticalFlowLayout;
@@ -14,7 +14,7 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 
-public class ObjectClassesPanel extends JBPanel<DocumentationPanel> implements WizardContent {
+public class ObjectClassesPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
 
     public ObjectClassesPanel(ConnectorGeneratorDialogContext context) {
         setLayout(new VerticalFlowLayout(VerticalFlowLayout.TOP, 0, 15, true, false));
@@ -96,7 +96,7 @@ public class ObjectClassesPanel extends JBPanel<DocumentationPanel> implements W
     }
 
     @Override
-    public void onStateChanged() {
+    public void beforeChangeAction() {
 
     }
 

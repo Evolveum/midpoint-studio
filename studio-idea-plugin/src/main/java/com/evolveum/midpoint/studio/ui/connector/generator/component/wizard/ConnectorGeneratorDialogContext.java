@@ -1,25 +1,37 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard;
 
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevApplicationInfoType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDiscoverDocumentationResultType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType;
 import com.intellij.openapi.project.Project;
 
 public class ConnectorGeneratorDialogContext {
 
-    private final MidPointClient client;
+    private final Project project;
+    private ConnectorDevelopmentType connectorDevelopmentType;
+    private ConnDevDiscoverDocumentationResultType connDevDiscoverDocumentationResultType;
 
-    public ConnectorGeneratorDialogContext(Project project, Environment environment) {
-        this.client = new MidPointClient(project, environment);
+    public ConnectorGeneratorDialogContext(Project project) {
+        this.project = project;
     }
 
-    public MidPointClient getClient() {
-        return client;
+    public Project getProject() {
+        return project;
     }
 
-    private final ConnDevApplicationInfoType connDevApplicationInfoType = new ConnDevApplicationInfoType();
+    public ConnectorDevelopmentType getConnectorDevelopmentType() {
+        return connectorDevelopmentType;
+    }
 
-    public ConnDevApplicationInfoType getConnDevApplicationInfoType() {
-        return connDevApplicationInfoType;
+    public void setConnectorDevelopmentType(ConnectorDevelopmentType connectorDevelopmentType) {
+        this.connectorDevelopmentType = connectorDevelopmentType;
+    }
+
+    public ConnDevDiscoverDocumentationResultType getConnDevDiscoverDocumentationResultType() {
+        return connDevDiscoverDocumentationResultType;
+    }
+
+    public void setConnDevDiscoverDocumentationResultType(ConnDevDiscoverDocumentationResultType connDevDiscoverDocumentationResultType) {
+        this.connDevDiscoverDocumentationResultType = connDevDiscoverDocumentationResultType;
     }
 }

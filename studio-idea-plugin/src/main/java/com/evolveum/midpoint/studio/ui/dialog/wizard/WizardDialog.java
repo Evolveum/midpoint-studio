@@ -12,9 +12,7 @@ import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.util.Consumer;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +33,6 @@ public abstract class WizardDialog<CT> extends DialogWrapper {
     private final JPanel contentPanel = new JPanel(new BorderLayout());
     protected final JButton nextButton = new JButton("Next");
     protected final JButton prevButton = new JButton("Back");
-    private JBPanel<?> panel;
 
     /**
      * Subclasses should override this to build wizard steps dynamically
@@ -80,13 +77,11 @@ public abstract class WizardDialog<CT> extends DialogWrapper {
             prevButton.setEnabled(currentStep.getPreviousStep(rootStep) != null);
 
             prevButton.addActionListener(e -> {
-                currentStep.getContentPanel().onStateChanged();
-                displayStep(currentStep.getPreviousStep(rootStep));
+                changeStep(currentStep.getPreviousStep(rootStep));
             });
 
             nextButton.addActionListener(e -> {
-                currentStep.getContentPanel().onStateChanged();
-                displayStep(currentStep.getNextStep(rootStep));
+                changeStep(currentStep.getNextStep(rootStep));
             });
 
             positionPanel.add(prevButton);
@@ -101,20 +96,24 @@ public abstract class WizardDialog<CT> extends DialogWrapper {
 
                 wrapper.add(navigationScrollPane, BorderLayout.WEST);
             }
-        } else {
-            wrapper.add(rootStep.getContentPanel().getPanel(), BorderLayout.CENTER);
         }
 
         return wrapper;
     }
 
-    private void displayStep(WizardStep<CT> step) {
+    private void changeStep(WizardStep<CT> step) {
+
+        try {
+            currentStep.getContentPanel().beforeChangeAction();
+        } catch (InterruptedException e) {
+        }
+
+        setCurrentStep(step);
         contentPanel.removeAll();
         contentPanel.add(step.getContentPanel().getPanel(), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
-
-        setCurrentStep(step);
+        currentStep.getContentPanel().afterChangeAction();
 
         prevButton.setEnabled(currentStep.getPreviousStep(rootStep) != null);
         nextButton.setEnabled(currentStep.getNextStep(rootStep) != null);
@@ -182,11 +181,11 @@ public abstract class WizardDialog<CT> extends DialogWrapper {
         this.currentStep = currentStep;
     }
 
-    private JComponent createNavigationPanel(WizardStep<CT> rootStep) {
-        JBPanel<?> navigationPanel = new JBPanel<>();
+    private JPanel createNavigationPanel(WizardStep<CT> rootStep) {
+        JPanel navigationPanel = new JPanel();
         navigationPanel.setLayout(new BoxLayout(navigationPanel, BoxLayout.Y_AXIS));
         navigationPanel.setBorder(JBUI.Borders.empty(15));
-        navigationPanel.setPreferredSize(new Dimension(300, 300));
+        navigationPanel.setPreferredSize(new Dimension(300, getSize().height));
 
         JLabel progressLabel = new JLabel(rootStep.getTitle());
         progressLabel.setFont(progressLabel.getFont().deriveFont(Font.BOLD, 15f));
@@ -198,18 +197,18 @@ public abstract class WizardDialog<CT> extends DialogWrapper {
         return navigationPanel;
     }
 
-    private void renderNavigationItems(WizardStep<CT> rootStep, JBPanel<?> navigationPanel) {
+    private void renderNavigationItems(WizardStep<CT> rootStep, JPanel navigationPanel) {
         navigationPanel.removeAll();
 
-        Consumer<WizardStep<CT>> onSelect = step -> {
-            displayStep(step);
-            navigationPanel.revalidate();
-            navigationPanel.repaint();
-        };
-
-        for (WizardStep<CT> step : rootStep.getChildren()) {
-            navigationPanel.add(new NavigationItem<>(step, 0, onSelect));
-            navigationPanel.add(Box.createVerticalStrut(8));
-        }
+        rootStep.getChildren().stream()
+                .filter(step -> !step.isHideInNavigationMenu())
+                .forEach(step -> {
+                    navigationPanel.add(new NavigationItem<>(step, 0, s -> {
+                        changeStep(step);
+                        navigationPanel.revalidate();
+                        navigationPanel.repaint();
+                    }));
+                    navigationPanel.add(Box.createVerticalStrut(8));
+                });
     }
 }

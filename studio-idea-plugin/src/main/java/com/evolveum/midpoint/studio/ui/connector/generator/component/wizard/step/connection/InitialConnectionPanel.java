@@ -1,12 +1,12 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.BasicSettingPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.ApplicationIdentificationPanel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.ui.components.JBPanel;
 
 import java.awt.*;
 
-public class InitialConnectionPanel extends JBPanel<BasicSettingPanel> implements WizardContent {
+public class InitialConnectionPanel extends JBPanel<ApplicationIdentificationPanel> implements WizardContent {
 
     public InitialConnectionPanel() {
         setLayout(new BorderLayout());
@@ -16,7 +16,7 @@ public class InitialConnectionPanel extends JBPanel<BasicSettingPanel> implement
     }
 
     @Override
-    public void onStateChanged() {
+    public void beforeChangeAction() {
 
     }
 
