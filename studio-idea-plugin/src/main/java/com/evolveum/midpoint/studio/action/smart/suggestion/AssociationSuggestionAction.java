@@ -6,7 +6,7 @@ import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.ui.treetable.FilterableColumnInfo;
@@ -39,8 +39,8 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
     }
 
     @Override
-    GenerateSuggestionDialogContext.ResourceDialogContextMode getModeDialogContext() {
-        return GenerateSuggestionDialogContext.ResourceDialogContextMode.ASSOCIATION;
+    GenerateSuggestionDataModel.ResourceDialogContextMode getModeDialogContext() {
+        return GenerateSuggestionDataModel.ResourceDialogContextMode.ASSOCIATION;
     }
 
     @Override
@@ -142,10 +142,10 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
     @Override
     List<SmartSuggestionObject<AssociationSuggestionType>> getSuggestions(
             MidPointClient client,
-            GenerateSuggestionDialogContext generateSuggestionDialogContext
+            GenerateSuggestionDataModel generateSuggestionDataModel
     ) {
         var associationSuggestion = client.getSuggestAssociations(
-                generateSuggestionDialogContext.getResourceOid()
+                generateSuggestionDataModel.getResourceOid()
         );
 
         if (associationSuggestion == null) {
@@ -153,7 +153,7 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
         }
 
         return associationSuggestion.getAssociation().stream()
-                .map(o -> new SmartSuggestionObject<>(o, getResources(generateSuggestionDialogContext)))
+                .map(o -> new SmartSuggestionObject<>(o, getResources(generateSuggestionDataModel)))
                 .toList();
     }
 

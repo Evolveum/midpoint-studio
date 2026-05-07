@@ -40,7 +40,7 @@ public class GenerateConnectorArtifactTask extends SimpleBackgroundableTask {
         super.doRun(indicator);
 
         try {
-            var result = client.createConnectorStatus(connectorDevelopmentOperationOid);
+//            var result = client.createConnectorStatus(connectorDevelopmentOperationOid);
         } catch (Exception ex) {
             LOG.error("Couldn't generate connector artifact", ex);
 

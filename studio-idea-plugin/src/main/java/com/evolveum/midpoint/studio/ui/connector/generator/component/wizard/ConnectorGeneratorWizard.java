@@ -1,22 +1,30 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard;
 
+import com.evolveum.midpoint.studio.action.ConnectorProjectGenerator;
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.*;
-import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
+import com.evolveum.midpoint.studio.ui.dialog.WizardStepActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.ui.wizard.WizardAction;
 
-public class ConnectorGeneratorWizard extends WizardDialog<ConnectorGeneratorDialogContext> {
+import javax.swing.*;
+
+public class ConnectorGeneratorWizard extends WizardDialog<ConnectorGeneratorDataModel> {
 
     public ConnectorGeneratorWizard(
             Project project,
             String title,
-            DialogWindowActionHandler actionHandler,
+            WizardStepActionHandler actionHandler,
             boolean navigationBarVisible
     ) {
         super(
                 project,
                 title,
-                new ConnectorGeneratorDialogContext(project),
+                new ConnectorGeneratorDataModel(project),
                 new WizardStep<>("", WizardStepStatus.NONE, new InitialPanel()),
                 actionHandler,
                 navigationBarVisible
@@ -26,36 +34,51 @@ public class ConnectorGeneratorWizard extends WizardDialog<ConnectorGeneratorDia
     }
 
     @Override
-    protected void buildSteps(ConnectorGeneratorDialogContext dialogContext) {
+    protected void buildSteps(ConnectorGeneratorDataModel dataModel) {
 //        WizardStep<ConnectorGeneratorDialogContext> basicGroup = new WizardStep<>("Basic settings", WizardStepStatus.NONE, new InitialBasicSettingPanel());
 
         rootStep.addChild(new WizardStep<>(
                 "Application identification",
                 WizardStepStatus.COMPLETE,
-                new ApplicationIdentificationPanel(dialogContext)
+                new ApplicationIdentificationPanel(dataModel)
         ));
 
         rootStep.addChild(new WizardStep<>(
                 "Documentation",
-                WizardStepStatus.IN_PROGRESS,
-                new DiscoverDocumentationPanel(dialogContext)
+                WizardStepStatus.COMPLETE,
+                new DiscoverDocumentationPanel(dataModel)
         ));
 
         rootStep.addChild(new WizardStep<>(
                 "Connector identification",
-                WizardStepStatus.PENDING,
-                new ConnectorIdentificationPanel(dialogContext)
+                WizardStepStatus.COMPLETE,
+                new ConnectorIdentificationPanel(dataModel)
         ));
 
         rootStep.addChild(new WizardStep<>(
                 "Creating connector",
                 WizardStepStatus.NONE,
-                new CreateConnectorPanel(dialogContext)
+                new CreateConnectorPanel(dataModel)
         ));
     }
 
     @Override
-    protected void onFinish(ConnectorGeneratorDialogContext dialogContext) {
-        // TODO finished implementation create connector project and open new
+    protected void onFinish(ConnectorGeneratorDataModel dataModel) {
+        int result = JOptionPane.showConfirmDialog(
+                null,
+                null,
+                "Configure Project",
+                JOptionPane.OK_CANCEL_OPTION
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            var connector = dataModel.getConnectorDevelopmentType().getConnector();
+            VirtualFile baseDir = new LightVirtualFile(
+                    connector.getDisplayName().getNorm(),
+                    connector.getArtifactId()
+            );
+
+            new ConnectorProjectGenerator(dataModel).generateProject(dataModel.getProject(), baseDir,  null, (Module) new EmptyProgressIndicator());
+        }
     }
 }

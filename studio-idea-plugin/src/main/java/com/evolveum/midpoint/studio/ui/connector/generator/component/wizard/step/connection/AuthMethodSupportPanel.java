@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDataModel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
@@ -12,9 +11,9 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 
-public class AuthMethodSupportPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
+public class AuthMethodSupportPanel extends JBPanel<AuthMethodSupportPanel> implements WizardContent {
 
-    public AuthMethodSupportPanel(ConnectorGeneratorDialogContext context) {
+    public AuthMethodSupportPanel(ConnectorGeneratorDataModel context) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(JBUI.Borders.empty(20));
 

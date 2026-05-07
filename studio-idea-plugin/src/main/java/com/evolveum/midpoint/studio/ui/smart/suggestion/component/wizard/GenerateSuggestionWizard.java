@@ -13,7 +13,7 @@ import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinitionImpl;
 import com.evolveum.midpoint.schema.processor.ResourceSchema;
 import com.evolveum.midpoint.schema.processor.ResourceSchemaFactory;
-import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
+import com.evolveum.midpoint.studio.ui.dialog.WizardStepActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardStepStatus;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardDialog;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardStep;
@@ -44,7 +44,7 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDialogContext> {
+public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDataModel> {
 
     private final String OBJECT_CLASS_TABLE_COMPONENT_ID = "OBJECT_CLASS_TABLE_COMPONENT";
     private final String OBJECT_CLASS_ERROR_LABEL_COMPONENT_ID = "OBJECT_CLASS_ERROR_LABEL_COMPONENT";
@@ -53,21 +53,21 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
     public GenerateSuggestionWizard(
             Project project,
             String title,
-            GenerateSuggestionDialogContext context,
-            DialogWindowActionHandler actionHandler
+            GenerateSuggestionDataModel context,
+            WizardStepActionHandler actionHandler
     ) {
         super(project, title, context, new WizardStep<>("", WizardStepStatus.NONE, new InitialPanel()), actionHandler, false);
         setSize(800, 600);
     }
 
     @Override
-    protected void buildSteps(GenerateSuggestionDialogContext resource) {
+    protected void buildSteps(GenerateSuggestionDataModel resource) {
 //        steps.add(new MidpointWizardStep(null, createResourceTable(dialogWizardContext.getResources())));
     }
 
     @Override
-    protected void onFinish(GenerateSuggestionDialogContext context) {
-        // TODO finished implementation
+    protected void onFinish(GenerateSuggestionDataModel dataModel) {
+
     }
 
     private JPanel createResourceTable(SearchResultList<ObjectType> resources) {
@@ -115,13 +115,13 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
                         if (path != null) {
                             if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
                                 if (node.getUserObject() instanceof ResourceType resource) {
-                                    dialogWizardContext.setResourceOid(resource.getOid());
-                                    dialogWizardContext.setObjectType(null);
-                                    dialogWizardContext.setObjectClass(null);
+                                    dataModel.setResourceOid(resource.getOid());
+                                    dataModel.setObjectType(null);
+                                    dataModel.setObjectClass(null);
 
                                     setOKActionEnabled(false);
 
-                                    if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+                                    if (dataModel.getMode().equals(GenerateSuggestionDataModel.ResourceDialogContextMode.OBJECT_TYPE)) {
                                         displayObjectClassTable(panel, resource);
                                     } else {
                                         displayObjectTypeTable(panel, resource);
@@ -136,7 +136,7 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
             int initRow = IntStream.range(0, resources.size())
                     .filter(i -> Objects.equals(
                             resources.get(i).getOid(),
-                            dialogWizardContext.getResourceOid()
+                            dataModel.getResourceOid()
                     ))
                     .findFirst()
                     .orElse(-1);
@@ -144,7 +144,7 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
             if (initRow >= 0 && initRow < table.getRowCount()) {
                 table.setRowSelectionInterval(initRow, initRow);
 
-                if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE)) {
+                if (dataModel.getMode().equals(GenerateSuggestionDataModel.ResourceDialogContextMode.OBJECT_TYPE)) {
                     displayObjectClassTable(panel, (ResourceType) resources.get(initRow));
                 } else {
                     displayObjectTypeTable(panel, (ResourceType) resources.get(initRow));
@@ -197,8 +197,8 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
                             TreePath path = table.getTree().getPathForRow(row);
                             if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
                                 if (node.getUserObject() instanceof ResourceObjectClassDefinition objectClass) {
-                                    dialogWizardContext.setObjectClass(objectClass);
-                                    setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectClass() != null);
+                                    dataModel.setObjectClass(objectClass);
+                                    setOKActionEnabled(dataModel.getResourceOid() != null && dataModel.getObjectClass() != null);
                                 }
                             }
                         }
@@ -265,8 +265,8 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
                         TreePath path = table.getTree().getPathForRow(row);
                         if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
                             if (node.getUserObject() instanceof ResourceObjectTypeDefinitionType objectTypeDefinition) {
-                                dialogWizardContext.setObjectType(objectTypeDefinition);
-                                setOKActionEnabled(dialogWizardContext.getResourceOid() != null && dialogWizardContext.getObjectType() != null);
+                                dataModel.setObjectType(objectTypeDefinition);
+                                setOKActionEnabled(dataModel.getResourceOid() != null && dataModel.getObjectType() != null);
                             }
                         }
                     }
@@ -291,25 +291,25 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
 
         removeComponent(panel, DIRECTION_COMPONENT_ID);
 
-        if (dialogWizardContext.getMode().equals(GenerateSuggestionDialogContext.ResourceDialogContextMode.MAPPING)) {
+        if (dataModel.getMode().equals(GenerateSuggestionDataModel.ResourceDialogContextMode.MAPPING)) {
             String[] names = {"Inbound", "Outbound"};
-            GenerateSuggestionDialogContext.Direction[] values = {GenerateSuggestionDialogContext.Direction.INBOUND, GenerateSuggestionDialogContext.Direction.OUTBOUND};
+            GenerateSuggestionDataModel.Direction[] values = {GenerateSuggestionDataModel.Direction.INBOUND, GenerateSuggestionDataModel.Direction.OUTBOUND};
 
             LabeledComponent<JComboBox<String>> dropdown = createDropdown(names, values);
             dropdown.setName(DIRECTION_COMPONENT_ID);
             dropdown.setMaximumSize(new Dimension(Integer.MAX_VALUE, dropdown.getHeight()));
-            dialogWizardContext.setDirection(getSelectedValue(dropdown));
+            dataModel.setDirection(getSelectedValue(dropdown));
 
             panel.add(dropdown);
         }
     }
 
-    private LabeledComponent<JComboBox<String>> createDropdown(String[] names, GenerateSuggestionDialogContext.Direction[] values) {
+    private LabeledComponent<JComboBox<String>> createDropdown(String[] names, GenerateSuggestionDataModel.Direction[] values) {
         if (names.length != values.length) {
             throw new IllegalArgumentException("Names and values must have the same length");
         }
 
-        Map<String, GenerateSuggestionDialogContext.Direction> valueMap = new LinkedHashMap<>();
+        Map<String, GenerateSuggestionDataModel.Direction> valueMap = new LinkedHashMap<>();
         for (int i = 0; i < names.length; i++) {
             valueMap.put(names[i], values[i]);
         }
@@ -320,7 +320,7 @@ public class GenerateSuggestionWizard extends WizardDialog<GenerateSuggestionDia
 
         comboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                dialogWizardContext.setDirection(valueMap.get(e.getItem()));
+                dataModel.setDirection(valueMap.get(e.getItem()));
             }
         });
 

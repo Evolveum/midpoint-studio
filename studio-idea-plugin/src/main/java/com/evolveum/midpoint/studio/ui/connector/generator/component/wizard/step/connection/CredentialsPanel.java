@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDataModel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.VerticalFlowLayout;
@@ -12,9 +11,9 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 
-public class CredentialsPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
+public class CredentialsPanel extends JBPanel<CredentialsPanel> implements WizardContent {
 
-    public CredentialsPanel(ConnectorGeneratorDialogContext context) {
+    public CredentialsPanel(ConnectorGeneratorDataModel context) {
         setLayout(new VerticalFlowLayout(VerticalFlowLayout.TOP, 0, 15, true, false));
         setBorder(JBUI.Borders.empty(20));
 

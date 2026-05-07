@@ -8,7 +8,7 @@
 
 package com.evolveum.midpoint.studio.ui.dialog.alert;
 
-import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
+import com.evolveum.midpoint.studio.ui.dialog.WizardStepActionHandler;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import org.jetbrains.annotations.Nullable;
@@ -17,10 +17,10 @@ import javax.swing.*;
 import java.awt.*;
 
 public class DialogAlert extends DialogWrapper {
-    private final DialogWindowActionHandler handler;
+    private final WizardStepActionHandler handler;
     private final String message;
 
-    public DialogAlert(@Nullable Project project, String title, String message, DialogWindowActionHandler handler) {
+    public DialogAlert(@Nullable Project project, String title, String message, WizardStepActionHandler handler) {
         super(project);
         this.message = message;
         this.handler = handler;

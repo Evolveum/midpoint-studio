@@ -1,12 +1,11 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.objectClass;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.ApplicationIdentificationPanel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.ui.components.JBPanel;
 
 import java.awt.*;
 
-public class InitialObjectClassPanel extends JBPanel<ApplicationIdentificationPanel> implements WizardContent {
+public class InitialObjectClassPanel extends JBPanel<InitialObjectClassPanel> implements WizardContent {
 
     public InitialObjectClassPanel() {
         setLayout(new BorderLayout());

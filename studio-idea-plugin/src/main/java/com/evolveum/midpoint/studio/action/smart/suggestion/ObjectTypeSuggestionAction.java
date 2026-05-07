@@ -2,7 +2,7 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
@@ -39,8 +39,8 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
     }
 
     @Override
-    GenerateSuggestionDialogContext.ResourceDialogContextMode getModeDialogContext() {
-        return GenerateSuggestionDialogContext.ResourceDialogContextMode.OBJECT_TYPE;
+    GenerateSuggestionDataModel.ResourceDialogContextMode getModeDialogContext() {
+        return GenerateSuggestionDataModel.ResourceDialogContextMode.OBJECT_TYPE;
     }
 
     @Override
@@ -108,11 +108,11 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
     @Override
     List<SmartSuggestionObject<ResourceObjectTypeDefinitionType>> getSuggestions(
             MidPointClient client,
-            GenerateSuggestionDialogContext generateSuggestionDialogContext
+            GenerateSuggestionDataModel generateSuggestionDataModel
     ) {
         var objectSuggestion = client.getSuggestObjectTypes(
-                generateSuggestionDialogContext.getResourceOid(),
-                generateSuggestionDialogContext.getObjectClass()
+                generateSuggestionDataModel.getResourceOid(),
+                generateSuggestionDataModel.getObjectClass()
         );
 
         if (objectSuggestion == null) {
@@ -120,7 +120,7 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
         }
 
         return objectSuggestion.getObjectType().stream()
-                .map(o -> new SmartSuggestionObject<>(o, getResources(generateSuggestionDialogContext)))
+                .map(o -> new SmartSuggestionObject<>(o, getResources(generateSuggestionDataModel)))
                 .toList();
     }
 }

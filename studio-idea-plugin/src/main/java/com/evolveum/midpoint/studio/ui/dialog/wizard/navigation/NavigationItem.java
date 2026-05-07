@@ -4,6 +4,8 @@ import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardStep;
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBPanel;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.Animator;
 import com.intellij.util.ui.JBUI;
@@ -15,10 +17,10 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class NavigationItem<CT> extends JPanel {
+public class NavigationItem<CT> extends JBPanel<NavigationItem<CT>> {
 
-    private final JPanel childrenPanel = new JPanel();
-    private final JLabel arrowLabel = new JLabel();
+    private final JBPanel<?> childrenPanel = new JBPanel<>();
+    private final JBLabel arrowLabel = new JBLabel();
     private final WizardStep<CT> step;
     private boolean expanded = false;
 
@@ -34,7 +36,7 @@ public class NavigationItem<CT> extends JPanel {
         installListeners(onSelect, level);
     }
 
-    private void initStyleTile(JPanel panel) {
+    private void initStyleTile(JBPanel<?> panel) {
         panel.setBackground(JBColor.WHITE);
         panel.setBorder(new CompoundBorder(
                 new LineBorder(Gray._200, 2, true),
@@ -42,18 +44,18 @@ public class NavigationItem<CT> extends JPanel {
         ));
     }
 
-    private JPanel createHeader(int level) {
-        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+    private JBPanel<?> createHeader(int level) {
+        JBPanel<?> header = new JBPanel<>(new FlowLayout(FlowLayout.LEFT, 6, 4));
 
         configureArrow(level);
 
-        JLabel title = new JLabel(step.getTitle());
+        JBLabel title = new JBLabel(step.getTitle());
         title.setForeground(JBColor.foreground());
 
         header.add(arrowLabel);
         header.add(title);
 
-        initStyleTile(header);
+//        initStyleTile(header);
 
         return header;
     }
@@ -68,7 +70,7 @@ public class NavigationItem<CT> extends JPanel {
         }
     }
 
-    private JPanel addChildren(int level, Consumer<WizardStep<CT>> onSelect) {
+    private JBPanel<?> addChildren(int level, Consumer<WizardStep<CT>> onSelect) {
         childrenPanel.setLayout(new BoxLayout(childrenPanel, BoxLayout.Y_AXIS));
         childrenPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         childrenPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
@@ -126,7 +128,7 @@ public class NavigationItem<CT> extends JPanel {
         });
     }
 
-    private void animateSlide(String name, JComponent component, int start, int end, int duration) {
+    private void animateSlide(String name, JBPanel<?> component, int start, int end, int duration) {
         Animator animator = new Animator(name, duration, duration, false) {
             @Override
             public void paintNow(int frame, int totalFrames, int cycle) {
@@ -149,8 +151,8 @@ public class NavigationItem<CT> extends JPanel {
         animator.resume();
     }
 
-    private JLabel createStatusBadge(WizardStep<CT> step) {
-        JLabel badge = new JLabel(String.valueOf(step.getStatus()));
+    private JBLabel createStatusBadge(WizardStep<CT> step) {
+        JBLabel badge = new JBLabel(String.valueOf(step.getStatus()));
 
         badge.setFont(badge.getFont().deriveFont(11f));
         badge.setBorder(BorderFactory.createEmptyBorder(2,6,2,6));

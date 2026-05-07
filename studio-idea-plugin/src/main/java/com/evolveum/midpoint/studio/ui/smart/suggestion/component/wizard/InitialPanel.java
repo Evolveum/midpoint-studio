@@ -5,10 +5,6 @@ import com.intellij.ui.components.JBPanel;
 
 public class InitialPanel extends JBPanel<InitialPanel> implements WizardContent {
 
-    @Override
-    public void beforeChangeAction() {
-
-    }
 
     @Override
     public JBPanel<?> getPanel() {

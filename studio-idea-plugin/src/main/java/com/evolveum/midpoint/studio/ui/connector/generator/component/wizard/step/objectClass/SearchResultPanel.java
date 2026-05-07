@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.objectClass;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDataModel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.VerticalFlowLayout;
@@ -18,9 +17,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-public class SearchResultPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
+public class SearchResultPanel extends JBPanel<SearchResultPanel> implements WizardContent {
 
-    public SearchResultPanel(ConnectorGeneratorDialogContext context) {
+    public SearchResultPanel(ConnectorGeneratorDataModel context) {
         setLayout(new BorderLayout());
         setBorder(JBUI.Borders.empty(20));
 

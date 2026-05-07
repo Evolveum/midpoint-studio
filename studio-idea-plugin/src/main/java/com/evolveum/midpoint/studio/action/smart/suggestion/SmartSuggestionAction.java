@@ -7,10 +7,10 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
-import com.evolveum.midpoint.studio.ui.dialog.DialogWindowActionHandler;
+import com.evolveum.midpoint.studio.ui.dialog.WizardStepActionHandler;
 import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionWizard;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
@@ -52,12 +52,12 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
     abstract boolean isLockable();
     abstract boolean getPresentation(PsiFile psiFile);
-    abstract GenerateSuggestionDialogContext.ResourceDialogContextMode getModeDialogContext();
+    abstract GenerateSuggestionDataModel.ResourceDialogContextMode getModeDialogContext();
     abstract Logger getLogger();
     abstract SmartSuggestionTableModel<T> getModel(Project project, PrismContext prismContext);
     abstract List<SmartSuggestionObject<T>> getSuggestions(
             MidPointClient client,
-            GenerateSuggestionDialogContext generateSuggestionDialogContext
+            GenerateSuggestionDataModel generateSuggestionDataModel
     );
 
     public @Nullable String getResourceOid() {
@@ -85,7 +85,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                     anActionEvent.getProject(),
                     "Upload (Full Processing)",
                     "The local resource configuration (OID: '" + resourceOid + "') will be uploaded to midPoint to generate AI suggestions based on the most recent data.",
-                    new DialogWindowActionHandler() {
+                    new WizardStepActionHandler() {
                         @Override
                         public void onOk() {
                             var task = new UploadFullProcessingTask(anActionEvent.getProject(), anActionEvent::getDataContext, env);
@@ -134,22 +134,22 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
         @Deprecated
         var foundResources = client.list(ObjectTypes.RESOURCE.getClassDefinition(), prismContext.queryFactory().createQuery(), true);
 
-        GenerateSuggestionDialogContext generateSuggestionDialogContext = new GenerateSuggestionDialogContext();
-        generateSuggestionDialogContext.setMode(getModeDialogContext());
-        generateSuggestionDialogContext.setResources(foundResources);
-        generateSuggestionDialogContext.setResourceOid(uploadedResourceOid);
+        GenerateSuggestionDataModel generateSuggestionDataModel = new GenerateSuggestionDataModel();
+        generateSuggestionDataModel.setMode(getModeDialogContext());
+        generateSuggestionDataModel.setResources(foundResources);
+        generateSuggestionDataModel.setResourceOid(uploadedResourceOid);
 
         new GenerateSuggestionWizard(
                 project,
                 "Smart suggestion - " + getTemplatePresentation().getText(),
-                generateSuggestionDialogContext,
+                generateSuggestionDataModel,
                 // FIXME replace to generateSUggestionWizard for no reason in Action class
-                new DialogWindowActionHandler() {
+                new WizardStepActionHandler() {
 
                     @Override
                     public boolean isOkButtonEnabled() {
-                        return generateSuggestionDialogContext.getResourceOid() != null &&
-                                generateSuggestionDialogContext.getObjectClass() != null;
+                        return generateSuggestionDataModel.getResourceOid() != null &&
+                                generateSuggestionDataModel.getObjectClass() != null;
                     }
 
                     @Override
@@ -173,11 +173,11 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                                 @Override
                                 public void run(@NotNull ProgressIndicator progressIndicator) {
                                     RunnableUtils.runWriteActionAndWait(() -> {
-                                        var psiFileResource = MidPointUtils.findPsiByOid(project, generateSuggestionDialogContext.getResourceOid());
+                                        var psiFileResource = MidPointUtils.findPsiByOid(project, generateSuggestionDataModel.getResourceOid());
                                         MidPointUtils.openFile(project, psiFileResource.getVirtualFile());
                                     });
 
-                                    objectSuggestions = getSuggestions(client, generateSuggestionDialogContext);
+                                    objectSuggestions = getSuggestions(client, generateSuggestionDataModel);
                                 }
 
                                 @Override
@@ -221,14 +221,14 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
         ).show();
     }
 
-    protected ResourceType getResources(GenerateSuggestionDialogContext generateSuggestionDialogContext) {
-        return generateSuggestionDialogContext.getResources().stream()
-                .filter(o -> o.getOid().equals(generateSuggestionDialogContext.getResourceOid()))
+    protected ResourceType getResources(GenerateSuggestionDataModel generateSuggestionDataModel) {
+        return generateSuggestionDataModel.getResources().stream()
+                .filter(o -> o.getOid().equals(generateSuggestionDataModel.getResourceOid()))
                 .filter(ResourceType.class::isInstance)
                 .map(ResourceType.class::cast)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Object ResourceType with oid '" +
-                        generateSuggestionDialogContext.getResourceOid() + "' not found"));
+                        generateSuggestionDataModel.getResourceOid() + "' not found"));
     }
 
     private JPanel createTablePanel(SmartSuggestionTableModel<?> model) {

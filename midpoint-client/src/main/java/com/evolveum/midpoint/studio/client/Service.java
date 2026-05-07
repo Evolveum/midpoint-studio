@@ -1,12 +1,13 @@
 package com.evolveum.midpoint.studio.client;
 
+import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
+import com.evolveum.midpoint.smart.api.info.StatusInfo;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -78,9 +79,27 @@ public interface Service {
 
     ConnectorDevelopmentType createConnectorDevelopmentType(ConnectorDevelopmentType connectorDevelopmentType) throws SchemaException, AuthenticationException, IOException;
 
-    ConnDevDiscoverDocumentationResultType discoverDocumentationConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationCreateConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
-    ConnDevGenerateArtifactResultType createConnectorStatus(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+    OperationResultStatusType getStatusCreateConnector(String token) throws SchemaException, AuthenticationException, IOException;
 
-    ConnDevGenerateArtifactResultType generateConnectorArtifactStatus(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+    ConnDevCreateConnectorResultType getResultCreateConnector(String token) throws SchemaException, AuthenticationException, IOException;
+
+    String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+
+    OperationResultStatusType getStatusDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException;
+
+    ConnDevDiscoverGlobalInformationResultType getResultDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException;
+
+    String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+
+    OperationResultStatusType getStatusDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
+
+    ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
+
+    String submitOperationProcessDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+
+    OperationResultStatusType getStatusProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
+
+    ConnDevProcessDocumentationResultType getResultProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
 }

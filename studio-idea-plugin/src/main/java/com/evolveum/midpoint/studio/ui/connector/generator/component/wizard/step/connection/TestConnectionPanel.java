@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.connection;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDataModel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.VerticalFlowLayout;
@@ -14,9 +13,9 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 
-public class TestConnectionPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
+public class TestConnectionPanel extends JBPanel<TestConnectionPanel> implements WizardContent {
 
-    public TestConnectionPanel(ConnectorGeneratorDialogContext context) {
+    public TestConnectionPanel(ConnectorGeneratorDataModel context) {
         setLayout(new BorderLayout());
         setBorder(JBUI.Borders.empty(20));
 

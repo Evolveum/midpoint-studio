@@ -1,17 +1,18 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard;
 
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevApplicationInfoType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevCreateConnectorResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDiscoverDocumentationResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType;
 import com.intellij.openapi.project.Project;
 
-public class ConnectorGeneratorDialogContext {
+public class ConnectorGeneratorDataModel {
 
     private final Project project;
     private ConnectorDevelopmentType connectorDevelopmentType;
     private ConnDevDiscoverDocumentationResultType connDevDiscoverDocumentationResultType;
+    private ConnDevCreateConnectorResultType connDevCreateConnectorResultType;
 
-    public ConnectorGeneratorDialogContext(Project project) {
+    public ConnectorGeneratorDataModel(Project project) {
         this.project = project;
     }
 
@@ -33,5 +34,13 @@ public class ConnectorGeneratorDialogContext {
 
     public void setConnDevDiscoverDocumentationResultType(ConnDevDiscoverDocumentationResultType connDevDiscoverDocumentationResultType) {
         this.connDevDiscoverDocumentationResultType = connDevDiscoverDocumentationResultType;
+    }
+
+    public ConnDevCreateConnectorResultType getConnDevCreateConnectorResultType() {
+        return connDevCreateConnectorResultType;
+    }
+
+    public void setConnDevCreateConnectorResultType(ConnDevCreateConnectorResultType connDevCreateConnectorResultType) {
+        this.connDevCreateConnectorResultType = connDevCreateConnectorResultType;
     }
 }

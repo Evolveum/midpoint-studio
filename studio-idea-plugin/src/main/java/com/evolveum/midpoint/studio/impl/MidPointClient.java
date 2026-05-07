@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
@@ -11,6 +12,8 @@ import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentService;
+import com.evolveum.midpoint.smart.api.info.StatusInfo;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
@@ -551,9 +554,9 @@ public class MidPointClient {
         return null;
     }
 
-    public ConnDevDiscoverDocumentationResultType discoverDocumentationConnector(String connectorDevelopmentOid) {
+    public String submitOperationCreateConnector(String connectorDevelopmentOid) {
         try {
-            return client.discoverDocumentationConnector(connectorDevelopmentOid);
+            return client.submitOperationCreateConnector(connectorDevelopmentOid);
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }
@@ -561,9 +564,109 @@ public class MidPointClient {
         return null;
     }
 
-    public ConnDevGenerateArtifactResultType createConnectorStatus(String connectorDevelopmentOid) {
+    public OperationResultStatusType getStatusConnectorGenerator(String token) {
         try {
-            return client.createConnectorStatus(connectorDevelopmentOid);
+            return client.getStatusCreateConnector(token);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public ConnDevCreateConnectorResultType getResultConnectorGenerator(String token) {
+        try {
+            return client.getResultCreateConnector(token);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) {
+        try {
+            return client.submitOperationDiscoverBasicInformation(connectorDevelopmentOid);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public OperationResultStatusType getStatusDiscoverBasicInformation(String token) {
+        try {
+            return client.getStatusDiscoverBasicInformation(token);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public ConnDevDiscoverGlobalInformationResultType getResultDiscoverBasicInformation(String token) {
+        try {
+            return client.getResultDiscoverBasicInformation(token);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) {
+        try {
+            return client.submitOperationDiscoverDocumentation(connectorDevelopmentOid);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public OperationResultStatusType getStatusDiscoverDocumentation(String token) {
+        try {
+            return client.getStatusDiscoverDocumentation(token);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) {
+        try {
+            return client.getResultDiscoverDocumentation(token);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public String submitOperationProcessDocumentation(String connectorDevelopmentOid) {
+        try {
+            return client.submitOperationProcessDocumentation(connectorDevelopmentOid);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public OperationResultStatusType getStatusProcessDocumentation(String token) {
+        try {
+            return client.getStatusProcessDocumentation(token);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public ConnDevProcessDocumentationResultType getResultProcessDocumentation(String token) {
+        try {
+            return client.getResultProcessDocumentation(token);
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }

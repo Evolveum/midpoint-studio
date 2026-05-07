@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.objectClass;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDataModel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -18,9 +17,9 @@ import com.intellij.util.ui.UIUtil;
 import javax.swing.*;
 import java.awt.*;
 
-public class SchemaScriptValidatorPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
+public class SchemaScriptValidatorPanel extends JBPanel<SchemaScriptValidatorPanel> implements WizardContent {
 
-    public SchemaScriptValidatorPanel(ConnectorGeneratorDialogContext context) {
+    public SchemaScriptValidatorPanel(ConnectorGeneratorDataModel context) {
         setLayout(new BorderLayout());
         setBorder(JBUI.Borders.empty(20));
 

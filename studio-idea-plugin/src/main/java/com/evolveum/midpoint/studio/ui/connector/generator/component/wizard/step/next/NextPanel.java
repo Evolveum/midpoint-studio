@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.next;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDialogContext;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.DiscoverDocumentationPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDataModel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.VerticalFlowLayout;
@@ -15,9 +14,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class NextPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
+public class NextPanel extends JBPanel<NextPanel> implements WizardContent {
 
-    public NextPanel(ConnectorGeneratorDialogContext context) {
+    public NextPanel(ConnectorGeneratorDataModel context) {
         setLayout(new VerticalFlowLayout(VerticalFlowLayout.TOP, 0, 10, true, false));
         setBorder(JBUI.Borders.empty(30));
         setBackground(new Color(242, 243, 246));

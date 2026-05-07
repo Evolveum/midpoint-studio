@@ -13,7 +13,7 @@ import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectTypeDefinitionType;
 
-public class GenerateSuggestionDialogContext {
+public class GenerateSuggestionDataModel {
 
     public enum Direction {
         INBOUND,

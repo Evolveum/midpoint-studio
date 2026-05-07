@@ -13,7 +13,7 @@ import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDialogContext;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.ui.treetable.FilterableColumnInfo;
@@ -46,8 +46,8 @@ public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMapp
     }
 
     @Override
-    GenerateSuggestionDialogContext.ResourceDialogContextMode getModeDialogContext() {
-        return GenerateSuggestionDialogContext.ResourceDialogContextMode.MAPPING;
+    GenerateSuggestionDataModel.ResourceDialogContextMode getModeDialogContext() {
+        return GenerateSuggestionDataModel.ResourceDialogContextMode.MAPPING;
     }
 
     @Override
@@ -114,12 +114,12 @@ public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMapp
     @Override
     List<SmartSuggestionObject<AttributeMappingsSuggestionType>> getSuggestions(
             MidPointClient client,
-            GenerateSuggestionDialogContext generateSuggestionDialogContext
+            GenerateSuggestionDataModel generateSuggestionDataModel
     ) {
         var mappingsSuggestions = client.getSuggestMapping(
-                generateSuggestionDialogContext.getResourceOid(),
-                generateSuggestionDialogContext.getObjectType(),
-                generateSuggestionDialogContext.getDirection().equals(GenerateSuggestionDialogContext.Direction.INBOUND)
+                generateSuggestionDataModel.getResourceOid(),
+                generateSuggestionDataModel.getObjectType(),
+                generateSuggestionDataModel.getDirection().equals(GenerateSuggestionDataModel.Direction.INBOUND)
         );
 
         if (mappingsSuggestions == null) {
@@ -130,8 +130,8 @@ public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMapp
                 .map(o -> new SmartSuggestionObject<>(
                         o,
                         null,
-                        getResources(generateSuggestionDialogContext),
-                        generateSuggestionDialogContext.getObjectType()
+                        getResources(generateSuggestionDataModel),
+                        generateSuggestionDataModel.getObjectType()
                 ))
                 .toList();
     }

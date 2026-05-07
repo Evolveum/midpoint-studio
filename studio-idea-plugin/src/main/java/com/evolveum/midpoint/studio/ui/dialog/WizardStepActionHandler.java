@@ -11,7 +11,7 @@ package com.evolveum.midpoint.studio.ui.dialog;
 /**
  * Created by Dominik.
  */
-public interface DialogWindowActionHandler {
+public interface WizardStepActionHandler {
 
     /**
      * Whether the OK button should be visible.

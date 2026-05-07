@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.next;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic.ApplicationIdentificationPanel;
 import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.intellij.ui.components.JBPanel;
 

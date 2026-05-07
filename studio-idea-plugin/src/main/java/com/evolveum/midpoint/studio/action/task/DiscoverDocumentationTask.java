@@ -1,18 +1,17 @@
 package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDiscoverDocumentationResultType;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Consumer;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class DiscoverDocumentationTask extends SimpleBackgroundableTask {
@@ -25,18 +24,14 @@ public class DiscoverDocumentationTask extends SimpleBackgroundableTask {
 
     private final String connectorDevelopmentOperationOid;
 
-    private ConnDevDiscoverDocumentationResultType connDevDiscoverDocumentationResultType;
-
     public DiscoverDocumentationTask(@NotNull Project project,
+                                     @NotNull Environment environment,
                                      @Nullable Supplier<DataContext> dataContextSupplier,
                                      @NotNull String connectorDevelopmentOperationOid
     ) {
         super(project, dataContextSupplier, TITLE, NOTIFICATION_KEY);
         this.connectorDevelopmentOperationOid = connectorDevelopmentOperationOid;
-
-        EnvironmentService em = EnvironmentService.getInstance(project);
-        Environment env = em.getSelected();
-        setEnvironment(env);
+        setEnvironment(environment);
     }
 
     @Override
@@ -44,19 +39,24 @@ public class DiscoverDocumentationTask extends SimpleBackgroundableTask {
         super.doRun(indicator);
 
         try {
-            var result = client.discoverDocumentationConnector(connectorDevelopmentOperationOid);
-            ApplicationManager.getApplication().invokeLater(() -> {
-                connDevDiscoverDocumentationResultType = result;
-            });
-        } catch (Exception ex) {
-            LOG.error("Couldn't discover documentation", ex);
+            indicator.setText("Starting " + TITLE);
+            var token = client.submitOperationDiscoverDocumentation(connectorDevelopmentOperationOid);
 
-            MidPointUtils.handleGenericException(getProject(), getEnvironment(), DiscoverDocumentationTask.class,
-                    NOTIFICATION_KEY, "Couldn't discover documentation", ex);
+            ScheduledExecutorService executor =
+                    AppExecutorUtil.getAppScheduledExecutorService();
+
+            executor.scheduleWithFixedDelay(() -> {
+                try {
+                    var status = client.getStatusDiscoverDocumentation(token);
+                    ApplicationManager.getApplication().invokeLater(() -> {
+
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, 0, 1, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            System.out.println("Failed to start task: " + e.getMessage());
         }
-    }
-
-    public ConnDevDiscoverDocumentationResultType getConnDevDiscoverDocumentationResultType() {
-        return connDevDiscoverDocumentationResultType;
     }
 }

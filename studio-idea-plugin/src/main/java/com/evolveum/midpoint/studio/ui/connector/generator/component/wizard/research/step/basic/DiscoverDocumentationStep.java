@@ -1,33 +1,92 @@
-package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.basic;
+package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic;
 
-import com.evolveum.midpoint.studio.action.task.DiscoverDocumentationTask;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.ConnectorGeneratorDataModel;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.step.LoadingPanel;
-import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.ConnectorGeneratorWizardData;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDiscoverDocumentationResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDocumentationSourceType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.ui.components.*;
+import com.intellij.ide.wizard.StepAdapter;
+import com.intellij.ui.components.JBCheckBox;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBPanel;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-public class DiscoverDocumentationPanel extends JBPanel<DiscoverDocumentationPanel> implements WizardContent {
+public class DiscoverDocumentationStep extends StepAdapter {
 
-    private final ConnectorGeneratorDataModel dataModel;
+    private final MidPointClient client;
+    private final ConnectorGeneratorWizardData dataModel;
+    private final JBPanel<?> panel = new JBPanel<>();
 
-    public DiscoverDocumentationPanel(ConnectorGeneratorDataModel dataModel) {
+    private final ScheduledExecutorService executor = AppExecutorUtil.getAppScheduledExecutorService();
+    private ScheduledFuture<?> future;
+    private long startTime;
+
+    private boolean initialized = false;
+
+    public DiscoverDocumentationStep(MidPointClient client, ConnectorGeneratorWizardData dataModel) {
+        this.client = client;
         this.dataModel = dataModel;
-        setLayout(new BorderLayout());
-        createDiscoverDocumentationPanel();
+        panel.setName("Discover Documentation");
     }
 
-    private void createDiscoverDocumentationPanel() {
-        add(createTopBanner(), BorderLayout.NORTH);
+    @Override
+    public void _init() {
+        if (!initialized) {
+            initialized = true;
+
+            var statusLabel = new JBLabel("Waiting...");
+            panel.add(statusLabel);
+            startPolling(dataModel.connectorDevelopmentType.getOid(), statusLabel);
+        }
+
+        super._init();
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return panel;
+    }
+
+    private void startPolling(String connectorDevelopmentOperationOid, JBLabel statusLabel) {
+        var token = client.submitOperationDiscoverDocumentation(connectorDevelopmentOperationOid);
+        startTime = System.currentTimeMillis();
+
+        future = executor.scheduleWithFixedDelay(() -> {
+            long elapsed = (System.currentTimeMillis() - startTime) / 1000;
+            var status = client.getStatusDiscoverDocumentation(token);
+
+            if (OperationResultStatusType.SUCCESS.equals(status)) {
+                var result = client.getResultDiscoverDocumentation(token);
+                panel.add(createTopBanner());
+                panel.add(createListDocs(result));
+            } else {
+                statusLabel.setText(
+                        String.format(
+                                "Waiting for endpoint... Elapsed time: %dm %ds",
+                                elapsed / 60,
+                                elapsed % 60
+                        )
+                );
+            }
+            statusLabel.revalidate();
+            statusLabel.repaint();
+
+            if (OperationResultStatusType.SUCCESS.equals(status) && future != null) {
+                future.cancel(false);
+            }
+
+        }, 0, 10, TimeUnit.MILLISECONDS);
     }
 
     private JBPanel<?> createTopBanner() {
@@ -148,48 +207,5 @@ public class DiscoverDocumentationPanel extends JBPanel<DiscoverDocumentationPan
         row.add(content, BorderLayout.CENTER);
 
         return row;
-    }
-
-    @Override
-    public void afterChangeAction() {
-//        if (dataModel.getConnDevDiscoverDocumentationResultType() == null &&
-//                dataModel.getConnectorDevelopmentType() != null)
-//        {
-//            var loadingPanel = new LoadingPanel("Identifying Documentation...",
-//            "Analyzing your target application details to locate the right documentation.", null);
-//            add(loadingPanel);
-//
-//            new DiscoverDocumentationTask(
-//                    dataModel.getProject(),
-//                    () -> DataContext.EMPTY_CONTEXT,
-//                    dataModel.getConnectorDevelopmentType().getOid()
-//            ) {
-//                @Override
-//                public void onSuccess() {
-//                    super.onSuccess();
-//                    var discoverDocumentation = getConnDevDiscoverDocumentationResultType();
-//                    dataModel.setConnDevDiscoverDocumentationResultType(discoverDocumentation);
-//                    add(createListDocs(discoverDocumentation));
-//                    remove(loadingPanel);
-//                    revalidate();
-//                    repaint();
-//                }
-//
-//                @Override
-//                public void onThrowable(@NotNull Throwable error) {
-//                    super.onThrowable(error);
-//                }
-//
-//                @Override
-//                public void onFinished() {
-//                    super.onFinished();
-//                }
-//            }.queue();
-//        }
-    }
-
-    @Override
-    public JBPanel<?> getPanel() {
-        return this;
     }
 }

@@ -15,6 +15,7 @@ import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
+import com.evolveum.midpoint.smart.api.info.StatusInfo;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -605,45 +606,130 @@ public class ServiceImpl implements Service {
         String content = context.serialize(connectorDevelopmentType);
 
         Request.Builder builder = context.build("/ws/connector-generator",
-                        ConnectorGeneratorConstants.RPC_UPSERT_CONNECTOR_DEVELOPMENT_TYPE, null)
-                .post(RequestBody.create(content, ServiceContext.APPLICATION_XML));
+                ConnectorGeneratorConstants.RPC_UPSERT_CONNECTOR_DEVELOPMENT_TYPE,
+                null
+        ).post(RequestBody.create(content, ServiceContext.APPLICATION_XML));
 
         return executeRequest(builder.build(), ConnectorDevelopmentType.class);
     }
 
     @Override
-    public ConnDevDiscoverDocumentationResultType discoverDocumentationConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        Map<String, Object> params = new HashMap<>();
+    public String submitOperationCreateConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_SUBMIT_OPERATION,
+                Map.of("oid", connectorDevelopmentOid)
+        ).get();
 
-        params.put("connectorDevelopmentOid", connectorDevelopmentOid);
+        return executeRequest(builder.build(), String.class);
+    }
 
-        Request.Builder builder = context.build("/ws/connector-generator", ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION, params)
-                .get();
+    @Override
+    public OperationResultStatusType getStatusCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_STATUS,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), OperationResultStatusType.class);
+    }
+
+    @Override
+    public ConnDevCreateConnectorResultType getResultCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_RESULT,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), ConnDevCreateConnectorResultType.class);
+    }
+
+    @Override
+    public String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_SUBMIT_OPERATION,
+                Map.of("oid", connectorDevelopmentOid)
+        ).get();
+
+        return executeRequest(builder.build(), String.class);
+    }
+
+    @Override
+    public OperationResultStatusType getStatusDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_STATUS,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), OperationResultStatusType.class);
+    }
+
+    @Override
+    public ConnDevDiscoverGlobalInformationResultType getResultDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_RESULT,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), ConnDevDiscoverGlobalInformationResultType.class);
+    }
+
+    @Override
+    public String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_SUBMIT_OPERATION,
+                Map.of("oid", connectorDevelopmentOid)
+        ).get();
+
+        return executeRequest(builder.build(), String.class);
+    }
+
+    @Override
+    public OperationResultStatusType getStatusDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_STATUS,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), OperationResultStatusType.class);
+    }
+
+    @Override
+    public ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_RESULT,
+                Map.of("token", token)
+        ).get();
 
         return executeRequest(builder.build(), ConnDevDiscoverDocumentationResultType.class);
     }
 
     @Override
-    public ConnDevGenerateArtifactResultType createConnectorStatus(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        Map<String, Object> params = new HashMap<>();
+    public String submitOperationProcessDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_SUBMIT_OPERATION,
+                Map.of("oid", connectorDevelopmentOid)
+        ).get();
 
-        params.put("connectorDevelopmentOid", connectorDevelopmentOid);
-
-        Request.Builder builder = context.build("/ws/connector-generator", ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_STATUS, params)
-                .get();
-
-        return executeRequest(builder.build(), ConnDevGenerateArtifactResultType.class);
+        return executeRequest(builder.build(), String.class);
     }
 
     @Override
-    public ConnDevGenerateArtifactResultType generateConnectorArtifactStatus(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        Map<String, Object> params = new HashMap<>();
+    public OperationResultStatusType getStatusProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_STATUS,
+                Map.of("token", token)
+        ).get();
 
-        params.put("connectorDevelopmentOid", connectorDevelopmentOid);
+        return executeRequest(builder.build(), OperationResultStatusType.class);
+    }
 
-        Request.Builder builder = context.build("/ws/connector-generator", ConnectorGeneratorConstants.RPC_GENERATE_ARTIFACT_STATUS, params)
-                .get();
+    @Override
+    public ConnDevProcessDocumentationResultType getResultProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_RESULT,
+                Map.of("token", token)
+        ).get();
 
-        return executeRequest(builder.build(), ConnDevGenerateArtifactResultType.class);
+        return executeRequest(builder.build(), ConnDevProcessDocumentationResultType.class);
     }
 }

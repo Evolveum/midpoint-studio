@@ -1,14 +1,19 @@
 package com.evolveum.midpoint.studio.ui.dialog.wizard;
 
-import javax.swing.JPanel;
+import com.intellij.ui.components.JBPanel;
+
 
 public interface WizardContent {
 
-    JPanel getPanel();
+    JBPanel<?> getPanel();
 
-    default void beforeChangeAction() throws InterruptedException {
+    default void beforeChangeAction() {
     }
 
     default void afterChangeAction() {
+    }
+
+    default boolean disableChangeStep() {
+        return false;
     }
 }
