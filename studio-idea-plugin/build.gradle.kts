@@ -81,6 +81,10 @@ var pluginVersion = "$version$pluginVersionSuffix"
 println("Plugin version: $pluginVersion")
 println("Publish channel: $publishChannel")
 
+sourceSets.main {
+    java.srcDir("build/generated-src/antlr/main")
+}
+
 repositories {
     maven("https://nexus.evolveum.com/nexus/repository/intellij-dependencies/")
     maven("https://nexus.evolveum.com/nexus/repository/intellij-repository/")
@@ -335,6 +339,7 @@ tasks {
     }
 
     generateGrammarSource {
+        arguments = arguments + listOf("-visitor")
     }
 
     printProductsReleases {

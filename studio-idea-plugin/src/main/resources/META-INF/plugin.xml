@@ -201,6 +201,25 @@
 
         <!-- Axiom language support end -->
 
+        <!-- CEL/MEL language support -->
+
+        <fileType language="CEL"
+                  implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelFileType"
+                  name="CEL File" fieldName="INSTANCE" extensions="cel"/>
+        <lang.syntaxHighlighterFactory language="CEL"
+                                       implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelSyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="CEL"
+                               implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelParserDefinition"/>
+        <lang.ast.factory language="CEL"
+                          implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelASTFactory"/>
+        <lang.braceMatcher language="CEL"
+                           implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelBraceMatcher"/>
+        <lang.commenter language="CEL"
+                        implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelCommenter"/>
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.lang.mel.impl.MelMultiHostInjector"/>
+
+        <!-- CEL/MEL language support end -->
+
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
@@ -319,6 +338,11 @@
     <extensions defaultExtensionNs="org.intellij.groovy">
         <membersContributor implementation="com.evolveum.midpoint.studio.impl.lang.ScriptNonCodeMembersContributor"/>
     </extensions>
+
+
+<!--    <extensions defaultExtensionNs="com.evolveum.midpoint.studio">-->
+<!--        <celNonCodeMembersContributor implementation="com.evolveum.midpoint.studio.lang.mel.MelNonCodeMembersContributor"/>-->
+<!--    </extensions>-->
 
     <actions resource-bundle="messages.MidPointStudio">
 
