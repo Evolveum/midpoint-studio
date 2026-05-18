@@ -278,10 +278,6 @@ intellijPlatform {
                 sinceBuild = "253"
             }
         }
-        // Disable warnings about incompatible API changes in the latest versions of IntelliJ Platform,
-        // just as an attempt to make verifier task work on jenkins without access, proxy access doesn't work
-        // todo remove and fix
-        freeArgs.add("-mute=NoDocumentedApiCompatibleChanges")
     }
 }
 
