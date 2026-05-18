@@ -115,7 +115,8 @@ podTemplate(
                         }
                     }
                     stage("post-build") {
-                        archiveArtifacts artifacts: 'studio-idea-plugin/build/reports/pluginVerifier/**', followSymlinks: false
+                        // todo remove allowEmptyArchive: true when verifyPlugin task is added to the build
+                        archiveArtifacts artifacts: 'studio-idea-plugin/build/reports/pluginVerifier/**', followSymlinks: false, allowEmptyArchive: true
                     }
                     stage("cleanup") {
                         container('jdk') {
