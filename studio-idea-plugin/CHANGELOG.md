@@ -1,5 +1,13 @@
 # MidPoint Studio
 
+## [4.10.2]
+### Added
+
+### Changed
+
+### Fixed
+
+
 ## [4.10.1]
 ### Added
 - Support for Intellij Idea 2026.1
