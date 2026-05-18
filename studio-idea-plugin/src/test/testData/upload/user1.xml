@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<user xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+      oid="00000000-0000-0000-0000-000000000001">
+    <name>user1</name>
+</user>
