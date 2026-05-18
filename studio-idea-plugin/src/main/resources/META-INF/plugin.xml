@@ -201,23 +201,25 @@
 
         <!-- Axiom language support end -->
 
-        <!-- CEL/MEL language support -->
+        <!-- MEL language support -->
 
-        <fileType language="CEL"
+        <fileType language="MEL"
                   implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelFileType"
-                  name="CEL File" fieldName="INSTANCE" extensions="cel"/>
-        <lang.syntaxHighlighterFactory language="CEL"
+                  name="MEL File" fieldName="INSTANCE" extensions="mel"/>
+        <lang.syntaxHighlighterFactory language="MEL"
                                        implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelSyntaxHighlighterFactory"/>
-        <lang.parserDefinition language="CEL"
+        <lang.parserDefinition language="MEL"
                                implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelParserDefinition"/>
-        <lang.ast.factory language="CEL"
+        <lang.ast.factory language="MEL"
                           implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelASTFactory"/>
-        <lang.braceMatcher language="CEL"
+        <lang.braceMatcher language="MEL"
                            implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelBraceMatcher"/>
-        <lang.commenter language="CEL"
+        <lang.commenter language="MEL"
                         implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelCommenter"/>
         <multiHostInjector implementation="com.evolveum.midpoint.studio.lang.mel.impl.MelMultiHostInjector"/>
 
+        <externalAnnotator language="MEL"
+                           implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelExternalAnnotator"/>
         <!-- CEL/MEL language support end -->
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>

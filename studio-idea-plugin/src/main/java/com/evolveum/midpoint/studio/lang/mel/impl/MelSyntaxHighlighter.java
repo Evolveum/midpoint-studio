@@ -17,29 +17,29 @@ import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAtt
 public class MelSyntaxHighlighter extends SyntaxHighlighterBase {
 
     public static final TextAttributesKey[] KEYWORD_KEYS =
-            pack(createTextAttributesKey("CEL_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD));
+            pack(createTextAttributesKey("MEL_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD));
 
     public static final TextAttributesKey[] STRING_KEYS =
-            pack(createTextAttributesKey("CEL_STRING", DefaultLanguageHighlighterColors.STRING));
+            pack(createTextAttributesKey("MEL_STRING", DefaultLanguageHighlighterColors.STRING));
 
     public static final TextAttributesKey[] NUMBER_KEYS =
-            pack(createTextAttributesKey("CEL_NUMBER", DefaultLanguageHighlighterColors.NUMBER));
+            pack(createTextAttributesKey("MEL_NUMBER", DefaultLanguageHighlighterColors.NUMBER));
 
     public static final TextAttributesKey[] IDENTIFIER_KEYS =
-            pack(createTextAttributesKey("CEL_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER));
+            pack(createTextAttributesKey("MEL_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER));
 
     public static final TextAttributesKey[] BRACES_KEYS =
-            pack(createTextAttributesKey("CEL_BRACES", DefaultLanguageHighlighterColors.BRACES));
+            pack(createTextAttributesKey("MEL_BRACES", DefaultLanguageHighlighterColors.BRACES));
 
     public static final TextAttributesKey[] PARENTHESES_KEYS =
-            pack(createTextAttributesKey("CEL_PARENTHESES", DefaultLanguageHighlighterColors.PARENTHESES));
+            pack(createTextAttributesKey("MEL_PARENTHESES", DefaultLanguageHighlighterColors.PARENTHESES));
 
     public static final TextAttributesKey[] BRACKETS_KEYS =
-            pack(createTextAttributesKey("CEL_BRACKETS", DefaultLanguageHighlighterColors.BRACKETS));
+            pack(createTextAttributesKey("MEL_BRACKETS", DefaultLanguageHighlighterColors.BRACKETS));
 
     public static final TextAttributesKey[] COMMENT_KEYS =
-            pack(createTextAttributesKey("CEL_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT),
-                    createTextAttributesKey("CEL_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT));
+            pack(createTextAttributesKey("MEL_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT),
+                    createTextAttributesKey("MEL_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT));
 
     private static final TextAttributesKey[] BAD_CHAR_KEYS = pack(HighlighterColors.BAD_CHARACTER);
 

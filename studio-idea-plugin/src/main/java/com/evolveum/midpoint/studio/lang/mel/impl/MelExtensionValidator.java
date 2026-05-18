@@ -1,5 +1,11 @@
 package com.evolveum.midpoint.studio.lang.mel.impl;
 
+import com.evolveum.midpoint.studio.lang.mel.antlr.MELBaseVisitor;
+import com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.GlobalCallContext;
+import com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.IdentContext;
+import com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.MemberCallContext;
+import com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.PrimaryExprContext;
+
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -8,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class MelSemanticAnalyzer extends com.evolveum.midpoint.studio.lang.mel.antlr.MELBaseVisitor<Void> {
+public class MelExtensionValidator extends MELBaseVisitor<Void> {
 
     private static final MelExtensionRegistry REGISTRY = new MelExtensionRegistry();
 
@@ -35,45 +41,46 @@ public class MelSemanticAnalyzer extends com.evolveum.midpoint.studio.lang.mel.a
             "isEmpty", "isNull", "isPresent", "default", "timestamp", "duration", "qname"
     );
 
-    private final List<ValidationError> diagnostics = new ArrayList<>();
+    private final List<ValidationMessage> messages = new ArrayList<>();
 
-    List<ValidationError> analyze(ParseTree tree) {
+    public List<ValidationMessage> analyze(ParseTree tree) {
         visit(tree);
-        return Collections.unmodifiableList(diagnostics);
+
+        return Collections.unmodifiableList(messages);
     }
 
     @Override
-    public Void visitIdent(com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.IdentContext ctx) {
+    public Void visitIdent(IdentContext ctx) {
         String name = ctx.id.getText();
         if (!KNOWN_IDENTIFIERS.contains(name)) {
-            diagnostics.add(warning(ctx.id, "Unknown identifier '" + name + "'"));
+            messages.add(error(ctx.id, "Unknown identifier '" + name + "'"));
         }
         return visitChildren(ctx);
     }
 
     @Override
-    public Void visitGlobalCall(com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.GlobalCallContext ctx) {
+    public Void visitGlobalCall(GlobalCallContext ctx) {
         String name = ctx.id.getText();
         if (!KNOWN_GLOBAL_FUNCTIONS.contains(name)) {
-            diagnostics.add(warning(ctx.id, "Unknown function '" + name + "'"));
+            messages.add(error(ctx.id, "Unknown function '" + name + "'"));
         }
         return visitChildren(ctx);
     }
 
     @Override
-    public Void visitMemberCall(com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.MemberCallContext ctx) {
+    public Void visitMemberCall(MemberCallContext ctx) {
         String name = ctx.id.getText();
         String namespace = getNamespaceReceiver(ctx);
         if (namespace != null) {
             // Namespace call: validate function name against the registry
             if (!REGISTRY.isValidNamespaceCall(namespace, name)) {
-                diagnostics.add(warning(ctx.id,
+                messages.add(error(ctx.id,
                         "Unknown function '" + name + "' on extension '" + namespace + "'"));
             }
         } else {
             // Non-namespace member call: accept known member functions and dual-mode extension functions
             if (!KNOWN_MEMBER_FUNCTIONS.contains(name) && !REGISTRY.isValidMemberCall(name)) {
-                diagnostics.add(warning(ctx.id, "Unknown member function '" + name + "'"));
+                messages.add(error(ctx.id, "Unknown member function '" + name + "'"));
             }
         }
         return visitChildren(ctx);
@@ -83,26 +90,16 @@ public class MelSemanticAnalyzer extends com.evolveum.midpoint.studio.lang.mel.a
      * If the direct receiver of this member call is a known extension namespace identifier,
      * returns that namespace name; otherwise returns null.
      */
-    private String getNamespaceReceiver(com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.MemberCallContext ctx) {
-        if (ctx.member() instanceof com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.PrimaryExprContext primaryExpr
-                && primaryExpr.primary() instanceof com.evolveum.midpoint.studio.lang.mel.antlr.MELParser.IdentContext identCtx) {
+    private String getNamespaceReceiver(MemberCallContext ctx) {
+        if (ctx.member() instanceof PrimaryExprContext primaryExpr
+                && primaryExpr.primary() instanceof IdentContext identCtx) {
             String id = identCtx.id.getText();
             return REGISTRY.isNamespace(id) ? id : null;
         }
         return null;
     }
 
-    private ValidationError warning(Token token, String message) {
-        return new ValidationError(token, message);
-    }
-
-    public static class ValidationError {
-        public final Token token;
-        public final String message;
-
-        public ValidationError(Token token, String message) {
-            this.token = token;
-            this.message = message;
-        }
+    private ValidationMessage error(Token token, String message) {
+        return new ValidationMessage(token, ValidationSeverity.ERROR, message);
     }
 }

@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class MelExternalAnnotator
-        extends ExternalAnnotator<MelExternalAnnotator.Info, List<MelSemanticAnalyzer.ValidationError>> {
+        extends ExternalAnnotator<MelExternalAnnotator.Info, List<ValidationMessage>> {
 
     public record Info(String text, VirtualFile file) {
     }
@@ -27,7 +27,7 @@ public class MelExternalAnnotator
     }
 
     @Override
-    public List<MelSemanticAnalyzer.ValidationError> doAnnotate(Info info) {
+    public List<ValidationMessage> doAnnotate(Info info) {
         ANTLRInputStream input = new ANTLRInputStream(info.text());
         MELLexer lexer = new MELLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -36,17 +36,24 @@ public class MelExternalAnnotator
         lexer.removeErrorListeners();
 
         MELParser.StartContext tree = parser.start();
-        MelSemanticAnalyzer validator = new MelSemanticAnalyzer();
+        MelExtensionValidator validator = new MelExtensionValidator();
         return validator.analyze(tree);
     }
 
     @Override
     public void apply(@NotNull PsiFile file,
-                      List<MelSemanticAnalyzer.ValidationError> errors,
+                      List<ValidationMessage> errors,
                       @NotNull AnnotationHolder holder) {
+
         for (var err : errors) {
-            TextRange range = tokenToTextRange(err.token);
-            holder.newAnnotation(HighlightSeverity.ERROR, err.message)
+            HighlightSeverity severity = switch (err.severity()) {
+                case ERROR -> HighlightSeverity.ERROR;
+                case WARNING -> HighlightSeverity.WARNING;
+                case INFO -> HighlightSeverity.INFORMATION;
+            };
+
+            TextRange range = tokenToTextRange(err.token());
+            holder.newAnnotation(severity, err.message())
                     .range(range)
                     .create();
         }
