@@ -7,7 +7,8 @@ import javax.swing.*;
 
 public class MelIcons {
 
-    public static final @NotNull Icon ICON_FILE_TYPE = load("icons/file-type.svg");
+    // todo switch to MEL icon, when there's one :)
+    public static final @NotNull Icon ICON_FILE_TYPE = load("icons/midpoint.svg");
 
     private static @NotNull Icon load(@NotNull String path) {
         return IconLoader.getIcon(path, MelIcons.class);
