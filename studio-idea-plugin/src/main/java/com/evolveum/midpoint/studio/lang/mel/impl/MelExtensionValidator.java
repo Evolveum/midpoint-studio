@@ -53,7 +53,7 @@ public class MelExtensionValidator extends MELBaseVisitor<Void> {
     public Void visitIdent(IdentContext ctx) {
         String name = ctx.id.getText();
         if (!KNOWN_IDENTIFIERS.contains(name)) {
-            messages.add(error(ctx.id, "Unknown identifier '" + name + "'"));
+            messages.add(warning(ctx.id, "Unknown identifier '" + name + "'"));
         }
         return visitChildren(ctx);
     }
@@ -97,6 +97,10 @@ public class MelExtensionValidator extends MELBaseVisitor<Void> {
             return REGISTRY.isNamespace(id) ? id : null;
         }
         return null;
+    }
+
+    private ValidationMessage warning(Token token, String message) {
+        return new ValidationMessage(token, ValidationSeverity.WARNING, message);
     }
 
     private ValidationMessage error(Token token, String message) {
