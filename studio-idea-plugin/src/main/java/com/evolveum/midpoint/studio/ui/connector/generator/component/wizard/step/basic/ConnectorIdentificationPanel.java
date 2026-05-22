@@ -8,7 +8,6 @@ import com.evolveum.midpoint.studio.ui.dialog.wizard.WizardContent;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.*;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.JBUI;
@@ -136,9 +135,9 @@ public class ConnectorIdentificationPanel extends JBPanel<ConnectorIdentificatio
                         EnvironmentService em = EnvironmentService.getInstance(dataModel.getProject());
                         Environment env = em.getSelected();
                         var client = new MidPointClient(dataModel.getProject(), env);
-                        var connectorDevelopmentType = client.createConnectorDevelopmentType(
-                                dataModel.getConnectorDevelopmentType());
-                        dataModel.setConnectorDevelopmentType(connectorDevelopmentType);
+//                        var connectorDevelopmentType = client.upsertConnectorDevelopmentType(
+//                                dataModel.getConnectorDevelopmentType());
+//                        dataModel.setConnectorDevelopmentType(connectorDevelopmentType);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

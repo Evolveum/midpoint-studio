@@ -1,53 +1,100 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic;
 
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.service.TaskStatusPoller;
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.ConnectorGeneratorWizardData;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.StepStateBadge;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.LoadPanel;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDiscoverDocumentationResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDocumentationSourceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.wizard.StepAdapter;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class DiscoverDocumentationStep extends StepAdapter {
 
     private final MidPointClient client;
+    private final TaskStatusPoller taskStatusPoller;
     private final ConnectorGeneratorWizardData dataModel;
+    private StepStateBadge.State state;
     private final JBPanel<?> panel = new JBPanel<>();
-
-    private final ScheduledExecutorService executor = AppExecutorUtil.getAppScheduledExecutorService();
-    private ScheduledFuture<?> future;
-    private long startTime;
 
     private boolean initialized = false;
 
-    public DiscoverDocumentationStep(MidPointClient client, ConnectorGeneratorWizardData dataModel) {
+    public DiscoverDocumentationStep(
+            MidPointClient client,
+            ConnectorGeneratorWizardData dataModel,
+            StepStateBadge.State state
+    ) {
         this.client = client;
+        this.taskStatusPoller = client.getProject().getService(TaskStatusPoller.class);;
         this.dataModel = dataModel;
-        panel.setName("Discover Documentation");
+        this.state = state;
+        panel.setName("Documentation");
     }
 
     @Override
     public void _init() {
+
         if (!initialized) {
             initialized = true;
 
-            var statusLabel = new JBLabel("Waiting...");
-            panel.add(statusLabel);
-            startPolling(dataModel.connectorDevelopmentType.getOid(), statusLabel);
+            var token = client.submitOperationDiscoverDocumentation(dataModel.connectorDevelopmentType.getOid());
+            var loadingPanel = new LoadPanel("Identifying Documentation...",
+                    "Analyzing your target application details to locate the right documentation.",
+                    0
+            );
+
+            panel.add(loadingPanel);
+            taskStatusPoller.startPolling(() -> client.getStatusDiscoverDocumentation(token));
+
+            new Timer(1000, event -> {
+                ApplicationManager.getApplication().invokeLater(
+                        () -> loadingPanel.setElapsed(taskStatusPoller.getElapsedTime().toSeconds()));
+
+                if (taskStatusPoller.getStatus() != null
+                        && !OperationResultStatusType.IN_PROGRESS.equals(taskStatusPoller.getStatus())
+                ) {
+                    taskStatusPoller.stopPolling();
+                    ((Timer) event.getSource()).stop();
+
+                    try {
+                        ProgressManager.getInstance().run(new Task.Backgroundable(client.getProject(),
+                                "Result DiscoverDocumentation"
+                        ) {
+                            @Override
+                            public void run(@NotNull ProgressIndicator progressIndicator) {
+                                progressIndicator.setIndeterminate(true);
+                                var result = client.getResultDiscoverDocumentation(token);
+                                ApplicationManager.getApplication().invokeLater(
+                                            () -> printResult(result), ModalityState.any());
+                            }
+                        });
+                    } catch (Exception e) {
+                        ApplicationManager.getApplication().invokeLater(() -> Messages.showErrorDialog(
+                                client.getProject(),
+                                e.getMessage(),
+                                "Error Result Discover Documentation"
+                        ));
+                    }
+                }
+            }).start();
         }
 
         super._init();
@@ -58,60 +105,62 @@ public class DiscoverDocumentationStep extends StepAdapter {
         return panel;
     }
 
-    private void startPolling(String connectorDevelopmentOperationOid, JBLabel statusLabel) {
-        var token = client.submitOperationDiscoverDocumentation(connectorDevelopmentOperationOid);
-        startTime = System.currentTimeMillis();
-
-        future = executor.scheduleWithFixedDelay(() -> {
-            long elapsed = (System.currentTimeMillis() - startTime) / 1000;
-            var status = client.getStatusDiscoverDocumentation(token);
-
-            if (OperationResultStatusType.SUCCESS.equals(status)) {
-                var result = client.getResultDiscoverDocumentation(token);
-                panel.add(createTopBanner());
-                panel.add(createListDocs(result));
-            } else {
-                statusLabel.setText(
-                        String.format(
-                                "Waiting for endpoint... Elapsed time: %dm %ds",
-                                elapsed / 60,
-                                elapsed % 60
-                        )
-                );
-            }
-            statusLabel.revalidate();
-            statusLabel.repaint();
-
-            if (OperationResultStatusType.SUCCESS.equals(status) && future != null) {
-                future.cancel(false);
-            }
-
-        }, 0, 10, TimeUnit.MILLISECONDS);
+    public StepStateBadge.State getState() {
+        return state;
     }
 
-    private JBPanel<?> createTopBanner() {
-        JBPanel<?> topPanel = new JBPanel<>();
+    public void setState(StepStateBadge.State state) {
+        this.state = state;
+    }
 
-        JBLabel header = new JBLabel("Identify the target application");
-        header.setFont(JBFont.h1());
+    private void printResult(
+            ConnDevDiscoverDocumentationResultType result
+    ) {
 
-        JBLabel description = new JBLabel("""
-                Tell us which application you want to connect to. Based on this information,\s
-                the system will identify the target and locate appropriate documentation.
+        if (result == null) {
+            ApplicationManager.getApplication().invokeLater(() -> Messages.showErrorDialog(
+                    client.getProject(),
+                    "Result is null.",
+                    "Error Result Discover Documentation"
+            ));
+
+            return;
+        }
+
+        panel.removeAll();
+        panel.add(crateStepContent(result));
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    private JBPanel<?> crateStepContent(
+            @NotNull ConnDevDiscoverDocumentationResultType discoverDocumentationResultType
+    ) {
+
+        var mainPanel = new JBPanel<>();
+        JBLabel text = new JBLabel("Provide Integration Documentation");
+        text.setFont(text.getFont().deriveFont(Font.BOLD, 18f));
+
+        JBLabel subText = new JBLabel("""
+               Documentation helps the AI understand how your system communicates, which endpoints it exposes,\s
+               and what data structures it uses. By analyzing this information,
+               the AI can generate a more accurate and tailored connector for your integration.
                """
         );
-        description.setFont(JBFont.h3());
-        description.setBorder(JBUI.Borders.emptyBottom(30));
+        subText.setBorder(JBUI.Borders.emptyBottom(15));
 
-        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
-        topPanel.add(header);
-        topPanel.add(Box.createVerticalStrut(5));
-        topPanel.add(description);
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(text);
+        mainPanel.add(Box.createVerticalStrut(5));
+        mainPanel.add(subText);
+        mainPanel.add(createListDocs(discoverDocumentationResultType));
 
-        return topPanel;
+        return mainPanel;
     }
 
-    private JBScrollPane createListDocs(@NotNull ConnDevDiscoverDocumentationResultType discoverDocumentationResultType) {
+    private JBScrollPane createListDocs(
+            @NotNull ConnDevDiscoverDocumentationResultType discoverDocumentationResultType
+    ) {
         JBPanel<?> list = new JBPanel<>();
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -128,7 +177,7 @@ public class DiscoverDocumentationStep extends StepAdapter {
         });
 
         JBScrollPane scrollPane = new JBScrollPane(list);
-        scrollPane.setPreferredSize(new Dimension(700, 400));
+        scrollPane.setBorder(JBUI.Borders.empty());
 
         return scrollPane;
     }

@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
@@ -12,8 +11,6 @@ import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentService;
-import com.evolveum.midpoint.smart.api.info.StatusInfo;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
@@ -29,6 +26,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -388,6 +386,14 @@ public class MidPointClient {
         return response;
     }
 
+    public <O extends ObjectType> O upsert(PrismObject<O> obj, List<String> options) throws AuthenticationException, IOException, SchemaException {
+        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML);
+
+        String content = serializer.serialize(obj.getValue(), obj.getElementName().asSingleName());
+        MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(Objects.requireNonNull(obj.getCompileTimeClass())), false);
+        return client.upsert(object, options);
+    }
+
     public String serialize(Object obj) throws SchemaException {
         return client.context().serialize(obj);
     }
@@ -544,9 +550,9 @@ public class MidPointClient {
         return null;
     }
 
-    public ConnectorDevelopmentType createConnectorDevelopmentType(ConnectorDevelopmentType connectorDevelopmentType) {
+    public File downloadConnector(String name, String version) {
         try {
-            return client.createConnectorDevelopmentType(connectorDevelopmentType);
+            return client.downloadConnector(name, version);
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }

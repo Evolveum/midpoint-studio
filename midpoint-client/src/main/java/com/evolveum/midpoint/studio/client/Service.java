@@ -1,19 +1,19 @@
 package com.evolveum.midpoint.studio.client;
 
-import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.info.StatusInfo;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 
 import javax.xml.namespace.QName;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +38,9 @@ public interface Service {
             throws IOException, AuthenticationException;
 
     String modify(MidPointObject object, List<String> opts)
+            throws IOException, AuthenticationException;
+
+    <T extends ObjectType> T upsert(MidPointObject object, List<String> opts)
             throws IOException, AuthenticationException;
 
     ExecuteScriptResponseType execute(String input)
@@ -77,7 +80,7 @@ public interface Service {
 
     AssociationsSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException;
 
-    ConnectorDevelopmentType createConnectorDevelopmentType(ConnectorDevelopmentType connectorDevelopmentType) throws SchemaException, AuthenticationException, IOException;
+    File downloadConnector(String name, String version) throws SchemaException, AuthenticationException, IOException;
 
     String submitOperationCreateConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
@@ -95,11 +98,11 @@ public interface Service {
 
     OperationResultStatusType getStatusDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
 
-    ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
-
     String submitOperationProcessDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
     OperationResultStatusType getStatusProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
+
+    ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
 
     ConnDevProcessDocumentationResultType getResultProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
 }

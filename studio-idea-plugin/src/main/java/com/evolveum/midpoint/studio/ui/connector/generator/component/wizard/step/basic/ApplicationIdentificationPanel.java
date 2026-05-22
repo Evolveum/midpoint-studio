@@ -175,9 +175,6 @@ public class ApplicationIdentificationPanel extends JBPanel<ApplicationIdentific
                             EnvironmentService em = EnvironmentService.getInstance(dataModel.getProject());
                             Environment env = em.getSelected();
                             var client = new MidPointClient(dataModel.getProject(), env);
-                            var connectorDevelopmentType = client.createConnectorDevelopmentType(
-                                    dataModel.getConnectorDevelopmentType());
-                            dataModel.setConnectorDevelopmentType(connectorDevelopmentType);
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }

@@ -544,9 +544,9 @@
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt A"/>
         </action>
 
-        <!-- generate connector -->
+        <!-- generate connector development -->
         <action id="MidPoint.Action.ConnectorGenerator"
-                class="com.evolveum.midpoint.studio.action.ConnectorGeneratorAction"
+                class="com.evolveum.midpoint.studio.action.ConnectorGeneratorWizardAction"
                 text="Connector Generator"
                 description="Connector generator"
                 icon="AllIcons.Diff.MagicResolve"/>

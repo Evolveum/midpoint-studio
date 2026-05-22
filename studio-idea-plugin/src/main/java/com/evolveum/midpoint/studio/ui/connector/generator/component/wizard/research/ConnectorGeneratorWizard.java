@@ -1,19 +1,19 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research;
 
-
-import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic.ApplicationIdentificationStep;
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic.ConnectorIdentificationStep;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic.CreateConnectorStep;
 import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic.DiscoverDocumentationStep;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic.InitialStep;
 import com.intellij.ide.wizard.AbstractWizard;
 import com.intellij.ide.wizard.Step;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBSplitter;
+import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBPanel;
+import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,18 +33,18 @@ public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
         this.project = project;
         buildSteps();
         init();
+        getOKAction().putValue(Action.NAME, "Create Connector Project");
+        getWindow().setPreferredSize(new Dimension(1600, 800));
     }
 
     private void buildSteps() {
-        var em = EnvironmentService.getInstance(project);
-        var env = em.getSelected();
-        var client = new MidPointClient(project, env);
+        var client = new MidPointClient(project, EnvironmentService.getInstance(project).getSelected());
 
         Step[] steps = {
-                new InitialStep(),
-                new ApplicationIdentificationStep(client, dataModel),
-                new DiscoverDocumentationStep(client, dataModel),
-                new ConnectorIdentificationStep(client, dataModel)
+                new ApplicationIdentificationStep(client, dataModel, StepStateBadge.State.NONE),
+                new DiscoverDocumentationStep(client, dataModel, StepStateBadge.State.NONE),
+                new ConnectorIdentificationStep(client, dataModel, StepStateBadge.State.NONE),
+                new CreateConnectorStep(client, dataModel, StepStateBadge.State.NONE)
         };
 
         Arrays.stream(steps).forEach(this::addStep);
@@ -53,7 +53,7 @@ public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
 
         for (int i=0; i < steps.length; i++) {
             Step step = steps[i];
-            items[i] = new NavigationItem(step.getComponent().getName(), "");
+            items[i] = new NavigationItem(step.getComponent().getName(), StepStateBadge.State.NONE);
         }
 
         stepNavigationItems = new JBList<>(items);
@@ -75,14 +75,17 @@ public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
     protected JComponent createCenterPanel() {
         final JBPanel<?> panel = new JBPanel<>(new BorderLayout());
         final JLabel label = new JLabel();
+        final StepStateBadge stateBadge = new StepStateBadge(StepStateBadge.State.NONE);
 
         {
-            panel.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+            panel.setBorder(JBUI.Borders.empty(10));
             panel.add(label, BorderLayout.CENTER);
+            panel.add(stateBadge, BorderLayout.EAST);
         }
 
         stepNavigationItems.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
-            label.setText(value.getName() + " - " + value.getState());
+            label.setText(value.getName());
+            stateBadge.setState(value.getState());
 
             if (isSelected) {
                 panel.setBackground(UIManager.getColor("List.selectionBackground"));
@@ -97,7 +100,7 @@ public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
             return panel;
         });
 
-        stepNavigationItems.setBorder(BorderFactory.createEmptyBorder());
+        stepNavigationItems.setBorder(JBUI.Borders.empty());
         stepNavigationItems.setFocusable(false);
         stepNavigationItems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         stepNavigationItems.setFixedCellHeight(36);
@@ -112,8 +115,13 @@ public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
         });
 
         JBSplitter splitter = new JBSplitter(false, 0.25f);
+        splitter.setBorder(JBUI.Borders.empty());
         splitter.setFirstComponent(stepNavigationItems);
-        splitter.setSecondComponent(super.createCenterPanel());
+
+        JScrollPane mainPanel = ScrollPaneFactory.createScrollPane(super.createCenterPanel());
+        mainPanel.setBorder(JBUI.Borders.empty());
+        mainPanel.setPreferredSize(new Dimension(400, 400));
+        splitter.setSecondComponent(mainPanel);
 
         return splitter;
     }
@@ -130,11 +138,11 @@ public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
         stepNavigationItems.setSelectedIndex(getCurrentStep());
     }
 
-    private static class NavigationItem {
+    public static class NavigationItem {
         String name;
-        String state;
+        StepStateBadge.State state;
 
-        public NavigationItem(String name, String state) {
+        public NavigationItem(String name, StepStateBadge.State state) {
             this.name = name;
             this.state = state;
         }
@@ -147,11 +155,11 @@ public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
             this.name = name;
         }
 
-        public String getState() {
+        public StepStateBadge.State getState() {
             return state;
         }
 
-        public void setState(String state) {
+        public void setState(StepStateBadge.State state) {
             this.state = state;
         }
     }

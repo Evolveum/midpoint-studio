@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.client;
 import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
 import com.evolveum.midpoint.model.api.util.SmartIntegrationConstants;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
@@ -14,8 +15,6 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
-import com.evolveum.midpoint.smart.api.info.StatusInfo;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -28,7 +27,12 @@ import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.namespace.QName;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 /**
@@ -195,6 +199,27 @@ public class ServiceImpl implements Service {
         } catch (SchemaException ex) {
             // shouldn't happen, there's no parsing involved
             throw new ClientException("Couldn't modify object", ex);
+        }
+    }
+
+    @Override
+    public <T extends ObjectType> T upsert(MidPointObject object, List<String> opts) throws IOException, AuthenticationException {
+        if (opts == null) {
+            opts = new ArrayList<>();
+        }
+
+        Map<String, Object> options = new HashMap<>();
+        options.put("options", opts);
+
+        String path = "/upsert/" + ObjectTypes.getRestTypeFromClass(object.getType().getClassDefinition());
+
+        Request.Builder builder = context.build(path, options)
+                .put(RequestBody.create(object.getContent(), ServiceContext.APPLICATION_XML));
+
+        try {
+            return executeRequest(builder.build(), object.getType().getClassDefinition());
+        } catch (SchemaException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -602,15 +627,33 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public ConnectorDevelopmentType createConnectorDevelopmentType(ConnectorDevelopmentType connectorDevelopmentType) throws SchemaException, AuthenticationException, IOException {
-        String content = context.serialize(connectorDevelopmentType);
-
+    public File downloadConnector(String name, String version) throws IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_UPSERT_CONNECTOR_DEVELOPMENT_TYPE,
-                null
-        ).post(RequestBody.create(content, ServiceContext.APPLICATION_XML));
+                ConnectorGeneratorConstants.RPC_DOWNLOAD_CONNECTOR,
+                Map.of("bundleName", name, "version", version)
+        ).get();
 
-        return executeRequest(builder.build(), ConnectorDevelopmentType.class);
+        Request request = builder.build();
+        OkHttpClient okHttpClient = context.getClient();
+
+        try (Response response = okHttpClient.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Unexpected server error code: " + response.code());
+            }
+
+            ResponseBody body = response.body();
+            if (body == null) {
+                throw new IOException("Server response body is empty.");
+            }
+
+            Path tempFilePath = Files.createTempFile("connector_download", ".jar");
+
+            try (InputStream inputStream = body.byteStream()) {
+                Files.copy(inputStream, tempFilePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            return tempFilePath.toFile();
+        }
     }
 
     @Override

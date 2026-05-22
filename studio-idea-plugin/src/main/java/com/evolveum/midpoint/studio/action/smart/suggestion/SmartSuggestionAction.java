@@ -22,6 +22,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -88,26 +89,25 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                     new WizardStepActionHandler() {
                         @Override
                         public void onOk() {
-                            var task = new UploadFullProcessingTask(anActionEvent.getProject(), anActionEvent::getDataContext, env);
-                            // FIXME processing task
-                            ProgressManager.getInstance().run(new Task.Backgroundable(anActionEvent.getProject(), "Uploading") {
-                                @Override
-                                public void run(@NotNull ProgressIndicator indicator) {
-                                    task.run(indicator);
-                                }
-
-                                @Override
-                                public void onFinished() {
-                                    if (!task.hasFailures()) {
-                                        showSelectResourceDialogWindow(anActionEvent, env, resourceOid);
+                            ProgressManager.getInstance().run(
+                                    new UploadFullProcessingTask(
+                                            anActionEvent.getProject(), anActionEvent::getDataContext, env
+                                    ) {
+                                        @Override
+                                        public void onFinished() {
+                                            if (!hasFailures()) {
+                                                ApplicationManager.getApplication().invokeLater(() ->
+                                                        showSelectResourceDialogWindow(anActionEvent, env, resourceOid));
+                                            }
+                                        }
                                     }
-                                }
-                            });
+                            );
                         }
                     }
             ).show();
         } else {
-            showSelectResourceDialogWindow(anActionEvent, env, null);
+            ApplicationManager.getApplication().invokeLater(() ->
+                    showSelectResourceDialogWindow(anActionEvent, env, null));
         }
     }
 
