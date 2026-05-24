@@ -1,18 +1,15 @@
 /*
  *
- *  * Copyright (C) 2010-2025 Evolveum and contributors
- *  *
- *  * Licensed under the EUPL-1.2 or later.
+ *  Copyright (C) 2010-2025 Evolveum and contributors
+ *
+ *  Licensed under the EUPL-1.2 or later.
  *
  */
 
 package com.evolveum.midpoint.studio.ui.smart.suggestion;
 
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
-import com.intellij.openapi.keymap.KeymapManager;
-import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -56,7 +53,6 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
             setLayout(new BorderLayout());
             setBorder(JBUI.Borders.empty(20));
             setBackground(UIUtil.getPanelBackground());
-
             add(createMainContent(), BorderLayout.CENTER);
         }
 
@@ -86,19 +82,13 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
             panel.add(featuresLabel);
             panel.add(Box.createVerticalStrut(10));
 
-            ActionManager actionManager = ActionManager.getInstance();
-            ActionGroup group = (ActionGroup) actionManager.getAction(SMART_SUGGESTION_GROUP_ACTION_ID);
-            AnActionEvent event = AnActionEvent.createFromDataContext(
-                    ActionPlaces.UNKNOWN,
-                    null,
-                    DataContext.EMPTY_CONTEXT
-            );
-
-            for (AnAction child : group.getChildren(event)) {
-                JComponent itemComponent = featureItem(project, child);
-                // FIXME description text responsive
-                itemComponent.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
-                panel.add(itemComponent);
+            if (ActionManager.getInstance().getAction(SMART_SUGGESTION_GROUP_ACTION_ID) instanceof ActionGroup group) {
+                for (AnAction child : group.getChildren(null)) {
+                    JComponent itemComponent = featureItem(project, child);
+                    // FIXME description text responsive
+                    itemComponent.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+                    panel.add(itemComponent);
+                }
             }
 
             return panel;
@@ -116,11 +106,14 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
                         .add(CommonDataKeys.PROJECT, project)
                         .build();
 
-                AnActionEvent event = AnActionEvent.createFromAnAction(
+                Presentation actionPresentation = action.getTemplatePresentation().clone();
+                AnActionEvent event = AnActionEvent.createEvent(
                         action,
-                        null,
+                        context,
+                        actionPresentation,
                         ActionPlaces.UNKNOWN,
-                        context
+                        ActionUiKind.NONE,
+                        null
                 );
 
                 action.update(event);
@@ -129,6 +122,8 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
                     action.actionPerformed(event);
                 }
             });
+
+
             titleLink.setFont(JBFont.medium());
             titleLink.setAlignmentX(Component.LEFT_ALIGNMENT);
 

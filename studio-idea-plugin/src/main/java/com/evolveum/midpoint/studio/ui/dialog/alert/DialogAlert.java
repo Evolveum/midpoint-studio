@@ -8,7 +8,6 @@
 
 package com.evolveum.midpoint.studio.ui.dialog.alert;
 
-import com.evolveum.midpoint.studio.ui.dialog.WizardStepActionHandler;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import org.jetbrains.annotations.Nullable;
@@ -17,16 +16,23 @@ import javax.swing.*;
 import java.awt.*;
 
 public class DialogAlert extends DialogWrapper {
-    private final WizardStepActionHandler handler;
+
+    private final Runnable onFinish;
     private final String message;
 
-    public DialogAlert(@Nullable Project project, String title, String message, WizardStepActionHandler handler) {
+    public DialogAlert(
+            @Nullable Project project,
+            String title,
+            String message,
+            Runnable onFinish
+    ) {
         super(project);
         this.message = message;
-        this.handler = handler;
+        this.onFinish = onFinish;
 
-        init();
         setTitle(title);
+        setSize(600, 8);
+        init();
     }
 
     @Override
@@ -50,22 +56,7 @@ public class DialogAlert extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
+        onFinish.run();
         super.doOKAction();
-        if (handler != null) {
-            handler.onOk();
-        }
-    }
-
-    @Override
-    public void doCancelAction() {
-        super.doCancelAction();
-        if (handler != null) {
-            handler.onCancel();
-        }
-    }
-
-    @Override
-    public @Nullable Dimension getInitialSize() {
-        return new Dimension(600, 80);
     }
 }

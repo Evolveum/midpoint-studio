@@ -1,11 +1,11 @@
-package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic;
+package com.evolveum.midpoint.studio.ui.connector.generator.step.basic;
 
 import com.evolveum.midpoint.studio.action.task.DownloadConnectorDevelopmentTask;
 import com.evolveum.midpoint.studio.action.task.UnpackConnectorDevelopmentTask;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.service.TaskStatusPoller;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.ConnectorGeneratorWizardData;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.StepStateBadge;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
+import com.evolveum.midpoint.studio.ui.connector.generator.StepStateBadge;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
 import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.ide.wizard.StepAdapter;
@@ -21,7 +21,7 @@ public class CreateConnectorStep extends StepAdapter {
 
     private final MidPointClient client;
     private final TaskStatusPoller taskStatusPoller;
-    private final ConnectorGeneratorWizardData dataModel;
+    private final ConnectorGeneratorDataModel dataModel;
     private StepStateBadge.State state;
     private final JBPanel<?> panel = new JBPanel<>();
 
@@ -29,7 +29,7 @@ public class CreateConnectorStep extends StepAdapter {
 
     public CreateConnectorStep(
             MidPointClient client,
-            ConnectorGeneratorWizardData dataModel,
+            ConnectorGeneratorDataModel dataModel,
             StepStateBadge.State state
     ) {
         this.client = client;

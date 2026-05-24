@@ -1,11 +1,11 @@
-package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research;
+package com.evolveum.midpoint.studio.ui.connector.generator;
 
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic.ApplicationIdentificationStep;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic.ConnectorIdentificationStep;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic.CreateConnectorStep;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic.DiscoverDocumentationStep;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.basic.ApplicationIdentificationStep;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.basic.ConnectorIdentificationStep;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.basic.CreateConnectorStep;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.basic.DiscoverDocumentationStep;
 import com.intellij.ide.wizard.AbstractWizard;
 import com.intellij.ide.wizard.Step;
 import com.intellij.openapi.project.Project;
@@ -24,7 +24,7 @@ import java.util.Arrays;
 public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
 
     private final Project project;
-    private final ConnectorGeneratorWizardData dataModel = new ConnectorGeneratorWizardData();
+    private final ConnectorGeneratorDataModel dataModel = new ConnectorGeneratorDataModel();
 
     private JBList<NavigationItem> stepNavigationItems;
 
@@ -34,7 +34,6 @@ public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
         buildSteps();
         init();
         getOKAction().putValue(Action.NAME, "Create Connector Project");
-        getWindow().setPreferredSize(new Dimension(1600, 800));
     }
 
     private void buildSteps() {
@@ -119,8 +118,8 @@ public class ConnectorGeneratorWizard extends AbstractWizard<Step> {
         splitter.setFirstComponent(stepNavigationItems);
 
         JScrollPane mainPanel = ScrollPaneFactory.createScrollPane(super.createCenterPanel());
-        mainPanel.setBorder(JBUI.Borders.empty());
         mainPanel.setPreferredSize(new Dimension(400, 400));
+        mainPanel.setBorder(JBUI.Borders.empty());
         splitter.setSecondComponent(mainPanel);
 
         return splitter;

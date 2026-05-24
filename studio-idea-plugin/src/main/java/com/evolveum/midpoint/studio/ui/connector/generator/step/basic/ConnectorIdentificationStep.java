@@ -1,8 +1,8 @@
-package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step.basic;
+package com.evolveum.midpoint.studio.ui.connector.generator.step.basic;
 
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.ConnectorGeneratorWizardData;
-import com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.StepStateBadge;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
+import com.evolveum.midpoint.studio.ui.connector.generator.StepStateBadge;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.ide.wizard.CommitStepException;
@@ -19,7 +19,7 @@ import java.awt.*;
 public class ConnectorIdentificationStep extends StepAdapter {
 
     private final MidPointClient client;
-    private final ConnectorGeneratorWizardData dataModel;
+    private final ConnectorGeneratorDataModel dataModel;
     private StepStateBadge.State state;
     private final JBPanel<?> panel = new JBPanel<>();
 
@@ -33,7 +33,7 @@ public class ConnectorIdentificationStep extends StepAdapter {
 
     public ConnectorIdentificationStep(
             MidPointClient client,
-            ConnectorGeneratorWizardData dataModel,
+            ConnectorGeneratorDataModel dataModel,
             StepStateBadge.State state
     ) {
         this.client = client;

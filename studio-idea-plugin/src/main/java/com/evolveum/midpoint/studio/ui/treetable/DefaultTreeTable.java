@@ -40,6 +40,9 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
     }
 
     private void setupComponent() {
+
+        Map<Integer, String> columnFilters = new HashMap<>();
+
         for (int i = 0; i < getColumnModel().getColumnCount(); i++) {
             ColumnInfo ci = getTableModel().getColumnInfo(i);
             TableColumn column = this.columnModel.getColumn(i);
@@ -66,29 +69,27 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
                 }
             }
 
-            if (ci instanceof FilterableColumnInfo<?, ?> filterableColumnInfo) {
-                if (filterableColumnInfo.hasFunnelFilter()) {
-                    JTableHeader header = getTableHeader();
-                    Map<Integer, String> columnFilters = new HashMap<>();
-
-                    var filterHeaderRenderer = new FilterHeaderRenderer(false);
-
-                    column.setHeaderRenderer(filterHeaderRenderer);
-
-                    header.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            int viewColumn = header.columnAtPoint(e.getPoint());
-                            if (viewColumn < 0) return;
-
-                            if (isClickOnFunnel(header, viewColumn, e.getX())) {
-                                showFilterPopup(columnFilters, header, filterHeaderRenderer, viewColumn, e);
-                            }
-                        }
-                    });
-                }
+            if (ci instanceof FilterableColumnInfo<?, ?> filterableColumnInfo
+                    && filterableColumnInfo.hasFunnelFilter()
+            ) {
+                column.setHeaderRenderer(new FilterHeaderRenderer(false));
             }
         }
+
+        tableHeader.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int columnIndex = tableHeader.columnAtPoint(e.getPoint());
+                if (columnIndex < 0) return;
+                var headerRenderer = tableHeader.getColumnModel().getColumn(columnIndex).getHeaderRenderer();
+
+                if (headerRenderer instanceof FilterHeaderRenderer filterHeaderRenderer
+                        && isClickOnFunnel(tableHeader, columnIndex, e.getX())
+                ) {
+                    showFilterPopup(columnFilters, tableHeader, filterHeaderRenderer, columnIndex, e);
+                }
+            }
+        });
 
         TreeCellRenderer treeCellRenderer = createTreeCellRenderer();
         if (treeCellRenderer != null) {
@@ -143,7 +144,13 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
         return mouseX >= iconStartX;
     }
 
-    public void showFilterPopup(Map<Integer, String> columnFilters, JTableHeader header, FilterHeaderRenderer filterHeaderRenderer, int modelColumnIndex, MouseEvent e) {
+    public void showFilterPopup(
+            Map<Integer, String> columnFilters,
+            JTableHeader header,
+            FilterHeaderRenderer filterHeaderRenderer,
+            int modelColumnIndex,
+            MouseEvent e
+    ) {
         SearchTextField searchField = new SearchTextField();
         searchField.setText(columnFilters.getOrDefault(modelColumnIndex, ""));
         searchField.setBorder(JBUI.Borders.empty(5));
@@ -170,16 +177,15 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
             }
         });
 
-        // change state of filter funnel
-//        popup.addListener(new JBPopupListener() {
-//            @Override
-//            public void onClosed(@NotNull LightweightWindowEvent event) {
-//                String text = searchField.getText();
-//                filterHeaderRenderer.setActiveFilter(text != null && !text.isEmpty());
-//                header.revalidate();
-//                header.repaint();
-//            }
-//        });
+        popup.addListener(new JBPopupListener() {
+            @Override
+            public void onClosed(@NotNull LightweightWindowEvent event) {
+                String text = searchField.getText();
+                filterHeaderRenderer.setActiveFilter(text != null && !text.isEmpty());
+                header.revalidate();
+                header.repaint();
+            }
+        });
 
         popup.show(new RelativePoint(e.getComponent(), new Point(e.getX(), e.getComponent().getHeight())));
     }
@@ -208,7 +214,8 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
             JLabel label = new JLabel(value == null ? "" : value.toString());
             label.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 4));
 
-            FunnelIconLabel funnel = new FunnelIconLabel(AllIcons.General.Filter, activeFilter);
+            FunnelIconLabel funnel = new FunnelIconLabel(AllIcons.General.Filter);
+            funnel.setActive(activeFilter);
             funnel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 6));
 
             panel.add(label, BorderLayout.WEST);
@@ -226,10 +233,9 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
 
         boolean active;
 
-        public FunnelIconLabel(Icon icon, boolean active) {
+        public FunnelIconLabel(Icon icon) {
             super(icon);
             setOpaque(false);
-            this.active = active;
         }
 
         public void setActive(boolean active) {
@@ -256,7 +262,8 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
             int x = getWidth() - borderSize - 5;
             int y = 1;
 
-            g2.setColor(JBColor.namedColor("Panel.background", new JBColor(0xffffff, 0x3c3f41)));
+            g2.setColor(JBColor.namedColor("Panel.background",
+                    new JBColor(0xffffff, 0x3c3f41)));
             g2.fillOval(x, y, borderSize, borderSize);
 
             int innerX = x + (borderSize - dotSize) / 2;

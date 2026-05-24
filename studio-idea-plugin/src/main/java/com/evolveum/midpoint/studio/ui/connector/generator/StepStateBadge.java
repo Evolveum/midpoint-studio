@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research;
+package com.evolveum.midpoint.studio.ui.connector.generator;
 
 import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBUI;

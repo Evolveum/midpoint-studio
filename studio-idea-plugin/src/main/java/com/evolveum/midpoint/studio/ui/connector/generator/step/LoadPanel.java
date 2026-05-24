@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.connector.generator.component.wizard.research.step;
+package com.evolveum.midpoint.studio.ui.connector.generator.step;
 
 import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.ui.JBColor;
