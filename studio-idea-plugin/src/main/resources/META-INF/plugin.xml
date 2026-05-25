@@ -223,6 +223,27 @@
 
         <!-- Axiom language support end -->
 
+        <!-- MEL language support -->
+
+        <fileType language="MEL"
+                  implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelFileType"
+                  name="MEL File" fieldName="INSTANCE" extensions="mel"/>
+        <lang.syntaxHighlighterFactory language="MEL"
+                                       implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelSyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="MEL"
+                               implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelParserDefinition"/>
+        <lang.ast.factory language="MEL"
+                          implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelASTFactory"/>
+        <lang.braceMatcher language="MEL"
+                           implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelBraceMatcher"/>
+        <lang.commenter language="MEL"
+                        implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelCommenter"/>
+        <multiHostInjector implementation="com.evolveum.midpoint.studio.lang.mel.impl.MelMultiHostInjector"/>
+
+        <externalAnnotator language="MEL"
+                           implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelExternalAnnotator"/>
+        <!-- CEL/MEL language support end -->
+
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
@@ -361,6 +382,11 @@
     <extensions defaultExtensionNs="org.intellij.groovy">
         <membersContributor implementation="com.evolveum.midpoint.studio.impl.lang.ScriptNonCodeMembersContributor"/>
     </extensions>
+
+
+<!--    <extensions defaultExtensionNs="com.evolveum.midpoint.studio">-->
+<!--        <celNonCodeMembersContributor implementation="com.evolveum.midpoint.studio.lang.mel.MelNonCodeMembersContributor"/>-->
+<!--    </extensions>-->
 
     <actions resource-bundle="messages.MidPointStudio">
 

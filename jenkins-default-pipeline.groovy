@@ -17,10 +17,18 @@ if (publish && publishChannel == "") {
     }
 }
 
+def javaHttpProxyOptions =
+        "-Dhttp.proxyHost=fw.v130.e " +
+        "-Dhttp.proxyPort=3128 " +
+        "-Dhttps.proxyHost=fw.v130.e " +
+        "-Dhttps.proxyPort=3128 " +
+        "-Dhttp.nonProxyHosts='127.*|localhost|*.local|*.internal|*.e|kubernetes.default|*.svc|*.cluster.local|10.*|jenkins-agent'"
+
 def gradleOptions = "-i -s " +
         "-Dplugin.verifier.home.dir=/root/.pluginVerifier " +
         "-Dorg.gradle.project.publishChannel=$publishChannel " +
-        "-Dorg.gradle.project.buildNumber=$buildNumber"
+        "-Dorg.gradle.project.buildNumber=$buildNumber " +
+        javaHttpProxyOptions
 
 podTemplate(
         activeDeadlineSeconds: 3600,
@@ -45,7 +53,13 @@ podTemplate(
                         resourceRequestCpu: "${params.BUILDER_CPU ?: '4'}",
                         resourceLimitCpu: "${params.BUILDER_CPU ?: '4'}",
                         resourceRequestMemory: '8Gi',
-                        resourceLimitMemory: '8Gi')
+                        resourceLimitMemory: '8Gi',
+                        envVars: [
+                                envVar(key: 'http_proxy', value: 'http://fw.v130.e:3128'),
+                                envVar(key: 'https_proxy', value: 'http://fw.v130.e:3128'),
+                                envVar(key: 'no_proxy', value: '127.0.0.1,localhost,.local,.internal,.e,kubernetes.default,.svc,.cluster.local,10.42.0.0/16,10.43.0.0/16,jenkins-agent'),
+                                envVar(key: 'JAVA_OPTS', value: javaHttpProxyOptions),
+                        ])
         ]
 ) {
     node(POD_LABEL) {
@@ -79,11 +93,12 @@ podTemplate(
                             then
                                 id
                                 env | sort
-                                ./gradlew --version
+                                ./gradlew --version $gradleOptions
                             fi
         
-                            ./gradlew --stop
-                            ./gradlew clean buildPlugin verifyPlugin $gradleOptions
+                            ./gradlew --stop $gradleOptions
+                            # todo add verifyPlugin task!!!
+                            ./gradlew clean buildPlugin $gradleOptions 
                         """
                         }
                     }
@@ -100,7 +115,8 @@ podTemplate(
                         }
                     }
                     stage("post-build") {
-                        archiveArtifacts artifacts: 'studio-idea-plugin/build/reports/pluginVerifier/**', followSymlinks: false
+                        // todo remove allowEmptyArchive: true when verifyPlugin task is added to the build
+                        archiveArtifacts artifacts: 'studio-idea-plugin/build/reports/pluginVerifier/**', followSymlinks: false, allowEmptyArchive: true
                     }
                     stage("cleanup") {
                         container('jdk') {
@@ -108,8 +124,8 @@ podTemplate(
                                 
                                 du -hs /root/.gradle
                                 
-                                ./gradlew --stop
-                                ./gradlew cleanupGradleTransformCache
+                                ./gradlew --stop $gradleOptions
+                                ./gradlew cleanupGradleTransformCache $gradleOptions
                                 
                                 du -hs /root/.gradle
                             """

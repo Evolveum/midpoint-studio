@@ -315,7 +315,9 @@ public class ObjectsBackgroundableTask<S extends TaskState> extends Backgroundab
     }
 
     private boolean processFiles(ProgressIndicator indicator) {
-        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() -> getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY));
+        VirtualFile[] selectedFiles = UIUtil.invokeAndWaitIfNeeded(() ->
+                ApplicationManager.getApplication().runReadAction(
+                        (Computable<VirtualFile[]>) () -> getData(PlatformDataKeys.VIRTUAL_FILE_ARRAY)));
         List<VirtualFile> toProcess = MidPointUtils.filterXmlFiles(selectedFiles);
 
         if (toProcess.isEmpty()) {
