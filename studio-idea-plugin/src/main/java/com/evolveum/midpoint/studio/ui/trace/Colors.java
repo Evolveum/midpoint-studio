@@ -42,5 +42,4 @@ public class Colors {
             Gray._200,
             Gray._80);
 
-    public static final String DISABLED_COLOR = "#c0c0c0"; // todo
 }

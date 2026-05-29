@@ -6,7 +6,7 @@ import javax.swing.table.TableCellRenderer;
 import java.util.function.Function;
 
 /**
- * Abstract definition of a column in the studio.
+ * Abstract definition of a column.
  * Currently used only for trace tree view.
  */
 @Experimental
@@ -14,9 +14,11 @@ public interface ColumnDefinition<O> {
 
     String getName();
 
+    Class<?> getType();
+
     int getSize();
 
-    Function<O, String> getFormatter();
+    Function<O, Object> getValue();
 
     TableCellRenderer getTableCellRenderer();
 }

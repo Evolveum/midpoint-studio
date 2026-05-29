@@ -28,7 +28,9 @@ public class TreeTableColumnDefinition<R, V> {
         this(header, size, value, null);
     }
 
-    public TreeTableColumnDefinition(String header, int size, Function<R, V> value, TableCellRenderer tableCellRenderer) {
+    public TreeTableColumnDefinition(
+            String header, int size, Function<R, V> value, TableCellRenderer tableCellRenderer) {
+
         this.header = header;
         this.size = size;
         this.value = value;
@@ -38,7 +40,7 @@ public class TreeTableColumnDefinition<R, V> {
     public TreeTableColumnDefinition(ColumnDefinition<R> columnDefinition) {
         this.header = columnDefinition.getName();
         this.size = columnDefinition.getSize();
-        this.value = v -> (V) columnDefinition.getFormatter().apply(v);
+        this.value = v -> (V) columnDefinition.getValue().apply(v);
         this.originalColumnDefinition = columnDefinition;
         this.tableCellRenderer = columnDefinition.getTableCellRenderer();
     }

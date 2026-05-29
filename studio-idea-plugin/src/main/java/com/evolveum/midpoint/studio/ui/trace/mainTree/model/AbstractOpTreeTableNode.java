@@ -1,9 +1,10 @@
 package com.evolveum.midpoint.studio.ui.trace.mainTree.model;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
-import org.jdesktop.swingx.treetable.TreeTableNode;
+import com.evolveum.midpoint.studio.ui.treetable.UserObjectNode;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,8 +13,9 @@ import java.util.List;
 
 /**
  * Common ancestor for trace tree table nodes.
+ * Implements standard Swing MutableTreeNode and {@link UserObjectNode}.
  */
-public class AbstractOpTreeTableNode implements TreeTableNode {
+public class AbstractOpTreeTableNode implements MutableTreeNode, UserObjectNode {
 
     /**
      * OpNode corresponding to this trace tree table node.
@@ -27,48 +29,28 @@ public class AbstractOpTreeTableNode implements TreeTableNode {
      */
     private final List<RegularOpTreeTableNode> children = new ArrayList<>();
 
-    /**
-     * Parent of this node. Computed anew each time the visibility of nodes change.
-     */
+    /** Parent of this node. Computed anew each time visibility changes. */
     private AbstractOpTreeTableNode parent;
 
     public AbstractOpTreeTableNode(@Nullable OpNode opNode) {
         this.opNode = opNode;
     }
 
+    // ---- TreeNode ----
+
     @Override
-    public Enumeration<? extends TreeTableNode> children() {
+    public Enumeration<? extends TreeNode> children() {
         return Collections.enumeration(children);
     }
 
     @Override
-    public TreeTableNode getChildAt(int childIndex) {
+    public TreeNode getChildAt(int childIndex) {
         return children.get(childIndex);
     }
 
     @Override
-    public TreeTableNode getParent() {
+    public TreeNode getParent() {
         return parent;
-    }
-
-    @Override
-    public boolean isEditable(int column) {
-        return false;
-    }
-
-    @Override
-    public void setValueAt(Object aValue, int column) {
-        // no op
-    }
-
-    @Override
-    public OpNode getUserObject() {
-        return opNode;
-    }
-
-    @Override
-    public void setUserObject(Object userObject) {
-        // no op
     }
 
     @Override
@@ -84,7 +66,7 @@ public class AbstractOpTreeTableNode implements TreeTableNode {
 
     @Override
     public boolean getAllowsChildren() {
-        return false;
+        return true;
     }
 
     @Override
@@ -92,13 +74,58 @@ public class AbstractOpTreeTableNode implements TreeTableNode {
         return children.isEmpty();
     }
 
+    // ---- MutableTreeNode ----
+
+    @Override
+    public void insert(MutableTreeNode child, int index) {
+        // managed via addChild
+    }
+
+    @Override
+    public void remove(int index) {
+        children.remove(index);
+    }
+
+    @Override
+    public void remove(MutableTreeNode node) {
+        //noinspection SuspiciousMethodCalls
+        children.remove(node);
+    }
+
+    @Override
+    public void setUserObject(Object userObject) {
+        // immutable — set via constructor
+    }
+
+    @Override
+    public void removeFromParent() {
+        if (parent != null) {
+            parent.remove(this);
+            parent = null;
+        }
+    }
+
+    @Override
+    public void setParent(MutableTreeNode newParent) {
+        this.parent = (AbstractOpTreeTableNode) newParent;
+    }
+
+    // ---- UserObjectNode / getUserObject ----
+
+    @Override
+    @Nullable
+    public OpNode getUserObject() {
+        return opNode;
+    }
+
+    // ---- internal link management ----
+
     public void clearParentChildLinks() {
         parent = null;
         children.clear();
     }
 
     public void addChild(RegularOpTreeTableNode child) {
-//        System.out.println("Adding child " + child + " to " + this);
         children.add(child);
         child.setParent(this);
     }
@@ -111,26 +138,10 @@ public class AbstractOpTreeTableNode implements TreeTableNode {
         return children;
     }
 
-    /*
-     * Unimplemented column-related methods.
-     *
-     * These are not called because TraceTreeTableModel overrides all places where they could be called.
-     */
-    @Override
-    public Object getValueAt(int column) {
-        return null;
-    }
-
-    @Override
-    public int getColumnCount() {
-        return 0;
-    }
-
-    /**
-     * Temporary implementation.
-     */
     @Override
     public String toString() {
-        return opNode != null ? opNode.getOperationNameFormatted() + " (" + opNode.getInvocationId() + ")" : "(null)";
+        return opNode != null
+                ? opNode.getOperationNameFormatted() + " (" + opNode.getInvocationId() + ")"
+                : "(null)";
     }
 }

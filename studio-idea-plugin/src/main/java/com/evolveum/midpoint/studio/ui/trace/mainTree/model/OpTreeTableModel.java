@@ -1,42 +1,52 @@
 package com.evolveum.midpoint.studio.ui.trace.mainTree.model;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
-import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
-import com.evolveum.midpoint.studio.ui.trace.DisplayUtil;
+import com.evolveum.midpoint.studio.ui.trace.presentation.AbstractOpNodePresentation;
+import com.evolveum.midpoint.studio.ui.treetable.CellStyle;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.intellij.openapi.diagnostic.Logger;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
- * Created by Viliam Repan (lazyman).
+ * Tree table model for the main OpNode tree in the trace viewer.
+ * Extends the studio DefaultTreeTableModel — no JXTreeTable dependency.
  */
-public class OpTreeTableModel extends DefaultTreeTableModel {
+public class OpTreeTableModel extends DefaultTreeTableModel<OpNode> {
 
     private static final Logger LOG = Logger.getInstance(OpTreeTableModel.class);
 
     @NotNull
-    private final List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions;
+    private final List<DefaultColumnInfo<OpNode, ?>> columnInfos;
+
     @Nullable
     private final OpNode rootOpNode;
+
     @NotNull
     private final RootOpTreeTableNode invisibleRootTreeNode;
 
     @NotNull
     private final Map<OpNode, RegularOpTreeTableNode> convertedNodeMap = new HashMap<>();
 
-    public OpTreeTableModel(@NotNull List<TreeTableColumnDefinition<OpNode, ?>> columnDefinitions,
-                            @Nullable OpNode rootOpNode) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public OpTreeTableModel(
+            @NotNull List<DefaultColumnInfo<OpNode, ?>> columnInfos,
+            @Nullable OpNode rootOpNode) {
 
-        this.columnDefinitions = columnDefinitions;
+        super((List<ColumnInfo>) (List<?>) columnInfos);
+
+        this.columnInfos = columnInfos;
         this.rootOpNode = rootOpNode;
         this.invisibleRootTreeNode = new RootOpTreeTableNode(rootOpNode);
 
@@ -46,9 +56,20 @@ public class OpTreeTableModel extends DefaultTreeTableModel {
         }
 
         updateParentChildLinks();
-
-        setColumnIdentifiers(getColumnNames());
         setRoot(invisibleRootTreeNode);
+
+        // Row styler: disabled rows → grey foreground; presentation background → row background
+//        setRowStyler(node -> {
+//            if (node == null) {
+//                return null;
+//            }
+//            Color fg = isDisabledNode(node) ? UIUtil.getLabelDisabledForeground() : null;
+//            Color bg = getNodeBackground(node);
+//            if (fg == null && bg == null) {
+//                return null;
+//            }
+//            return CellStyle.of(fg, bg, null);
+//        });
     }
 
     private void createNodeMap(OpNode opNode) {
@@ -73,9 +94,12 @@ public class OpTreeTableModel extends DefaultTreeTableModel {
         }
     }
 
-    // TODO do better
     public void fireChange() {
         setRoot(invisibleRootTreeNode);
+    }
+
+    public void firePathChanged(TreePath path) {
+        fireTreeStructureChanged(this, path.getPath(), null, null);
     }
 
     private void updateParentChildLinks(AbstractOpTreeTableNode node) {
@@ -86,38 +110,17 @@ public class OpTreeTableModel extends DefaultTreeTableModel {
         }
     }
 
-    @NotNull
-    private List<String> getColumnNames() {
-        return columnDefinitions.stream()
-                .map(TreeTableColumnDefinition::getHeader)
-                .collect(Collectors.toList());
-    }
-
     @Override
     public Object getValueAt(Object node, int column) {
-        AbstractOpTreeTableNode d = (AbstractOpTreeTableNode) node;
-        if (d == null || d.getUserObject() == null) {
+        if (!(node instanceof AbstractOpTreeTableNode treeNode)) {
             return null;
-        } else {
-            Object value = columnDefinitions.get(column).getValue().apply(d.getUserObject());
-            if (value == null) {
-                return "";
-            }
-            if (isDisabled(d) && !DisplayUtil.isHtml(value)) {
-                return DisplayUtil.makeDisabled(value);
-            } else {
-                return value;
-            }
         }
-    }
-
-    private boolean isDisabled(AbstractOpTreeTableNode d) {
-        OpNode opNode = d.getUserObject();
-        return opNode != null && (opNode.isDisabled() || isNotApplicable(opNode.getResult()));
-    }
-
-    private boolean isNotApplicable(OperationResultType result) {
-        return result != null && result.getStatus() == OperationResultStatusType.NOT_APPLICABLE;
+        OpNode opNode = treeNode.getUserObject();
+        if (opNode == null) {
+            return null;
+        }
+        // Call applyValueFunction to bypass the DefaultMutableTreeTableNode parameter in valueOf()
+        return columnInfos.get(column).applyValueFunction(opNode);
     }
 
     @Override
@@ -125,7 +128,17 @@ public class OpTreeTableModel extends DefaultTreeTableModel {
         return false;
     }
 
-    public void firePathChanged(TreePath path) {
-        modelSupport.fireTreeStructureChanged(path);
+    private boolean isDisabledNode(OpNode node) {
+        return node.isDisabled() || isNotApplicable(node.getResult());
+    }
+
+    private boolean isNotApplicable(OperationResultType result) {
+        return result != null && result.getStatus() == OperationResultStatusType.NOT_APPLICABLE;
+    }
+
+    @Nullable
+    private Color getNodeBackground(OpNode node) {
+        AbstractOpNodePresentation<?> presentation = (AbstractOpNodePresentation<?>) node.getPresentation();
+        return presentation != null ? presentation.getBackgroundColor() : null;
     }
 }
