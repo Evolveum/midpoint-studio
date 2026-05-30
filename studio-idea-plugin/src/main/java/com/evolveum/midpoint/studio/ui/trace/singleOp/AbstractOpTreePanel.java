@@ -5,9 +5,9 @@ import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.Format;
 import com.evolveum.midpoint.studio.impl.trace.FormattingContext;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
-import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.ViewingState;
 import com.evolveum.midpoint.studio.ui.trace.entry.Node;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.intellij.icons.AllIcons;
@@ -23,38 +23,27 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
-import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.decorator.AbstractHighlighter;
-import org.jdesktop.swingx.decorator.ComponentAdapter;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
-import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.table.TableColumn;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Display selected of given OpNode - as a tree.
- * <p>
- * Created by Viliam Repan (lazyman).
  */
 public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
 
     private static final Logger LOG = Logger.getInstance(AbstractOpTreePanel.class);
 
-    private JXTreeTable variables;
+    private DefaultTreeTable<OpNodeTableModel> variables;
+    private OpNodeTableModel variablesModel;
 
     private FormatComboboxAction variablesDisplayAs;
-
     private CheckboxAction variablesWrapText;
-
     private JBTextArea variablesValue;
 
     private OpNode currentOpNode;
@@ -91,23 +80,21 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         }
     }
 
-    void updateTreeModel(DefaultMutableTreeTableNode newRoot) {
-        DefaultTreeTableModel model = (DefaultTreeTableModel) variables.getTreeTableModel();
-        model.setRoot(newRoot);
-
-        this.variables.invalidate();
+    void updateTreeModel(DefaultMutableTreeNode newRoot) {
+        variablesModel.setRoot(newRoot);
+        variables.invalidate();
     }
 
     private void variableDisplayAsChanged(Format format) {
-        ListSelectionModel ext = variables.getSelectionModel();
-        int[] indices = ext.getSelectedIndices();
+        int[] indices = variables.getSelectedRows();
         if (indices == null || indices.length == 0) {
             applySelection(null);
+            return;
         }
 
-        TreeTableNode node = (TreeTableNode) variables.getPathForRow(indices[0]).getLastPathComponent();
-        if (node instanceof Node) {
-            applySelection((Node) node);
+        TreePath path = variables.getTree().getPathForRow(indices[0]);
+        if (path != null && path.getLastPathComponent() instanceof Node<?> node) {
+            applySelection(node);
         } else {
             applySelection(null);
         }
@@ -115,55 +102,29 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
 
     private void variablesSelectionChanged(TreeSelectionEvent e) {
         TreePath path = e.getNewLeadSelectionPath();
-        TreeTableNode node = path != null ? (TreeTableNode) path.getLastPathComponent() : null;
-
-        Node obj = null;
-        if (node instanceof Node) {
-            obj = (Node) node;
-        }
-
-        applySelection(obj);
+        Node<?> node = path != null && path.getLastPathComponent() instanceof Node<?> n ? n : null;
+        applySelection(node);
     }
 
     private void initLayout() {
         JBSplitter splitter = new OnePixelSplitter(false);
         add(splitter, BorderLayout.CENTER);
 
-        List<TreeTableColumnDefinition<String, ?>> columns = new ArrayList<>();
+        variablesModel = new OpNodeTableModel();
+        variables = new DefaultTreeTable<>(variablesModel);
+        variables.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        variables.getTree().setRootVisible(false);
+        variables.getTree().addTreeSelectionListener(this::variablesSelectionChanged);
 
-        columns.add(new TreeTableColumnDefinition<>("Item", 150, o -> null));
-        columns.add(new TreeTableColumnDefinition<>("Variable", 400, o -> null, new ExpansionSensitiveTableCellRenderer()));
-
-        this.variables = MidPointUtils.createTable2(
-                new DefaultTreeTableModel(new DefaultMutableTreeTableNode(), Arrays.asList("Item", "Variable")),
-                MidPointUtils.createTableColumnModel(columns), false);
-        this.variables.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        this.variables.addTreeSelectionListener(this::variablesSelectionChanged);
-
-        this.variables.addHighlighter(new AbstractHighlighter() {
-
-            @Override
-            protected Component doHighlight(Component component, ComponentAdapter adapter) {
-                int row = adapter.convertRowIndexToModel(adapter.row);
-                TreePath pathForRow = variables.getPathForRow(row);
-                Node node = (Node) pathForRow.getLastPathComponent();
-                if (adapter.isSelected()) {
-                    component.setBackground(variables.getSelectionBackground());
-                } else if (node.getBackgroundColor() == null) {
-                    component.setBackground(variables.getBackground());
-                } else {
-                    component.setBackground(node.getBackgroundColor());
-                }
-                return component;
-            }
-        });
-
-        TableColumn column = this.variables.getColumnModel().getColumn(1);
-        column.setCellRenderer(new ExpansionSensitiveTableCellRenderer());
+        // Apply expansion-sensitive renderer to the value column
+        TableColumn valueColumn = variables.getColumnModel().getColumn(1);
+        valueColumn.setCellRenderer(new ExpansionSensitiveTableCellRenderer());
 
         JComponent mainToolbar = initMainToolbar();
-
-        splitter.setFirstComponent(MidPointUtils.createBorderLayoutPanel(mainToolbar, new JBScrollPane(this.variables), null));
+        splitter.setFirstComponent(MidPointUtils.createBorderLayoutPanel(
+                mainToolbar,
+                new JBScrollPane(variables, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED),
+                null));
 
         JPanel left = new BorderLayoutPanel();
         splitter.setSecondComponent(left);
@@ -179,7 +140,6 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
             @Override
             public void setFormat(Format format) {
                 super.setFormat(format);
-
                 variableDisplayAsChanged(format);
             }
         };
@@ -205,15 +165,37 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
     private JComponent initMainToolbar() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> variables.expandAll());
-        group.add(expandAll);
+        group.add(MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> expandAll()));
+        group.add(MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> collapseAll()));
 
-        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> variables.collapseAll());
-        group.add(collapseAll);
+        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceTreeToolbar", group, true);
+        toolbar.setTargetComponent(this);
+        return toolbar.getComponent();
+    }
 
-        ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceTreeToolbar", group, true);
-        resultsActionsToolbar.setTargetComponent(this);
-        return resultsActionsToolbar.getComponent();
+    private void expandAll() {
+        for (int i = 0; i < variables.getRowCount(); i++) {
+            variables.getTree().expandRow(i);
+        }
+    }
+
+    private void collapseAll() {
+        for (int i = variables.getRowCount() - 1; i >= 0; i--) {
+            variables.getTree().collapseRow(i);
+        }
+    }
+
+    void setViewingState(ViewingState viewingState) {
+        SwingUtilities.invokeLater(() -> {
+            collapseAll();
+            Integer selectedIndex = viewingState.getSelectedIndex();
+            if (selectedIndex != null) {
+                variables.setRowSelectionInterval(selectedIndex, selectedIndex);
+            }
+            for (TreePath treePath : MiscUtil.emptyIfNull(viewingState.getExpandedPaths())) {
+                variables.getTree().expandPath(treePath);
+            }
+        });
     }
 
     private class FormatComboboxAction extends ComboBoxAction {
@@ -224,27 +206,23 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         @Override
         protected DefaultActionGroup createPopupActionGroup(JComponent button) {
             DefaultActionGroup group = new DefaultActionGroup();
-
             for (Format f : Format.values()) {
                 group.add(new FormatAction(f) {
 
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
                         setFormat(this.getFormat());
-                        updateVariablesValue(e);
+                        variablesValue.setCaretPosition(0);
                     }
                 });
             }
-
             return group;
         }
 
         @Override
         public void update(@NotNull AnActionEvent e) {
             super.update(e);
-
-            String text = getFormat().getDisplayName();
-            e.getPresentation().setText(text);
+            e.getPresentation().setText(getFormat().getDisplayName());
         }
 
         public void setFormat(Format format) {
@@ -254,15 +232,11 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
         public Format getFormat() {
             return format != null ? format : Format.XML_SIMPLIFIED;
         }
-
-        private void updateVariablesValue(AnActionEvent e) {
-            variablesValue.setCaretPosition(0);
-        }
     }
 
     private static abstract class FormatAction extends AnAction implements DumbAware {
 
-        private Format format;
+        private final Format format;
 
         public FormatAction(Format format) {
             super(format.getDisplayName());
@@ -273,19 +247,4 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
             return format;
         }
     }
-
-    void setViewingState(ViewingState viewingState) {
-
-        SwingUtilities.invokeLater(() -> {
-            variables.collapseAll();
-            Integer selectedIndex = viewingState.getSelectedIndex();
-            if (selectedIndex != null) {
-                variables.setRowSelectionInterval(selectedIndex, selectedIndex);
-            }
-            for (TreePath treePath : MiscUtil.emptyIfNull(viewingState.getExpandedPaths())) {
-                variables.expandPath(treePath);
-            }
-        });
-    }
-
 }

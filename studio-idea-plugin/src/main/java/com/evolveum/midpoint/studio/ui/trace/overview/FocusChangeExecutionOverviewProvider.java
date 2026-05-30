@@ -9,7 +9,7 @@ import com.evolveum.midpoint.studio.ui.trace.entry.*;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectDeltaOperationType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  *
@@ -17,7 +17,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 public class FocusChangeExecutionOverviewProvider implements OverviewProvider<FocusChangeExecutionOpNode> {
 
     @Override
-    public void provideOverview(FocusChangeExecutionOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(FocusChangeExecutionOpNode node, DefaultMutableTreeNode root,
             ViewingState initialState) throws SchemaException {
         ObjectDeltaOperationType odo = node.getObjectDeltaOperation();
         if (odo != null) {

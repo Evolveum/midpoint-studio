@@ -9,6 +9,7 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -23,38 +24,29 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.swingx.JXTreeTable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Viliam Repan (lazyman).
  */
 public class OperationResultDialog extends DialogWrapper {
 
-    private BorderLayoutPanel panel;
+    private final BorderLayoutPanel panel;
 
     public OperationResultDialog(@NotNull OperationResult result) {
         super(false);
@@ -64,142 +56,82 @@ public class OperationResultDialog extends DialogWrapper {
 
         this.panel = new BorderLayoutPanel();
 
-        // todo add message multi line renderer
-        // todo add colors for operation/status based on status
-        List<TreeTableColumnDefinition<OperationResult, Object>> columns = new ArrayList<>();
-        columns.add(new TreeTableColumnDefinition<>("Operation", 150,
-                r -> r.getOperation().replace("com.evolveum.midpoint", "..")));
-        columns.add(new TreeTableColumnDefinition<OperationResult, Object>("Status", 50,
-                r -> String.valueOf(r.getStatus()))
-                .tableCellRenderer(createStatusTableCellRenderer()));
-        TreeTableColumnDefinition def = new TreeTableColumnDefinition<OperationResult, Object>("Message", 500,
-                r -> r.getMessage() != null ? r.getMessage() : "");
-        def.setMinimalSize(200);
-        columns.add(def);
-        columns.add(new TreeTableColumnDefinition<>("Context", 150,
-                r -> {
-
-                    Map<String, Collection<String>> ctx = r.getContext();
-
-                    StringBuilder sb = new StringBuilder();
-                    for (String key : ctx.keySet()) {
-                        sb.append(key).append(":").append(StringUtils.join(ctx.get(key), ',')).append('\n');
-                    }
-                    return sb.toString();
-                }));
-
-        JXTreeTable table = MidPointUtils.createTable(new OperationResultModel(result, columns), (List) columns);
-        table.expandAll();
-        table.setRootVisible(true);
+        OperationResultTableModel model = new OperationResultTableModel(result);
+        DefaultTreeTable<OperationResultTableModel> table = new DefaultTreeTable<>(model);
+        table.getTree().setRootVisible(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Status column: colour-coded by status value
+        table.getColumnModel().getColumn(1).setCellRenderer(createStatusRenderer());
+
+        // Expand all rows initially
+        for (int i = 0; i < table.getRowCount(); i++) {
+            table.getTree().expandRow(i);
+        }
 
         JComponent toolbar = initToolbar(table, result);
         this.panel.addToTop(toolbar);
-        this.panel.addToCenter(new JBScrollPane(table));
+        this.panel.addToCenter(new JBScrollPane(table,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
 
         init();
     }
 
-    private TableCellRenderer createStatusTableCellRenderer() {
+    private TableCellRenderer createStatusRenderer() {
         return new ColoredTableCellRenderer() {
 
             @Override
-            protected void customizeCellRenderer(@NotNull JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
+            protected void customizeCellRenderer(
+                    @NotNull JTable table, @Nullable Object value,
+                    boolean selected, boolean hasFocus, int row, int column) {
+
                 append(value != null ? value.toString() : "");
 
-                if (!(value instanceof OperationResultStatus)) {
+                if (!(value instanceof OperationResultStatus status)) {
                     return;
                 }
 
-                OperationResultStatus status = (OperationResultStatus) value;
-                switch (status) {
-                    case SUCCESS:
-                    case HANDLED_ERROR:
-                        setForeground(JBColor.GREEN.darker());
-                        break;
-                    case PARTIAL_ERROR:
-                    case FATAL_ERROR:
-                        setForeground(JBColor.RED.darker());
-                        break;
-                    case IN_PROGRESS:
-                        setForeground(JBColor.BLUE.darker());
-                        break;
-                    case NOT_APPLICABLE:
-                    case UNKNOWN:
-                    case WARNING:
-                        setForeground(JBColor.ORANGE.darker());
-                        break;
-
-                }
+                Color fg = switch (status) {
+                    case SUCCESS, HANDLED_ERROR -> JBColor.GREEN.darker();
+                    case PARTIAL_ERROR, FATAL_ERROR -> JBColor.RED.darker();
+                    case IN_PROGRESS -> JBColor.BLUE.darker();
+                    case NOT_APPLICABLE, UNKNOWN, WARNING -> JBColor.ORANGE.darker();
+                };
+                setForeground(fg);
             }
         };
-
-//        return new DefaultTableCellRenderer() {
-//
-//            @Override
-//            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-//                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-//
-//                if (!(value instanceof OperationResultStatus)) {
-//                    return c;
-//                }
-//
-//                OperationResultStatus status = (OperationResultStatus) value;
-//                switch (status) {
-//                    case SUCCESS:
-//                    case HANDLED_ERROR:
-//                        c.setForeground(JBColor.GREEN.darker());
-//                        break;
-//                    case PARTIAL_ERROR:
-//                    case FATAL_ERROR:
-//                        c.setForeground(JBColor.RED.darker());
-//                        break;
-//                    case IN_PROGRESS:
-//                        c.setForeground(JBColor.BLUE.darker());
-//                        break;
-//                    case NOT_APPLICABLE:
-//                    case UNKNOWN:
-//                    case WARNING:
-//                        c.setForeground(JBColor.ORANGE.darker());
-//                        break;
-//
-//                }
-//
-//                return c;
-//            }
-//        };
     }
 
-    private JComponent initToolbar(JXTreeTable table, OperationResult result) {
+    private JComponent initToolbar(DefaultTreeTable<OperationResultTableModel> table, OperationResult result) {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> table.expandAll());
-        group.add(expandAll);
-
-        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> table.collapseAll());
-        group.add(collapseAll);
-
+        group.add(MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> {
+            for (int i = 0; i < table.getRowCount(); i++) {
+                table.getTree().expandRow(i);
+            }
+        }));
+        group.add(MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> {
+            for (int i = table.getRowCount() - 1; i >= 0; i--) {
+                table.getTree().collapseRow(i);
+            }
+        }));
         group.add(new Separator());
+        group.add(MidPointUtils.createAnAction("Export Result", AllIcons.Actions.Download, e -> openSaveResultDialog(e, result)));
 
-        AnAction export = MidPointUtils.createAnAction("Export Result", AllIcons.Actions.Download, e -> openSaveResultDialog(e, result));
-        group.add(export);
-
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("OperationResultDialogToolbar", group, true);
+        ActionToolbar toolbar = ActionManager.getInstance()
+                .createActionToolbar("OperationResultDialogToolbar", group, true);
         toolbar.setTargetComponent(panel);
-
         return toolbar.getComponent();
     }
 
     private void openSaveResultDialog(AnActionEvent e, OperationResult result) {
         Project project = e.getProject();
-        String basePath = project.getBasePath();
-
-        VirtualFile projectRoot = LocalFileSystem.getInstance().findFileByPath(basePath);
 
         FileSaverDialog saver = FileChooserFactory.getInstance().createSaveFileDialog(
                 new FileSaverDescriptor("Save Operation Result As Xml", "Save to", "xml"), project);
 
-        VirtualFileWrapper target = saver.save((VirtualFile) null, project.getName() + ".xml");
+        VirtualFileWrapper target = saver.save((com.intellij.openapi.vfs.VirtualFile) null, project.getName() + ".xml");
         if (target != null) {
             Task.Backgroundable task = new Task.Backgroundable(project, "Saving Operation Result Xml") {
 
@@ -218,7 +150,7 @@ public class OperationResultDialog extends DialogWrapper {
         }
     }
 
-    private void saveResult(final Project project, ProgressIndicator indicator, final VirtualFileWrapper fileWrapper, OperationResult result) {
+    private void saveResult(Project project, ProgressIndicator indicator, VirtualFileWrapper fileWrapper, OperationResult result) {
         MidPointService mm = MidPointService.get(project);
 
         EnvironmentService em = EnvironmentService.getInstance(project);
@@ -231,27 +163,21 @@ public class OperationResultDialog extends DialogWrapper {
                 if (file.exists()) {
                     file.delete();
                 }
-
                 file.createNewFile();
             } catch (IOException ex) {
-                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't create file " + file.getPath(), ex);
             }
 
-            VirtualFile vFile = fileWrapper.getVirtualFile();
-
             try (BufferedWriter out = new BufferedWriter(
-                    new OutputStreamWriter(vFile.getOutputStream(this), vFile.getCharset()))) {
+                    new OutputStreamWriter(fileWrapper.getVirtualFile().getOutputStream(this), fileWrapper.getVirtualFile().getCharset()))) {
 
                 MidPointClient client = new MidPointClient(project, environment);
-
                 PrismContext ctx = client.getPrismContext();
                 PrismSerializer<String> serializer = ctx.serializerFor(PrismContext.LANG_XML);
-
                 String xml = serializer.serializeAnyData(result.createOperationResultType(), SchemaConstantsGenerated.C_OPERATION_RESULT);
-
                 IOUtils.write(xml, out);
             } catch (IOException | SchemaException ex) {
-                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't create file " + file.getPath() + " for operation result", ex);
+                mm.printToConsole(environment, OperationResultDialog.class, "Couldn't save operation result", ex);
             }
         });
     }
@@ -260,22 +186,5 @@ public class OperationResultDialog extends DialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
         return panel;
-    }
-
-    private static class StatusBasedCellTreeRenderer extends DefaultTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-
-            if (!(value instanceof OperationResult)) {
-                return comp;
-            }
-
-            OperationResult result = (OperationResult) value;
-            comp.setForeground(Color.RED);
-            return comp;
-        }
     }
 }

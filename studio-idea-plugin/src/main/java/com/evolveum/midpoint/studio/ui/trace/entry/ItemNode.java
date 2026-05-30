@@ -3,7 +3,7 @@ package com.evolveum.midpoint.studio.ui.trace.entry;
 import com.evolveum.midpoint.prism.Item;
 import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import java.util.Collections;
 
@@ -32,15 +32,15 @@ public class ItemNode extends Node<Item<?, ?>> {
         } else if (item.getValues().size() == 1) {
             Node dummyRoot = PrismValueNode.create("dummy", item.getValues().get(0), null);
 
-            Collections.list(dummyRoot.children()).forEach(c -> ItemNode.this.add(c));
+            Collections.list(dummyRoot.children()).forEach(c -> ItemNode.this.add((javax.swing.tree.MutableTreeNode) c));
         }
     }
 
-    public static ItemNode create(Item<?, ?> item, AbstractMutableTreeTableNode parent) throws SchemaException {
+    public static ItemNode create(Item<?, ?> item, DefaultMutableTreeNode parent) throws SchemaException {
         return create("", item, parent);
     }
 
-    public static ItemNode create(String prefix, Item<?, ?> item, AbstractMutableTreeTableNode parent) throws SchemaException {
+    public static ItemNode create(String prefix, Item<?, ?> item, DefaultMutableTreeNode parent) throws SchemaException {
         ItemNode node = new ItemNode(prefix, item);
         if (parent != null) {
             parent.add(node);

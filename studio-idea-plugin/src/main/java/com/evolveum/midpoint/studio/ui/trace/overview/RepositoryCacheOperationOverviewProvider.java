@@ -13,7 +13,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.RepositoryDeleteTrac
 import com.evolveum.midpoint.xml.ns._public.common.common_3.RepositoryModifyTraceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.RepositoryOperationTraceType;
 import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import javax.xml.namespace.QName;
 
@@ -23,7 +23,7 @@ import javax.xml.namespace.QName;
 public class RepositoryCacheOperationOverviewProvider implements OverviewProvider<RepositoryCacheOpNode> {
 
     @Override
-    public void provideOverview(RepositoryCacheOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(RepositoryCacheOpNode node, DefaultMutableTreeNode root,
                                 ViewingState initialState) throws SchemaException {
 
         RepositoryOperationTraceType trace = node.getTrace();
@@ -41,7 +41,7 @@ public class RepositoryCacheOperationOverviewProvider implements OverviewProvide
         }
     }
 
-    private void provideOverview(RepositoryAddTraceType trace, DefaultMutableTreeTableNode root)
+    private void provideOverview(RepositoryAddTraceType trace, DefaultMutableTreeNode root)
             throws SchemaException {
         if (trace.getObjectRef() != null) {
             TextNode.create("Type", getLocal(trace.getObjectRef().getType()), root);
@@ -54,7 +54,7 @@ public class RepositoryCacheOperationOverviewProvider implements OverviewProvide
         TextNode.create("Options", trace.getOptions(), root);
     }
 
-    private void provideOverview(RepositoryModifyTraceType trace, DefaultMutableTreeTableNode root)
+    private void provideOverview(RepositoryModifyTraceType trace, DefaultMutableTreeNode root)
             throws SchemaException {
         TextNode.create("Type", getLocal(trace.getObjectType()), root);
         TextNode.create("OID", trace.getOid(), root);
@@ -65,7 +65,7 @@ public class RepositoryCacheOperationOverviewProvider implements OverviewProvide
         TextNode.create("Options", trace.getOptions(), root);
     }
 
-    private void provideOverview(RepositoryDeleteTraceType trace, DefaultMutableTreeTableNode root) {
+    private void provideOverview(RepositoryDeleteTraceType trace, DefaultMutableTreeNode root) {
         TextNode.create("Type", getLocal(trace.getObjectType()), root);
         TextNode.create("OID", trace.getOid(), root);
     }

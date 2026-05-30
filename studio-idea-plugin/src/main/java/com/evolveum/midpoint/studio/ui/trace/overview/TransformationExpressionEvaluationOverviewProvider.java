@@ -10,7 +10,7 @@ import com.evolveum.midpoint.studio.ui.trace.entry.TextNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ExpressionSourceEvaluationTraceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ValueTransformationExpressionEvaluationTraceType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  *
@@ -18,7 +18,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 public class TransformationExpressionEvaluationOverviewProvider implements OverviewProvider<TransformationExpressionEvaluationOpNode> {
 
     @Override
-    public void provideOverview(TransformationExpressionEvaluationOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(TransformationExpressionEvaluationOpNode node, DefaultMutableTreeNode root,
             ViewingState initialState) throws SchemaException {
 
         ValueTransformationExpressionEvaluationTraceType trace = node.getTrace();

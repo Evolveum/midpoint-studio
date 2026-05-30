@@ -5,7 +5,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaType;
 import com.evolveum.prism.xml.ns._public.types_3.ModificationTypeType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
-import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ItemDeltaTypeNode extends Node<ItemDeltaType> {
         }
     }
 
-    public static ItemDeltaTypeNode create(String label, ItemDeltaType value, boolean showPathInValue, AbstractMutableTreeTableNode parent) throws SchemaException {
+    public static ItemDeltaTypeNode create(String label, ItemDeltaType value, boolean showPathInValue, DefaultMutableTreeNode parent) throws SchemaException {
         ItemDeltaTypeNode node = new ItemDeltaTypeNode(label, value, showPathInValue);
         if (parent != null) {
             parent.add(node);

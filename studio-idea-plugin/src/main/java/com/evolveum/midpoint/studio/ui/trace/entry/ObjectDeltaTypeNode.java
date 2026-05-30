@@ -5,7 +5,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.ChangeTypeType;
 import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
-import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  * Fake class - contains only the code to construct node subtree for given delta.
@@ -14,7 +14,7 @@ import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
  */
 public class ObjectDeltaTypeNode extends Node<ObjectDeltaType> {
 
-    public static Node<?> create(String prefix, boolean past, ObjectDeltaType delta, String objectName, AbstractMutableTreeTableNode parent) throws SchemaException {
+    public static Node<?> create(String prefix, boolean past, ObjectDeltaType delta, String objectName, DefaultMutableTreeNode parent) throws SchemaException {
         if (delta == null) {
             return null;
         }

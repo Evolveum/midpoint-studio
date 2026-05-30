@@ -10,7 +10,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.AssignmentPathType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectConstructionEvaluationTraceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ShadowDiscriminatorType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  *
@@ -18,7 +18,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 public class ResourceObjectConstructionEvaluationOverviewProvider implements OverviewProvider<ResourceObjectConstructionEvaluationOpNode> {
 
     @Override
-    public void provideOverview(ResourceObjectConstructionEvaluationOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(ResourceObjectConstructionEvaluationOpNode node, DefaultMutableTreeNode root,
             ViewingState initialState) throws SchemaException {
 
         ResourceObjectConstructionEvaluationTraceType trace = node.getTrace();

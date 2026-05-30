@@ -4,7 +4,7 @@ import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaItemType;
 import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaType;
-import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ItemDeltaItemTypeNode extends Node<ItemDeltaItemType> {
 
@@ -37,7 +37,7 @@ public class ItemDeltaItemTypeNode extends Node<ItemDeltaItemType> {
         }
     }
 
-    public static ItemDeltaItemTypeNode create(String label, ItemDeltaItemType value, AbstractMutableTreeTableNode parent) throws SchemaException {
+    public static ItemDeltaItemTypeNode create(String label, ItemDeltaItemType value, DefaultMutableTreeNode parent) throws SchemaException {
         ItemDeltaItemTypeNode node = new ItemDeltaItemTypeNode(label, value);
         if (parent != null) {
             parent.add(node);

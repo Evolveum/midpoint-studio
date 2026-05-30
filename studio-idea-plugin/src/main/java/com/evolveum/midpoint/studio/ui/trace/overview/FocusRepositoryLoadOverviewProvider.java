@@ -10,7 +10,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.FocusLoadedTraceType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LensContextType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LensFocusContextType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import static com.evolveum.midpoint.studio.ui.trace.TraceUtils.getObjectFromReference;
 
@@ -20,7 +20,7 @@ import static com.evolveum.midpoint.studio.ui.trace.TraceUtils.getObjectFromRefe
 public class FocusRepositoryLoadOverviewProvider implements OverviewProvider<FocusRepositoryLoadOpNode> {
 
     @Override
-    public void provideOverview(FocusRepositoryLoadOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(FocusRepositoryLoadOpNode node, DefaultMutableTreeNode root,
             ViewingState initialState) throws SchemaException {
 
         FocusLoadedTraceType trace = node.getTrace(FocusLoadedTraceType.class);

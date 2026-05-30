@@ -11,7 +11,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
 import com.intellij.openapi.diagnostic.Logger;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
     private static final Logger LOG = Logger.getInstance(ProjectorProjectionOverviewProvider.class);
 
     @Override
-    public void provideOverview(ProjectorProjectionOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(ProjectorProjectionOpNode node, DefaultMutableTreeNode root,
                                 ViewingState initialState) throws SchemaException {
 
         ProjectorComponentTraceType trace = node.getTrace();

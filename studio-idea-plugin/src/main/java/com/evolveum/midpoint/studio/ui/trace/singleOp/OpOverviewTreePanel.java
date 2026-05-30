@@ -7,7 +7,7 @@ import com.evolveum.midpoint.studio.ui.trace.presentation.AbstractOpNodePresenta
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -30,7 +30,7 @@ public class OpOverviewTreePanel extends AbstractOpTreePanel {
 
         ViewingState initialState = new ViewingState();
 
-        DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         if (node != null) {
             root.add(new TextNode("Operation", node.getLabel()));
             //root.add(new TextNode("Duration", node.getMillisecondsFormatted() + " ms"));

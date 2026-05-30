@@ -6,7 +6,7 @@ import com.evolveum.midpoint.studio.ui.trace.ViewingState;
 import com.evolveum.midpoint.studio.ui.trace.entry.*;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ItemConsolidationTraceType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  *
@@ -14,7 +14,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 public class ItemConsolidationOverviewProvider implements OverviewProvider<ItemConsolidationOpNode> {
 
     @Override
-    public void provideOverview(ItemConsolidationOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(ItemConsolidationOpNode node, DefaultMutableTreeNode root,
             ViewingState initialState) throws SchemaException {
 
         ItemConsolidationTraceType trace = node.getTrace();

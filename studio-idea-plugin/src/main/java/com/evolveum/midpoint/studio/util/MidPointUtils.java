@@ -385,6 +385,10 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
         };
     }
 
+    /**
+     * @deprecated user {@link com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable}
+     */
+    @Deprecated
     public static <R> JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition<R, ?>> columns) {
         JXTreeTable table = new JXTreeTable();
         table.setRootVisible(false);
@@ -405,6 +409,10 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
         return table;
     }
 
+    /**
+     * @deprecated user {@link com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable}
+     */
+    @Deprecated
     @Experimental
     public static JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
 

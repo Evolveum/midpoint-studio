@@ -11,7 +11,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ClockworkRunTraceTyp
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LensContextType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LensFocusContextType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import static com.evolveum.midpoint.studio.ui.trace.TraceUtils.getObjectFromReference;
 
@@ -21,7 +21,7 @@ import static com.evolveum.midpoint.studio.ui.trace.TraceUtils.getObjectFromRefe
 public class ClockworkRunOverviewProvider implements OverviewProvider<ClockworkRunOpNode> {
 
     @Override
-    public void provideOverview(ClockworkRunOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(ClockworkRunOpNode node, DefaultMutableTreeNode root,
             ViewingState initialState) throws SchemaException {
 
         ClockworkRunTraceType trace = node.getTrace();
