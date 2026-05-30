@@ -1,13 +1,16 @@
 package com.evolveum.midpoint.studio.ui.trace.lens;
 
-import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
-
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
-public abstract class PrismNode extends AbstractMutableTreeTableNode {
+/**
+ * Base tree node for the lens context tree. Carries label and per-column
+ * string values (old / current / new).
+ */
+public abstract class PrismNode extends DefaultMutableTreeNode {
 
     public PrismNode(PrismNode parent) {
         if (parent != null) {
@@ -15,30 +18,17 @@ public abstract class PrismNode extends AbstractMutableTreeTableNode {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<PrismNode> getChildren() {
-        Enumeration e = children();
+        Enumeration<javax.swing.tree.TreeNode> e = children();
         if (e == null) {
             return new ArrayList<>();
         }
-
-        return Collections.list(e);
+        return (List<PrismNode>) (List<?>) Collections.list(e);
     }
 
     public abstract String getLabel();
 
+    /** Returns the value for value-column {@code i} (0 = old, 1 = current, 2 = new). */
     public abstract String getValue(int i);
-
-    @Override
-    public Object getValueAt(int i) {
-        if (i == 0) {
-            return getLabel();
-        }
-
-        return getValue(i - 1);
-    }
-
-    @Override
-    public int getColumnCount() {
-        return 4;
-    }
 }

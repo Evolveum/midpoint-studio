@@ -89,7 +89,7 @@ public class PrismItemNode extends PrismNode {
 
             PrismNode dummyRoot = PrismValueNode.create("dummy", values, null);
 
-            Collections.list(dummyRoot.children()).forEach(c -> PrismItemNode.this.add(c));
+            Collections.list(dummyRoot.children()).forEach(c -> PrismItemNode.this.add((javax.swing.tree.MutableTreeNode) c));
         }
     }
 

@@ -2,9 +2,9 @@ package com.evolveum.midpoint.studio.ui.trace.lensContext;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.trace.lens.LensContextNode;
 import com.evolveum.midpoint.studio.ui.trace.lens.PrismNode;
+import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ClockworkTraceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LensContextType;
@@ -20,18 +20,14 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
-import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by Viliam Repan (lazyman).
+ * Displays the lens context (input/output) of the selected OpNode as a tree table.
  */
 public class TraceLensContextPanel extends BorderLayoutPanel {
 
@@ -40,7 +36,8 @@ public class TraceLensContextPanel extends BorderLayoutPanel {
     private static final String LABEL_DEFAULT_TEXT = "Prism object: ";
 
     private JLabel label;
-    private JXTreeTable table;
+    private DefaultTreeTable<LensContextTableModel> table;
+    private LensContextTableModel tableModel;
 
     public TraceLensContextPanel(Project project) {
         initLayout();
@@ -58,36 +55,41 @@ public class TraceLensContextPanel extends BorderLayoutPanel {
     private void initLayout() {
         label = new JLabel(LABEL_DEFAULT_TEXT);
         label.setBorder(JBUI.Borders.empty(5));
-        add(label, BorderLayout.NORTH);
 
-        List<TreeTableColumnDefinition> columns = new ArrayList<>();
-
-        columns.add(new TreeTableColumnDefinition<String, String>("Item", 200, o -> null));
-        columns.add(new TreeTableColumnDefinition<String, String>("Old", 100, o -> null));
-        columns.add(new TreeTableColumnDefinition<String, String>("Current", 100, o -> null));
-        columns.add(new TreeTableColumnDefinition<String, String>("New", 100, o -> null));
-
-        this.table = MidPointUtils.createTable(new DefaultTreeTableModel(new DefaultMutableTreeTableNode(),
-                Arrays.asList("Item", "Old", "Current", "New")), null);
-
-        add(new JBScrollPane(table), BorderLayout.CENTER);
+        tableModel = new LensContextTableModel();
+        table = new DefaultTreeTable<>(tableModel);
+        table.getTree().setRootVisible(false);
 
         JComponent toolbar = initMainToolbar();
+
         add(toolbar, BorderLayout.NORTH);
+        add(new JBScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
     }
 
     private JComponent initMainToolbar() {
         DefaultActionGroup group = new DefaultActionGroup();
 
-        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> table.expandAll());
+        AnAction expandAll = MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> expandAll());
         group.add(expandAll);
 
-        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> table.collapseAll());
+        AnAction collapseAll = MidPointUtils.createAnAction("Collapse All", AllIcons.Actions.Collapseall, e -> collapseAll());
         group.add(collapseAll);
 
-        ActionToolbar resultsActionsToolbar = ActionManager.getInstance().createActionToolbar("TraceLensContextToolbar", group, true);
-        resultsActionsToolbar.setTargetComponent(this);
-        return resultsActionsToolbar.getComponent();
+        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("TraceLensContextToolbar", group, true);
+        toolbar.setTargetComponent(this);
+        return toolbar.getComponent();
+    }
+
+    private void expandAll() {
+        for (int i = 0; i < table.getRowCount(); i++) {
+            table.getTree().expandRow(i);
+        }
+    }
+
+    private void collapseAll() {
+        for (int i = table.getRowCount() - 1; i >= 0; i--) {
+            table.getTree().collapseRow(i);
+        }
     }
 
     private void nodeChange(OpNode node) {
@@ -95,8 +97,7 @@ public class TraceLensContextPanel extends BorderLayoutPanel {
 
         if (node == null) {
             label.setText(LABEL_DEFAULT_TEXT);
-
-            updateTableModel(roots);
+            tableModel.setRoots(roots);
             return;
         }
 
@@ -112,29 +113,19 @@ public class TraceLensContextPanel extends BorderLayoutPanel {
             outputContext = null;
         }
 
-        if (node != null && (inputContext != null || outputContext != null)) {
+        if (inputContext != null || outputContext != null) {
             OperationResultType result = node.getResult();
             label.setText(result.getOperation() + " (" + result.getInvocationId() + "): " + node.getTraceNames());
 
             roots.add(parseContext("input", inputContext));
             roots.add(parseContext("output", outputContext));
-
-            LOG.debug("Structure changed, setting new roots");
-            updateTableModel(roots);
         }
+
+        LOG.debug("Structure changed, setting new roots");
+        tableModel.setRoots(roots);
     }
 
-    private void updateTableModel(List<PrismNode> roots) {
-        DefaultTreeTableModel model = (DefaultTreeTableModel) table.getTreeTableModel();
-
-        DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
-        if (roots != null) {
-            roots.stream().forEach(r -> root.add(r));
-        }
-        model.setRoot(root);
-    }
-
-    private LensContextNode parseContext(String label, LensContextType context) {
-        return new LensContextNode(label, context);
+    private LensContextNode parseContext(String contextLabel, LensContextType context) {
+        return new LensContextNode(contextLabel, context);
     }
 }
