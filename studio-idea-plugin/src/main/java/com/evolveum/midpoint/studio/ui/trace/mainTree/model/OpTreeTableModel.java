@@ -21,7 +21,6 @@ import java.util.Map;
 
 /**
  * Tree table model for the main OpNode tree in the trace viewer.
- * Extends the studio DefaultTreeTableModel — no JXTreeTable dependency.
  */
 public class OpTreeTableModel extends DefaultTreeTableModel<OpNode> {
 
