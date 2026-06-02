@@ -15,8 +15,9 @@ import com.intellij.ui.TreeTableSpeedSearch;
 import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
+import java.util.List;
 
-public class MissingRefObjectsTable extends DefaultTreeTable<MissingRefObjectsTableModel> {
+public class MissingRefObjectsTable extends DefaultTreeTable<List<MissingRefObject>, MissingRefObjectsTableModel> {
 
     private static final Icon ICON_OBJECT = MidPointIcons.Midpoint;
 

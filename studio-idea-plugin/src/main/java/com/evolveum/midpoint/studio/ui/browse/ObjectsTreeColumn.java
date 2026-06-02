@@ -8,8 +8,10 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.tree.MutableTreeNode;
 
 public class ObjectsTreeColumn extends DefaultColumnInfo<Object, String> {
 
@@ -26,8 +28,8 @@ public class ObjectsTreeColumn extends DefaultColumnInfo<Object, String> {
     }
 
     @Override
-    public @Nullable String valueOf(DefaultMutableTreeTableNode node) {
-        Object userObject = node.getUserObject();
+    public @Nullable String valueOf(MutableTreeNode node) {
+        Object userObject = getUserObject(node);
 
         if (userObject instanceof ObjectTypes) {
             ObjectTypes type = (ObjectTypes) userObject;

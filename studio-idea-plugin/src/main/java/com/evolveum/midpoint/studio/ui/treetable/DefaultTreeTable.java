@@ -17,9 +17,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.Font;
 
-public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable {
+public class DefaultTreeTable<T, M extends DefaultTreeTableModel<T>> extends TreeTable {
 
     public DefaultTreeTable(M model) {
         super(model);
@@ -65,10 +64,10 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
             }
         }
 
-//        TreeCellRenderer treeCellRenderer = createTreeCellRenderer();
-//        if (treeCellRenderer != null) {
-//            setTreeCellRenderer(treeCellRenderer);
-//        }
+        TreeCellRenderer treeCellRenderer = createTreeCellRenderer();
+        if (treeCellRenderer != null) {
+            setTreeCellRenderer(treeCellRenderer);
+        }
     }
 
     /**
@@ -126,16 +125,16 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
     @Override
     public @NotNull Component prepareRenderer(@NotNull TableCellRenderer renderer, int row, int column) {
         Component c = super.prepareRenderer(renderer, row, column);
-        // todo fix
-        if (1==1) return c;
 
         M model = getTableModel();
 
         // Resolve the user object from the tree path node
         Object userObject = null;
         TreePath path = getTree().getPathForRow(row);
+
+        Object node = null;
         if (path != null) {
-            Object node = path.getLastPathComponent();
+            node = path.getLastPathComponent();
             userObject = extractUserObject(node);
         }
 
@@ -143,38 +142,41 @@ public class DefaultTreeTable<M extends DefaultTreeTableModel> extends TreeTable
             return c;
         }
 
-        // Row-level style from the model's RowStyler
-        CellStyle rowStyle = null;
-        RowStyler rowStyler = model.getRowStyler();
-        if (rowStyler != null) {
-            //noinspection unchecked
-            rowStyle = ((RowStyler<Object>) rowStyler).getStyle(userObject);
+        // Row-level style from the model's RowStyler (receives the raw tree node;
+        // the lambda uses instanceof to extract what it needs).
+        Style rowStyle = null;
+        RowStyleProvider rowStyleProvider = model.getRowStyler();
+        if (rowStyleProvider != null) {
+            rowStyle = rowStyleProvider.getStyle(node);
         }
 
-        // Cell-level style from the ColumnInfo (if it is a DefaultColumnInfo)
-        CellStyle cellStyle = null;
-        ColumnInfo ci = model.getColumnInfo(column);
+        // Cell-level style from the ColumnInfo (if it is a DefaultColumnInfo).
+        // Convert view column index to model column index — they diverge when columns are hidden.
+        Style style = null;
+        int modelColumn = convertColumnIndexToModel(column);
+        ColumnInfo ci = model.getColumnInfo(modelColumn);
         if (ci instanceof DefaultColumnInfo<?, ?> dci) {
-            cellStyle = dci.getStyleUnchecked(userObject);
+            style = dci.getStyleUnchecked(userObject);
         }
 
         // Merge: cell overrides row
-        CellStyle effectiveStyle = cellStyle != null ? cellStyle.mergeOver(rowStyle) : rowStyle;
-
-        if (effectiveStyle == null) {
-            return c;
-        }
+        Style effectiveStyle = style != null ? style.mergeOver(rowStyle) : rowStyle;
 
         boolean selected = isRowSelected(row);
 
-        if (!selected && effectiveStyle.getBackground() != null) {
-            c.setBackground(effectiveStyle.getBackground());
+        // Always explicitly set foreground/background for non-selected cells.
+        // Falling back to the table default is required to prevent renderer-reuse bleed:
+        // a shared DefaultTableCellRenderer set to green for STATUS would remain green
+        // when reused for the next column unless we reset it here.
+        if (!selected) {
+            c.setForeground(effectiveStyle != null && effectiveStyle.getForeground() != null
+                    ? effectiveStyle.getForeground()
+                    : getForeground());
+            c.setBackground(effectiveStyle != null && effectiveStyle.getBackground() != null
+                    ? effectiveStyle.getBackground()
+                    : getBackground());
         }
-        // Apply foreground unless the row is selected (let selection color take over)
-        if (!selected && effectiveStyle.getForeground() != null) {
-            c.setForeground(effectiveStyle.getForeground());
-        }
-        if (effectiveStyle.getFont() != null) {
+        if (effectiveStyle != null && effectiveStyle.getFont() != null) {
             c.setFont(effectiveStyle.getFont());
         }
 

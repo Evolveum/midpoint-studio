@@ -16,7 +16,7 @@ public class ExpansionSensitiveTableCellRenderer extends DefaultTableCellRendere
     public Component getTableCellRendererComponent(
             JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-        if (table instanceof DefaultTreeTable<?> treeTable && treeTable.getTree().isExpanded(row)) {
+        if (table instanceof DefaultTreeTable<?, ?> treeTable && treeTable.getTree().isExpanded(row)) {
             return super.getTableCellRendererComponent(table, "", isSelected, hasFocus, row, column);
         }
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

@@ -2,8 +2,9 @@ package com.evolveum.midpoint.studio.ui.trace.lens;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
-import com.evolveum.midpoint.studio.ui.treetable.CellStyle;
+import com.evolveum.midpoint.studio.ui.treetable.Style;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 
 import java.text.SimpleDateFormat;
@@ -16,12 +17,21 @@ import static com.evolveum.midpoint.studio.util.MidPointUtils.formatTime;
 /**
  * Column definitions for the main trace operation tree.
  */
-public enum TraceTreeViewColumn implements ColumnDefinition<OpNode> {
+public enum TraceTreeViewColumn {
 
-    OPERATION_NAME("Operation", TreeTableModel.class, 500, OpNode::getLabel),
+    OPERATION_NAME(
+            "Operation",
+            TreeTableModel.class,
+            500,
+            OpNode::getLabel),
     CLOCKWORK_STATE("State", 60, OpNode::getClockworkState),
     EXECUTION_WAVE("EW", 35, OpNode::getExecutionWave),
-    STATUS("Status", 100, o -> o.getResult().getStatus()),
+    STATUS(
+            "Status",
+            100,
+            o -> o.getResult().getStatus(),
+            TraceTreeViewColumn::getOperationResultStatusCellStyle
+    ),
     IMPORTANCE("W", 20, OpNode::getImportanceSymbol),
     START("Start", 60, o -> {
         long start = o.getStart(0);
@@ -56,7 +66,9 @@ public enum TraceTreeViewColumn implements ColumnDefinition<OpNode> {
 
     private final int size;
 
-    private final Function<OpNode, Object> value;
+    private final Function<OpNode, Object> valueProvider;
+
+    private final Function<OpNode, Style> cellStyleProvider;
 
     /**
      * True for columns that display counts or times — their value is styled
@@ -64,41 +76,31 @@ public enum TraceTreeViewColumn implements ColumnDefinition<OpNode> {
      */
     private final boolean disableIfZero;
 
-    TraceTreeViewColumn(String name, int size, Function<OpNode, Object> value) {
-        this(name, String.class, size, value);
+    TraceTreeViewColumn(String name, int size, Function<OpNode, Object> valueProvider) {
+        this(name, String.class, size, valueProvider);
     }
 
-    TraceTreeViewColumn(String name, Class<?> type, int size, Function<OpNode, Object> value) {
+    TraceTreeViewColumn(String name, Class<?> type, int size, Function<OpNode, Object> valueProvider) {
+        this(name, type, size, valueProvider, null);
+    }
+
+    TraceTreeViewColumn(String name, int size, Function<OpNode, Object> valueProvider,
+                        Function<OpNode, Style> cellStyleProvider) {
+        this(name, String.class, size, valueProvider, cellStyleProvider);
+    }
+
+    TraceTreeViewColumn(String name, Class<?> type, int size, Function<OpNode, Object> valueProvider,
+                        Function<OpNode, Style> cellStyleProvider) {
         this.name = name;
         this.type = type;
         this.size = size;
-        this.value = value;
+        this.valueProvider = valueProvider;
+        this.cellStyleProvider = cellStyleProvider;
         this.disableIfZero = name.endsWith("#") || name.endsWith("time") || name.equals("Log");
     }
 
-    @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public Class<?> getType() {
-        return type;
-    }
-
-    @Override
-    public int getSize() {
-        return size;
-    }
-
-    @Override
-    public Function<OpNode, Object> getValue() {
-        return value;
-    }
-
-    @Override
-    public javax.swing.table.TableCellRenderer getTableCellRenderer() {
-        return null;
     }
 
     /**
@@ -107,11 +109,14 @@ public enum TraceTreeViewColumn implements ColumnDefinition<OpNode> {
      * value represents zero, replacing the old HTML color-string approach.
      */
     public DefaultColumnInfo<OpNode, Object> toColumnInfo() {
-        DefaultColumnInfo<OpNode, Object> ci = new DefaultColumnInfo<>(name, type, value);
+        DefaultColumnInfo<OpNode, Object> ci = new DefaultColumnInfo<>(name, type, valueProvider);
         ci.preferredWidth(size);
 
+        ci.style(cellStyleProvider);
+
+        // todo get rid of this
         if (disableIfZero) {
-            ci.style(node -> isZeroValue(value.apply(node)) ? CellStyle.disabled() : null);
+            ci.style(node -> isZeroValue(valueProvider.apply(node)) ? Style.disabled() : null);
         }
 
         return ci;
@@ -123,5 +128,22 @@ public enum TraceTreeViewColumn implements ColumnDefinition<OpNode> {
 
     private static String intValue(int value) {
         return String.valueOf(value);
+    }
+
+    private static Style getOperationResultStatusCellStyle(OpNode node) {
+        if (node == null || node.getResult() == null) {
+            return null;
+        }
+
+        OperationResultStatusType status = node.getResult().getStatus();
+        if (status == null) {
+            return null;
+        }
+
+        return switch (status) {
+            case SUCCESS -> Style.success();
+            case FATAL_ERROR, PARTIAL_ERROR -> Style.error();
+            default -> null;
+        };
     }
 }

@@ -38,7 +38,7 @@ public class OpTreePanel extends JPanel {
 
     private static final Logger LOG = Logger.getInstance(OpTreePanel.class);
 
-    private DefaultTreeTable<OpTreeTableModel> traceTreeTable;
+    private DefaultTreeTable<OpNode, OpTreeTableModel> traceTreeTable;
 
     private OpTreeTableModel opTreeTableModel;
 

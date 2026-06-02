@@ -21,7 +21,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ObjectsTreeTable extends DefaultTreeTable<ObjectsTreeTableModel> {
+public class ObjectsTreeTable extends DefaultTreeTable<List<ObjectType>, ObjectsTreeTableModel> {
 
     public ObjectsTreeTable() {
         super(new ObjectsTreeTableModel());

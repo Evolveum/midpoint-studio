@@ -2,14 +2,12 @@ package com.evolveum.midpoint.studio.ui.trace.mainTree.model;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.studio.ui.trace.presentation.AbstractOpNodePresentation;
-import com.evolveum.midpoint.studio.ui.treetable.CellStyle;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.ui.ColumnInfo;
-import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

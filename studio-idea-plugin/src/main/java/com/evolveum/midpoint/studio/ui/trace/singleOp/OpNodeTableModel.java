@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.studio.ui.trace.entry.Node;
-import com.evolveum.midpoint.studio.ui.treetable.CellStyle;
+import com.evolveum.midpoint.studio.ui.treetable.Style;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
@@ -24,11 +24,11 @@ public class OpNodeTableModel extends DefaultTreeTableModel<Node<?>> {
                 new DefaultColumnInfo<Node<?>, String>("Variable", String.class, null).preferredWidth(400)
         ));
 
-        setRowStyler(node -> {
-            if (node == null || node.getBackgroundColor() == null) {
+        setRowStyler(treeNode -> {
+            if (!(treeNode instanceof Node<?> n) || n.getBackgroundColor() == null) {
                 return null;
             }
-            return CellStyle.background(node.getBackgroundColor());
+            return Style.background(n.getBackgroundColor());
         });
     }
 

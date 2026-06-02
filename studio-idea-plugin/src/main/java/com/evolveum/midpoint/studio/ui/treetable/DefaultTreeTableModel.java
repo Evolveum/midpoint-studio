@@ -19,7 +19,7 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
 
     private T data;
 
-    private RowStyler<T> rowStyler;
+    private RowStyleProvider rowStyleProvider;
 
     public DefaultTreeTableModel() {
         super(new DefaultMutableTreeNode());
@@ -89,11 +89,11 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
         this.data = data;
     }
 
-    public RowStyler<T> getRowStyler() {
-        return rowStyler;
+    public RowStyleProvider getRowStyler() {
+        return rowStyleProvider;
     }
 
-    public void setRowStyler(RowStyler<T> rowStyler) {
-        this.rowStyler = rowStyler;
+    public void setRowStyler(RowStyleProvider rowStyleProvider) {
+        this.rowStyleProvider = rowStyleProvider;
     }
 }

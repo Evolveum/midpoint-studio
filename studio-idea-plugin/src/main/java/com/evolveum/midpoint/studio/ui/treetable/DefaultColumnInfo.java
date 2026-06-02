@@ -2,9 +2,11 @@ package com.evolveum.midpoint.studio.ui.treetable;
 
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.util.ui.ColumnInfo;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
 import java.util.function.Function;
 
 /**
@@ -17,15 +19,13 @@ import java.util.function.Function;
  * {@link #valueOf(DefaultMutableTreeTableNode)} directly. For trees that use custom nodes
  * (e.g. {@link UserObjectNode}), call {@link #applyValueFunction(Object)} instead.</p>
  */
-public class DefaultColumnInfo<UO, O> extends ColumnInfo<DefaultMutableTreeTableNode, O> {
+public class DefaultColumnInfo<UO, O> extends ColumnInfo<MutableTreeNode, O> {
 
     private final Class<?> type;
 
-    private final Function<UO, O> value;
+    private final Function<UO, O> valueProvider;
 
-    private final Function<O, String> valueFormatter;
-
-    private Function<UO, CellStyle> styleProvider;
+    private Function<UO, Style> styleProvider;
 
     private Integer minWidth;
     private Integer maxWidth;
@@ -35,26 +35,17 @@ public class DefaultColumnInfo<UO, O> extends ColumnInfo<DefaultMutableTreeTable
         this(name, null);
     }
 
-    public DefaultColumnInfo(@NlsContexts.ColumnName String name, Function<UO, O> value) {
-        this(name, String.class, value);
+    public DefaultColumnInfo(@NlsContexts.ColumnName String name, Function<UO, O> valueProvider) {
+        this(name, String.class, valueProvider);
     }
 
     public DefaultColumnInfo(
             @NlsContexts.ColumnName String name,
             Class<?> type,
-            Function<UO, O> value) {
-        this(name, type, value, v -> v != null ? v.toString() : null);
-    }
-
-    public DefaultColumnInfo(
-            @NlsContexts.ColumnName String name,
-            Class<?> type,
-            Function<UO, O> value,
-            Function<O, String> valueFormatter) {
+            Function<UO, O> valueProvider) {
         super(name);
         this.type = type;
-        this.value = value;
-        this.valueFormatter = valueFormatter;
+        this.valueProvider = valueProvider;
     }
 
     @Override
@@ -62,9 +53,22 @@ public class DefaultColumnInfo<UO, O> extends ColumnInfo<DefaultMutableTreeTable
         return type;
     }
 
+    protected UO getUserObject(@NotNull MutableTreeNode node) {
+        if (node instanceof UserObjectNode uon) {
+            return (UO) uon.getUserObject();
+        }
+
+        if (node instanceof DefaultMutableTreeNode dmtn) {
+            return (UO) dmtn.getUserObject();
+        }
+
+        throw new IllegalArgumentException("Node doesn't have user object");
+    }
+
     @Override
-    public @Nullable O valueOf(DefaultMutableTreeTableNode node) {
-        return value != null ? value.apply((UO) node.getUserObject()) : null;
+    public @Nullable O valueOf(MutableTreeNode node) {
+        UO object = getUserObject(node);
+        return valueProvider != null ? valueProvider.apply(object) : null;
     }
 
     /**
@@ -72,7 +76,7 @@ public class DefaultColumnInfo<UO, O> extends ColumnInfo<DefaultMutableTreeTable
      * Used by models whose nodes are not {@link DefaultMutableTreeTableNode}.
      */
     public @Nullable O applyValueFunction(UO userObject) {
-        return value != null ? value.apply(userObject) : null;
+        return valueProvider != null ? valueProvider.apply(userObject) : null;
     }
 
     // ---- style ----
@@ -80,7 +84,7 @@ public class DefaultColumnInfo<UO, O> extends ColumnInfo<DefaultMutableTreeTable
     /**
      * Returns the cell style for the given node user object, or null for default styling.
      */
-    public @Nullable CellStyle getStyle(UO nodeUserObject) {
+    public @Nullable Style getStyle(UO nodeUserObject) {
         return styleProvider != null ? styleProvider.apply(nodeUserObject) : null;
     }
 
@@ -88,15 +92,15 @@ public class DefaultColumnInfo<UO, O> extends ColumnInfo<DefaultMutableTreeTable
      * Type-erased variant for use in generic rendering code that only has {@code Object} as user-object type.
      */
     @SuppressWarnings("unchecked")
-    public @Nullable CellStyle getStyleUnchecked(Object nodeUserObject) {
+    public @Nullable Style getStyleUnchecked(Object nodeUserObject) {
         return styleProvider != null ? styleProvider.apply((UO) nodeUserObject) : null;
     }
 
-    public @Nullable java.util.function.Function<UO, CellStyle> getStyleProvider() {
+    public @Nullable java.util.function.Function<UO, Style> getStyleProvider() {
         return styleProvider;
     }
 
-    public DefaultColumnInfo<UO, O> style(java.util.function.Function<UO, CellStyle> styleProvider) {
+    public DefaultColumnInfo<UO, O> style(java.util.function.Function<UO, Style> styleProvider) {
         this.styleProvider = styleProvider;
         return this;
     }

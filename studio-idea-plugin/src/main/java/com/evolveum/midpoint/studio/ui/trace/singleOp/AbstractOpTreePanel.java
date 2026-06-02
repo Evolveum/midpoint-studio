@@ -39,7 +39,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
 
     private static final Logger LOG = Logger.getInstance(AbstractOpTreePanel.class);
 
-    private DefaultTreeTable<OpNodeTableModel> variables;
+    private DefaultTreeTable<Node<?>, OpNodeTableModel> variables;
     private OpNodeTableModel variablesModel;
 
     private FormatComboboxAction variablesDisplayAs;

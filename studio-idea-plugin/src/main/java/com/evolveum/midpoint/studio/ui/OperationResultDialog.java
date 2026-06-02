@@ -57,7 +57,7 @@ public class OperationResultDialog extends DialogWrapper {
         this.panel = new BorderLayoutPanel();
 
         OperationResultTableModel model = new OperationResultTableModel(result);
-        DefaultTreeTable<OperationResultTableModel> table = new DefaultTreeTable<>(model);
+        DefaultTreeTable<OperationResult, OperationResultTableModel> table = new DefaultTreeTable<>(model);
         table.getTree().setRootVisible(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -103,7 +103,7 @@ public class OperationResultDialog extends DialogWrapper {
         };
     }
 
-    private JComponent initToolbar(DefaultTreeTable<OperationResultTableModel> table, OperationResult result) {
+    private JComponent initToolbar(DefaultTreeTable<OperationResult, OperationResultTableModel> table, OperationResult result) {
         DefaultActionGroup group = new DefaultActionGroup();
 
         group.add(MidPointUtils.createAnAction("Expand All", AllIcons.Actions.Expandall, e -> {

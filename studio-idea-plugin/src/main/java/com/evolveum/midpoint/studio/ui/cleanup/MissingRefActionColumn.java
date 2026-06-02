@@ -3,11 +3,11 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
+import com.evolveum.midpoint.studio.ui.treetable.UserObjectNode;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.JBColor;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
 
 public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRefAction> {
@@ -32,12 +33,12 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
     }
 
     @Override
-    public @Nullable TableCellRenderer getRenderer(DefaultMutableTreeTableNode node) {
+    public @Nullable TableCellRenderer getRenderer(MutableTreeNode node) {
         return new Editor();
     }
 
     @Override
-    public @Nullable TableCellEditor getEditor(DefaultMutableTreeTableNode node) {
+    public @Nullable TableCellEditor getEditor(MutableTreeNode node) {
         return new Editor()
                 .withClickCount(1);
     }
@@ -48,13 +49,13 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
     }
 
     @Override
-    public boolean isCellEditable(DefaultMutableTreeTableNode node) {
+    public boolean isCellEditable(MutableTreeNode node) {
         return true;
     }
 
     @Override
-    public @Nullable MissingRefAction valueOf(DefaultMutableTreeTableNode node) {
-        Object object = node.getUserObject();
+    public @Nullable MissingRefAction valueOf(MutableTreeNode node) {
+        Object object = getUserObject(node);
 
         if (object instanceof MissingRefNode refNode) {
             return refNode.getAction() != null ? refNode.getAction() : MissingRefAction.UNDEFINED;
@@ -68,16 +69,15 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
     }
 
     @Override
-    public void setValue(DefaultMutableTreeTableNode node, MissingRefAction value) {
-        Object object = node.getUserObject();
-
+    public void setValue(MutableTreeNode node, MissingRefAction value) {
+        Object object = getUserObject(node);
 
         if (object instanceof MissingRefNode refNode) {
             refNode.setAction(value);
 
             for (int i = 0; i < node.getChildCount(); i++) {
-                MutableTreeTableNode child = (MutableTreeTableNode) node.getChildAt(i);
-                setValue((DefaultMutableTreeTableNode) child, value);
+                MutableTreeNode child = (MutableTreeNode) node.getChildAt(i);
+                setValue(child, value);
             }
         } else if (object instanceof MissingRef ref) {
             ref.setAction(value);

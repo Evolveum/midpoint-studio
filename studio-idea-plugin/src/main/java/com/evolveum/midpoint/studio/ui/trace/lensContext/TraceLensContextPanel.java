@@ -36,7 +36,7 @@ public class TraceLensContextPanel extends BorderLayoutPanel {
     private static final String LABEL_DEFAULT_TEXT = "Prism object: ";
 
     private JLabel label;
-    private DefaultTreeTable<LensContextTableModel> table;
+    private DefaultTreeTable<PrismNode, LensContextTableModel> table;
     private LensContextTableModel tableModel;
 
     public TraceLensContextPanel(Project project) {
