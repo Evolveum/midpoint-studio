@@ -29,7 +29,7 @@ public class FocusRepositoryLoadOverviewProvider implements OverviewProvider<Foc
             if (inputContext != null) {
                 LensFocusContextType focusContext = inputContext.getFocusContext();
                 if (focusContext != null) {
-                    PrismValueNode.create("Focus old", getObjectFromReference(focusContext.getObjectOldRef()), root);
+                    PrismValueNode.create("Focus old", (Object) getObjectFromReference(focusContext.getObjectOldRef()), root);
 
                     ObjectDeltaType primaryDelta = focusContext.getPrimaryDelta();
                     ObjectDeltaTypeNode.create("Primary delta: ", false, primaryDelta, node.getFocusName(), root);
@@ -43,9 +43,9 @@ public class FocusRepositoryLoadOverviewProvider implements OverviewProvider<Foc
             if (outputContext != null) {
                 LensFocusContextType focusContext = outputContext.getFocusContext();
                 if (focusContext != null) {
-                    PrismValueNode.create("Focus current", getObjectFromReference(focusContext.getObjectCurrentRef()), root)
+                    PrismValueNode.create("Focus current", (Object) getObjectFromReference(focusContext.getObjectCurrentRef()), root)
                             .setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
-                    PrismValueNode.create("Focus new", getObjectFromReference(focusContext.getObjectNewRef()), root)
+                    PrismValueNode.create("Focus new", (Object) getObjectFromReference(focusContext.getObjectNewRef()), root)
                             .setBackgroundColor(Colors.OUTPUT_2_COLOR_WEAK, true);
                 }
             }

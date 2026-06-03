@@ -40,8 +40,8 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
             if (inputContext != null) {
                 LensFocusContextType focusContext = inputContext.getFocusContext();
                 if (focusContext != null) {
-                    PrismValueNode.create("Focus old", getObjectFromReference(focusContext.getObjectOldRef()), root);
-                    PrismValueNode.create("Focus current", getObjectFromReference(focusContext.getObjectCurrentRef()), root);
+                    PrismValueNode.create("Focus old", (Object) getObjectFromReference(focusContext.getObjectOldRef()), root);
+                    PrismValueNode.create("Focus current", (Object) getObjectFromReference(focusContext.getObjectCurrentRef()), root);
                     ObjectDeltaTypeNode.create("Focus primary delta: ", false, focusContext.getPrimaryDelta(), node.getFocusName(), root);
                     ObjectDeltaTypeNode.create("Focus secondary delta (before): ", false, focusContext.getSecondaryDelta(), node.getFocusName(), root);
                 }
@@ -50,8 +50,8 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
                 String projectionName = getProjectionName(projCtx);
 
                 if (projCtx != null) {
-                    PrismValueNode.create("Projection old", getObjectFromReference(projCtx.getObjectOldRef()), root);
-                    PrismValueNode.create("Projection current", getObjectFromReference(projCtx.getObjectCurrentRef()), root)
+                    PrismValueNode.create("Projection old", (Object) getObjectFromReference(projCtx.getObjectOldRef()), root);
+                    PrismValueNode.create("Projection current", (Object) getObjectFromReference(projCtx.getObjectCurrentRef()), root)
                             .setBackgroundColor(Colors.INPUT_1_COLOR, true);
 
                     ObjectDeltaType syncDelta = projCtx.getSyncDelta();
@@ -78,7 +78,7 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
                 if (focusContext != null) {
                     ObjectDeltaType secondaryDelta = focusContext.getSecondaryDelta();
                     ObjectDeltaTypeNode.create("Secondary delta (after): ", false, secondaryDelta, node.getFocusName(), root);
-                    PrismValueNode.create("Focus new", getObjectFromReference(focusContext.getObjectNewRef()), root);
+                    PrismValueNode.create("Focus new", (Object) getObjectFromReference(focusContext.getObjectNewRef()), root);
                 }
                 LensProjectionContextType projCtx = findProjectionContext(outputContext, rsd);
                 String projectionName = getProjectionName(projCtx);
@@ -89,7 +89,7 @@ public class ProjectorProjectionOverviewProvider implements OverviewProvider<Pro
                     if (secDeltaNode != null) {
                         secDeltaNode.setBackgroundColor(Colors.OUTPUT_2_COLOR, true);
                     }
-                    PrismValueNode.create("Projection new", getObjectFromReference(projCtx.getObjectNewRef()), root)
+                    PrismValueNode.create("Projection new", (Object) getObjectFromReference(projCtx.getObjectNewRef()), root)
                             .setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
                 }
             }

@@ -31,8 +31,8 @@ public class ClockworkRunOverviewProvider implements OverviewProvider<ClockworkR
                 root.add(new PrismValueNode("Context (before)", inputContext.asPrismContainerValue()));
                 LensFocusContextType focusContext = inputContext.getFocusContext();
                 if (focusContext != null) {
-                    PrismValueNode.create("Focus old", getObjectFromReference(focusContext.getObjectOldRef()), root);
-                    PrismValueNode.create("Focus current", getObjectFromReference(focusContext.getObjectCurrentRef()), root)
+                    PrismValueNode.create("Focus old", (Object) getObjectFromReference(focusContext.getObjectOldRef()), root);
+                    PrismValueNode.create("Focus current", (Object) getObjectFromReference(focusContext.getObjectCurrentRef()), root)
                             .setBackgroundColor(Colors.INPUT_1_COLOR, true);
 
                     ObjectDeltaType primaryDelta = focusContext.getPrimaryDelta();
@@ -47,7 +47,7 @@ public class ClockworkRunOverviewProvider implements OverviewProvider<ClockworkR
             if (outputContext != null) {
                 LensFocusContextType focusContext = outputContext.getFocusContext();
                 if (focusContext != null) {
-                    PrismValueNode.create("Focus new", getObjectFromReference(focusContext.getObjectNewRef()), root)
+                    PrismValueNode.create("Focus new", (Object) getObjectFromReference(focusContext.getObjectNewRef()), root)
                             .setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
                 }
                 root.add(new PrismValueNode("Context (after)", outputContext.asPrismContainerValue()));
