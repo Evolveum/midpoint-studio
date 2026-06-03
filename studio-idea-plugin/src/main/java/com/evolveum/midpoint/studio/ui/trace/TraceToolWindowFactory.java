@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
-import com.evolveum.midpoint.studio.ui.trace.options.TraceOptionsPanel;
 import com.evolveum.midpoint.studio.ui.trace.singleOp.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -38,12 +37,6 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
 
         Content operationResultRaw = buildOperationResultRaw(project);
         contentManager.addContent(operationResultRaw);
-
-//        Content traceGraph = buildTraceGraph(project);
-//        contentManager.addContent(traceGraph);
-
-        Content traceOptions = buildTraceOptions(project);
-        contentManager.addContent(traceOptions);
     }
 
     private Content buildTraceEntryDetails(Project project) {
@@ -75,16 +68,6 @@ public class TraceToolWindowFactory implements ToolWindowFactory, DumbAware {
         OpPerformancePanel perfInformation = new OpPerformancePanel(project.getMessageBus());
         //return new HeaderDecorator("Trace Performance Information", new JBScrollPane(perfInformation));
         return ContentFactory.getInstance().createContent(perfInformation, "Performance Information", false);
-    }
-
-//    private Content buildTraceGraph(Project project) {
-//        TraceGraphPanel graphPanel = new TraceGraphPanel(project);
-//        return ContentFactory.getInstance().createContent(graphPanel, "Graph", false);
-//    }
-
-    private Content buildTraceOptions(Project project) {
-        TraceOptionsPanel optionsPanel = new TraceOptionsPanel(project);
-        return ContentFactory.getInstance().createContent(optionsPanel, "Options", false);
     }
 
     @Override
