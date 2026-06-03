@@ -111,7 +111,7 @@ public class DefaultTreeTable<T, M extends DefaultTreeTableModel<T>> extends Tre
                     setIcon(icon);
                 }
 
-                value = getTableModel().getColumnInfo(index).valueOf(value);
+                value = getTableModel().getValueAt(value, index);
 
                 super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
             }

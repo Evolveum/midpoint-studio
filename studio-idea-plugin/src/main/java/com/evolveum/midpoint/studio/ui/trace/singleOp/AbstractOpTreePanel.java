@@ -112,6 +112,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
 
         variablesModel = new OpNodeTableModel();
         variables = new DefaultTreeTable<>(variablesModel);
+        variables.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         variables.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         variables.getTree().setRootVisible(false);
         variables.getTree().addTreeSelectionListener(this::variablesSelectionChanged);
