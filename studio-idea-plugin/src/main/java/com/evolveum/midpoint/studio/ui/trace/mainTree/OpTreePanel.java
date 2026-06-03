@@ -191,7 +191,7 @@ public class OpTreePanel extends JPanel {
 
     private DefaultActionGroup createCategoryFilterAction() {
         DefaultActionGroup filterGroup = new DefaultActionGroup("Filter categories", true);
-        filterGroup.getTemplatePresentation().setIcon(AllIcons.General.Filter);
+        filterGroup.getTemplatePresentation().setIcon(AllIcons.Actions.GroupBy);
 
         for (PredefinedPerformanceCategoriesSet set : PredefinedPerformanceCategoriesSet.values()) {
             filterGroup.add(new ToggleAction(set.toString()) {
