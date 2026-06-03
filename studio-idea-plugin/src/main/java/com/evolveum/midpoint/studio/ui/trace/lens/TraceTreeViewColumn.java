@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace.lens;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.schema.traces.OpType;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
 import com.evolveum.midpoint.studio.impl.LocalizationService;
 import com.evolveum.midpoint.studio.ui.treetable.Style;
@@ -23,31 +24,24 @@ public enum TraceTreeViewColumn {
     OPERATION_NAME(
             "Operation",
             TreeTableModel.class,
-            500,
+            600,
             OpNode::getLabel),
-    CLOCKWORK_STATE("State", 60, OpNode::getClockworkState),
-    EXECUTION_WAVE("EW", 35, OpNode::getExecutionWave),
+    CLOCKWORK_STATE("State", 100, OpNode::getClockworkState),
+    EXECUTION_WAVE("EW", 50, OpNode::getExecutionWave),
     STATUS(
             "Status",
-            100,
-            o -> {
-                OperationResultStatusType status = o.getResult().getStatus();
-                if (status == null) {
-                    return "";
-                }
-
-                return LocalizationService.get().translate(status);
-            },
+            150,
+            o -> LocalizationService.get().translate(o.getResult().getStatus()),
             TraceTreeViewColumn::getOperationResultStatusCellStyle
     ),
     IMPORTANCE("W", 20, OpNode::getImportanceSymbol),
-    START("Start", 60, o -> {
+    START("Start", 250, o -> {
         long start = o.getStart(0);
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
         return df.format(new Date(start));
     }),
     TIME("Time", 80, o -> formatTime(o.getResult().getMicroseconds())),
-    TYPE("Type", 100, o -> o.getType().toString()),
+    TYPE("Type", 150, o -> LocalizationService.get().translate(o.getType())),
     OVERHEAD("OH", 50, o -> formatPercent(o.getOverhead())),
     OVERHEAD2("OH2", 50, o -> formatPercent(o.getOverhead2())),
     REPO_COUNT("Repo #", 70, o -> intValue(o.getPerformanceByCategory().get(PerformanceCategory.REPOSITORY).getTotalCount())),

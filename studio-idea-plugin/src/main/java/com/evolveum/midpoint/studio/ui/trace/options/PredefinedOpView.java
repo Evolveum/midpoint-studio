@@ -14,6 +14,8 @@ public enum PredefinedOpView {
 
     ALL("All", PredefinedOpTypeSet.ALL, PredefinedPerformanceCategoriesSet.NONE, PredefinedColumnSet.ALL),
 
+    SIMPLE("Simple", PredefinedOpTypeSet.ALL, PredefinedPerformanceCategoriesSet.NONE, PredefinedColumnSet.SIMPLE),
+
     FUNCTIONAL_OVERVIEW("Functional overview", PredefinedOpTypeSet.FUNCTIONAL_OVERVIEW,
             PredefinedPerformanceCategoriesSet.NONE, PredefinedColumnSet.FUNCTIONAL_VIEW),
 
