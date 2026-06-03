@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.ui.trace.lens;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
+import com.evolveum.midpoint.studio.impl.LocalizationService;
 import com.evolveum.midpoint.studio.ui.treetable.Style;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
@@ -29,7 +30,14 @@ public enum TraceTreeViewColumn {
     STATUS(
             "Status",
             100,
-            o -> o.getResult().getStatus(),
+            o -> {
+                OperationResultStatusType status = o.getResult().getStatus();
+                if (status == null) {
+                    return "";
+                }
+
+                return LocalizationService.get().translate(status);
+            },
             TraceTreeViewColumn::getOperationResultStatusCellStyle
     ),
     IMPORTANCE("W", 20, OpNode::getImportanceSymbol),
@@ -142,7 +150,7 @@ public enum TraceTreeViewColumn {
 
         return switch (status) {
             case SUCCESS -> Style.success();
-            case FATAL_ERROR, PARTIAL_ERROR -> Style.error();
+            case FATAL_ERROR, PARTIAL_ERROR, HANDLED_ERROR -> Style.error();
             default -> null;
         };
     }
