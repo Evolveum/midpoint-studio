@@ -7,6 +7,7 @@
 
 ### Changed
 - Updated MidPoint libraries to version 4.11
+- UI improvements in trace viewer
 
 ### Fixed
 - MID-11215 Fixed NPE in documentation generator.
