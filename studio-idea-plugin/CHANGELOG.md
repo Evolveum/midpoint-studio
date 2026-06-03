@@ -6,7 +6,8 @@
 ### Changed
 
 ### Fixed
-
+- MID-11215 Fixed NPE in documentation generator.
+- MID-11199 Fixed issue when trying to upload whole directory containing objects.
 
 ## [4.10.1]
 ### Added
