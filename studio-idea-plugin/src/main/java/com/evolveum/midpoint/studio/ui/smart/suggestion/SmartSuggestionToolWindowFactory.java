@@ -52,7 +52,6 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
             this.project = project;
             setLayout(new BorderLayout());
             setBorder(JBUI.Borders.empty(20));
-            setBackground(UIUtil.getPanelBackground());
             add(createMainContent(), BorderLayout.CENTER);
         }
 

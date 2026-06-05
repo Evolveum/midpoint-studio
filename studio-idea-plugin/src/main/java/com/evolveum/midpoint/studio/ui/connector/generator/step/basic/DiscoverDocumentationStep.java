@@ -1,242 +1,252 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.step.basic;
 
+import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.service.TaskStatusPoller;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorBasicWizard;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
 import com.evolveum.midpoint.studio.ui.connector.generator.StepStateBadge;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorWizardStep;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.other.StatusPanel;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDiscoverDocumentationResultType;
-import com.intellij.ide.wizard.StepAdapter;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
+import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.ui.Gray;
+import com.intellij.ui.JBColor;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class DiscoverDocumentationStep extends StepAdapter {
+public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
 
     private final MidPointClient client;
     private final TaskStatusPoller taskStatusPoller;
     private final ConnectorGeneratorDataModel dataModel;
-    private StepStateBadge.State state;
-
-    private final DiscoverDocumentation panel;
+    private DiscoverDocumentation discoverDocumentation;
+    private final JPanel mainPanel = new JPanel(new BorderLayout());
 
     private boolean initialized = false;
 
     public DiscoverDocumentationStep(
+            ConnectorGeneratorBasicWizard wizardContext,
             MidPointClient client,
             ConnectorGeneratorDataModel dataModel,
             StepStateBadge.State state
     ) {
+        super(wizardContext, state);
         this.client = client;
-        this.taskStatusPoller = client.getProject().getService(TaskStatusPoller.class);;
+        this.taskStatusPoller = ApplicationManager.getApplication().getService(TaskStatusPoller.class);
         this.dataModel = dataModel;
-        this.state = state;
-        this.panel = new DiscoverDocumentation(dataModel);
+
+        mainPanel.setName("Documentation");
     }
 
     @Override
     public void _init() {
-
         if (!initialized) {
             initialized = true;
-//            var token = client.submitOperationDiscoverDocumentation(dataModel.connectorDevelopmentType.getOid());
-//            var loadingPanel = new LoadPanel("Identifying Documentation...",
-//                    "Analyzing your target application details to locate the right documentation.",
-//                    0
-//            );
-//
-//            panel.add(loadingPanel);
-//            taskStatusPoller.startPolling(() -> client.getStatusDiscoverDocumentation(token));
-//
-//            new Timer(1000, event -> {
-//                ApplicationManager.getApplication().invokeLater(
-//                        () -> loadingPanel.setElapsed(taskStatusPoller.getElapsedTime().toSeconds()));
-//
-//                if (taskStatusPoller.getStatus() != null
-//                        && !OperationResultStatusType.IN_PROGRESS.equals(taskStatusPoller.getStatus())
-//                ) {
-//                    taskStatusPoller.stopPolling();
-//                    ((Timer) event.getSource()).stop();
-//
-//                    try {
-//                        ProgressManager.getInstance().run(new Task.Backgroundable(client.getProject(),
-//                                "Result DiscoverDocumentation"
-//                        ) {
-//                            @Override
-//                            public void run(@NotNull ProgressIndicator progressIndicator) {
-//                                progressIndicator.setIndeterminate(true);
-//                                var result = client.getResultDiscoverDocumentation(token);
-//                                ApplicationManager.getApplication().invokeLater(
-//                                            () -> printResult(result), ModalityState.any());
-//                            }
-//                        });
-//                    } catch (Exception e) {
-//                        ApplicationManager.getApplication().invokeLater(() -> Messages.showErrorDialog(
-//                                client.getProject(),
-//                                e.getMessage(),
-//                                "Error Result Discover Documentation"
-//                        ));
-//                    }
-//                }
-//            }).start();
+            setState(StepStateBadge.State.IN_PROGRESS);
+            discoverDocumentation = new DiscoverDocumentation(dataModel);
+
+            ProgressManager.getInstance().run(new Task.Backgroundable(client.getProject(),
+                    "DiscoverDocumentationMessage submit operation",
+                    true
+            ) {
+
+                private String token;
+
+                @Override
+                public void run(@NotNull ProgressIndicator progressIndicator) {
+                    try {
+                        token = client.submitOperationDiscoverDocumentation(dataModel.connectorDevelopmentType.getOid());
+                    } catch (SchemaException | IOException | AuthenticationException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                @Override
+                public void onSuccess() {
+
+                    var statusPanel = discoverDocumentation.getStatusPanel();
+
+                    if (token == null) {
+                        printAlert(statusPanel, "Error", "Token is Null");
+                        setState(StepStateBadge.State.FIXING);
+                        return;
+                    }
+
+                    ApplicationManager.getApplication().invokeLater(() -> mainPanel.add(statusPanel.showLoadingPanel(
+                            "Identifying Documentation...",
+                            "Analyzing your target application details to locate the right documentation.",
+                            0
+                    )));
+
+                    var timer = new Timer(1000, event -> {
+                        statusPanel.updateElapsed(taskStatusPoller.getElapsedTime().toSeconds());
+
+                        if (taskStatusPoller.getStatus() != null
+                                && !OperationResultStatusType.IN_PROGRESS.equals(taskStatusPoller.getStatus())
+                        ) {
+                            if (OperationResultStatusType.SUCCESS.equals(taskStatusPoller.getStatus())) {
+                                ProgressManager.getInstance().run(new Backgroundable(client.getProject(),
+                                        "DiscoverDocumentation get result",
+                                        true
+                                ) {
+                                    private ConnDevDiscoverDocumentationResultType result;
+
+                                    @Override
+                                    public void run(@NotNull ProgressIndicator progressIndicator) {
+                                        try {
+                                            result = client.getResultDiscoverDocumentation(token);
+                                        } catch (Exception e) {
+                                            printAlert(statusPanel, "Error", e.getMessage());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onSuccess() {
+                                        super.onSuccess();
+
+                                        ApplicationManager.getApplication().invokeLater(() -> {
+                                            mainPanel.removeAll();
+
+                                            if (result != null) {
+                                                if (!result.getDocumentation().isEmpty()) {
+                                                    discoverDocumentation.fillDocumentationList(result.getDocumentation());
+                                                } else {
+                                                    discoverDocumentation.getItemDocPanel().add(statusPanel.showAlertPanel(
+                                                            OperationResultStatusType.WARNING.name(),
+                                                            "No documentation found",
+                                                            new JBColor(Gray._255, Gray._255)
+                                                    ));
+                                                }
+                                                mainPanel.add(discoverDocumentation.getMainPanel());
+                                                canGoNext(true);
+                                                getWizardBasicContext().updateWizardButtons();
+                                            } else {
+                                                printAlert(statusPanel, OperationResultStatusType.UNKNOWN.name(), "Result Null");
+                                            }
+
+                                            mainPanel.revalidate();
+                                            mainPanel.repaint();
+                                        });
+                                    }
+                                });
+                            } else {
+                                ProgressManager.getInstance().run(new Backgroundable(client.getProject(),
+                                        "DiscoverDocumentation get message",
+                                        true
+                                ) {
+                                    private String message;
+
+                                    @Override
+                                    public void run(@NotNull ProgressIndicator progressIndicator) {
+                                        try {
+                                            message = client.getMessageDiscoverDocumentation(token);
+                                        } catch (Exception ex) {
+                                            printAlert(statusPanel, "Error", ex.getMessage());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFinished() {
+                                        super.onFinished();
+                                        printAlert(statusPanel, taskStatusPoller.getStatus().name(), message);
+                                    }
+                                });
+                            }
+
+                            taskStatusPoller.stopPolling();
+                            ((Timer) event.getSource()).stop();
+                        }
+                    });
+
+                    taskStatusPoller.startPolling(() -> {
+                        try {
+                            return client.getStatusDiscoverDocumentation(token);
+                        } catch (Exception e) {
+                            taskStatusPoller.stopPolling();
+                            timer.stop();
+                            printAlert(statusPanel, "Error", e.getMessage());
+                        }
+
+                        return null;
+                    });
+
+                    timer.start();
+
+                    super.onSuccess();
+                }
+            });
         }
 
         super._init();
     }
 
     @Override
-    public JComponent getComponent() {
-        return panel;
-    }
+    public void _commit(boolean finishChosen) throws CommitStepException {
 
-    public StepStateBadge.State getState() {
-        return state;
-    }
-
-    public void setState(StepStateBadge.State state) {
-        this.state = state;
-    }
-
-    private void printResult(
-            ConnDevDiscoverDocumentationResultType result
-    ) {
-
-        if (result == null) {
-            ApplicationManager.getApplication().invokeLater(() -> Messages.showErrorDialog(
-                    client.getProject(),
-                    "Result is null.",
-                    "Error Result Discover Documentation"
-            ));
-
-            return;
+        try {
+            var selectedDocumentationSources = discoverDocumentation.getSelectedDocumentationSources();
+            if (selectedDocumentationSources != null && !selectedDocumentationSources.isEmpty()) {
+                selectedDocumentationSources.forEach(source ->
+                        dataModel.connectorDevelopmentType.documentationSource(source.clone())
+                );
+            }
+        } catch (Exception ex) {
+            throw new CommitStepException(ex.getMessage());
         }
 
-//        panel.removeAll();
-//        panel.add(crateStepContent(result));
-//        panel.revalidate();
-//        panel.repaint();
+        AtomicReference<Exception> error = new AtomicReference<>();
+
+        ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
+
+            var connectorDevelopmentType = dataModel.connectorDevelopmentType;
+
+            try {
+                dataModel.connectorDevelopmentType =
+                        client.upsert(connectorDevelopmentType.asPrismObject(), null);
+            } catch (Exception e) {
+                error.set(e);
+            }
+        }, "Update ConnectorDevelopmentType Object", true, client.getProject());
+
+        if (error.get() != null) {
+            throw new CommitStepException(error.get().getMessage());
+        } else if (dataModel.connectorDevelopmentType == null) {
+            throw new CommitStepException(
+                    "Failed to update ConnectorDevelopmentType object"
+            );
+        } else {
+            setState(StepStateBadge.State.COMPLETE);
+        }
+
+        super._commit(finishChosen);
     }
 
-//    private JBPanel<?> crateStepContent(
-//            @NotNull ConnDevDiscoverDocumentationResultType discoverDocumentationResultType
-//    ) {
-//
-//        var mainPanel = new JBPanel<>();
-//        JBLabel text = new JBLabel("Provide Integration Documentation");
-//        text.setFont(text.getFont().deriveFont(Font.BOLD, 18f));
-//
-//        JBLabel subText = new JBLabel("""
-//               Documentation helps the AI understand how your system communicates, which endpoints it exposes, and what data structures it uses. By analyzing this information, the AI can generate a more accurate and tailored connector for your integration.
-//               """
-//        );
-//        subText.setBorder(JBUI.Borders.emptyBottom(15));
-//
-//        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-//        mainPanel.add(text);
-//        mainPanel.add(Box.createVerticalStrut(5));
-//        mainPanel.add(subText);
-//        mainPanel.add(createListDocs(discoverDocumentationResultType));
-//
-//        return mainPanel;
-//    }
+    @Override
+    public JComponent getComponent() {
+        return mainPanel;
+    }
 
-//    private JBScrollPane createListDocs(
-//            @NotNull ConnDevDiscoverDocumentationResultType discoverDocumentationResultType
-//    ) {
-//        JBPanel<?> list = new JBPanel<>();
-//        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
-//        list.setAlignmentX(Component.LEFT_ALIGNMENT);
-//        list.setOpaque(false);
-//
-//        discoverDocumentationResultType.getDocumentation().forEach(connDevDoc -> {
-//            var item = createDocItem(
-//                    connDevDoc,
-//                    () -> System.out.println("View clicked"),
-//                    () -> System.out.println("Delete clicked")
-//            );
-//
-//            list.add(item);
-//        });
-//
-//        JBScrollPane scrollPane = new JBScrollPane(list);
-//        scrollPane.setBorder(JBUI.Borders.empty());
-//
-//        return scrollPane;
-//    }
-//
-//    private JPanel createDocItem(
-//            ConnDevDocumentationSourceType connDevDocumentationSourceType,
-//            Runnable onView,
-//            Runnable onDelete
-//    ) {
-//        JPanel row = new JPanel(new BorderLayout(10, 0));
-//
-//        row.setPreferredSize(new Dimension(600, 150));
-//        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
-//        row.setBorder(
-//                BorderFactory.createCompoundBorder(
-//                        BorderFactory.createLineBorder(com.intellij.ui.JBColor.border(), 1),
-//                        com.intellij.util.ui.JBUI.Borders.empty(8)
-//                )
-//        );
-//
-//        JBCheckBox checkBox = new JBCheckBox();
-//        checkBox.setVerticalAlignment(SwingConstants.TOP);
-//        row.add(checkBox, BorderLayout.WEST);
-//
-//        JPanel content = new JPanel();
-//        content.setLayout(new BorderLayout());
-//        content.setOpaque(false);
-//
-//        JBLabel title = new JBLabel(connDevDocumentationSourceType.getName());
-//        title.setFont(JBFont.h2());
-//        title.setHorizontalAlignment(SwingConstants.LEFT);
-//
-//        JTextArea text = new JTextArea(connDevDocumentationSourceType.getDescription());
-//        text.setLineWrap(true);
-//        text.setWrapStyleWord(true);
-//        text.setFont(JBFont.regular());
-//        text.setEditable(false);
-//        text.setOpaque(false);
-//        text.setBorder(null);
-//
-//        JBScrollPane textScroll = new JBScrollPane(text);
-//        textScroll.setBorder(null);
-//        textScroll.setPreferredSize(new Dimension(120, 50));
-//        textScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-//
-//        JBLabel uri = new JBLabel(connDevDocumentationSourceType.getUri());
-//        uri.setFont(JBFont.regular());
-//        uri.setHorizontalAlignment(SwingConstants.LEFT);
-//
-//        content.add(title, BorderLayout.NORTH);
-//        content.add(textScroll, BorderLayout.CENTER);
-//        content.add(uri, BorderLayout.CENTER);
-//
-//        JPanel actionsPanel = new JPanel();
-//        actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.X_AXIS));
-//
-//        JButton viewButton = new JButton(AllIcons.Actions.Preview);
-//        viewButton.setToolTipText("View");
-//        viewButton.setBorderPainted(false);
-//        viewButton.setContentAreaFilled(false);
-//        viewButton.addActionListener(e -> onView.run());
-//        viewButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-//
-//        JButton deleteButton = new JButton(AllIcons.Actions.GC);
-//        deleteButton.setToolTipText("Delete");
-//        deleteButton.setBorderPainted(false);
-//        deleteButton.setContentAreaFilled(false);
-//        deleteButton.addActionListener(e -> onDelete.run());
-//        deleteButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-//
-//        actionsPanel.add(viewButton);
-//        actionsPanel.add(Box.createHorizontalStrut(5));
-//        actionsPanel.add(deleteButton);
-//
-//        row.add(actionsPanel, BorderLayout.EAST);
-//        row.add(content, BorderLayout.CENTER);
-//
-//        return row;
-//    }
+    private void printAlert(StatusPanel statusPanel, String title, String msg) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            mainPanel.removeAll();
+            mainPanel.add(statusPanel.showAlertPanel(
+                    title,
+                    msg,
+                    new JBColor(Gray._255, Gray._255)
+            ));
+            mainPanel.revalidate();
+            mainPanel.repaint();
+        });
+    }
 }

@@ -15,6 +15,7 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -627,26 +628,28 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public File downloadConnector(String name, String version) throws IOException {
+    public File downloadConnector(String bundleName) throws IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DOWNLOAD_CONNECTOR,
-                Map.of("bundleName", name, "version", version)
+                Map.of("bundleName", bundleName)
         ).get();
 
         Request request = builder.build();
         OkHttpClient okHttpClient = context.getClient();
 
         try (Response response = okHttpClient.newCall(request).execute()) {
+
             if (!response.isSuccessful()) {
                 throw new IOException("Unexpected server error code: " + response.code());
             }
 
             ResponseBody body = response.body();
+
             if (body == null) {
                 throw new IOException("Server response body is empty.");
             }
 
-            Path tempFilePath = Files.createTempFile("connector_download", ".jar");
+            Path tempFilePath = Files.createTempFile("connector_development_", ".jar");
 
             try (InputStream inputStream = body.byteStream()) {
                 Files.copy(inputStream, tempFilePath, StandardCopyOption.REPLACE_EXISTING);
@@ -674,6 +677,16 @@ public class ServiceImpl implements Service {
         ).get();
 
         return executeRequest(builder.build(), OperationResultStatusType.class);
+    }
+
+    @Override
+    public String getMessageCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_MESSAGE,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), String.class);
     }
 
     @Override
@@ -707,6 +720,16 @@ public class ServiceImpl implements Service {
     }
 
     @Override
+    public String getMessageDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_MESSAGE,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), String.class);
+    }
+
+    @Override
     public ConnDevDiscoverGlobalInformationResultType getResultDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_RESULT,
@@ -737,6 +760,16 @@ public class ServiceImpl implements Service {
     }
 
     @Override
+    public String getMessageDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_MESSAGE,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), String.class);
+    }
+
+    @Override
     public ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_RESULT,
@@ -764,6 +797,16 @@ public class ServiceImpl implements Service {
         ).get();
 
         return executeRequest(builder.build(), OperationResultStatusType.class);
+    }
+
+    @Override
+    public String getMessageProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_MESSAGE,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), String.class);
     }
 
     @Override

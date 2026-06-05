@@ -248,15 +248,15 @@
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.ConnectorXmlSchemaProvider"/>
 
-<!--        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>-->
+        <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
 
         <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.validator.PrismExternalAnnotator"/>
         <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.validator.PrismExternalAnnotator"/>
         <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.validator.PrismExternalAnnotator"/>
 
-<!--        <completion.contributor language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.contributor.PrismXNodeContributor"/>-->
-<!--        <completion.contributor language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.contributor.PrismXNodeContributor"/>-->
-<!--        <completion.contributor language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.contributor.PrismXNodeContributor"/>-->
+        <completion.contributor language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.contributor.PrismXNodeContributor"/>
+        <completion.contributor language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.contributor.PrismXNodeContributor"/>
+        <completion.contributor language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.contributor.PrismXNodeContributor"/>
 
 <!--        <annotator language="XML"-->
 <!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>-->
@@ -271,18 +271,18 @@
 <!--        <annotator language="XML"-->
 <!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"
-                                order="before xmlLocation"/>
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"-->
+<!--                                order="before xmlLocation"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.EnumerationRefCompletionContributor"/>
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.EnumerationRefCompletionContributor"/>-->
 
         <xml.tagNameProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
@@ -373,6 +373,7 @@
         <annotator language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaAnnotator"/>
 
         <notificationGroup id="midpointSmartSuggestion" displayType="BALLOON" />
+        <notificationGroup id="midpointConnectorGenerator" displayType="BALLOON"/>
 
         <lang.foldingBuilder language="XML" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
         <lang.foldingBuilder language="JSON" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
@@ -572,7 +573,7 @@
 
         <!-- generate connector development -->
         <action id="MidPoint.Action.ConnectorGenerator"
-                class="com.evolveum.midpoint.studio.action.ConnectorGeneratorWizardAction"
+                class="com.evolveum.midpoint.studio.action.ConnectorGeneratorAction"
                 text="Connector Generator"
                 description="Connector generator"
                 icon="AllIcons.Diff.MagicResolve"/>

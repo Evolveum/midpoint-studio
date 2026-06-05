@@ -51,7 +51,6 @@ public class ConverterPanel extends SimpleToolWindowPanel {
         split.setSecondComponent(rightContainer);
 
         JPanel banner = new JPanel();
-        banner.setBackground(JBColor.LIGHT_GRAY);
         banner.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JButton button = new JButton("Convert");

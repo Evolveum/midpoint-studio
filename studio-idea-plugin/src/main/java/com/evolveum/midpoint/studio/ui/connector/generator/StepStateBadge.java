@@ -40,13 +40,13 @@ public class StepStateBadge extends JLabel {
                 new JBColor(new Color(0x666666), new Color(0xBBBBBB))
         );
 
-        final String value;
+        final String name;
         final Color background;
         final Color border;
         final Color foreground;
 
-        State(String value, Color background, Color border, Color foreground) {
-            this.value = value;
+        State(String name, Color background, Color border, Color foreground) {
+            this.name = name;
             this.background = background;
             this.border = border;
             this.foreground = foreground;
@@ -56,17 +56,17 @@ public class StepStateBadge extends JLabel {
     private State state;
 
     public StepStateBadge(State state) {
-        super(state.value);
+        super(state.name);
         this.state = state;
         setOpaque(false);
-        setFont(getFont().deriveFont(Font.BOLD, JBUI.scaleFontSize(14f)));
+        setFont(getFont().deriveFont(Font.BOLD, JBUI.scaleFontSize(12f)));
         setBorder(JBUI.Borders.empty(6, 12));
         updateColors();
     }
 
     public void setState(State state) {
         this.state = state;
-        setText(state.value);
+        setText(state.name);
         updateColors();
         repaint();
     }

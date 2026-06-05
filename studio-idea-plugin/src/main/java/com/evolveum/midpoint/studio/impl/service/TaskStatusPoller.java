@@ -11,49 +11,52 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-@Service(Service.Level.PROJECT)
+@Service(Service.Level.APP)
 public final class TaskStatusPoller implements Disposable {
 
-    private ScheduledFuture<?> pollingFuture;
-
+    private volatile ScheduledFuture<?> pollingFuture;
     private volatile OperationResultStatusType status;
-
     private volatile Instant startedAt;
 
-    public void startPolling(Supplier<OperationResultStatusType> statusFetcher) {
+    public synchronized void startPolling(
+            Supplier<OperationResultStatusType> statusFetcher) {
 
-        if (pollingFuture != null && !pollingFuture.isCancelled()) {
+        if (pollingFuture != null && !pollingFuture.isDone()) {
             return;
         }
 
+        status = null;
         startedAt = Instant.now();
-
-        pollingFuture = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay(() -> {
-            try {
-                setStatus(statusFetcher.get());
-            } catch (Exception e) {
-                stopPolling();
-                throw new RuntimeException(e);
-            }
-        }, 3, 1, TimeUnit.SECONDS);
+        pollingFuture = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay(
+                () -> status = statusFetcher.get(), 3, 1, TimeUnit.SECONDS);
     }
 
-    public void stopPolling() {
-        if (pollingFuture != null) {
-            pollingFuture.cancel(true);
+    public synchronized void stopPolling() {
+        ScheduledFuture<?> future = pollingFuture;
+        pollingFuture = null;
+
+        if (future != null) {
+            future.cancel(true);
         }
+
+        status = null;
+        startedAt = null;
     }
 
     public OperationResultStatusType getStatus() {
         return status;
     }
 
-    public void setStatus(OperationResultStatusType status) {
-        this.status = status;
+    public Duration getElapsedTime() {
+        Instant start = startedAt;
+        return start == null
+                ? Duration.ZERO
+                : Duration.between(start, Instant.now());
     }
 
-    public Duration getElapsedTime() {
-        return startedAt == null ? Duration.ZERO : Duration.between(startedAt, Instant.now());
+    public boolean isPolling() {
+        ScheduledFuture<?> future = pollingFuture;
+        return future != null && !future.isDone();
     }
 
     @Override

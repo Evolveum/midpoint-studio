@@ -31,9 +31,9 @@ public class GenerateSuggestionWizard extends AbstractWizard<Step> {
         super(title, project);
         this.dataModel = dataModel;
         this.onFinish = onFinish;
-        setSize(800, 600);
         addStep(new SmartSuggestionStep(this, dataModel));
-        getHelpButton().hide();
+        getHelpButton().setVisible(false);
+        setSize(800, 600);
         init();
     }
 

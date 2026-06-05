@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="10" left="10" bottom="50" right="10"/>
     <constraints>
-      <xy x="101" y="99" width="684" height="471"/>
+      <xy x="101" y="99" width="684" height="515"/>
     </constraints>
     <properties>
       <name value="Application Identification"/>
@@ -12,7 +12,7 @@
       <title-color color="-3025959"/>
     </border>
     <children>
-      <grid id="5782a" binding="content" layout-manager="GridLayoutManager" row-count="6" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="5782a" binding="content" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -20,119 +20,129 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="83863" class="javax.swing.JLabel">
+          <grid id="248c6" binding="formPanel" layout-manager="GridLayoutManager" row-count="5" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <labelFor value="e54ec"/>
-              <text value="Integration type *"/>
-            </properties>
-          </component>
-          <component id="e54ec" class="javax.swing.JComboBox" binding="integrationTypeCombo">
-            <constraints>
-              <grid row="4" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <model/>
-            </properties>
-          </component>
-          <scrollpane id="c19cf">
-            <constraints>
-              <grid row="1" column="1" row-span="2" col-span="2" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
-            <border type="none">
-              <font/>
-              <title-color color="-1577763"/>
-              <size top="8" left="8" bottom="8" right="8"/>
-              <color color="-3025959"/>
-            </border>
+            <border type="none"/>
             <children>
-              <component id="c5b64" class="javax.swing.JTextArea" binding="descriptionArea">
-                <constraints/>
+              <scrollpane id="c19cf">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none">
+                  <font/>
+                  <title-color color="-1577763"/>
+                  <size top="8" left="8" bottom="8" right="8"/>
+                  <color color="-3025959"/>
+                </border>
+                <children>
+                  <component id="c5b64" class="javax.swing.JTextArea" binding="descriptionArea">
+                    <constraints/>
+                    <properties>
+                      <columns value="4"/>
+                      <focusCycleRoot value="false"/>
+                      <focusTraversalPolicyProvider value="false"/>
+                      <inheritsPopupMenu value="false"/>
+                      <lineWrap value="true"/>
+                      <margin top="5" left="5" bottom="5" right="5"/>
+                      <opaque value="true"/>
+                      <requestFocusEnabled value="true"/>
+                      <rows value="0"/>
+                      <text value=""/>
+                      <verifyInputWhenFocusTarget value="true"/>
+                      <visible value="true"/>
+                      <wrapStyleWord value="true"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
+              <component id="b7b70" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
                 <properties>
-                  <columns value="4"/>
-                  <focusCycleRoot value="false"/>
-                  <focusTraversalPolicyProvider value="false"/>
-                  <inheritsPopupMenu value="false"/>
-                  <lineWrap value="true"/>
-                  <margin top="5" left="5" bottom="5" right="5"/>
-                  <opaque value="true"/>
-                  <requestFocusEnabled value="true"/>
-                  <rows value="0"/>
-                  <text value=""/>
-                  <verifyInputWhenFocusTarget value="true"/>
-                  <visible value="true"/>
-                  <wrapStyleWord value="true"/>
+                  <labelFor value="c5b64"/>
+                  <text value="Description"/>
+                </properties>
+              </component>
+              <component id="d5cc" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <labelFor value="85c4c"/>
+                  <text value="Application name *"/>
+                </properties>
+              </component>
+              <component id="85c4c" class="javax.swing.JTextField" binding="applicationNameField">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="fe3bf" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <labelFor value="39bca"/>
+                  <text value="Version of application"/>
+                </properties>
+              </component>
+              <component id="39bca" class="javax.swing.JTextField" binding="versionField">
+                <constraints>
+                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="af7d1" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <labelFor value="a51a9"/>
+                  <text value="Deployment type"/>
+                </properties>
+              </component>
+              <component id="a51a9" class="javax.swing.JComboBox" binding="deploymentTypeCombo">
+                <constraints>
+                  <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="83863" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <labelFor value="e54ec"/>
+                  <text value="Integration type *"/>
+                </properties>
+              </component>
+              <component id="e54ec" class="javax.swing.JComboBox" binding="integrationTypeCombo">
+                <constraints>
+                  <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <model/>
                 </properties>
               </component>
             </children>
-          </scrollpane>
-          <component id="af7d1" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <labelFor value="a51a9"/>
-              <text value="Deployment type"/>
-            </properties>
-          </component>
-          <component id="a51a9" class="javax.swing.JComboBox" binding="deploymentTypeCombo">
-            <constraints>
-              <grid row="5" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties/>
-          </component>
-          <component id="d5cc" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <labelFor value="85c4c"/>
-              <text value="Application name *"/>
-            </properties>
-          </component>
-          <component id="85c4c" class="javax.swing.JTextField" binding="applicationNameField">
-            <constraints>
-              <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
-            </constraints>
-            <properties/>
-          </component>
-          <component id="fe3bf" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <labelFor value="39bca"/>
-              <text value="Version of application"/>
-            </properties>
-          </component>
-          <component id="39bca" class="javax.swing.JTextField" binding="versionField">
-            <constraints>
-              <grid row="3" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
-            </constraints>
-            <properties/>
-          </component>
-          <component id="b7b70" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <labelFor value="c5b64"/>
-              <text value="Description"/>
-            </properties>
-          </component>
+          </grid>
         </children>
       </grid>
       <grid id="6895a" binding="header" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="none"/>

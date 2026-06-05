@@ -15,6 +15,7 @@ import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -550,9 +551,9 @@ public class MidPointClient {
         return null;
     }
 
-    public File downloadConnector(String name, String version) {
+    public File downloadConnector(String bundleName) {
         try {
-            return client.downloadConnector(name, version);
+            return client.downloadConnector(bundleName);
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }
@@ -560,123 +561,67 @@ public class MidPointClient {
         return null;
     }
 
-    public String submitOperationCreateConnector(String connectorDevelopmentOid) {
-        try {
-            return client.submitOperationCreateConnector(connectorDevelopmentOid);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public String submitOperationCreateConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationCreateConnector(connectorDevelopmentOid);
     }
 
-    public OperationResultStatusType getStatusConnectorGenerator(String token) {
-        try {
-            return client.getStatusCreateConnector(token);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public OperationResultStatusType getStatusCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusCreateConnector(token);
     }
 
-    public ConnDevCreateConnectorResultType getResultConnectorGenerator(String token) {
-        try {
-            return client.getResultCreateConnector(token);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public String getMessageCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getMessageCreateConnector(token);
     }
 
-    public String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) {
-        try {
-            return client.submitOperationDiscoverBasicInformation(connectorDevelopmentOid);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public ConnDevCreateConnectorResultType getResultCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getResultCreateConnector(token);
     }
 
-    public OperationResultStatusType getStatusDiscoverBasicInformation(String token) {
-        try {
-            return client.getStatusDiscoverBasicInformation(token);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverBasicInformation(connectorDevelopmentOid);
     }
 
-    public ConnDevDiscoverGlobalInformationResultType getResultDiscoverBasicInformation(String token) {
-        try {
-            return client.getResultDiscoverBasicInformation(token);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public OperationResultStatusType getStatusDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusDiscoverBasicInformation(token);
     }
 
-    public String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) {
-        try {
-            return client.submitOperationDiscoverDocumentation(connectorDevelopmentOid);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public String getMessageDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getMessageDiscoverBasicInformation(token);
     }
 
-    public OperationResultStatusType getStatusDiscoverDocumentation(String token) {
-        try {
-            return client.getStatusDiscoverDocumentation(token);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public ConnDevDiscoverGlobalInformationResultType getResultDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getResultDiscoverBasicInformation(token);
     }
 
-    public ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) {
-        try {
-            return client.getResultDiscoverDocumentation(token);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverDocumentation(connectorDevelopmentOid);
     }
 
-    public String submitOperationProcessDocumentation(String connectorDevelopmentOid) {
-        try {
-            return client.submitOperationProcessDocumentation(connectorDevelopmentOid);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public OperationResultStatusType getStatusDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusDiscoverDocumentation(token);
     }
 
-    public OperationResultStatusType getStatusProcessDocumentation(String token) {
-        try {
-            return client.getStatusProcessDocumentation(token);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public String getMessageDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getMessageDiscoverDocumentation(token);
     }
 
-    public ConnDevProcessDocumentationResultType getResultProcessDocumentation(String token) {
-        try {
-            return client.getResultProcessDocumentation(token);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
+    public ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getResultDiscoverDocumentation(token);
+    }
 
-        return null;
+    public String submitOperationProcessDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationProcessDocumentation(connectorDevelopmentOid);
+    }
+
+    public OperationResultStatusType getStatusProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusProcessDocumentation(token);
+    }
+
+    public String getMessageProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getMessageProcessDocumentation(token);
+    }
+
+    public ConnDevProcessDocumentationResultType getResultProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getResultProcessDocumentation(token);
     }
 }

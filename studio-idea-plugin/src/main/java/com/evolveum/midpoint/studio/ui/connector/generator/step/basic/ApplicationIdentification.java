@@ -12,8 +12,6 @@ public class ApplicationIdentification {
 
     private final ConnectorGeneratorDataModel dataModel;
 
-    private final String NAME_STEP;
-
     private JPanel mainPanel;
     private JTextField applicationNameField;
     private JTextArea descriptionArea;
@@ -24,15 +22,14 @@ public class ApplicationIdentification {
     private JTextPane subtext;
     private JPanel content;
     private JPanel header;
+    private JPanel formPanel;
 
     public ApplicationIdentification(ConnectorGeneratorDataModel dataModel) {
         this.dataModel = dataModel;
-        this.NAME_STEP = mainPanel.getName();
         initComponents();
     }
 
     private void initComponents() {
-
         integrationTypeCombo.addItem(COMBO_BOX_ITEM_UNDEFINED);
 
         for (ConnDevIntegrationType type : ConnDevIntegrationType.values()) {
@@ -65,10 +62,6 @@ public class ApplicationIdentification {
 
     public JPanel getMainPanel() {
         return mainPanel;
-    }
-
-    public String getNAME_STEP() {
-        return NAME_STEP;
     }
 
     public JTextField getApplicationNameField() {
