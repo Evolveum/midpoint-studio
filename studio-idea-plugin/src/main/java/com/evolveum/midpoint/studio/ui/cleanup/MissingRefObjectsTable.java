@@ -12,9 +12,8 @@ import com.intellij.openapi.actionSystem.ActionPopupMenu;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.ui.SpeedSearchComparator;
 import com.intellij.ui.TreeTableSpeedSearch;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.List;
 
 public class MissingRefObjectsTable extends DefaultTreeTable<List<MissingRefObject>, MissingRefObjectsTableModel> {
@@ -43,7 +42,7 @@ public class MissingRefObjectsTable extends DefaultTreeTable<List<MissingRefObje
 
     @Override
     protected Icon customizeTreeCellIcon(Object value) {
-        if (!(value instanceof DefaultMutableTreeTableNode node)) {
+        if (!(value instanceof DefaultMutableTreeNode node)) {
             return super.customizeTreeCellIcon(value);
         }
 

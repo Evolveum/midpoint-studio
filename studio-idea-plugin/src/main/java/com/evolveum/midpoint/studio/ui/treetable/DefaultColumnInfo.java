@@ -15,9 +15,8 @@ import java.util.function.Function;
  *
  * <p>The type parameter {@code UO} is the node user-object type; {@code O} is the column value type.</p>
  *
- * <p>Subclasses that work with JXTreeTable-based trees can override
- * {@link #valueOf(DefaultMutableTreeTableNode)} directly. For trees that use custom nodes
- * (e.g. {@link UserObjectNode}), call {@link #applyValueFunction(Object)} instead.</p>
+ * <p>Subclasses can override {@link #valueOf(MutableTreeNode)} directly, or for trees that use
+ * custom nodes (e.g. {@link UserObjectNode}), call {@link #applyValueFunction(Object)} instead.</p>
  */
 public class DefaultColumnInfo<UO, O> extends ColumnInfo<MutableTreeNode, O> {
 
@@ -73,7 +72,7 @@ public class DefaultColumnInfo<UO, O> extends ColumnInfo<MutableTreeNode, O> {
 
     /**
      * Applies the value function directly to a user object, bypassing the tree-node wrapper.
-     * Used by models whose nodes are not {@link DefaultMutableTreeTableNode}.
+     * Used by models whose nodes are not {@link javax.swing.tree.DefaultMutableTreeNode}.
      */
     public @Nullable O applyValueFunction(UO userObject) {
         return valueProvider != null ? valueProvider.apply(userObject) : null;

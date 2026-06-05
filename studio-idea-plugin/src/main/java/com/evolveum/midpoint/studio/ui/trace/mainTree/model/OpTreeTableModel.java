@@ -116,7 +116,7 @@ public class OpTreeTableModel extends DefaultTreeTableModel<OpNode> {
         if (opNode == null) {
             return null;
         }
-        // Call applyValueFunction to bypass the DefaultMutableTreeTableNode parameter in valueOf()
+        // Call applyValueFunction to bypass the MutableTreeNode parameter in valueOf()
         return columnInfos.get(column).applyValueFunction(opNode);
     }
 

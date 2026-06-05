@@ -8,7 +8,6 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.AbstractRoleType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.tree.MutableTreeNode;

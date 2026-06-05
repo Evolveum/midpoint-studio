@@ -6,9 +6,8 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.Pair;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.util.ui.ColumnInfo;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.*;
 
 public class ObjectsTreeTableModel extends DefaultTreeTableModel<List<ObjectType>> {
@@ -30,7 +29,7 @@ public class ObjectsTreeTableModel extends DefaultTreeTableModel<List<ObjectType
             data = new ArrayList<>();
         }
 
-        DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
 
         Map<ObjectTypes, List<ObjectType>> map = new HashMap<>();
         for (ObjectType o : data) {
@@ -43,14 +42,14 @@ public class ObjectsTreeTableModel extends DefaultTreeTableModel<List<ObjectType
         types.sort(MidPointUtils.OBJECT_TYPES_COMPARATOR);
 
         for (ObjectTypes t : types) {
-            DefaultMutableTreeTableNode type = new DefaultMutableTreeTableNode(t);
+            DefaultMutableTreeNode type = new DefaultMutableTreeNode(t);
             root.add(type);
 
             List<ObjectType> list = map.get(t);
             list.sort(MidPointUtils.OBJECT_TYPE_COMPARATOR);
 
             for (ObjectType o : list) {
-                DefaultMutableTreeTableNode n = new DefaultMutableTreeTableNode(o);
+                DefaultMutableTreeNode n = new DefaultMutableTreeNode(o);
                 type.add(n);
             }
         }
@@ -74,7 +73,7 @@ public class ObjectsTreeTableModel extends DefaultTreeTableModel<List<ObjectType
         ListSelectionModel selectionModel = getTree().getTreeTable().getSelectionModel();
         int[] indices = selectionModel.getSelectedIndices();
         for (int i : indices) {
-            DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode)
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode)
                     getTree().getPathForRow(i).getLastPathComponent();
             Object obj = node.getUserObject();
             if (obj instanceof ObjectTypes) {

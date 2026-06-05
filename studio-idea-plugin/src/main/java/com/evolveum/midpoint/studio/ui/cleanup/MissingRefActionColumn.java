@@ -3,12 +3,10 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
-import com.evolveum.midpoint.studio.ui.treetable.UserObjectNode;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
 import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.JBColor;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

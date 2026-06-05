@@ -4,11 +4,8 @@ import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
-import com.evolveum.midpoint.studio.ui.treetable.UserObjectNode;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.tree.MutableTreeNode;
