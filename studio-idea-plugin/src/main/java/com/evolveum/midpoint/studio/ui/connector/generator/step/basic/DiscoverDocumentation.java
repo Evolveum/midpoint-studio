@@ -1,9 +1,8 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.step.basic;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.step.other.AiAlertPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.AiAlertPanel;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
-import com.evolveum.midpoint.studio.ui.connector.generator.step.other.StatusPanel;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDiscoverDocumentationResultType;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.StatusPanel;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDocumentationSourceType;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
@@ -36,10 +35,11 @@ public class DiscoverDocumentation {
     private JButton createNewButton;
     private JPanel content;
     private JPanel listDocsContainer;
-    private JScrollPane listDocsScrollPanel;
-    private JCheckBox allCheckBox;
+    private JScrollPane listItemScrollPanel;
     private JPanel aiAlert;
     private JPanel itemDocPanel;
+    private JCheckBox allCheckBox;
+    private JScrollPane listDocsScrollPanel;
 
     private Set<ConnDevDocumentationSourceType> selectedDocumentationSources = new HashSet<>();
 
@@ -135,11 +135,11 @@ public class DiscoverDocumentation {
     }
 
     public JScrollPane getListDocsScrollPanel() {
-        return listDocsScrollPanel;
+        return listItemScrollPanel;
     }
 
     public void setListDocsScrollPanel(JScrollPane listDocsScrollPanel) {
-        this.listDocsScrollPanel = listDocsScrollPanel;
+        this.listItemScrollPanel = listDocsScrollPanel;
     }
 
     public JPanel getItemDocPanel() {
@@ -154,10 +154,6 @@ public class DiscoverDocumentation {
         return selectedDocumentationSources;
     }
 
-    public void setSelectedDocumentationSources(Set<ConnDevDocumentationSourceType> selectedDocumentationSources) {
-        this.selectedDocumentationSources = selectedDocumentationSources;
-    }
-
     private void initComponents() {
         itemDocPanel.setLayout(new BoxLayout(itemDocPanel, BoxLayout.Y_AXIS));
         listDocsScrollPanel.setViewportView(itemDocPanel);
@@ -165,8 +161,12 @@ public class DiscoverDocumentation {
 
     public void fillDocumentationList(@NotNull List<ConnDevDocumentationSourceType> documentation) {
 
+        itemDocPanel.removeAll();
+
         for (ConnDevDocumentationSourceType documentationSourceType : documentation) {
-            itemDocPanel.add(new ItemRowComponent(documentationSourceType, getSelectedDocumentationSources()));
+            var itemDocumentationSource = new ItemRowComponent(documentationSourceType, getSelectedDocumentationSources());
+            itemDocumentationSource.selected(dataModel.connectorDevelopmentType.getDocumentationSource().contains(documentationSourceType));
+            itemDocPanel.add(itemDocumentationSource);
         }
     }
 
@@ -267,6 +267,12 @@ public class DiscoverDocumentation {
             return BorderFactory.createCompoundBorder(
                     JBUI.Borders.emptyBottom(10),
                     lineAndPadding);
+        }
+
+        private void selected(boolean selected) {
+            checkBox.setSelected(selected);
+            this.revalidate();
+            this.repaint();
         }
     }
 }

@@ -3,11 +3,10 @@ package com.evolveum.midpoint.studio.ui.connector.generator.step.basic;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.service.TaskStatusPoller;
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorBasicWizard;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
-import com.evolveum.midpoint.studio.ui.connector.generator.StepStateBadge;
-import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorWizardStep;
-import com.evolveum.midpoint.studio.ui.connector.generator.step.other.StatusPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDiscoverDocumentationResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType;
@@ -23,29 +22,22 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
+public class DiscoverDocumentationStep extends ConnectorGeneratorGeneralWizardStep {
 
-    private final MidPointClient client;
     private final TaskStatusPoller taskStatusPoller;
-    private final ConnectorGeneratorDataModel dataModel;
     private DiscoverDocumentation discoverDocumentation;
     private final JPanel mainPanel = new JPanel(new BorderLayout());
 
-    private boolean initialized = false;
-
     public DiscoverDocumentationStep(
-            ConnectorGeneratorBasicWizard wizardContext,
+            ConnectorGeneratorWizard wizardContext,
             MidPointClient client,
             ConnectorGeneratorDataModel dataModel,
-            StepStateBadge.State state
+            GenerateConnectorBadge.State state,
+            boolean isHeader
     ) {
-        super(wizardContext, state);
-        this.client = client;
+        super(wizardContext, client, dataModel, state, isHeader);
         this.taskStatusPoller = ApplicationManager.getApplication().getService(TaskStatusPoller.class);
-        this.dataModel = dataModel;
-
         mainPanel.setName("Documentation");
     }
 
@@ -53,11 +45,11 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
     public void _init() {
         if (!initialized) {
             initialized = true;
-            setState(StepStateBadge.State.IN_PROGRESS);
-            discoverDocumentation = new DiscoverDocumentation(dataModel);
+            setState(GenerateConnectorBadge.State.IN_PROGRESS);
+            discoverDocumentation = new DiscoverDocumentation(getDataModel());
 
-            ProgressManager.getInstance().run(new Task.Backgroundable(client.getProject(),
-                    "DiscoverDocumentationMessage submit operation",
+            ProgressManager.getInstance().run(new Task.Backgroundable(getClient().getProject(),
+                    "Discover Documentation submit operation",
                     true
             ) {
 
@@ -66,7 +58,7 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     try {
-                        token = client.submitOperationDiscoverDocumentation(dataModel.connectorDevelopmentType.getOid());
+                        token = getClient().submitOperationDiscoverDocumentation(getDataModel().connectorDevelopmentType.getOid());
                     } catch (SchemaException | IOException | AuthenticationException e) {
                         throw new RuntimeException(e);
                     }
@@ -78,16 +70,16 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
                     var statusPanel = discoverDocumentation.getStatusPanel();
 
                     if (token == null) {
-                        printAlert(statusPanel, "Error", "Token is Null");
-                        setState(StepStateBadge.State.FIXING);
+                        printAlert(mainPanel, statusPanel, "Error", "Token is Null");
+                        setState(GenerateConnectorBadge.State.FIXING);
                         return;
                     }
 
-                    ApplicationManager.getApplication().invokeLater(() -> mainPanel.add(statusPanel.showLoadingPanel(
-                            "Identifying Documentation...",
-                            "Analyzing your target application details to locate the right documentation.",
-                            0
-                    )));
+                    mainPanel.add(statusPanel.showLoadingPanel(
+                        "Identifying Documentation...",
+                        "Analyzing your target application details to locate the right documentation.",
+                        0
+                    ));
 
                     var timer = new Timer(1000, event -> {
                         statusPanel.updateElapsed(taskStatusPoller.getElapsedTime().toSeconds());
@@ -96,7 +88,7 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
                                 && !OperationResultStatusType.IN_PROGRESS.equals(taskStatusPoller.getStatus())
                         ) {
                             if (OperationResultStatusType.SUCCESS.equals(taskStatusPoller.getStatus())) {
-                                ProgressManager.getInstance().run(new Backgroundable(client.getProject(),
+                                ProgressManager.getInstance().run(new Backgroundable(getClient().getProject(),
                                         "DiscoverDocumentation get result",
                                         true
                                 ) {
@@ -105,9 +97,9 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
                                     @Override
                                     public void run(@NotNull ProgressIndicator progressIndicator) {
                                         try {
-                                            result = client.getResultDiscoverDocumentation(token);
+                                            result = getClient().getResultDiscoverDocumentation(token);
                                         } catch (Exception e) {
-                                            printAlert(statusPanel, "Error", e.getMessage());
+                                            printAlert(mainPanel, statusPanel, "Error", e.getMessage());
                                         }
                                     }
 
@@ -115,33 +107,31 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
                                     public void onSuccess() {
                                         super.onSuccess();
 
-                                        ApplicationManager.getApplication().invokeLater(() -> {
-                                            mainPanel.removeAll();
+                                        mainPanel.removeAll();
 
-                                            if (result != null) {
-                                                if (!result.getDocumentation().isEmpty()) {
-                                                    discoverDocumentation.fillDocumentationList(result.getDocumentation());
-                                                } else {
-                                                    discoverDocumentation.getItemDocPanel().add(statusPanel.showAlertPanel(
-                                                            OperationResultStatusType.WARNING.name(),
-                                                            "No documentation found",
-                                                            new JBColor(Gray._255, Gray._255)
-                                                    ));
-                                                }
-                                                mainPanel.add(discoverDocumentation.getMainPanel());
-                                                canGoNext(true);
-                                                getWizardBasicContext().updateWizardButtons();
+                                        if (result != null) {
+                                            if (!result.getDocumentation().isEmpty()) {
+                                                discoverDocumentation.fillDocumentationList(result.getDocumentation());
                                             } else {
-                                                printAlert(statusPanel, OperationResultStatusType.UNKNOWN.name(), "Result Null");
+                                                discoverDocumentation.getItemDocPanel().add(statusPanel.showAlertPanel(
+                                                        OperationResultStatusType.WARNING.name(),
+                                                        "No documentation found",
+                                                        new JBColor(Gray._255, Gray._255)
+                                                ));
                                             }
+                                            mainPanel.add(discoverDocumentation.getMainPanel());
+                                            canGoNext(true);
+                                            getWizardContext().updateWizardButtons();
+                                        } else {
+                                            printAlert(mainPanel, statusPanel, OperationResultStatusType.UNKNOWN.name(), "Result Null");
+                                        }
 
-                                            mainPanel.revalidate();
-                                            mainPanel.repaint();
-                                        });
+                                        mainPanel.revalidate();
+                                        mainPanel.repaint();
                                     }
                                 });
                             } else {
-                                ProgressManager.getInstance().run(new Backgroundable(client.getProject(),
+                                ProgressManager.getInstance().run(new Backgroundable(getClient().getProject(),
                                         "DiscoverDocumentation get message",
                                         true
                                 ) {
@@ -150,16 +140,16 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
                                     @Override
                                     public void run(@NotNull ProgressIndicator progressIndicator) {
                                         try {
-                                            message = client.getMessageDiscoverDocumentation(token);
+                                            message = getClient().getMessageDiscoverDocumentation(token);
                                         } catch (Exception ex) {
-                                            printAlert(statusPanel, "Error", ex.getMessage());
+                                            printAlert(mainPanel, statusPanel, "Error", ex.getMessage());
                                         }
                                     }
 
                                     @Override
                                     public void onFinished() {
                                         super.onFinished();
-                                        printAlert(statusPanel, taskStatusPoller.getStatus().name(), message);
+                                        printAlert(mainPanel, statusPanel, taskStatusPoller.getStatus().name(), message);
                                     }
                                 });
                             }
@@ -171,11 +161,11 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
 
                     taskStatusPoller.startPolling(() -> {
                         try {
-                            return client.getStatusDiscoverDocumentation(token);
+                            return getClient().getStatusDiscoverDocumentation(token);
                         } catch (Exception e) {
                             taskStatusPoller.stopPolling();
                             timer.stop();
-                            printAlert(statusPanel, "Error", e.getMessage());
+                            printAlert(mainPanel, statusPanel, "Error", e.getMessage());
                         }
 
                         return null;
@@ -198,36 +188,20 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
             var selectedDocumentationSources = discoverDocumentation.getSelectedDocumentationSources();
             if (selectedDocumentationSources != null && !selectedDocumentationSources.isEmpty()) {
                 selectedDocumentationSources.forEach(source ->
-                        dataModel.connectorDevelopmentType.documentationSource(source.clone())
+                        getDataModel().connectorDevelopmentType.documentationSource(source.clone())
                 );
             }
         } catch (Exception ex) {
             throw new CommitStepException(ex.getMessage());
         }
 
-        AtomicReference<Exception> error = new AtomicReference<>();
-
-        ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
-
-            var connectorDevelopmentType = dataModel.connectorDevelopmentType;
-
-            try {
-                dataModel.connectorDevelopmentType =
-                        client.upsert(connectorDevelopmentType.asPrismObject(), null);
-            } catch (Exception e) {
-                error.set(e);
-            }
-        }, "Update ConnectorDevelopmentType Object", true, client.getProject());
-
-        if (error.get() != null) {
-            throw new CommitStepException(error.get().getMessage());
-        } else if (dataModel.connectorDevelopmentType == null) {
-            throw new CommitStepException(
-                    "Failed to update ConnectorDevelopmentType object"
-            );
-        } else {
-            setState(StepStateBadge.State.COMPLETE);
+        try {
+            upsertConnectorDevelopmentType(getDataModel().connectorDevelopmentType);
+        }  catch (Exception ex) {
+            throw new CommitStepException("Couldn't upsert connector development type");
         }
+
+        setState(GenerateConnectorBadge.State.COMPLETE);
 
         super._commit(finishChosen);
     }
@@ -235,18 +209,5 @@ public class DiscoverDocumentationStep extends ConnectorGeneratorWizardStep {
     @Override
     public JComponent getComponent() {
         return mainPanel;
-    }
-
-    private void printAlert(StatusPanel statusPanel, String title, String msg) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            mainPanel.removeAll();
-            mainPanel.add(statusPanel.showAlertPanel(
-                    title,
-                    msg,
-                    new JBColor(Gray._255, Gray._255)
-            ));
-            mainPanel.revalidate();
-            mainPanel.repaint();
-        });
     }
 }

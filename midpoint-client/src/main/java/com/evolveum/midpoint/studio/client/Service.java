@@ -83,6 +83,8 @@ public interface Service {
 
     File downloadConnector(String bundleName) throws SchemaException, AuthenticationException, IOException;
 
+    ConnectorDevelopmentType continueFrom(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+
     String submitOperationCreateConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
     OperationResultStatusType getStatusCreateConnector(String token) throws SchemaException, AuthenticationException, IOException;

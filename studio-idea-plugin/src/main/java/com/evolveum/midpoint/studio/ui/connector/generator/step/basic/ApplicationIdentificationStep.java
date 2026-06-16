@@ -1,43 +1,36 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.step.basic;
 
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorBasicWizard;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
-import com.evolveum.midpoint.studio.ui.connector.generator.StepStateBadge;
-import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorWizardStep;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevApplicationInfoType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDeploymentType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevIntegrationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.intellij.ide.wizard.CommitStepException;
-import com.intellij.openapi.progress.ProgressManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class ApplicationIdentificationStep extends ConnectorGeneratorWizardStep {
+public class ApplicationIdentificationStep extends ConnectorGeneratorGeneralWizardStep {
 
-    private final MidPointClient client;
-    private final ConnectorGeneratorDataModel dataModel;
     private ApplicationIdentification applicationIdentification;
-    private JPanel mainPanel = new JPanel(new BorderLayout());
+    private final JPanel mainPanel = new JPanel(new BorderLayout());
 
     private final String COMBO_BOX_ITEM_UNDEFINED = "Undefined";
 
-    private boolean initialized = false;
-
     public ApplicationIdentificationStep(
-            ConnectorGeneratorBasicWizard wizardContext,
+            ConnectorGeneratorWizard wizardContext,
             MidPointClient client,
             ConnectorGeneratorDataModel dataModel,
-            StepStateBadge.State state
+            GenerateConnectorBadge.State state,
+            boolean isHeader
     ) {
-        super(wizardContext, state);
-        this.client = client;
-        this.dataModel = dataModel;
+        super( wizardContext, client, dataModel,state, isHeader);
         mainPanel.setName("Application Identification");
     }
 
@@ -46,8 +39,7 @@ public class ApplicationIdentificationStep extends ConnectorGeneratorWizardStep 
 
         if (!initialized) {
             initialized = true;
-
-            applicationIdentification = new ApplicationIdentification(dataModel);
+            applicationIdentification = new ApplicationIdentification(getDataModel());
             mainPanel.add(applicationIdentification.getMainPanel());
             canGoNext(true);
         }
@@ -68,32 +60,19 @@ public class ApplicationIdentificationStep extends ConnectorGeneratorWizardStep 
             throw new CommitStepException("Field Integration Type is required");
         }
 
-        AtomicReference<Exception> error = new AtomicReference<>();
-
-        ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
+        try {
             var connectorDevelopmentType = new ConnectorDevelopmentType();
             connectorDevelopmentType.setApplication(getConnDevApplicationInfoType());
             connectorDevelopmentType.setName(
                     connectorDevelopmentType.getApplication().getApplicationName()
             );
 
-            try {
-                dataModel.connectorDevelopmentType =
-                        client.upsert(connectorDevelopmentType.asPrismObject(), null);
-            } catch (Exception e) {
-                error.set(e);
-            }
-        }, "Create ConnectorDevelopmentType Object", true, client.getProject());
-
-        if (error.get() != null) {
-            throw new CommitStepException(error.get().getMessage());
-        } else if (dataModel.connectorDevelopmentType == null) {
-            throw new CommitStepException(
-                    "Failed to create ConnectorDevelopmentType object"
-            );
-        } else {
-            setState(StepStateBadge.State.COMPLETE);
+            upsertConnectorDevelopmentType(connectorDevelopmentType);
+        } catch (Exception ex) {
+            throw new CommitStepException("Couldn't upsert connector development type");
         }
+
+        setState(GenerateConnectorBadge.State.COMPLETE);
 
         super._commit(finishChosen);
     }
@@ -114,11 +93,6 @@ public class ApplicationIdentificationStep extends ConnectorGeneratorWizardStep 
                         : null
         );
         return connDevApplicationInfoType;
-    }
-
-    @Override
-    public Icon getIcon() {
-        return null;
     }
 
     @Override

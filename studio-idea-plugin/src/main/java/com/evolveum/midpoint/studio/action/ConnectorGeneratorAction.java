@@ -4,7 +4,7 @@ import com.evolveum.midpoint.studio.client.SearchResult;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorBasicWizard;
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorContinueWizard;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType;
 import com.intellij.openapi.actionSystem.*;
@@ -60,8 +60,8 @@ public class ConnectorGeneratorAction extends AnAction {
                 actionGroup.addSeparator("In-Progress Connectors");
 
                 if (searchResult == null || searchResult.getObjects().isEmpty()) {
-                    ApplicationManager.getApplication().invokeLater(
-                            () -> new ConnectorGeneratorBasicWizard(client).show());
+                    ApplicationManager.getApplication().invokeLater(() ->
+                            new ConnectorGeneratorBasicWizard(client).show());
                 } else {
                     searchResult.getObjects().stream()
                             .map(dev -> new HoverableRowAction(
@@ -111,13 +111,12 @@ public class ConnectorGeneratorAction extends AnAction {
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-
             if (oid != null) {
-                ApplicationManager.getApplication().invokeLater(
-                        () -> new ConnectorGeneratorWizard(client).show());
+                ApplicationManager.getApplication().invokeLater(() ->
+                        new ConnectorGeneratorContinueWizard(client, oid).show());
             } else {
-                ApplicationManager.getApplication().invokeLater(
-                        () -> new ConnectorGeneratorBasicWizard(client).show());
+                ApplicationManager.getApplication().invokeLater(() ->
+                        new ConnectorGeneratorBasicWizard(client).show());
             }
         }
     }

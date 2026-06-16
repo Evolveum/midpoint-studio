@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.connector.generator.step.other;
+package com.evolveum.midpoint.studio.ui.connector.generator.component;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.JBColor;

@@ -1,12 +1,20 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.step.objectclass;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorBasicWizard;
-import com.evolveum.midpoint.studio.ui.connector.generator.StepStateBadge;
-import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorWizardStep;
-import com.intellij.ide.wizard.StepAdapter;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep;
 
-public class SearchFilterScriptConnectorStep extends ConnectorGeneratorWizardStep {
-    public SearchFilterScriptConnectorStep(ConnectorGeneratorBasicWizard wizardContext, StepStateBadge.State step) {
-        super(wizardContext, step);
+public class SearchFilterScriptConnectorStep extends ConnectorGeneratorGeneralWizardStep {
+
+    public SearchFilterScriptConnectorStep(
+            ConnectorGeneratorWizard wizardContext,
+            MidPointClient client,
+            ConnectorGeneratorDataModel dataModel,
+            GenerateConnectorBadge.State state,
+            boolean isHeader
+    ) {
+        super(wizardContext, client, dataModel, state, isHeader);
     }
 }

@@ -631,7 +631,7 @@ public class ServiceImpl implements Service {
     public File downloadConnector(String bundleName) throws IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DOWNLOAD_CONNECTOR,
-                Map.of("bundleName", bundleName)
+                Map.of("name", bundleName)
         ).get();
 
         Request request = builder.build();
@@ -657,6 +657,16 @@ public class ServiceImpl implements Service {
 
             return tempFilePath.toFile();
         }
+    }
+
+    @Override
+    public ConnectorDevelopmentType continueFrom(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_CONTINUE_FROM,
+                Map.of("oid", connectorDevelopmentOid)
+        ).get();
+
+        return executeRequest(builder.build(), ConnectorDevelopmentType.class);
     }
 
     @Override

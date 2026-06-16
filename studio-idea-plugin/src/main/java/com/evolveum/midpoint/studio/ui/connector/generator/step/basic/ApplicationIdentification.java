@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui.connector.generator.step.basic;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDeploymentType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevIntegrationType;
+import com.intellij.util.ui.JBUI;
 
 import javax.swing.*;
 
@@ -23,6 +24,7 @@ public class ApplicationIdentification {
     private JPanel content;
     private JPanel header;
     private JPanel formPanel;
+    private JScrollPane descriptionAreaScrollPanel;
 
     public ApplicationIdentification(ConnectorGeneratorDataModel dataModel) {
         this.dataModel = dataModel;
@@ -30,6 +32,12 @@ public class ApplicationIdentification {
     }
 
     private void initComponents() {
+        descriptionArea.setLineWrap(true);
+        descriptionArea.setWrapStyleWord(true);
+        descriptionArea.setBackground(UIManager.getColor("TextField.background"));
+        descriptionArea.setForeground(UIManager.getColor("TextField.foreground"));
+        descriptionArea.setBorder(JBUI.Borders.empty(5));
+
         integrationTypeCombo.addItem(COMBO_BOX_ITEM_UNDEFINED);
 
         for (ConnDevIntegrationType type : ConnDevIntegrationType.values()) {
@@ -72,7 +80,7 @@ public class ApplicationIdentification {
         return descriptionArea;
     }
 
-    public JComboBox<?> getIntegrationTypeCombo() {
+    public JComboBox<String> getIntegrationTypeCombo() {
         return integrationTypeCombo;
     }
 
@@ -80,7 +88,7 @@ public class ApplicationIdentification {
         return versionField;
     }
 
-    public JComboBox<?> getDeploymentTypeCombo() {
+    public JComboBox<String> getDeploymentTypeCombo() {
         return deploymentTypeCombo;
     }
 }

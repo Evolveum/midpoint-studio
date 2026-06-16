@@ -1,34 +1,28 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.step.connection;
 
 import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorBasicWizard;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
-import com.evolveum.midpoint.studio.ui.connector.generator.StepStateBadge;
-import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorWizardStep;
-import com.evolveum.midpoint.studio.ui.connector.generator.step.basic.ApplicationIdentification;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep;
 import com.intellij.ide.wizard.CommitStepException;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class AuthScriptsConnectorStep extends ConnectorGeneratorWizardStep {
+public class AuthScriptsConnectorStep extends ConnectorGeneratorGeneralWizardStep {
 
-    private final MidPointClient client;
-    private final ConnectorGeneratorDataModel dataModel;
     private AuthScriptsConnector authScriptsConnector;
-    private JPanel mainPanel = new JPanel(new BorderLayout());
-
-    private boolean initialized = false;
+    private final JPanel mainPanel = new JPanel(new BorderLayout());
 
     public AuthScriptsConnectorStep(
-            ConnectorGeneratorBasicWizard wizardContext,
-            StepStateBadge.State step,
+            ConnectorGeneratorWizard wizardContext,
             MidPointClient client,
-            ConnectorGeneratorDataModel dataModel
+            ConnectorGeneratorDataModel dataModel,
+            GenerateConnectorBadge.State state,
+            boolean isHeader
     ) {
-        super(wizardContext, step);
-        this.client = client;
-        this.dataModel = dataModel;
+        super(wizardContext, client, dataModel, state, isHeader);
         mainPanel.setName("Application Identification");
     }
 
@@ -38,9 +32,10 @@ public class AuthScriptsConnectorStep extends ConnectorGeneratorWizardStep {
         if (!initialized) {
             initialized = true;
 
-//            authScriptsConnector = new AuthScriptsConnector(dataModel);
-//            mainPanel.add(authScriptsConnector.getMainPanel());
-            canGoNext(true);
+            authScriptsConnector = new AuthScriptsConnector(getDataModel(), getClient().getProject());
+            mainPanel.add(authScriptsConnector.getMainPanel());
+
+            setState(GenerateConnectorBadge.State.IN_PROGRESS);
         }
 
         super._init();

@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.step.basic;
 
-import com.evolveum.midpoint.studio.ui.connector.generator.step.other.StatusPanel;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.StatusPanel;
 
 import javax.swing.*;
 

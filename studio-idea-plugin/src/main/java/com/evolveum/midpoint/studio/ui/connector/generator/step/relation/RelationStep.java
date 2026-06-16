@@ -1,34 +1,28 @@
-package com.evolveum.midpoint.studio.ui.connector.generator.step.connection;
+package com.evolveum.midpoint.studio.ui.connector.generator.step.relation;
 
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard;
-import com.evolveum.midpoint.studio.ui.connector.generator.StepStateBadge;
-import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorWizardStep;
+import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge;
+import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep;
 import com.intellij.ide.wizard.CommitStepException;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class WaitingBasicInfoConnectorStep extends ConnectorGeneratorWizardStep {
+public class RelationStep extends ConnectorGeneratorGeneralWizardStep {
 
-    private final MidPointClient client;
-    private final ConnectorGeneratorDataModel dataModel;
-    private BaseUrlConnector baseUrlConnector;
-    private JPanel mainPanel = new JPanel(new BorderLayout());
+    private final JPanel mainPanel = new JPanel(new BorderLayout());
 
-    private boolean initialized = false;
-
-    public WaitingBasicInfoConnectorStep(
+    public RelationStep(
             ConnectorGeneratorWizard wizardContext,
             MidPointClient client,
             ConnectorGeneratorDataModel dataModel,
-            StepStateBadge.State state
+            GenerateConnectorBadge.State state,
+            boolean isHeader
     ) {
-        super(wizardContext, state, true);
-        this.client = client;
-        this.dataModel = dataModel;
-        mainPanel.setName("Connection");
+        super(wizardContext,  client, dataModel, state, isHeader);
+        mainPanel.setName("Relation");
     }
 
     @Override
@@ -39,7 +33,6 @@ public class WaitingBasicInfoConnectorStep extends ConnectorGeneratorWizardStep 
 
 //            baseUrlConnector = new BaseUrlConnector(dataModel);
 //            mainPanel.add(baseUrlConnector.getMainPanel());
-            canGoNext(true);
         }
 
         super._init();
@@ -59,5 +52,4 @@ public class WaitingBasicInfoConnectorStep extends ConnectorGeneratorWizardStep 
     public JComponent getComponent() {
         return mainPanel;
     }
-
 }

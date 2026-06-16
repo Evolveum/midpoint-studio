@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.studio.ui.connector.generator.step.other;
+package com.evolveum.midpoint.studio.ui.connector.generator.component;
 
 import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.ui.JBColor;
@@ -9,6 +9,9 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import java.awt.*;
 
 public class StatusPanel {
@@ -60,9 +63,20 @@ public class StatusPanel {
         textLabel.setForeground(color);
         panel.add(textLabel);
 
-        var subTextLabel = new JBLabel(description, SwingConstants.CENTER);
-        subTextLabel.setForeground(UIUtil.getContextHelpForeground());
-        panel.add(subTextLabel);
+        var subtextJTextPanel = new JTextPane();
+        subtextJTextPanel.setEditable(false);
+        subtextJTextPanel.setOpaque(false);
+        subtextJTextPanel.setFocusable(false);
+        subtextJTextPanel.setText(description);
+        subtextJTextPanel.setForeground(UIUtil.getContextHelpForeground());
+        subtextJTextPanel.setBorder(new EmptyBorder(JBUI.insets(0, 10)));
+
+        var doc = subtextJTextPanel.getStyledDocument();
+        var centerAttribute = new SimpleAttributeSet();
+        StyleConstants.setAlignment(centerAttribute, StyleConstants.ALIGN_CENTER);
+        doc.setParagraphAttributes(0, doc.getLength(), centerAttribute, false);
+
+        panel.add(subtextJTextPanel);
 
         return panel;
     }
@@ -83,9 +97,19 @@ public class StatusPanel {
         textLabel.setForeground(new JBColor(new Color(70, 130, 180), new Color(70, 130, 180)));
         panel.add(textLabel);
 
-        var subTextLabel = new JBLabel(description, SwingConstants.CENTER);
-        subTextLabel.setForeground(UIUtil.getContextHelpForeground());
-        panel.add(subTextLabel);
+        var subtextJTextPanel = new JTextPane();
+        subtextJTextPanel.setEditable(false);
+        subtextJTextPanel.setOpaque(false);
+        subtextJTextPanel.setFocusable(false);
+        subtextJTextPanel.setText(description);
+        subtextJTextPanel.setForeground(UIUtil.getContextHelpForeground());
+        subtextJTextPanel.setBorder(new EmptyBorder(JBUI.insets(0, 10)));
+        panel.add(subtextJTextPanel);
+
+        var doc = subtextJTextPanel.getStyledDocument();
+        var centerAttribute = new SimpleAttributeSet();
+        StyleConstants.setAlignment(centerAttribute, StyleConstants.ALIGN_CENTER);
+        doc.setParagraphAttributes(0, doc.getLength(), centerAttribute, false);
 
         elapsedLabel = new JBLabel(ELAPSED_TEXT.formatted(elapsed / 60, elapsed % 60), SwingConstants.CENTER);
         elapsedLabel.setForeground(UIUtil.getInactiveTextColor());

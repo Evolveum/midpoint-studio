@@ -1,4 +1,6 @@
 package com.evolveum.midpoint.studio.ui.connector.generator;
 
-public record NavigationItem(String name, StepStateBadge.State state, boolean isHeader) {
+import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge;
+
+public record NavigationItem(String name, GenerateConnectorBadge.State state, boolean isHeader) {
 }
