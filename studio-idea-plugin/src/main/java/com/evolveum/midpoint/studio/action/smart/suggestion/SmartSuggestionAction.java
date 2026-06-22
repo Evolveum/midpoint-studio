@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
+import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
@@ -15,7 +16,8 @@ import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.Sm
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
+import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.ide.util.treeView.TreeState;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -43,10 +45,16 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.*;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.*;
 
 public abstract class SmartSuggestionAction<T> extends AnAction {
+
+    private final Logger log = Logger.getInstance(this.getClass());
+
+    private final String TITLE = "Midpoint Smart suggestion";
 
     private String resourceOid;
 
@@ -55,10 +63,10 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
     abstract GenerateSuggestionDataModel.ResourceDialogContextMode getModeDialogContext();
     abstract Logger getLogger();
     abstract SmartSuggestionTableModel<T> getModel(Project project, PrismContext prismContext);
-    abstract List<SmartSuggestionObject<T>> getSuggestions(
-            MidPointClient client,
-            GenerateSuggestionDataModel generateSuggestionDataModel
-    );
+    abstract List<SmartSuggestionObject<T>> getResultSuggestions(
+            AbstractSmartIntegrationOperationResultType result,
+            GenerateSuggestionDataModel model
+    ) throws SchemaException;
 
     public @Nullable String getResourceOid() {
         return resourceOid;
@@ -77,33 +85,34 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-        EnvironmentService em = EnvironmentService.getInstance(Objects.requireNonNull(anActionEvent.getProject()));
+        var project = anActionEvent.getProject();
+        EnvironmentService em = EnvironmentService.getInstance(Objects.requireNonNull(project));
         Environment env = em.getSelected();
+        MidPointClient client = new MidPointClient(project, env);
 
-        if (resourceOid != null) {
+        if (resourceOid != null && !resourceOid.isEmpty()) {
+
             new DialogAlert(
                     anActionEvent.getProject(),
                     "Upload (Full Processing)",
                     "The local resource configuration (OID: '" + resourceOid + "') will be uploaded to midPoint to generate AI suggestions based on the most recent data.",
-                    () -> {
-                        ProgressManager.getInstance().run(
-                                new UploadFullProcessingTask(
-                                        anActionEvent.getProject(), anActionEvent::getDataContext, env
-                                ) {
-                                    @Override
-                                    public void onFinished() {
-                                        if (!hasFailures()) {
-                                            ApplicationManager.getApplication().invokeLater(() ->
-                                                    showSelectResourceDialogWindow(anActionEvent, env, resourceOid));
-                                        }
+                    () -> ProgressManager.getInstance().run(
+                            new UploadFullProcessingTask(
+                                    anActionEvent.getProject(), anActionEvent::getDataContext, env
+                            ) {
+                                @Override
+                                public void onFinished() {
+                                    if (!hasFailures()) {
+                                        ApplicationManager.getApplication().invokeLater(() ->
+                                                showSelectResourceDialogWindow(anActionEvent, client, resourceOid));
                                     }
                                 }
-                        );
-                    }
+                            }
+                    )
             ).show();
         } else {
             ApplicationManager.getApplication().invokeLater(() ->
-                    showSelectResourceDialogWindow(anActionEvent, env, null));
+                    showSelectResourceDialogWindow(anActionEvent, client, null));
         }
     }
 
@@ -114,7 +123,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
     private void showSelectResourceDialogWindow(
             @NotNull AnActionEvent anActionEvent,
-            Environment env,
+            MidPointClient client,
             String uploadedResourceOid
     ) {
         var log = getLogger();
@@ -126,7 +135,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
         }
 
         var prismContext = StudioPrismContextService.getPrismContext(project);
-        MidPointClient client = new MidPointClient(project, env);
+
         @Deprecated
         var foundResources = client.list(ObjectTypes.RESOURCE.getClassDefinition(), prismContext.queryFactory().createQuery(), true);
 
@@ -137,7 +146,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
         new GenerateSuggestionWizard(
                 project,
-                "Smart suggestion - " + getTemplatePresentation().getText(),
+                TITLE + " - " + getTemplatePresentation().getText(),
                 dataModel,
                 () -> {
                     String toolWindowId = "SmartSuggestionToolWindow";
@@ -165,12 +174,22 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                                     );
                                 });
 
-                                objectSuggestions = getSuggestions(client, dataModel);
+                                try {
+                                    objectSuggestions = generateSuggestions(client, dataModel).get();
+                                } catch (SchemaException
+                                         | AuthenticationException
+                                         | IOException
+                                         | ExecutionException
+                                         | InterruptedException e
+                                ) {
+                                    log.error("Couldn't generate suggestions", e);
+                                    throw new RuntimeException(e);
+                                }
                             }
 
                             @Override
                             public void onFinished() {
-                                if (objectSuggestions != null) {
+                                if (objectSuggestions != null && !objectSuggestions.isEmpty()) {
                                     var model = getModel(project, prismContext);
                                     model.setData(objectSuggestions);
                                     contentManager.addContent(ContentFactory.getInstance().createContent(
@@ -185,7 +204,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
                                     Notification notification = new Notification(
                                             "midpointSmartSuggestion",
-                                            "Midpoint Smart suggestion",
+                                            TITLE,
                                             "Generate Smart suggestion successful",
                                             NotificationType.INFORMATION
                                     );
@@ -206,6 +225,63 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                     }
                 }
         ).show();
+    }
+
+    private CompletableFuture<List<SmartSuggestionObject<T>>> generateSuggestions(
+            MidPointClient client,
+            GenerateSuggestionDataModel model
+    ) throws SchemaException, AuthenticationException, IOException {
+        CompletableFuture<List<SmartSuggestionObject<T>>> future =
+                new CompletableFuture<>();
+
+        if (model.getResourceOid() == null || model.getObjectClass() == null) {
+            future.complete(List.of());
+            return future;
+        }
+
+        String token = client.submitOperationSuggestionObjectType(
+                model.getResourceOid(),
+                model.getObjectClass().getObjectClassName()
+        );
+
+        if (token == null) {
+            future.completeExceptionally(
+                    new IllegalStateException("Submit operation failed. Token is null.")
+            );
+            return future;
+        }
+
+        var scheduler = Executors.newSingleThreadScheduledExecutor();
+
+        scheduler.scheduleWithFixedDelay(() -> {
+            try {
+                var statusInfo = client.getStatusInfoSuggestionObjectType(token);
+
+                if (statusInfo.getStatus().equals(OperationResultStatusType.IN_PROGRESS) ||
+                        statusInfo.getStatus().equals(OperationResultStatusType.UNKNOWN)
+                ) {
+                    return;
+                }
+
+                if (statusInfo.getStatus().equals(OperationResultStatusType.SUCCESS)) {
+                    future.complete(getResultSuggestions(statusInfo.getResult(), model));
+                    scheduler.shutdown();
+                }
+
+                if (!statusInfo.getStatus().equals(OperationResultStatusType.UNKNOWN)) {
+                    future.completeExceptionally(
+                        new RuntimeException("Task finished with status: " + statusInfo)
+                    );
+                    scheduler.shutdown();
+                }
+            } catch (Exception e) {
+                log.error(e);
+                future.completeExceptionally(e);
+                scheduler.shutdown();
+            }
+        }, 0, 2, TimeUnit.SECONDS);
+
+        return future;
     }
 
     protected ResourceType getResources(GenerateSuggestionDataModel generateSuggestionDataModel) {

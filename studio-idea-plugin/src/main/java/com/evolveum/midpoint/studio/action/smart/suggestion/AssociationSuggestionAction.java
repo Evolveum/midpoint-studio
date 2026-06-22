@@ -2,7 +2,6 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.util.ResourceTypeUtil;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
@@ -140,20 +139,14 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
     }
 
     @Override
-    List<SmartSuggestionObject<AssociationSuggestionType>> getSuggestions(
-            MidPointClient client,
-            GenerateSuggestionDataModel generateSuggestionDataModel
+    List<SmartSuggestionObject<AssociationSuggestionType>> getResultSuggestions(
+            AbstractSmartIntegrationOperationResultType result,
+            GenerateSuggestionDataModel model
     ) {
-        var associationSuggestion = client.getSuggestAssociations(
-                generateSuggestionDataModel.getResourceOid()
-        );
 
-        if (associationSuggestion == null) {
-            return null;
-        }
-
-        return associationSuggestion.getAssociation().stream()
-                .map(o -> new SmartSuggestionObject<>(o, getResources(generateSuggestionDataModel)))
+        return result.getAssociationsSuggestionType().getAssociation().stream()
+                .map(object ->
+                        new SmartSuggestionObject<>(object, getResources(model)))
                 .toList();
     }
 

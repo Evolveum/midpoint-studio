@@ -121,31 +121,24 @@ public class CorrelationRuleSuggestionAction extends SmartSuggestionAction<Items
     }
 
     @Override
-    List<SmartSuggestionObject<ItemsSubCorrelatorType>> getSuggestions(
-            MidPointClient client,
-            GenerateSuggestionDataModel generateSuggestionDataModel
+    List<SmartSuggestionObject<ItemsSubCorrelatorType>> getResultSuggestions(
+            AbstractSmartIntegrationOperationResultType result,
+            GenerateSuggestionDataModel model
     ) {
-        var correlationSuggestions = client.getSuggestCorrelationRule(
-                generateSuggestionDataModel.getResourceOid(),
-                generateSuggestionDataModel.getObjectType()
-        );
 
-        if (correlationSuggestions == null) {
-            return null;
-        }
-
-        return correlationSuggestions.getSuggestion().stream()
+        return result.getCorrelationSuggestions().getSuggestion().stream()
                 .flatMap(correlationSuggestionType ->
                         correlationSuggestionType.getCorrelation()
                                 .getCorrelators()
                                 .getItems()
                                 .stream()
-                                .map(o -> new SmartSuggestionObject<>(
-                                                o,
-                                                correlationSuggestionType,
-                                                getResources(generateSuggestionDataModel),
-                                                generateSuggestionDataModel.getObjectType()
-                                        )
+                                .map(object ->
+                                     new SmartSuggestionObject<>(
+                                             object,
+                                             correlationSuggestionType,
+                                             getResources(model),
+                                             model.getObjectType()
+                                     )
                                 )
                 )
                 .toList();

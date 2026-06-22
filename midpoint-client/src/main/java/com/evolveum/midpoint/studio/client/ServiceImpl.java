@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.client;
 import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
 import com.evolveum.midpoint.model.api.util.SmartIntegrationConstants;
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
@@ -15,7 +14,6 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -26,6 +24,7 @@ import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import jakarta.xml.bind.JAXBElement;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 import java.io.File;
@@ -564,71 +563,105 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public ObjectTypesSuggestionType getSuggestObjectType(String oid, QName objectClass) throws ClientException, SchemaException, AuthenticationException, IOException {
-
-        Map<String, Object> params = new HashMap<>();
-
-        params.put("resourceOid", oid);
-        params.put("objectClass", objectClass.getLocalPart());
-
-        Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_OBJECT_TYPES, params)
-                .get();
-
-        Request req = builder.build();
-
-        return executeRequest(req, ObjectTypesSuggestionType.class);
-    }
-
-    @Override
-    public CorrelationSuggestionsType getSuggestCorrelation(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
-        Map<String, Object> params = new HashMap<>();
-
-        params.put("resourceOid", oid);
-        params.put("kind", kind);
-        params.put("intent", intent);
-
-        Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_CORRELATIONS, params)
-                .get();
-
-        Request req = builder.build();
-
-        return executeRequest(req, CorrelationSuggestionsType.class);
-    }
-
-    @Override
-    public MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException {
-        Map<String, Object> params = new HashMap<>();
-
-        params.put("resourceOid", oid);
-        params.put("kind", kind);
-        params.put("intent", intent);
-        params.put("isInbound", isInbound);
+    public String submitOperationSuggestionObjectType(@NotNull String oid, QName objectClass) throws ClientException, SchemaException, AuthenticationException, IOException {
 
         Request.Builder builder = context.build(
-                "/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_MAPPINGS, params)
-                .get();
+                "/ws/smart-integration",
+                        SmartIntegrationConstants.RPC_SUGGEST_OBJECT_TYPES_SUBMIT_OPERATION,
+                        Map.of("resourceOid", oid,"objectClass", objectClass.getLocalPart())
+                ).post(RequestBody.EMPTY);
 
-        Request req = builder.build();
-
-        return executeRequest(req, MappingsSuggestionType.class);
+        return executeRequest(builder.build(), String.class);
     }
 
     @Override
-    public AssociationsSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException {
-        Map<String, Object> params = new HashMap<>();
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionObjectType(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
 
-        params.put("resourceOid", oid);
+        Request.Builder builder = context.build(
+                "/ws/smart-integration",
+                        SmartIntegrationConstants.RPC_SUGGEST_OBJECT_TYPES_STATUS_INFO,
+                        Map.of("token", token)
+                ).get();
 
-        Request.Builder builder = context.build("/ws/smart-integration", SmartIntegrationConstants.RPC_SUGGEST_ASSOCIATION_TYPE, params)
-                .get();
-
-        Request req = builder.build();
-
-        return executeRequest(req, AssociationsSuggestionType.class);
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
     }
 
     @Override
-    public File downloadConnector(String bundleName) throws IOException {
+    public String submitOperationSuggestionCorrelation(@NotNull String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(
+                "/ws/smart-integration",
+                SmartIntegrationConstants.RPC_SUGGEST_CORRELATIONS_SUBMIT_OPERATION,
+                Map.of("resourceOid", oid,"kind", kind, "intent", intent)
+        ).post(RequestBody.EMPTY);
+
+        return executeRequest(builder.build(), String.class);
+    }
+
+    @Override
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionCorrelation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(
+                "/ws/smart-integration",
+                SmartIntegrationConstants.RPC_SUGGEST_CORRELATIONS_STATUS_INFO,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
+    }
+
+    @Override
+    public String submitOperationSuggestionMapping(@NotNull String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(
+                "/ws/smart-integration",
+                SmartIntegrationConstants.RPC_SUGGEST_MAPPINGS_SUBMIT_OPERATION,
+                Map.of("resourceOid", oid,"kind", kind, "intent", intent, "isInbound", isInbound)
+        ).post(RequestBody.EMPTY);
+
+        return executeRequest(builder.build(), String.class);
+    }
+
+    @Override
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionMapping(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(
+                "/ws/smart-integration",
+                SmartIntegrationConstants.RPC_SUGGEST_MAPPINGS_STATUS_INFO,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
+    }
+
+
+    @Override
+    public String submitOperationSuggestionAssociation(@NotNull String oid) throws SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(
+                "/ws/smart-integration",
+                SmartIntegrationConstants.RPC_SUGGEST_ASSOCIATION_TYPE_SUBMIT_OPERATION,
+                Map.of("resourceOid", oid)
+        ).post(RequestBody.EMPTY);
+
+        return executeRequest(builder.build(), String.class);
+    }
+
+    @Override
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionAssociation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(
+                "/ws/smart-integration",
+                SmartIntegrationConstants.RPC_SUGGEST_ASSOCIATION_TYPE_STATUS_INFO,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
+    }
+
+
+    @Override
+    public File downloadConnector(@NotNull String bundleName) throws IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DOWNLOAD_CONNECTOR,
                 Map.of("name", bundleName)
@@ -660,7 +693,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public ConnectorDevelopmentType continueFrom(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public ConnectorDevelopmentType continueFrom(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_CONTINUE_FROM,
                 Map.of("oid", connectorDevelopmentOid)
@@ -670,162 +703,102 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public String submitOperationCreateConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationCreateConnector(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_SUBMIT_OPERATION,
                 Map.of("oid", connectorDevelopmentOid)
-        ).get();
+        ).post(RequestBody.EMPTY);
 
         return executeRequest(builder.build(), String.class);
     }
 
     @Override
-    public OperationResultStatusType getStatusCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoCreateConnector(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_STATUS,
+                ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_STATUS_INFO,
                 Map.of("token", token)
         ).get();
 
-        return executeRequest(builder.build(), OperationResultStatusType.class);
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
     }
 
     @Override
-    public String getMessageCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
-        Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_MESSAGE,
-                Map.of("token", token)
-        ).get();
-
-        return executeRequest(builder.build(), String.class);
-    }
-
-    @Override
-    public ConnDevCreateConnectorResultType getResultCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
-        Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_RESULT,
-                Map.of("token", token)
-        ).get();
-
-        return executeRequest(builder.build(), ConnDevCreateConnectorResultType.class);
-    }
-
-    @Override
-    public String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationDiscoverBasicInformation(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_SUBMIT_OPERATION,
                 Map.of("oid", connectorDevelopmentOid)
-        ).get();
+        ).post(RequestBody.EMPTY);
 
         return executeRequest(builder.build(), String.class);
     }
 
     @Override
-    public OperationResultStatusType getStatusDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverBasicInformation(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_STATUS,
+                ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_STATUS_INFO,
                 Map.of("token", token)
         ).get();
 
-        return executeRequest(builder.build(), OperationResultStatusType.class);
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
     }
 
     @Override
-    public String getMessageDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
-        Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_MESSAGE,
-                Map.of("token", token)
-        ).get();
-
-        return executeRequest(builder.build(), String.class);
-    }
-
-    @Override
-    public ConnDevDiscoverGlobalInformationResultType getResultDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
-        Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_RESULT,
-                Map.of("token", token)
-        ).get();
-
-        return executeRequest(builder.build(), ConnDevDiscoverGlobalInformationResultType.class);
-    }
-
-    @Override
-    public String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationDiscoverDocumentation(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_SUBMIT_OPERATION,
                 Map.of("oid", connectorDevelopmentOid)
-        ).get();
+        ).post(RequestBody.EMPTY);
 
         return executeRequest(builder.build(), String.class);
     }
 
     @Override
-    public OperationResultStatusType getStatusDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverDocumentation(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_STATUS,
+                ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_STATUS_INFO,
                 Map.of("token", token)
         ).get();
 
-        return executeRequest(builder.build(), OperationResultStatusType.class);
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
     }
 
     @Override
-    public String getMessageDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_MESSAGE,
-                Map.of("token", token)
-        ).get();
-
-        return executeRequest(builder.build(), String.class);
-    }
-
-    @Override
-    public ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_RESULT,
-                Map.of("token", token)
-        ).get();
-
-        return executeRequest(builder.build(), ConnDevDiscoverDocumentationResultType.class);
-    }
-
-    @Override
-    public String submitOperationProcessDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationProcessDocumentation(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_SUBMIT_OPERATION,
                 Map.of("oid", connectorDevelopmentOid)
-        ).get();
+        ).post(RequestBody.EMPTY);
 
         return executeRequest(builder.build(), String.class);
     }
 
     @Override
-    public OperationResultStatusType getStatusProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoProcessDocumentation(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_STATUS,
+                ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_STATUS_INFO,
                 Map.of("token", token)
         ).get();
 
-        return executeRequest(builder.build(), OperationResultStatusType.class);
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
     }
 
     @Override
-    public String getMessageProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationGenerateAuthenticationScript(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_MESSAGE,
-                Map.of("token", token)
-        ).get();
+                ConnectorGeneratorConstants.RPC_GENERATE_AUTHENTICATION_SCRIPT_SUBMIT_OPERATION,
+                Map.of("oid", connectorDevelopmentOid)
+        ).post(RequestBody.EMPTY);
 
         return executeRequest(builder.build(), String.class);
     }
 
     @Override
-    public ConnDevProcessDocumentationResultType getResultProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoGenerateArtifact(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
-                ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_RESULT,
+                ConnectorGeneratorConstants.RPC_GENERATE_ARTIFACT_STATUS_INFO,
                 Map.of("token", token)
         ).get();
 
-        return executeRequest(builder.build(), ConnDevProcessDocumentationResultType.class);
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
     }
 }

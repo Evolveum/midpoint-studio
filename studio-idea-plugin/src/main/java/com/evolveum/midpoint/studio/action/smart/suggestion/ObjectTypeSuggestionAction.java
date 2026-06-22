@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
@@ -9,7 +8,7 @@ import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestio
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.ui.treetable.FilterableColumnInfo;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectTypeDefinitionType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
@@ -106,21 +105,14 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
     }
 
     @Override
-    List<SmartSuggestionObject<ResourceObjectTypeDefinitionType>> getSuggestions(
-            MidPointClient client,
-            GenerateSuggestionDataModel generateSuggestionDataModel
+    List<SmartSuggestionObject<ResourceObjectTypeDefinitionType>> getResultSuggestions(
+            AbstractSmartIntegrationOperationResultType result,
+            GenerateSuggestionDataModel model
     ) {
-        var objectSuggestion = client.getSuggestObjectTypes(
-                generateSuggestionDataModel.getResourceOid(),
-                generateSuggestionDataModel.getObjectClass()
-        );
 
-        if (objectSuggestion == null) {
-            return null;
-        }
-
-        return objectSuggestion.getObjectType().stream()
-                .map(o -> new SmartSuggestionObject<>(o, getResources(generateSuggestionDataModel)))
-                .toList();
+        return result.getObjectTypesSuggestion().getObjectType().stream()
+                .map(object ->
+                        new SmartSuggestionObject<>(object, getResources(model))
+                ).toList();
     }
 }

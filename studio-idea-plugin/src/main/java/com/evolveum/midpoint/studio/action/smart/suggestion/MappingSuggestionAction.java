@@ -112,26 +112,17 @@ public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMapp
     }
 
     @Override
-    List<SmartSuggestionObject<AttributeMappingsSuggestionType>> getSuggestions(
-            MidPointClient client,
-            GenerateSuggestionDataModel generateSuggestionDataModel
+    List<SmartSuggestionObject<AttributeMappingsSuggestionType>> getResultSuggestions(
+            AbstractSmartIntegrationOperationResultType result,
+            GenerateSuggestionDataModel model
     ) {
-        var mappingsSuggestions = client.getSuggestMapping(
-                generateSuggestionDataModel.getResourceOid(),
-                generateSuggestionDataModel.getObjectType(),
-                generateSuggestionDataModel.getDirection().equals(GenerateSuggestionDataModel.Direction.INBOUND)
-        );
 
-        if (mappingsSuggestions == null) {
-            return null;
-        }
-
-        return mappingsSuggestions.getAttributeMappings().stream()
+        return result.getMappingsSuggestion().getAttributeMappings().stream()
                 .map(o -> new SmartSuggestionObject<>(
                         o,
                         null,
-                        getResources(generateSuggestionDataModel),
-                        generateSuggestionDataModel.getObjectType()
+                        getResources(model),
+                        model.getObjectType()
                 ))
                 .toList();
     }

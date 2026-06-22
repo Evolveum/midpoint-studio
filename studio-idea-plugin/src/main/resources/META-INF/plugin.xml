@@ -620,7 +620,7 @@
                 <reference ref="MidPoint.Action.DeleteRaw"/>
                 <reference ref="MidPoint.Action.Delete"/>
 
-                <group id="MidPoint.Group.Menu.TransferRelated.Converter"
+                <group id="ConverterActionGroup"
                        text="Convert"
                        description="Convert file to another format"
                        popup="true">
@@ -629,7 +629,7 @@
                     <reference ref="MidPoint.Action.Converter.ConvertToYaml"/>
                 </group>
 
-                <group id="MidPoint.Group.Menu.TransferRelated.SmartSuggestion"
+                <group id="SmartSuggestionActionGroup"
                        text="Suggestion"
                        description="Suggestion"
                        popup="true">

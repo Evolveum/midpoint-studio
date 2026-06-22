@@ -11,23 +11,21 @@ import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -502,55 +500,36 @@ public class MidPointClient {
         this.suppressNotifications = suppressNotifications;
     }
 
-    public ObjectTypesSuggestionType getSuggestObjectTypes(
-            @NotNull String oid,
-            @NotNull ResourceObjectClassDefinition objectClass
-    ) {
-        try {
-            return client.getSuggestObjectType(oid, objectClass.getObjectClassName());
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public String submitOperationSuggestionObjectType(String oid, QName objectClassName) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationSuggestionObjectType(oid, objectClassName);
     }
 
-    public CorrelationSuggestionsType getSuggestCorrelationRule(
-            @NotNull String oid,
-            @NotNull ResourceObjectTypeDefinitionType resourceObjectType
-    ) {
-        try {
-            return client.getSuggestCorrelation(oid, resourceObjectType.getKind().value(), resourceObjectType.getIntent());
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionObjectType(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoSuggestionObjectType(token);
     }
 
-    public MappingsSuggestionType getSuggestMapping(
-            @NotNull String oid,
-            @NotNull ResourceObjectTypeDefinitionType resourceObjectType,
-            boolean isInbound
-    ) {
-        try {
-            return client.getSuggestionMapping(
-                    oid, resourceObjectType.getKind().value(), resourceObjectType.getIntent(), isInbound);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public String submitOperationSuggestionObjectType(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationSuggestionCorrelation(oid, kind, intent);
     }
 
-    public AssociationsSuggestionType getSuggestAssociations(@NotNull String oid) {
-        try {
-            return client.getSuggestionAssociation(oid);
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionCorrelation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoSuggestionCorrelation(token);
+    }
 
-        return null;
+    public String submitOperationSuggestionMapping(String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationSuggestionMapping(oid, kind, intent, isInbound);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionMapping(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoSuggestionMapping(token);
+    }
+
+    public String submitOperationSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationSuggestionAssociation(oid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionAssociation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoSuggestionAssociation(token);
     }
 
     public File downloadConnector(String bundleName) {
@@ -571,63 +550,39 @@ public class MidPointClient {
         return client.submitOperationCreateConnector(connectorDevelopmentOid);
     }
 
-    public OperationResultStatusType getStatusCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusCreateConnector(token);
-    }
-
-    public String getMessageCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getMessageCreateConnector(token);
-    }
-
-    public ConnDevCreateConnectorResultType getResultCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getResultCreateConnector(token);
+    public SmartIntegrationOperationStatusInfoType getStatusInfoCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoCreateConnector(token);
     }
 
     public String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
         return client.submitOperationDiscoverBasicInformation(connectorDevelopmentOid);
     }
 
-    public OperationResultStatusType getStatusDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusDiscoverBasicInformation(token);
-    }
-
-    public String getMessageDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getMessageDiscoverBasicInformation(token);
-    }
-
-    public ConnDevDiscoverGlobalInformationResultType getResultDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getResultDiscoverBasicInformation(token);
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverBasicInformation(token);
     }
 
     public String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
         return client.submitOperationDiscoverDocumentation(connectorDevelopmentOid);
     }
 
-    public OperationResultStatusType getStatusDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusDiscoverDocumentation(token);
-    }
-
-    public String getMessageDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getMessageDiscoverDocumentation(token);
-    }
-
-    public ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getResultDiscoverDocumentation(token);
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverDocumentation(token);
     }
 
     public String submitOperationProcessDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
         return client.submitOperationProcessDocumentation(connectorDevelopmentOid);
     }
 
-    public OperationResultStatusType getStatusProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusProcessDocumentation(token);
+    public SmartIntegrationOperationStatusInfoType getStatusInfoProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoProcessDocumentation(token);
     }
 
-    public String getMessageProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getMessageProcessDocumentation(token);
+    public String submitOperationGenerateAuthenticationScript(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationGenerateAuthenticationScript(connectorDevelopmentOid);
     }
 
-    public ConnDevProcessDocumentationResultType getResultProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getResultProcessDocumentation(token);
+    public SmartIntegrationOperationStatusInfoType getStatusInfoGenerateArtifact(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoGenerateArtifact(token);
     }
 }

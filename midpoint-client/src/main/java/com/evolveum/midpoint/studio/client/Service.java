@@ -1,17 +1,17 @@
 package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 import java.io.File;
@@ -73,47 +73,43 @@ public interface Service {
 
     Map<SchemaFileType, String> getExtensionSchemas() throws IOException, SchemaException, AuthenticationException, ClientException;
 
-    ObjectTypesSuggestionType getSuggestObjectType(String oid, QName objectClas) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationSuggestionObjectType(@NotNull String oid, QName objectClass) throws ClientException, SchemaException, AuthenticationException, IOException;
 
-    CorrelationSuggestionsType getSuggestCorrelation(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException;
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionObjectType(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
 
-    MappingsSuggestionType getSuggestionMapping(String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationSuggestionCorrelation(@NotNull String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException;
 
-    AssociationsSuggestionType getSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException;
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionCorrelation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
 
-    File downloadConnector(String bundleName) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationSuggestionMapping(@NotNull String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException;
 
-    ConnectorDevelopmentType continueFrom(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionMapping(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
 
-    String submitOperationCreateConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationSuggestionAssociation(@NotNull String oid) throws SchemaException, AuthenticationException, IOException;
 
-    OperationResultStatusType getStatusCreateConnector(String token) throws SchemaException, AuthenticationException, IOException;
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionAssociation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
 
-    String getMessageCreateConnector(String token) throws SchemaException, AuthenticationException, IOException;
+    File downloadConnector(@NotNull String bundleName) throws SchemaException, AuthenticationException, IOException;
 
-    ConnDevCreateConnectorResultType getResultCreateConnector(String token) throws SchemaException, AuthenticationException, IOException;
+    ConnectorDevelopmentType continueFrom(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
-    String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationCreateConnector(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
-    OperationResultStatusType getStatusDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException;
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoCreateConnector(@NotNull String token) throws SchemaException, AuthenticationException, IOException;
 
-    String getMessageDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationDiscoverBasicInformation(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
-    ConnDevDiscoverGlobalInformationResultType getResultDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException;
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverBasicInformation(@NotNull String token) throws SchemaException, AuthenticationException, IOException;
 
-    String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationDiscoverDocumentation(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
-    OperationResultStatusType getStatusDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverDocumentation(@NotNull String token) throws SchemaException, AuthenticationException, IOException;
 
-    String getMessageDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationProcessDocumentation(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
-    ConnDevDiscoverDocumentationResultType getResultDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoProcessDocumentation(@NotNull String token) throws SchemaException, AuthenticationException, IOException;
 
-    String submitOperationProcessDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationGenerateAuthenticationScript(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException;
 
-    OperationResultStatusType getStatusProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
-
-    String getMessageProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
-
-    ConnDevProcessDocumentationResultType getResultProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException;
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoGenerateArtifact(@NotNull String token) throws SchemaException, AuthenticationException, IOException;
 }

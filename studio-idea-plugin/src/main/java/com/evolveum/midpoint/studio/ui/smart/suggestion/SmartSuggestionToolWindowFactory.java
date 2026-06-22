@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, DumbAware {
 
@@ -44,7 +45,7 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
 
     static private class SmartSuggestionToolWindowPreview extends JPanel {
 
-        final String SMART_SUGGESTION_GROUP_ACTION_ID = "MidPoint.Group.Menu.TransferRelated.SmartSuggestion";
+        final String SMART_SUGGESTION_GROUP_ACTION_ID = "SmartSuggestionActionGroup";
 
         Project project;
 
@@ -81,12 +82,18 @@ public class SmartSuggestionToolWindowFactory implements ToolWindowFactory, Dumb
             panel.add(featuresLabel);
             panel.add(Box.createVerticalStrut(10));
 
-            if (ActionManager.getInstance().getAction(SMART_SUGGESTION_GROUP_ACTION_ID) instanceof ActionGroup group) {
-                for (AnAction child : group.getChildren(null)) {
-                    JComponent itemComponent = featureItem(project, child);
-                    // FIXME description text responsive
-                    itemComponent.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
-                    panel.add(itemComponent);
+            AnAction smartSuggestionAction = ActionManager.getInstance().getAction(SMART_SUGGESTION_GROUP_ACTION_ID);
+
+            if (smartSuggestionAction instanceof DefaultActionGroup group) {
+                for (AnAction child : group.getChildActionsOrStubs()) {
+                    if (child instanceof ActionStub stub) {
+                        String id = stub.getId();
+                        child = ActionManager.getInstance().getAction(id);
+                    }
+
+                    if (child != null) {
+                        panel.add(featureItem(project, child));
+                    }
                 }
             }
 
