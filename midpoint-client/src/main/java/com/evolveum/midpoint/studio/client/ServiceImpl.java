@@ -587,7 +587,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public String submitOperationSuggestionCorrelation(@NotNull String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationSuggestionCorrelation(@NotNull String oid, String kind, String intent) throws ClientException, SchemaException, AuthenticationException, IOException {
 
         Request.Builder builder = context.build(
                 "/ws/smart-integration",
@@ -611,7 +611,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public String submitOperationSuggestionMapping(@NotNull String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationSuggestionMapping(@NotNull String oid, String kind, String intent, boolean isInbound) throws ClientException, SchemaException, AuthenticationException, IOException {
 
         Request.Builder builder = context.build(
                 "/ws/smart-integration",
@@ -636,7 +636,7 @@ public class ServiceImpl implements Service {
 
 
     @Override
-    public String submitOperationSuggestionAssociation(@NotNull String oid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationSuggestionAssociation(@NotNull String oid) throws ClientException, SchemaException, AuthenticationException, IOException {
 
         Request.Builder builder = context.build(
                 "/ws/smart-integration",
@@ -661,7 +661,7 @@ public class ServiceImpl implements Service {
 
 
     @Override
-    public File downloadConnector(@NotNull String bundleName) throws IOException {
+    public File downloadConnector(@NotNull String bundleName) throws ClientException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DOWNLOAD_CONNECTOR,
                 Map.of("name", bundleName)
@@ -693,7 +693,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public ConnectorDevelopmentType continueFrom(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public ConnectorDevelopmentType continueFrom(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_CONTINUE_FROM,
                 Map.of("oid", connectorDevelopmentOid)
@@ -703,7 +703,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public String submitOperationCreateConnector(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationCreateConnector(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_SUBMIT_OPERATION,
                 Map.of("oid", connectorDevelopmentOid)
@@ -713,7 +713,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public SmartIntegrationOperationStatusInfoType getStatusInfoCreateConnector(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoCreateConnector(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_STATUS_INFO,
                 Map.of("token", token)
@@ -723,7 +723,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public String submitOperationDiscoverBasicInformation(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationDiscoverBasicInformation(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_SUBMIT_OPERATION,
                 Map.of("oid", connectorDevelopmentOid)
@@ -733,7 +733,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverBasicInformation(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverBasicInformation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DISCOVER_BASIC_INFORMATION_STATUS_INFO,
                 Map.of("token", token)
@@ -743,7 +743,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public String submitOperationDiscoverDocumentation(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationDiscoverDocumentation(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_SUBMIT_OPERATION,
                 Map.of("oid", connectorDevelopmentOid)
@@ -753,7 +753,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverDocumentation(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverDocumentation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DISCOVER_DOCUMENTATION_STATUS_INFO,
                 Map.of("token", token)
@@ -763,7 +763,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public String submitOperationProcessDocumentation(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationProcessDocumentation(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_SUBMIT_OPERATION,
                 Map.of("oid", connectorDevelopmentOid)
@@ -773,7 +773,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public SmartIntegrationOperationStatusInfoType getStatusInfoProcessDocumentation(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoProcessDocumentation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_PROCESS_DOCUMENTATION_STATUS_INFO,
                 Map.of("token", token)
@@ -783,7 +783,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public String submitOperationGenerateAuthenticationScript(@NotNull String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationGenerateAuthenticationScript(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_GENERATE_AUTHENTICATION_SCRIPT_SUBMIT_OPERATION,
                 Map.of("oid", connectorDevelopmentOid)
@@ -793,7 +793,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public SmartIntegrationOperationStatusInfoType getStatusInfoGenerateArtifact(@NotNull String token) throws SchemaException, AuthenticationException, IOException {
+    public SmartIntegrationOperationStatusInfoType getStatusInfoGenerateArtifact(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_GENERATE_ARTIFACT_STATUS_INFO,
                 Map.of("token", token)

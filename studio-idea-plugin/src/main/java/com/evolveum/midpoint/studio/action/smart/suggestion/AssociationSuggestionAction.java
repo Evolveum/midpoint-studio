@@ -2,6 +2,8 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.util.ResourceTypeUtil;
+import com.evolveum.midpoint.studio.client.AuthenticationException;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
@@ -9,6 +11,7 @@ import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.Generat
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.ui.treetable.FilterableColumnInfo;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -21,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import java.io.IOException;
 import java.util.List;
 
 public class AssociationSuggestionAction extends SmartSuggestionAction<AssociationSuggestionType> {
@@ -136,6 +140,24 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
                     }
                 }
         ));
+    }
+
+    @Override
+    String submitOperation(
+            MidPointClient client,
+            GenerateSuggestionDataModel model
+    ) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationSuggestionAssociation(
+                model.getResourceOid()
+        );
+    }
+
+    @Override
+    SmartIntegrationOperationStatusInfoType getStatusInfo(
+            MidPointClient client,
+            String token
+    ) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoSuggestionAssociation(token);
     }
 
     @Override

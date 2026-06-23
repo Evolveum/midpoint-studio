@@ -9,7 +9,6 @@ import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
@@ -392,6 +391,7 @@ public class MidPointClient {
 
         String content = serializer.serialize(obj.getValue(), obj.getElementName().asSingleName());
         MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(Objects.requireNonNull(obj.getCompileTimeClass())), false);
+
         return client.upsert(object, options);
     }
 
@@ -508,7 +508,7 @@ public class MidPointClient {
         return client.getStatusInfoSuggestionObjectType(token);
     }
 
-    public String submitOperationSuggestionObjectType(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
+    public String submitOperationSuggestionCorrelation(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
         return client.submitOperationSuggestionCorrelation(oid, kind, intent);
     }
 

@@ -19,9 +19,7 @@ import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.ide.util.treeView.TreeState;
-import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -52,17 +50,30 @@ import java.util.concurrent.*;
 
 public abstract class SmartSuggestionAction<T> extends AnAction {
 
-    private final Logger log = Logger.getInstance(this.getClass());
-
     private final String TITLE = "Midpoint Smart suggestion";
 
     private String resourceOid;
 
-    abstract boolean isLockable();
-    abstract boolean getPresentation(PsiFile psiFile);
-    abstract GenerateSuggestionDataModel.ResourceDialogContextMode getModeDialogContext();
     abstract Logger getLogger();
+
+    abstract boolean isLockable();
+
+    abstract boolean getPresentation(PsiFile psiFile);
+
+    abstract GenerateSuggestionDataModel.ResourceDialogContextMode getModeDialogContext();
+
     abstract SmartSuggestionTableModel<T> getModel(Project project, PrismContext prismContext);
+
+    abstract String submitOperation(
+            MidPointClient client,
+            GenerateSuggestionDataModel resourceOid
+    ) throws SchemaException, AuthenticationException, IOException;
+
+    abstract SmartIntegrationOperationStatusInfoType getStatusInfo(
+            MidPointClient client,
+            String token
+    ) throws SchemaException, AuthenticationException, IOException;
+
     abstract List<SmartSuggestionObject<T>> getResultSuggestions(
             AbstractSmartIntegrationOperationResultType result,
             GenerateSuggestionDataModel model
@@ -145,85 +156,104 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
         dataModel.setResourceOid(uploadedResourceOid);
 
         new GenerateSuggestionWizard(
-                project,
-                TITLE + " - " + getTemplatePresentation().getText(),
-                dataModel,
-                () -> {
-                    String toolWindowId = "SmartSuggestionToolWindow";
-                    ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(toolWindowId);
+            project,
+            TITLE + " - " + getTemplatePresentation().getText(),
+            dataModel,
+            () -> {
+                String toolWindowId = "SmartSuggestionToolWindow";
+                ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(toolWindowId);
 
-                    if (toolWindow != null) {
-                        var contentManager = toolWindow.getContentManager();
-                        contentManager.removeAllContents(true);
+                if (toolWindow != null) {
+                    var contentManager = toolWindow.getContentManager();
+                    contentManager.removeAllContents(true);
 
-                        ProgressManager.getInstance().run(new Task.Backgroundable(
-                                project,
-                                "Generate suggestion",
-                                true
-                        ) {
+                    ProgressManager.getInstance().run(new Task.Backgroundable(
+                        project,
+                        "Generate suggestion",
+                        true
+                    ) {
 
-                            List<SmartSuggestionObject<T>> objectSuggestions = null;
+                        List<SmartSuggestionObject<T>> objectSuggestions = null;
 
-                            @Override
-                            public void run(@NotNull ProgressIndicator progressIndicator) {
-                                RunnableUtils.runWriteActionAndWait(() -> {
-                                    var psiFileResource = MidPointUtils.findPsiByOid(project, dataModel.getResourceOid());
-                                    MidPointUtils.openFile(
+                        @Override
+                        public void run(@NotNull ProgressIndicator progressIndicator) {
+                            RunnableUtils.runWriteActionAndWait(() -> {
+                                var psiFileResource = MidPointUtils.findPsiByOid(project, dataModel.getResourceOid());
+                                MidPointUtils.openFile(
+                                    project,
+                                    psiFileResource != null ? psiFileResource.getVirtualFile() : null
+                                );
+                            });
+
+                            try {
+
+                                generateSuggestions(client, dataModel).whenComplete((
+                                        result, ex
+                                ) -> {
+                                    if (ex != null) {
+                                        log.error("Couldn't generate suggestions", ex);
+                                        MidPointUtils.publishNotification(
                                             project,
-                                            psiFileResource != null ? psiFileResource.getVirtualFile() : null
-                                    );
-                                });
-
-                                try {
-                                    objectSuggestions = generateSuggestions(client, dataModel).get();
-                                } catch (SchemaException
-                                         | AuthenticationException
-                                         | IOException
-                                         | ExecutionException
-                                         | InterruptedException e
-                                ) {
-                                    log.error("Couldn't generate suggestions", e);
-                                    throw new RuntimeException(e);
-                                }
-                            }
-
-                            @Override
-                            public void onFinished() {
-                                if (objectSuggestions != null && !objectSuggestions.isEmpty()) {
-                                    var model = getModel(project, prismContext);
-                                    model.setData(objectSuggestions);
-                                    contentManager.addContent(ContentFactory.getInstance().createContent(
-                                            createTablePanel(model),
-                                            getTemplatePresentation().getText(),
-                                            isLockable()
-                                    ));
-
-                                    toolWindow.activate(() -> {
-                                        log.info("Content of tool window with ID '" + toolWindowId + "' was update");
-                                    });
-
-                                    Notification notification = new Notification(
                                             "midpointSmartSuggestion",
                                             TITLE,
-                                            "Generate Smart suggestion successful",
-                                            NotificationType.INFORMATION
-                                    );
-                                    Notifications.Bus.notify(notification, project);
-                                    log.info(notification.getContent());
-                                } else {
-                                    JLabel errorLabel = new JLabel("Suggestion not found");
-                                    errorLabel.setForeground(JBColor.RED);
-                                    errorLabel.setBorder(JBUI.Borders.empty(10, 15));
-                                    contentManager.addContent(ContentFactory.getInstance().createContent(
-                                            errorLabel, "Smart Suggestion", false));
-                                    log.warn(errorLabel.getText());
-                                }
+                                            "Couldn't generate suggestions",
+                                            NotificationType.ERROR
+                                        );
+                                    } else {
+                                        objectSuggestions = result;
+                                    }
+                                });
+                            } catch (Exception e) {
+
+                                log.error(e);
+                                MidPointUtils.publishNotification(
+                                    project,
+                                    "midpointSmartSuggestion",
+                                    TITLE,
+                                    e.getMessage(),
+                                    NotificationType.ERROR
+                                );
                             }
-                        });
-                    } else {
-                        log.error("Tool window with ID '" + toolWindowId + "' not found!");
-                    }
+                        }
+
+                        @Override
+                        public void onFinished() {
+                            if (objectSuggestions != null && !objectSuggestions.isEmpty()) {
+                                var model = getModel(project, prismContext);
+                                model.setData(objectSuggestions);
+                                contentManager.addContent(ContentFactory.getInstance().createContent(
+                                    createTablePanel(model),
+                                    getTemplatePresentation().getText(),
+                                    isLockable()
+                                ));
+
+                                toolWindow.activate(() ->
+                                log.info("Content of tool window with ID '" + toolWindowId + "' was update"));
+
+                                var infoMsg = "Generate Smart suggestion successful";
+
+                                log.info(infoMsg);
+                                MidPointUtils.publishNotification(
+                                    project,
+                                    "midpointSmartSuggestion",
+                                    TITLE,
+                                    infoMsg,
+                                    NotificationType.INFORMATION
+                                );
+                            } else {
+                                JLabel errorLabel = new JLabel("Suggestion not found");
+                                errorLabel.setForeground(JBColor.RED);
+                                errorLabel.setBorder(JBUI.Borders.empty(10, 15));
+                                contentManager.addContent(ContentFactory.getInstance().createContent(
+                                errorLabel, "Smart Suggestion", false));
+                                log.warn(errorLabel.getText());
+                            }
+                        }
+                    });
+                } else {
+                    log.error("Tool window with ID '" + toolWindowId + "' not found!");
                 }
+            }
         ).show();
     }
 
@@ -239,10 +269,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
             return future;
         }
 
-        String token = client.submitOperationSuggestionObjectType(
-                model.getResourceOid(),
-                model.getObjectClass().getObjectClassName()
-        );
+        String token = submitOperation(client, model);
 
         if (token == null) {
             future.completeExceptionally(
@@ -255,7 +282,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
         scheduler.scheduleWithFixedDelay(() -> {
             try {
-                var statusInfo = client.getStatusInfoSuggestionObjectType(token);
+                var statusInfo = getStatusInfo(client, token);
 
                 if (statusInfo.getStatus().equals(OperationResultStatusType.IN_PROGRESS) ||
                         statusInfo.getStatus().equals(OperationResultStatusType.UNKNOWN)
@@ -275,7 +302,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                     scheduler.shutdown();
                 }
             } catch (Exception e) {
-                log.error(e);
+                getLogger().error(e);
                 future.completeExceptionally(e);
                 scheduler.shutdown();
             }
