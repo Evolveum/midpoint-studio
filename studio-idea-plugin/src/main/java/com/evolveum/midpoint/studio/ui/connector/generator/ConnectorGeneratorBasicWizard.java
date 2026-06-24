@@ -30,7 +30,7 @@ public class ConnectorGeneratorBasicWizard extends ConnectorGeneratorWizard {
         super(client.getProject());
         this.client = client;
         getHelpButton().setVisible(false);
-        setSize(1300, 600);
+        setSize(1300, 900);
         buildSteps();
         init();
     }

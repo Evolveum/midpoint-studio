@@ -111,13 +111,12 @@ public class ConnectorGeneratorAction extends AnAction {
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            if (oid != null) {
-                ApplicationManager.getApplication().invokeLater(() ->
-                        new ConnectorGeneratorContinueWizard(client, oid).show());
-            } else {
-                ApplicationManager.getApplication().invokeLater(() ->
-                        new ConnectorGeneratorBasicWizard(client).show());
-            }
+            ApplicationManager.getApplication().invokeLater(() ->
+                    (oid != null
+                            ? new ConnectorGeneratorContinueWizard(client, oid)
+                            : new ConnectorGeneratorBasicWizard(client)
+                    ).show()
+            );
         }
     }
 }

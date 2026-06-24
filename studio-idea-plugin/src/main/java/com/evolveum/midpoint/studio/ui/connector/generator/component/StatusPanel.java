@@ -16,13 +16,10 @@ import java.awt.*;
 
 public class StatusPanel {
 
-    private final String ELAPSED_TEXT = "Elapsed time: %dm %ds";
-
     private String text;
     private String subText;
-    private long elapsed;
 
-    private JBLabel elapsedLabel;
+    private ElapsedTimerLabel elapsedLabel;
 
     public String getText() {
         return text;
@@ -40,16 +37,8 @@ public class StatusPanel {
         this.subText = subText;
     }
 
-    public long getElapsed() {
-        return elapsed;
-    }
-
-    public void setElapsed(long elapsed) {
-        this.elapsed = elapsed;
-    }
-
-    public void updateElapsed(long elapsed) {
-        this.elapsedLabel.setText(ELAPSED_TEXT.formatted(elapsed / 60, elapsed % 60));
+    public ElapsedTimerLabel getElapsedLabel() {
+        return elapsedLabel;
     }
 
     public JBPanel<?> showAlertPanel(String title, String description, JBColor color) {
@@ -111,8 +100,8 @@ public class StatusPanel {
         StyleConstants.setAlignment(centerAttribute, StyleConstants.ALIGN_CENTER);
         doc.setParagraphAttributes(0, doc.getLength(), centerAttribute, false);
 
-        elapsedLabel = new JBLabel(ELAPSED_TEXT.formatted(elapsed / 60, elapsed % 60), SwingConstants.CENTER);
-        elapsedLabel.setForeground(UIUtil.getInactiveTextColor());
+        elapsedLabel = new ElapsedTimerLabel(elapsed);
+        elapsedLabel.start();
         panel.add(elapsedLabel);
 
         return panel;

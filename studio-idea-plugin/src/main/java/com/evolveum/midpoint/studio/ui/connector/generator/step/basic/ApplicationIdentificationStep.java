@@ -21,8 +21,6 @@ public class ApplicationIdentificationStep extends ConnectorGeneratorGeneralWiza
     private ApplicationIdentification applicationIdentification;
     private final JPanel mainPanel = new JPanel(new BorderLayout());
 
-    private final String COMBO_BOX_ITEM_UNDEFINED = "Undefined";
-
     public ApplicationIdentificationStep(
             ConnectorGeneratorWizard wizardContext,
             MidPointClient client,
@@ -56,7 +54,7 @@ public class ApplicationIdentificationStep extends ConnectorGeneratorGeneralWiza
         }
 
         if (applicationIdentification.getIntegrationTypeCombo().getSelectedItem() == null ||
-                applicationIdentification.getIntegrationTypeCombo().getSelectedItem().equals(COMBO_BOX_ITEM_UNDEFINED)) {
+                applicationIdentification.getIntegrationTypeCombo().getSelectedItem().equals(applicationIdentification.COMBO_BOX_ITEM_UNDEFINED)) {
             throw new CommitStepException("Field Integration Type is required");
         }
 
@@ -69,7 +67,7 @@ public class ApplicationIdentificationStep extends ConnectorGeneratorGeneralWiza
 
             upsertConnectorDevelopmentType(connectorDevelopmentType);
         } catch (Exception ex) {
-            throw new CommitStepException("Couldn't upsert connector development type");
+            throw new CommitStepException("Couldn't upsert connector development type \n" + ex.getMessage());
         }
 
         setState(GenerateConnectorBadge.State.COMPLETE);
@@ -83,12 +81,12 @@ public class ApplicationIdentificationStep extends ConnectorGeneratorGeneralWiza
         connDevApplicationInfoType.setVersion(applicationIdentification.getVersionField().getText());
         connDevApplicationInfoType.setDescription(applicationIdentification.getDescriptionArea().getText());
         connDevApplicationInfoType.setIntegrationType(
-                applicationIdentification.getIntegrationTypeCombo().getSelectedItem() instanceof String s && !s.equals(COMBO_BOX_ITEM_UNDEFINED)
+                applicationIdentification.getIntegrationTypeCombo().getSelectedItem() instanceof String s && !s.equals(applicationIdentification.COMBO_BOX_ITEM_UNDEFINED)
                         ? ConnDevIntegrationType.fromValue(s.toLowerCase())
                         : null
         );
         connDevApplicationInfoType.setDeploymentType(
-                applicationIdentification.getDeploymentTypeCombo().getSelectedItem() instanceof String s && !s.equals(COMBO_BOX_ITEM_UNDEFINED)
+                applicationIdentification.getDeploymentTypeCombo().getSelectedItem() instanceof String s && !s.equals(applicationIdentification.COMBO_BOX_ITEM_UNDEFINED)
                         ? ConnDevDeploymentType.fromValue(s.toLowerCase())
                         : null
         );

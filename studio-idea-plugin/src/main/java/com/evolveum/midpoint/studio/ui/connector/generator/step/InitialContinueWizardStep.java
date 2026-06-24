@@ -45,13 +45,13 @@ public class InitialContinueWizardStep extends ConnectorGeneratorGeneralWizardSt
                 try {
                     getDataModel().connectorDevelopmentType = getClient().continueFrom(oid);
                 } catch (SchemaException | AuthenticationException | IOException ex) {
-                    printAlert(mainPanel, initialContinueWizard.getStatusPanel(), "Error", ex.getMessage());
+                    printAlertPanel(mainPanel, initialContinueWizard.getStatusPanel(), "Error", ex.getMessage());
                     throw new RuntimeException(ex);
                 }
             }, "ContinueFrom Development Connector", true, getClient().getProject());
 
             if (!success) {
-                printAlert(mainPanel,
+                printAlertPanel(mainPanel,
                         initialContinueWizard.getStatusPanel(),
                         "Error",
                         "Continue from Development Connector failed"

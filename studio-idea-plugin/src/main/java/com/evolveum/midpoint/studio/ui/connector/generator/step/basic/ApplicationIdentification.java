@@ -9,7 +9,7 @@ import javax.swing.*;
 
 public class ApplicationIdentification {
 
-    private final String COMBO_BOX_ITEM_UNDEFINED = "Undefined";
+    protected final String COMBO_BOX_ITEM_UNDEFINED = "Undefined";
 
     private final ConnectorGeneratorDataModel dataModel;
 
