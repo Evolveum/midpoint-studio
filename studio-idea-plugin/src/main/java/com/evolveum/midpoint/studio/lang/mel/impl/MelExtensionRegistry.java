@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.lang.mel.impl;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ public class MelExtensionRegistry {
     }
 
     // JSON DTOs, mirroring mel-extensions.json structure
+    @JsonIgnoreProperties({"$schema"}) // editor hint for JSON Schema validation/autocomplete, not part of the data model
     private record Definitions(Map<String, Namespace> namespaces) {
     }
 

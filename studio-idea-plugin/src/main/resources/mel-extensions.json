@@ -1,4 +1,5 @@
 {
+  "$schema": "mel-extensions.schema.json",
   "namespaces": {
     "format": {
       "functions": [

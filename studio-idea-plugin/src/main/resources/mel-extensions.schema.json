@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://evolveum.com/midpoint-studio/mel-extensions.schema.json",
+  "title": "MEL Extension Definitions",
+  "description": "Describes MEL language extension namespaces (format, log, ldap, secret, ...) and the functions they provide. Loaded by MelExtensionRegistry to drive semantic analysis and code completion for MEL expressions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "namespaces"
+  ],
+  "properties": {
+    "namespaces": {
+      "type": "object",
+      "description": "Map of namespace identifier (e.g. 'format', 'log') to its definition. Key is the prefix used in MEL, e.g. format.strftime(...).",
+      "additionalProperties": {
+        "$ref": "#/definitions/namespace"
+      }
+    }
+  },
+  "definitions": {
+    "namespace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "functions"
+      ],
+      "properties": {
+        "functions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/function"
+          }
+        }
+      }
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "receiverTypes",
+        "parameters",
+        "returnType",
+        "variadic"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Function name as called in MEL, e.g. 'strftime' (used as 'format.strftime(...)' or, for dual-mode functions, 'value.strftime(...)')."
+        },
+        "receiverTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "MEL types this function can be called on as a member function (e.g. ['timestamp']). Empty array means the function is namespace-only and has no member-call form. A non-empty set (including a future '*' wildcard) makes the function 'dual-mode': callable both as namespace.fn(...) and as receiver.fn(...)."
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/parameter"
+          },
+          "description": "Declared parameters in call order. For dual-mode functions this includes the receiver as the first parameter (matching the namespace-call form), e.g. strftime(value: timestamp, format: string)."
+        },
+        "returnType": {
+          "type": "string",
+          "description": "MEL type of the function's result, e.g. 'string', 'timestamp', 'bytes', 'any'."
+        },
+        "variadic": {
+          "type": "boolean",
+          "description": "True if the function accepts a variable number of trailing arguments beyond those listed in 'parameters' (e.g. log functions accepting extra format arguments)."
+        }
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Parameter name, used for documentation/completion only (MEL extension calls are positional)."
+        },
+        "type": {
+          "type": "string",
+          "description": "MEL type of the parameter, e.g. 'string', 'list', 'timestamp', 'any'."
+        }
+      }
+    }
+  }
+}
