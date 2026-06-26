@@ -16,11 +16,11 @@ import java.util.Set;
 
 public class MelExtensionValidator extends MELBaseVisitor<Void> {
 
-    private static final MelExtensionRegistry REGISTRY = new MelExtensionRegistry();
+    static final MelExtensionRegistry REGISTRY = new MelExtensionRegistry();
 
     // MEL variables — namespace identifiers (format, log, ldap, secret) are derived from the
     // registry so that adding a new namespace there automatically allows its bare use as a receiver.
-    private static final Set<String> KNOWN_IDENTIFIERS;
+    static final Set<String> KNOWN_IDENTIFIERS;
 
     static {
         var ids = new java.util.HashSet<>(Set.of("focus", "projection", "now"));
@@ -28,13 +28,13 @@ public class MelExtensionValidator extends MELBaseVisitor<Void> {
         KNOWN_IDENTIFIERS = Collections.unmodifiableSet(ids);
     }
 
-    private static final Set<String> KNOWN_MEMBER_FUNCTIONS = Set.of(
+    static final Set<String> KNOWN_MEMBER_FUNCTIONS = Set.of(
             "contains", "startsWith", "endsWith", "matches", "lower", "upper",
             "filter", "map", "exists", "all", "find",
             "isEffectivelyEnabled", "connectorConfiguration", "orig", "norm", "decrypt"
     );
 
-    private static final Set<String> KNOWN_GLOBAL_FUNCTIONS = Set.of(
+    static final Set<String> KNOWN_GLOBAL_FUNCTIONS = Set.of(
             // standard CEL
             "size", "matches", "type",
             // MEL built-ins

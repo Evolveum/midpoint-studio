@@ -220,6 +220,10 @@
 
         <externalAnnotator language="MEL"
                            implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelExternalAnnotator"/>
+        <annotator language="MEL"
+                   implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelAnnotator"/>
+        <completion.contributor language="MEL"
+                                implementationClass="com.evolveum.midpoint.studio.lang.mel.impl.MelCompletionContributor"/>
         <!-- CEL/MEL language support end -->
 
         <xml.schemaProvider implementation="com.evolveum.midpoint.studio.impl.lang.MidPointXmlSchemaProvider"/>

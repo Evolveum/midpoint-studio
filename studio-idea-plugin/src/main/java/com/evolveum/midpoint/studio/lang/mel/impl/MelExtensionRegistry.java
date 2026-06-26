@@ -4,7 +4,8 @@ import java.util.*;
 
 public class MelExtensionRegistry {
 
-    record Parameter(String name, String type) {}
+    record Parameter(String name, String type) {
+    }
 
     record ExtensionFunction(
             String name,
@@ -12,7 +13,8 @@ public class MelExtensionRegistry {
             List<Parameter> parameters,
             String returnType,
             boolean variadic
-    ) {}
+    ) {
+    }
 
     // Map: namespace -> (functionName -> ExtensionFunction)
     private static final Map<String, Map<String, ExtensionFunction>> EXTENSIONS;
@@ -23,8 +25,8 @@ public class MelExtensionRegistry {
     static {
         EXTENSIONS = Map.of(
                 "format", formatFunctions(),
-                "log",    logFunctions(),
-                "ldap",   ldapFunctions(),
+                "log", logFunctions(),
+                "ldap", ldapFunctions(),
                 "secret", secretFunctions()
         );
         DUAL_MODE_FUNCTIONS = EXTENSIONS.values().stream()
@@ -38,7 +40,9 @@ public class MelExtensionRegistry {
     // Query API (used by MelSemanticAnalyzer today)
     // -------------------------------------------------------------------------
 
-    /** Returns true if {@code function} is a valid call on the given extension namespace. */
+    /**
+     * Returns true if {@code function} is a valid call on the given extension namespace.
+     */
     boolean isValidNamespaceCall(String namespace, String function) {
         var fns = EXTENSIONS.get(namespace);
         return fns != null && fns.containsKey(function);
@@ -54,29 +58,25 @@ public class MelExtensionRegistry {
         return DUAL_MODE_FUNCTIONS.contains(function);
     }
 
-    /** Returns the set of all known extension namespace identifiers. */
+    /**
+     * Returns the set of all known extension namespace identifiers.
+     */
     Set<String> namespaces() {
         return EXTENSIONS.keySet();
     }
 
-    /** Returns true if {@code identifier} is a known extension namespace. */
+    /**
+     * Returns true if {@code identifier} is a known extension namespace.
+     */
     boolean isNamespace(String identifier) {
         return EXTENSIONS.containsKey(identifier);
     }
 
-    /**
-     * Returns the full function definition for future arity/type validation.
-     * Returns empty if the namespace or function name is unknown.
-     */
-    Optional<ExtensionFunction> getFunction(String namespace, String function) {
+    Collection<ExtensionFunction> functionsForNamespace(String namespace) {
         var fns = EXTENSIONS.get(namespace);
-        if (fns == null) return Optional.empty();
-        return Optional.ofNullable(fns.get(function));
+        return fns != null ? fns.values() : List.of();
     }
 
-    // -------------------------------------------------------------------------
-    // Extension definitions (per MEL specification)
-    // -------------------------------------------------------------------------
 
     private static Map<String, ExtensionFunction> formatFunctions() {
         var fns = new ArrayList<ExtensionFunction>();
@@ -138,9 +138,9 @@ public class MelExtensionRegistry {
         // All log functions share the same parameter shape and are variadic
         var params = List.of(new Parameter("format", "string"), new Parameter("value", "any"));
         return toMap(List.of(
-                fn("info",  Set.of(), params, "any", true),
+                fn("info", Set.of(), params, "any", true),
                 fn("error", Set.of(), params, "any", true),
-                fn("warn",  Set.of(), params, "any", true),
+                fn("warn", Set.of(), params, "any", true),
                 fn("debug", Set.of(), params, "any", true),
                 fn("trace", Set.of(), params, "any", true)
         ));
@@ -174,15 +174,11 @@ public class MelExtensionRegistry {
     private static Map<String, ExtensionFunction> secretFunctions() {
         var params = List.of(new Parameter("provider", "string"), new Parameter("key", "string"));
         return toMap(List.of(
-                fn("resolveBinary",          Set.of(), params, "bytes",           false),
-                fn("resolveString",          Set.of(), params, "string",          false),
+                fn("resolveBinary", Set.of(), params, "bytes", false),
+                fn("resolveString", Set.of(), params, "string", false),
                 fn("resolveProtectedString", Set.of(), params, "protectedString", false)
         ));
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
 
     private static ExtensionFunction fn(String name, Set<String> receiverTypes,
                                         List<Parameter> parameters,
