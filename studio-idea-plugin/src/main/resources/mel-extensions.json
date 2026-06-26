@@ -1,0 +1,242 @@
+{
+  "namespaces": {
+    "format": {
+      "functions": [
+        {
+          "name": "concatName",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "components", "type": "list" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "strftime",
+          "receiverTypes": ["timestamp"],
+          "parameters": [
+            { "name": "value", "type": "timestamp" },
+            { "name": "format", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "formatDateTime",
+          "receiverTypes": ["timestamp"],
+          "parameters": [
+            { "name": "value", "type": "timestamp" },
+            { "name": "format", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "strptime",
+          "receiverTypes": ["string"],
+          "parameters": [
+            { "name": "value", "type": "string" },
+            { "name": "format", "type": "string" }
+          ],
+          "returnType": "timestamp",
+          "variadic": false
+        },
+        {
+          "name": "parseDateTime",
+          "receiverTypes": ["string"],
+          "parameters": [
+            { "name": "value", "type": "string" },
+            { "name": "format", "type": "string" }
+          ],
+          "returnType": "timestamp",
+          "variadic": false
+        },
+        {
+          "name": "parseGivenName",
+          "receiverTypes": ["string"],
+          "parameters": [
+            { "name": "value", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "parseFamilyName",
+          "receiverTypes": ["string"],
+          "parameters": [
+            { "name": "value", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "parseAdditionalName",
+          "receiverTypes": ["string"],
+          "parameters": [
+            { "name": "value", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "parseNickName",
+          "receiverTypes": ["string"],
+          "parameters": [
+            { "name": "value", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "parseHonorificPrefix",
+          "receiverTypes": ["string"],
+          "parameters": [
+            { "name": "value", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "parseHonorificSuffix",
+          "receiverTypes": ["string"],
+          "parameters": [
+            { "name": "value", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        }
+      ]
+    },
+    "log": {
+      "functions": [
+        {
+          "name": "info",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "format", "type": "string" },
+            { "name": "value", "type": "any" }
+          ],
+          "returnType": "any",
+          "variadic": true
+        },
+        {
+          "name": "error",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "format", "type": "string" },
+            { "name": "value", "type": "any" }
+          ],
+          "returnType": "any",
+          "variadic": true
+        },
+        {
+          "name": "warn",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "format", "type": "string" },
+            { "name": "value", "type": "any" }
+          ],
+          "returnType": "any",
+          "variadic": true
+        },
+        {
+          "name": "debug",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "format", "type": "string" },
+            { "name": "value", "type": "any" }
+          ],
+          "returnType": "any",
+          "variadic": true
+        },
+        {
+          "name": "trace",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "format", "type": "string" },
+            { "name": "value", "type": "any" }
+          ],
+          "returnType": "any",
+          "variadic": true
+        }
+      ]
+    },
+    "ldap": {
+      "functions": [
+        {
+          "name": "composeDn",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "components", "type": "list" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "composeDnWithSuffix",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "components", "type": "list" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "hashPassword",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "password", "type": "any" },
+            { "name": "algorithm", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "determineSingleAttributeValue",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "dn", "type": "string" },
+            { "name": "attributeName", "type": "string" },
+            { "name": "values", "type": "list" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        }
+      ]
+    },
+    "secret": {
+      "functions": [
+        {
+          "name": "resolveBinary",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "provider", "type": "string" },
+            { "name": "key", "type": "string" }
+          ],
+          "returnType": "bytes",
+          "variadic": false
+        },
+        {
+          "name": "resolveString",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "provider", "type": "string" },
+            { "name": "key", "type": "string" }
+          ],
+          "returnType": "string",
+          "variadic": false
+        },
+        {
+          "name": "resolveProtectedString",
+          "receiverTypes": [],
+          "parameters": [
+            { "name": "provider", "type": "string" },
+            { "name": "key", "type": "string" }
+          ],
+          "returnType": "protectedString",
+          "variadic": false
+        }
+      ]
+    }
+  }
+}

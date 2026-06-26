@@ -1,8 +1,14 @@
 package com.evolveum.midpoint.studio.lang.mel.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public class MelExtensionRegistry {
+
+    private static final String DEFINITIONS_RESOURCE = "/mel-extensions.json";
 
     record Parameter(String name, String type) {
     }
@@ -16,6 +22,22 @@ public class MelExtensionRegistry {
     ) {
     }
 
+    // JSON DTOs, mirroring mel-extensions.json structure
+    private record Definitions(Map<String, Namespace> namespaces) {
+    }
+
+    private record Namespace(List<FunctionDef> functions) {
+    }
+
+    private record FunctionDef(
+            String name,
+            List<String> receiverTypes,
+            List<Parameter> parameters,
+            String returnType,
+            boolean variadic
+    ) {
+    }
+
     // Map: namespace -> (functionName -> ExtensionFunction)
     private static final Map<String, Map<String, ExtensionFunction>> EXTENSIONS;
 
@@ -23,17 +45,40 @@ public class MelExtensionRegistry {
     private static final Set<String> DUAL_MODE_FUNCTIONS;
 
     static {
-        EXTENSIONS = Map.of(
-                "format", formatFunctions(),
-                "log", logFunctions(),
-                "ldap", ldapFunctions(),
-                "secret", secretFunctions()
-        );
+        EXTENSIONS = loadExtensions();
         DUAL_MODE_FUNCTIONS = EXTENSIONS.values().stream()
                 .flatMap(m -> m.values().stream())
                 .filter(f -> !f.receiverTypes().isEmpty())
                 .map(ExtensionFunction::name)
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
+    }
+
+    private static Map<String, Map<String, ExtensionFunction>> loadExtensions() {
+        var mapper = new ObjectMapper();
+
+        try (InputStream is = MelExtensionRegistry.class.getResourceAsStream(DEFINITIONS_RESOURCE)) {
+            if (is == null) {
+                throw new IllegalStateException("MEL extension definitions not found on classpath: " + DEFINITIONS_RESOURCE);
+            }
+
+            var definitions = mapper.readValue(is, Definitions.class);
+
+            var result = new LinkedHashMap<String, Map<String, ExtensionFunction>>();
+            for (var entry : definitions.namespaces().entrySet()) {
+                var fns = entry.getValue().functions().stream()
+                        .map(f -> new ExtensionFunction(
+                                f.name(),
+                                Set.copyOf(f.receiverTypes()),
+                                f.parameters(),
+                                f.returnType(),
+                                f.variadic()))
+                        .toList();
+                result.put(entry.getKey(), toMap(fns));
+            }
+            return Collections.unmodifiableMap(result);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load MEL extension definitions from " + DEFINITIONS_RESOURCE, e);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -75,115 +120,6 @@ public class MelExtensionRegistry {
     Collection<ExtensionFunction> functionsForNamespace(String namespace) {
         var fns = EXTENSIONS.get(namespace);
         return fns != null ? fns.values() : List.of();
-    }
-
-
-    private static Map<String, ExtensionFunction> formatFunctions() {
-        var fns = new ArrayList<ExtensionFunction>();
-
-        // namespace-only (no member-call form)
-        fns.add(fn("concatName",
-                Set.of(),
-                List.of(new Parameter("components", "list")),
-                "string", false));
-
-        // dual-mode: timestamp receiver
-        fns.add(fn("strftime",
-                Set.of("timestamp"),
-                List.of(new Parameter("value", "timestamp"), new Parameter("format", "string")),
-                "string", false));
-        fns.add(fn("formatDateTime",
-                Set.of("timestamp"),
-                List.of(new Parameter("value", "timestamp"), new Parameter("format", "string")),
-                "string", false));
-
-        // dual-mode: string receiver
-        fns.add(fn("strptime",
-                Set.of("string"),
-                List.of(new Parameter("value", "string"), new Parameter("format", "string")),
-                "timestamp", false));
-        fns.add(fn("parseDateTime",
-                Set.of("string"),
-                List.of(new Parameter("value", "string"), new Parameter("format", "string")),
-                "timestamp", false));
-        fns.add(fn("parseGivenName",
-                Set.of("string"),
-                List.of(new Parameter("value", "string")),
-                "string", false));
-        fns.add(fn("parseFamilyName",
-                Set.of("string"),
-                List.of(new Parameter("value", "string")),
-                "string", false));
-        fns.add(fn("parseAdditionalName",
-                Set.of("string"),
-                List.of(new Parameter("value", "string")),
-                "string", false));
-        fns.add(fn("parseNickName",
-                Set.of("string"),
-                List.of(new Parameter("value", "string")),
-                "string", false));
-        fns.add(fn("parseHonorificPrefix",
-                Set.of("string"),
-                List.of(new Parameter("value", "string")),
-                "string", false));
-        fns.add(fn("parseHonorificSuffix",
-                Set.of("string"),
-                List.of(new Parameter("value", "string")),
-                "string", false));
-
-        return toMap(fns);
-    }
-
-    private static Map<String, ExtensionFunction> logFunctions() {
-        // All log functions share the same parameter shape and are variadic
-        var params = List.of(new Parameter("format", "string"), new Parameter("value", "any"));
-        return toMap(List.of(
-                fn("info", Set.of(), params, "any", true),
-                fn("error", Set.of(), params, "any", true),
-                fn("warn", Set.of(), params, "any", true),
-                fn("debug", Set.of(), params, "any", true),
-                fn("trace", Set.of(), params, "any", true)
-        ));
-    }
-
-    private static Map<String, ExtensionFunction> ldapFunctions() {
-        return toMap(List.of(
-                fn("composeDn",
-                        Set.of(),
-                        List.of(new Parameter("components", "list")),
-                        "string", false),
-                fn("composeDnWithSuffix",
-                        Set.of(),
-                        List.of(new Parameter("components", "list")),
-                        "string", false),
-                fn("hashPassword",
-                        Set.of(),
-                        List.of(new Parameter("password", "any"), new Parameter("algorithm", "string")),
-                        "string", false),
-                fn("determineSingleAttributeValue",
-                        Set.of(),
-                        List.of(
-                                new Parameter("dn", "string"),
-                                new Parameter("attributeName", "string"),
-                                new Parameter("values", "list")
-                        ),
-                        "string", false)
-        ));
-    }
-
-    private static Map<String, ExtensionFunction> secretFunctions() {
-        var params = List.of(new Parameter("provider", "string"), new Parameter("key", "string"));
-        return toMap(List.of(
-                fn("resolveBinary", Set.of(), params, "bytes", false),
-                fn("resolveString", Set.of(), params, "string", false),
-                fn("resolveProtectedString", Set.of(), params, "protectedString", false)
-        ));
-    }
-
-    private static ExtensionFunction fn(String name, Set<String> receiverTypes,
-                                        List<Parameter> parameters,
-                                        String returnType, boolean variadic) {
-        return new ExtensionFunction(name, receiverTypes, parameters, returnType, variadic);
     }
 
     private static Map<String, ExtensionFunction> toMap(List<ExtensionFunction> fns) {

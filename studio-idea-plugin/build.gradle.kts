@@ -177,6 +177,7 @@ dependencies {
         exclude("stax", "stax-api")
     }
     implementation(libs.commons.lang)
+    implementation(libs.jackson.databind)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
 
