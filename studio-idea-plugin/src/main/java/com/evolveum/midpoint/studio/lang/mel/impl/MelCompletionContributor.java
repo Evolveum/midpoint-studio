@@ -41,7 +41,7 @@ public class MelCompletionContributor extends CompletionContributor {
 
             if (textBeforePrefix.endsWith(".")) {
                 String beforeDot = textBeforePrefix.substring(0, textBeforePrefix.length() - 1).stripTrailing();
-                String receiver = extractLastIdentifier(beforeDot);
+                String receiver = MelUtils.extractLastIdentifier(beforeDot);
 
                 if (REGISTRY.isNamespace(receiver)) {
                     addNamespaceFunctions(receiver, result);
@@ -58,7 +58,7 @@ public class MelCompletionContributor extends CompletionContributor {
             for (var fn : REGISTRY.functionsForNamespace(namespace)) {
                 result.addElement(
                         LookupElementBuilder.create(fn.name())
-                                .withTailText(formatParams(fn), true)
+                                .withTailText(formatParams(fn) + tailDescription(fn), true)
                                 .withTypeText(fn.returnType())
                                 .withInsertHandler(PARENS_INSERT));
             }
@@ -76,7 +76,7 @@ public class MelCompletionContributor extends CompletionContributor {
                     if (!fn.receiverTypes().isEmpty()) {
                         result.addElement(
                                 LookupElementBuilder.create(fn.name())
-                                        .withTailText(formatParams(fn), true)
+                                        .withTailText(formatParams(fn) + tailDescription(fn), true)
                                         .withTypeText(fn.returnType())
                                         .withInsertHandler(PARENS_INSERT));
                     }
@@ -117,18 +117,17 @@ public class MelCompletionContributor extends CompletionContributor {
             return sb.toString();
         }
 
-        private String extractLastIdentifier(String text) {
-            int end = text.length();
-            int start = end;
-            while (start > 0) {
-                char c = text.charAt(start - 1);
-                if (Character.isLetterOrDigit(c) || c == '_') {
-                    start--;
-                } else {
-                    break;
-                }
-            }
-            return text.substring(start, end);
+        /**
+         * Returns " - <first sentence of documentation>" for use as additional, grayed-out
+         * tail text in the completion popup, or an empty string if no documentation is available.
+         */
+        private String tailDescription(MelExtensionRegistry.ExtensionFunction fn) {
+            String doc = fn.documentation();
+            if (doc == null || doc.isBlank()) return "";
+
+            int dot = doc.indexOf(". ");
+            String firstSentence = dot >= 0 ? doc.substring(0, dot + 1) : doc;
+            return "  - " + firstSentence;
         }
     }
 }

@@ -19,7 +19,8 @@ public class MelExtensionRegistry {
             Set<String> receiverTypes,
             List<Parameter> parameters,
             String returnType,
-            boolean variadic
+            boolean variadic,
+            String documentation
     ) {
     }
 
@@ -36,7 +37,8 @@ public class MelExtensionRegistry {
             List<String> receiverTypes,
             List<Parameter> parameters,
             String returnType,
-            boolean variadic
+            boolean variadic,
+            String documentation
     ) {
     }
 
@@ -73,7 +75,8 @@ public class MelExtensionRegistry {
                                 Set.copyOf(f.receiverTypes()),
                                 f.parameters(),
                                 f.returnType(),
-                                f.variadic()))
+                                f.variadic(),
+                                f.documentation()))
                         .toList();
                 result.put(entry.getKey(), toMap(fns));
             }

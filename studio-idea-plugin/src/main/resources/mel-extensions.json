@@ -10,7 +10,8 @@
             { "name": "components", "type": "list" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Concatenates a user-friendly name from the list of provided components. Each argument is converted to string (stringified), trimmed, and the result is concatenated by spaces."
         },
         {
           "name": "strftime",
@@ -20,7 +21,8 @@
             { "name": "format", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Formats provided timestamp to string, using a format template specified in POSIX (strftime) notation. Generally recommended instead of formatDateTime."
         },
         {
           "name": "formatDateTime",
@@ -30,7 +32,8 @@
             { "name": "format", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Formats provided timestamp to string, using a format template specified in Java SimpleDateFormat notation. Provided mainly for migration from Groovy; use strftime instead."
         },
         {
           "name": "strptime",
@@ -40,7 +43,8 @@
             { "name": "format", "type": "string" }
           ],
           "returnType": "timestamp",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Parses provided string to timestamp, using a format template specified in POSIX (strptime) notation. Generally recommended instead of parseDateTime."
         },
         {
           "name": "parseDateTime",
@@ -50,7 +54,8 @@
             { "name": "format", "type": "string" }
           ],
           "returnType": "timestamp",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Parses provided string to timestamp, using a format template specified in Java SimpleDateFormat notation. Provided mainly for migration from Groovy; use strptime instead."
         },
         {
           "name": "parseGivenName",
@@ -59,7 +64,8 @@
             { "name": "value", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Parses provided string as a person's full name, returning the given name (first name) part."
         },
         {
           "name": "parseFamilyName",
@@ -68,7 +74,8 @@
             { "name": "value", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Parses provided string as a person's full name, returning the family name (last name) part."
         },
         {
           "name": "parseAdditionalName",
@@ -77,7 +84,8 @@
             { "name": "value", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Parses provided string as a person's full name, returning the additional name (middle name) part."
         },
         {
           "name": "parseNickName",
@@ -86,7 +94,8 @@
             { "name": "value", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Parses provided string as a person's full name, returning the nickname part."
         },
         {
           "name": "parseHonorificPrefix",
@@ -95,7 +104,8 @@
             { "name": "value", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Parses provided string as a person's full name, returning the honorific prefix (titles before the name) part."
         },
         {
           "name": "parseHonorificSuffix",
@@ -104,7 +114,8 @@
             { "name": "value", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Parses provided string as a person's full name, returning the honorific suffix (titles after the name) part."
         }
       ]
     },
@@ -118,7 +129,8 @@
             { "name": "value", "type": "any" }
           ],
           "returnType": "any",
-          "variadic": true
+          "variadic": true,
+          "documentation": "Records formatted message in system logs at INFO level. Curly brackets ({}) act as placeholders for arguments in the message. Returns its argument as output, so it can be placed into a complex expression without breaking its flow."
         },
         {
           "name": "error",
@@ -128,7 +140,8 @@
             { "name": "value", "type": "any" }
           ],
           "returnType": "any",
-          "variadic": true
+          "variadic": true,
+          "documentation": "Records formatted message in system logs at ERROR level. Curly brackets ({}) act as placeholders for arguments in the message. Returns its argument as output, so it can be placed into a complex expression without breaking its flow."
         },
         {
           "name": "warn",
@@ -138,7 +151,8 @@
             { "name": "value", "type": "any" }
           ],
           "returnType": "any",
-          "variadic": true
+          "variadic": true,
+          "documentation": "Records formatted message in system logs at WARN level. Curly brackets ({}) act as placeholders for arguments in the message. Returns its argument as output, so it can be placed into a complex expression without breaking its flow."
         },
         {
           "name": "debug",
@@ -148,7 +162,8 @@
             { "name": "value", "type": "any" }
           ],
           "returnType": "any",
-          "variadic": true
+          "variadic": true,
+          "documentation": "Records formatted message in system logs at DEBUG level. Curly brackets ({}) act as placeholders for arguments in the message. Returns its argument as output, so it can be placed into a complex expression without breaking its flow."
         },
         {
           "name": "trace",
@@ -158,7 +173,8 @@
             { "name": "value", "type": "any" }
           ],
           "returnType": "any",
-          "variadic": true
+          "variadic": true,
+          "documentation": "Records formatted message in system logs at TRACE level. Curly brackets ({}) act as placeholders for arguments in the message. Returns its argument as output, so it can be placed into a complex expression without breaking its flow."
         }
       ]
     },
@@ -171,7 +187,8 @@
             { "name": "components", "type": "list" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Creates a valid LDAP distinguished name from the wide range of components. The resulting DN is well-formatted and properly escaped. Note: the DN is not normalized; case of attribute names and white spaces are preserved."
         },
         {
           "name": "composeDnWithSuffix",
@@ -180,7 +197,8 @@
             { "name": "components", "type": "list" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Creates a valid LDAP distinguished name from the wide range of components, including a DN suffix at the end. The resulting DN is well-formatted and properly escaped. Note: the DN is not normalized; case of attribute names and white spaces are preserved."
         },
         {
           "name": "hashPassword",
@@ -190,7 +208,8 @@
             { "name": "algorithm", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Hashes cleartext password in an (unofficial) LDAP password format. The cleartext password can be provided as a string, polystring, or bytes. Supported algorithms: SSHA, SHA and MD5."
         },
         {
           "name": "determineSingleAttributeValue",
@@ -201,7 +220,8 @@
             { "name": "values", "type": "list" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Selects a single value from many LDAP values, based on object DN. E.g. value 'bar' is selected from ['foo','bar','baz'] because that value is present in the given DN."
         }
       ]
     },
@@ -215,7 +235,8 @@
             { "name": "key", "type": "string" }
           ],
           "returnType": "bytes",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Resolves a secret specified by the key, using a provider specified by its name. Returns the secret in binary form (bytes)."
         },
         {
           "name": "resolveString",
@@ -225,7 +246,8 @@
             { "name": "key", "type": "string" }
           ],
           "returnType": "string",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Resolves a secret specified by the key, using a provider specified by its name. Returns the secret in string form."
         },
         {
           "name": "resolveProtectedString",
@@ -235,7 +257,8 @@
             { "name": "key", "type": "string" }
           ],
           "returnType": "protectedString",
-          "variadic": false
+          "variadic": false,
+          "documentation": "Resolves a secret specified by the key, using a provider specified by its name. Returns the secret in protected string form for additional protection."
         }
       ]
     }

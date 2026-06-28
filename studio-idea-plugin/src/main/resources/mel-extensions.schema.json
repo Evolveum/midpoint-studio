@@ -69,6 +69,10 @@
         "variadic": {
           "type": "boolean",
           "description": "True if the function accepts a variable number of trailing arguments beyond those listed in 'parameters' (e.g. log functions accepting extra format arguments)."
+        },
+        "documentation": {
+          "type": "string",
+          "description": "Human-readable description of the function, shown as documentation/tooltip text in code completion. Sourced from the MEL language specification."
         }
       }
     },
