@@ -3,7 +3,7 @@
 ## [4.11.0]
 ### Added
 - Support for Intellij Idea 2026.1
-- Basic MEL support
+- Basic MEL support - syntax highlighting, autocompletion, inlays, documentation
 
 ### Changed
 - Updated MidPoint libraries to version 4.11
