@@ -432,6 +432,16 @@ abstract class UploadSbomTask : DefaultTask() {
     @get:Input
     abstract val projectVersion: Property<String>
 
+    // Optional parent project in the Dependency-Track hierarchy. When set, the
+    // auto-created project is nested under this parent.
+    @get:Input
+    @get:Optional
+    abstract val parentName: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val parentVersion: Property<String>
+
     // URL and key come from the environment and are deliberately not tracked
     // as task inputs (the key is a secret and must not be cached).
     @get:Internal
@@ -453,6 +463,12 @@ abstract class UploadSbomTask : DefaultTask() {
             append("{")
             append("\"projectName\":\"").append(projectName.get()).append("\",")
             append("\"projectVersion\":\"").append(projectVersion.get()).append("\",")
+            if (parentName.isPresent) {
+                append("\"parentName\":\"").append(parentName.get()).append("\",")
+            }
+            if (parentVersion.isPresent) {
+                append("\"parentVersion\":\"").append(parentVersion.get()).append("\",")
+            }
             append("\"autoCreate\":true,")
             append("\"bom\":\"").append(encodedBom).append("\"")
             append("}")
@@ -491,6 +507,7 @@ tasks.register<UploadSbomTask>("uploadSbom") {
     bomFile = layout.buildDirectory.file("reports/studio-sbom.json")
     projectName = "midpoint-studio"
     projectVersion = version.toString()
+    parentName = "midpoint-studio"
     serverUrl = dtrackUrl
     apiKey = dtrackToken
 }
