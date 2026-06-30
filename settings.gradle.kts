@@ -18,6 +18,7 @@ dependencyResolutionManagement {
             version("intelliJPlatform", "2.10.5")
             version("kover", "0.9.3")
             version("qodana", "2025.2.2")
+            version("cyclonedx", "3.2.4")
 
             // versions of midpoint libraries
             version("midpoint", "4.11-SNAPSHOT")
@@ -51,6 +52,7 @@ dependencyResolutionManagement {
             plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("kover", "org.jetbrains.kotlinx.kover").versionRef("kover")
             plugin("qodana", "org.jetbrains.qodana").versionRef("qodana")
+            plugin("cyclonedx", "org.cyclonedx.bom").versionRef("cyclonedx")
 
             // midpoint libraries
             library("midpoint-common", "com.evolveum.midpoint.infra", "common").versionRef("midpoint")

@@ -1,11 +1,18 @@
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
+import org.cyclonedx.gradle.CyclonedxDirectTask
+import org.cyclonedx.model.Component
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.models.ProductRelease
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
+import java.util.Base64
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
@@ -24,6 +31,7 @@ plugins {
     alias(libs.plugins.kotlin) // Kotlin support
     alias(libs.plugins.intelliJPlatform) // IntelliJ Platform Gradle Plugin
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
+    alias(libs.plugins.cyclonedx) // CycloneDX SBOM generation
 
     id("antlr") // ANTLR4 plugin
 }
@@ -394,4 +402,101 @@ tasks.register("cleanupGradleTransformCache") {
             }
         }
     })
+}
+
+/**
+ * Software Bill of Materials (SBOM) generation and upload to Dependency-Track.
+ *
+ * The CycloneDX plugin generates a CycloneDX SBOM from the `runtimeClasspath`
+ * configuration, which holds the third-party libraries bundled into the plugin
+ * distribution (the IntelliJ Platform itself is provided by the IDE and is not
+ * on this configuration). `uploadSbom` then posts the result to a
+ * Dependency-Track server. The server URL and API key are read from the
+ * `DTRACK_URL` and `DTRACK_TOKEN` environment variables; when either is missing
+ * the upload task is skipped so ordinary builds are unaffected.
+ */
+tasks.named<CyclonedxDirectTask>("cyclonedxDirectBom") {
+    includeConfigs = listOf("runtimeClasspath")
+    projectType = Component.Type.APPLICATION
+    includeBomSerialNumber = true
+    jsonOutput = layout.buildDirectory.file("reports/studio-sbom.json")
+}
+
+/**
+ * Uploads a CycloneDX SBOM to a Dependency-Track server using the JDK HTTP
+ * client. It uses the `PUT /api/v1/bom` endpoint with a JSON body carrying the
+ * base64-encoded BOM, creating the project automatically when it does not exist.
+ */
+abstract class UploadSbomTask : DefaultTask() {
+
+    @get:InputFile
+    abstract val bomFile: RegularFileProperty
+
+    @get:Input
+    abstract val projectName: Property<String>
+
+    @get:Input
+    abstract val projectVersion: Property<String>
+
+    // URL and key come from the environment and are deliberately not tracked
+    // as task inputs (the key is a secret and must not be cached).
+    @get:Internal
+    abstract val serverUrl: Property<String>
+
+    @get:Internal
+    abstract val apiKey: Property<String>
+
+    @TaskAction
+    fun upload() {
+        if (!serverUrl.isPresent || !apiKey.isPresent) {
+            throw GradleException("DTRACK_URL and DTRACK_TOKEN must be set")
+        }
+
+        val encodedBom = Base64.getEncoder()
+            .encodeToString(bomFile.get().asFile.readBytes())
+
+        val payload = buildString {
+            append("{")
+            append("\"projectName\":\"").append(projectName.get()).append("\",")
+            append("\"projectVersion\":\"").append(projectVersion.get()).append("\",")
+            append("\"autoCreate\":true,")
+            append("\"bom\":\"").append(encodedBom).append("\"")
+            append("}")
+        }
+
+        val endpoint = "${serverUrl.get().trimEnd('/')}/api/v1/bom"
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create(endpoint))
+            .header("Content-Type", "application/json")
+            .header("X-Api-Key", apiKey.get())
+            .PUT(HttpRequest.BodyPublishers.ofString(payload))
+            .build()
+
+        val response = HttpClient.newHttpClient()
+            .send(request, HttpResponse.BodyHandlers.ofString())
+
+        if (response.statusCode() !in 200..299) {
+            throw GradleException(
+                "Dependency-Track upload failed (HTTP ${response.statusCode()}): ${response.body()}"
+            )
+        }
+
+        logger.lifecycle("SBOM uploaded to Dependency-Track at $endpoint (HTTP ${response.statusCode()})")
+    }
+}
+
+tasks.register<UploadSbomTask>("uploadSbom") {
+    group = "verification"
+    description = "Uploads the generated CycloneDX SBOM to Dependency-Track"
+
+    dependsOn(tasks.named("cyclonedxDirectBom"))
+
+    val dtrackUrl = environment("DTRACK_URL")
+    val dtrackToken = environment("DTRACK_TOKEN")
+
+    bomFile = layout.buildDirectory.file("reports/studio-sbom.json")
+    projectName = "midpoint-studio"
+    projectVersion = version.toString()
+    serverUrl = dtrackUrl
+    apiKey = dtrackToken
 }
