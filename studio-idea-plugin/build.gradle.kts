@@ -504,17 +504,16 @@ tasks.register<UploadSbomTask>("uploadSbom") {
     val dtrackUrl = environment("DTRACK_URL")
     val dtrackToken = environment("DTRACK_TOKEN")
 
-
     projectVersion = project.version.toString()
 
     var publishChannel = properties("publishChannel").get()
     if (publishChannel != "" && publishChannel != "default") {
-        projectVersion = "$projectVersion-$publishChannel"
+        // append channel suffix to version if it's non-default channel (support/snapshot)
+        projectVersion = "${projectVersion.get()}-$publishChannel"
     }
 
     bomFile = layout.buildDirectory.file("reports/studio-sbom.json")
     projectName = "midpoint-studio"
-    projectVersion = version.toString()
     parentName = "midpoint-studio"
     serverUrl = dtrackUrl
     apiKey = dtrackToken
