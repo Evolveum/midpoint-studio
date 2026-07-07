@@ -21,6 +21,9 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBList;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+import java.util.Objects;
+
 public class ConnectorGeneratorBasicWizard extends ConnectorGeneratorWizard {
 
     private final MidPointClient client;
@@ -52,9 +55,17 @@ public class ConnectorGeneratorBasicWizard extends ConnectorGeneratorWizard {
     @Override
     protected void doOKAction() {
 
-        MidPointUtils.publishNotification(client.getProject(), EncryptionService.NOTIFICATION_KEY, "Connector Generator",
-                "Connector %s downloaded", NotificationType.INFORMATION);
-
+        MidPointUtils.publishNotification(
+                client.getProject(),
+                EncryptionService.NOTIFICATION_KEY,
+                "Connector Generator",
+                "Connector %s downloaded".formatted(
+                        dataModel.connectorDevelopmentType.getName() != null
+                        ? dataModel.connectorDevelopmentType.getName().getOrig()
+                        : ""
+                ),
+                NotificationType.INFORMATION
+        );
 
         try {
             ProgressManager.getInstance().run(new DownloadConnectorDevelopmentTask(
@@ -88,21 +99,14 @@ public class ConnectorGeneratorBasicWizard extends ConnectorGeneratorWizard {
                 .getNotificationGroup("midpointConnectorGenerator")
                 .createNotification(title, content, NotificationType.INFORMATION);
 
-        var oid = connectorDevelopmentType.getOid();
-
-        if (oid != null) {
-            notification.addAction(new AnAction("Continue Development Connector Generator") {
-                @Override
-                public void actionPerformed(@NotNull AnActionEvent e) {
-                    ApplicationManager.getApplication().invokeLater(() ->
-                            new ConnectorGeneratorContinueWizard(client, "").show());
-                    notification.expire();
-                }
-            });
-        } else {
-            notification.setContent("Connector Development Type oid is null");
-            log.error(notification.getActions().toString());
-        }
+        notification.addAction(new AnAction("Continue Development Connector Generator") {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                ApplicationManager.getApplication().invokeLater(() ->
+                        new ConnectorGeneratorContinueWizard(client, connectorDevelopmentType).show());
+                notification.expire();
+            }
+        });
 
         notification.notify(client.getProject());
     }

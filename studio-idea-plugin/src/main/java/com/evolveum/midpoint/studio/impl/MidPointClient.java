@@ -578,11 +578,43 @@ public class MidPointClient {
         return client.getStatusInfoProcessDocumentation(token);
     }
 
-    public String submitOperationGenerateAuthenticationScript(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationGenerateAuthenticationScript(connectorDevelopmentOid);
+    public String submitOperationGenerateAuthenticationScript(String connectorDevelopmentOid, boolean retry) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationGenerateAuthenticationScript(connectorDevelopmentOid, retry);
     }
 
     public SmartIntegrationOperationStatusInfoType getStatusInfoGenerateArtifact(String token) throws SchemaException, AuthenticationException, IOException {
         return client.getStatusInfoGenerateArtifact(token);
+    }
+
+    public String submitOperationDiscoverConnectivityEndpoint(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverConnectivityEndpoint(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverConnectivityEndpoint(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverConnectivityEndpoint(token);
+    }
+
+    public String submitOperationDiscoverObjectClasses(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverObjectClasses(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClasses(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverObjectClasses(token);
+    }
+
+    public String submitOperationDiscoverObjectClassAttributes(String connectorDevelopmentOid, String objectClass) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverObjectClassAttributes(connectorDevelopmentOid, objectClass);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassAttributes(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverObjectClassAttributes(token);
+    }
+
+    public String submitOperationDiscoverObjectClassEndpoints(String connectorDevelopmentOid, String objectClass) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverObjectClassEndpoints(connectorDevelopmentOid, objectClass);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassEndpoints(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverObjectClassEndpoints(token);
     }
 }

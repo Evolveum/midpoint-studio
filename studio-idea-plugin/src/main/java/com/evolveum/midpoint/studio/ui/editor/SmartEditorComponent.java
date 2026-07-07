@@ -43,6 +43,11 @@ public class SmartEditorComponent extends LanguageTextField {
         }
     };
 
+    public SmartEditorComponent(Project project) {
+        super(null, project, "", false);
+        this.project = project;
+    }
+
     public SmartEditorComponent(
             @NotNull Project project,
             @NotNull Language initialLanguage,
@@ -52,7 +57,6 @@ public class SmartEditorComponent extends LanguageTextField {
         this.project = project;
         this.currentLanguage = initialLanguage;
         getDocument().addDocumentListener(documentListener);
-
     }
 
     @Override
@@ -71,7 +75,12 @@ public class SmartEditorComponent extends LanguageTextField {
         editor.getSettings().setAdditionalLinesCount(3);
         editor.getSettings().setAdditionalColumnsCount(3);
 
-        editor.setHighlighter(HighlighterFactory.createHighlighter(project, Objects.requireNonNull(currentLanguage.getAssociatedFileType())));
+        if (currentLanguage != null) {
+            editor.setHighlighter(HighlighterFactory.createHighlighter(
+                    project,
+                    Objects.requireNonNull(currentLanguage.getAssociatedFileType())
+            ));
+        }
 
         return editor;
     }
@@ -85,7 +94,7 @@ public class SmartEditorComponent extends LanguageTextField {
             currentLanguage = language;
             PsiFile psiFile = PsiFileFactory.getInstance(project)
                     .createFileFromText(
-                            "SmartEditorComponentDummy." + currentLanguage.getAssociatedFileType().getDefaultExtension(),
+                            "SmartEditorComponentDummy." + Objects.requireNonNull(currentLanguage.getAssociatedFileType()).getDefaultExtension(),
                             currentLanguage,
                             text,
                             true,
@@ -105,5 +114,14 @@ public class SmartEditorComponent extends LanguageTextField {
 
     public void setViewer(boolean viewer) {
         super.setViewer(viewer);
+    }
+
+    public void setText(String text) {
+        super.setText(text);
+        getDocument().addDocumentListener(documentListener);
+    }
+
+    public void setText(@NotNull String text, @NotNull Language language) {
+        switchLanguage(language, text);
     }
 }

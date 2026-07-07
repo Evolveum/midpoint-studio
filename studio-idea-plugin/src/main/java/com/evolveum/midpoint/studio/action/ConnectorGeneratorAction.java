@@ -1,21 +1,27 @@
 package com.evolveum.midpoint.studio.action;
 
+import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
+import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.client.SearchResult;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorBasicWizard;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorContinueWizard;
+import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.ListPopup;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.io.IOException;
 
 public class ConnectorGeneratorAction extends AnAction {
 
@@ -111,12 +117,30 @@ public class ConnectorGeneratorAction extends AnAction {
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
-            ApplicationManager.getApplication().invokeLater(() ->
-                    (oid != null
-                            ? new ConnectorGeneratorContinueWizard(client, oid)
-                            : new ConnectorGeneratorBasicWizard(client)
-                    ).show()
-            );
+
+            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                try {
+                    ConnectorDevelopmentType connectorDevelopment = oid != null
+                            ? client.continueFrom(oid)
+                            : null;
+
+                    ApplicationManager.getApplication().invokeLater(() ->
+                            (connectorDevelopment != null
+                                    ? new ConnectorGeneratorContinueWizard(client, connectorDevelopment)
+                                    : new ConnectorGeneratorBasicWizard(client)
+                            ).show()
+                    );
+                } catch (SchemaException | AuthenticationException | IOException ex) {
+                    MidPointUtils.publishExceptionNotification(
+                            client.getProject(),
+                            client.getEnvironment(),
+                            ConnectorGeneratorAction.class,
+                            "Connector Development Failed",
+                            ex.getMessage(),
+                            ex
+                    );
+                }
+            });
         }
     }
 }
