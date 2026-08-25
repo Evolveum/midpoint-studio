@@ -1,6 +1,8 @@
 package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.ui.log.ServerLogPanel;
+import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -40,6 +42,17 @@ public class MidPointToolWindowFactory implements ToolWindowFactory, DumbAware {
 
         Content propertiesContent = buildEncryptedProperties(project);
         contentManager.addContent(propertiesContent);
+
+        Content serverLogContent = buildServerLog(project);
+        contentManager.addContent(serverLogContent);
+    }
+
+    private Content buildServerLog(Project project) {
+        ServerLogPanel panel = new ServerLogPanel(project);
+        Disposer.register(project, panel);
+
+        return ContentFactory.getInstance()
+                .createContent(panel, StudioLocalization.message("ServerLogPanel.title"), false);
     }
 
     private Content buildBrowser(Project project) {

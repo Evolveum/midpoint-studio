@@ -150,6 +150,53 @@ open class MidPointConfigurable(val project: Project) :
                             { configuration.typesToDownloadLimit = it })
                 }
             }
+            groupRowsRange(message("MidPointConfigurable.serverLog.title")) {
+                row(message("MidPointConfigurable.serverLog.pollInterval")) {
+                    intTextField(IntRange(1, 3600), 1)
+                        .bindIntText(
+                            { configuration.logPollInterval },
+                            { configuration.logPollInterval = it })
+                }
+                row(message("MidPointConfigurable.serverLog.initialTailSize")) {
+                    intTextField(IntRange(1, 100 * 1024), 1)
+                        .bindIntText(
+                            { configuration.logInitialTailSize },
+                            { configuration.logInitialTailSize = it })
+                }
+                row(message("MidPointConfigurable.serverLog.maxChunkSize")) {
+                    intTextField(IntRange(1, 100 * 1024), 1)
+                        .bindIntText(
+                            { configuration.logMaxChunkSize },
+                            { configuration.logMaxChunkSize = it })
+                }
+                row(message("MidPointConfigurable.serverLog.bufferEntries")) {
+                    intTextField(IntRange(100, 1000000), 1)
+                        .bindIntText(
+                            { configuration.logBufferEntries },
+                            { configuration.logBufferEntries = it })
+                }
+                row(message("MidPointConfigurable.serverLog.captureMaxFileSize")) {
+                    intTextField(IntRange(1, 10 * 1024), 1)
+                        .bindIntText(
+                            { configuration.logCaptureMaxFileSize },
+                            { configuration.logCaptureMaxFileSize = it })
+                }
+                row(message("MidPointConfigurable.serverLog.captureMaxFiles")) {
+                    intTextField(IntRange(1, 100), 1)
+                        .bindIntText(
+                            { configuration.logCaptureMaxFiles },
+                            { configuration.logCaptureMaxFiles = it })
+                }
+                row(message("MidPointConfigurable.serverLog.entryStartPattern")) {
+                    textField()
+                        .columns(COLUMNS_LARGE)
+                        .bindText(
+                            { configuration.logEntryStartPattern ?: "" },
+                            { configuration.logEntryStartPattern = it })
+                        .validationOnInput(::validateRegex)
+                        .validationOnApply(::validateRegex)
+                }.comment(message("MidPointConfigurable.serverLog.entryStartPattern.comment"))
+            }
         }
     }
 

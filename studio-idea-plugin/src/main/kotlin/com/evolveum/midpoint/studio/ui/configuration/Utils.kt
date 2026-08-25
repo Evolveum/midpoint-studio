@@ -26,6 +26,22 @@ fun validateNotBlank(builder: ValidationInfoBuilder, textField: JTextField): Val
     }
 }
 
+fun validateRegex(builder: ValidationInfoBuilder, textField: JTextField): ValidationInfo? {
+    return builder.run {
+        val value = textField.text
+        if (value.isNullOrBlank()) {
+            return null
+        }
+
+        try {
+            java.util.regex.Pattern.compile(value)
+            null
+        } catch (ex: java.util.regex.PatternSyntaxException) {
+            error("Invalid regular expression: " + ex.description)
+        }
+    }
+}
+
 fun convertObjectTypesListToString(list: List<ObjectTypes>): String {
     if (list.isEmpty()) {
         return ""
