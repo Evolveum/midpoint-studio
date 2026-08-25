@@ -195,7 +195,7 @@ open class MidPointConfigurable(val project: Project) :
                             { configuration.logEntryStartPattern = it })
                         .validationOnInput(::validateRegex)
                         .validationOnApply(::validateRegex)
-                }.comment(message("MidPointConfigurable.serverLog.entryStartPattern.comment"))
+                }.rowComment(message("MidPointConfigurable.serverLog.entryStartPattern.comment"))
             }
         }
     }
