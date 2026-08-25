@@ -166,6 +166,9 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
                 null, AllIcons.Actions.GC) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
+                synchronized (lock) {
+                    parser.reset();
+                }
                 buffer.clear();
                 console.clear();
             }
