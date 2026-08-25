@@ -29,6 +29,11 @@ public class ServerLogTailer {
         void onFatalError(String message, Exception ex);
 
         void onTransientError(Exception ex, long retryInMillis);
+
+        /**
+         * First successful fetch after one or more transient errors - the outage is over.
+         */
+        void onRecovered();
     }
 
     public record Config(long pollIntervalMillis, long initialTailSize, long maxChunkSize, long maxBackoffMillis) {
@@ -82,7 +87,10 @@ public class ServerLogTailer {
             return backoffMillis;
         }
 
-        backoffMillis = 0;
+        if (backoffMillis != 0) {
+            backoffMillis = 0;
+            listener.onRecovered();
+        }
 
         if (nextPosition != null && content.getLogFileSize() >= 0
                 && content.getLogFileSize() < nextPosition) {

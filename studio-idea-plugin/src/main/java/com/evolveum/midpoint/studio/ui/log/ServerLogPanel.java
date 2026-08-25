@@ -20,8 +20,12 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.SearchTextField;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.util.Alarm;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.NamedColorUtil;
+import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,7 +54,7 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
 
     private final SearchTextField filterField;
 
-    private final JLabel status = new JLabel();
+    private final JBLabel status = new JBLabel();
 
     private final Alarm filterAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, this);
 
@@ -106,9 +110,11 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
             }
         });
 
+        status.setBorder(JBUI.Borders.empty(2, 8));
+
         JPanel north = new JPanel(new BorderLayout());
         north.add(filterField, BorderLayout.CENTER);
-        north.add(status, BorderLayout.EAST);
+        north.add(status, BorderLayout.SOUTH);
 
         ActionToolbar toolbar = ActionManager.getInstance()
                 .createActionToolbar("ServerLogPanel", createActions(), false);
@@ -238,7 +244,7 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
             return new LogEntryParser(pattern);
         } catch (java.util.regex.PatternSyntaxException ex) {
             // settings UI validates on input, but the persisted value may still be bad
-            setStatus("Invalid entry start pattern, using default: " + ex.getDescription());
+            setErrorStatus("Invalid entry start pattern, using default: " + ex.getDescription());
             return new LogEntryParser();
         }
     }
@@ -290,7 +296,8 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
         // opens a new one.
         closeCaptureSession();
         if (message != null) {
-            setStatus(message);
+            // stop() only ever gets a message on the fatal-error path
+            setErrorStatus(message);
         }
     }
 
@@ -362,7 +369,7 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
             captureWriter = null;
             sessionOpen = false;
             recording = false;
-            setStatus("Couldn't start recording: " + ex.getMessage());
+            setErrorStatus("Couldn't start recording: " + ex.getMessage());
         }
     }
 
@@ -377,7 +384,7 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
             doCloseSession();
             sessionOpen = false;
             recording = false;
-            setStatus("Recording failed: " + ex.getMessage());
+            setErrorStatus("Recording failed: " + ex.getMessage());
         }
     }
 
@@ -458,8 +465,13 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
 
         @Override
         public void onTransientError(Exception ex, long retryInMillis) {
-            setStatus(StudioLocalization.message("ServerLogPanel.reconnecting",
+            setErrorStatus(StudioLocalization.message("ServerLogPanel.reconnecting",
                     retryInMillis / 1000, ex.getMessage()));
+        }
+
+        @Override
+        public void onRecovered() {
+            setStatus("");
         }
     }
 
@@ -512,7 +524,21 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
     }
 
     private void setStatus(String text) {
-        ApplicationManager.getApplication().invokeLater(() -> status.setText(text));
+        setStatus(text, false);
+    }
+
+    private void setErrorStatus(String text) {
+        setStatus(text, true);
+    }
+
+    private void setStatus(String text, boolean error) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            // both are dynamic JBColors, so the label follows theme switches on its own
+            status.setForeground(error
+                    ? NamedColorUtil.getErrorForeground()
+                    : UIUtil.getLabelForeground());
+            status.setText(text);
+        });
     }
 
     @Override

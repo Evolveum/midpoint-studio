@@ -50,6 +50,7 @@ public class ServerLogTailerTest {
         int rotations;
         final List<String> fatals = new ArrayList<>();
         final List<Long> transientRetries = new ArrayList<>();
+        int recoveries;
 
         @Override
         public void onText(String chunk) {
@@ -69,6 +70,11 @@ public class ServerLogTailerTest {
         @Override
         public void onTransientError(Exception ex, long retryInMillis) {
             transientRetries.add(retryInMillis);
+        }
+
+        @Override
+        public void onRecovered() {
+            recoveries++;
         }
     }
 
@@ -181,7 +187,20 @@ public class ServerLogTailerTest {
         assertEquals(6000, second);    // doubles
         assertEquals(3000, third);     // success resets to poll interval
         assertEquals(2, listener.transientRetries.size());
+        assertEquals(1, listener.recoveries);   // exactly one, on the transition back
         assertEquals("ok\n", listener.text.toString());
+    }
+
+    @Test
+    public void successWithoutPriorErrorDoesNotFireRecovered() {
+        source.enqueue("a\n", 936, true, 1000);
+        source.enqueue("b\n", 1000, true, 1002);
+        ServerLogTailer tailer = tailer(true);
+
+        tailer.pollOnce();
+        tailer.pollOnce();
+
+        assertEquals(0, listener.recoveries);
     }
 
     @Test
