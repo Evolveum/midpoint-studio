@@ -97,6 +97,7 @@ dependencyResolutionManagement {
 
             library("jupiter-api", "org.junit.jupiter", "junit-jupiter-api").versionRef("jupiter")
             library("jupiter-engine", "org.junit.jupiter", "junit-jupiter-engine").withoutVersion()
+            library("mockwebserver", "com.squareup.okhttp3", "mockwebserver").version("5.1.0")
             library("remote-robot", "com.intellij.remoterobot", "remote-robot").versionRef("remote-robot")
             library("remote-fixtures", "com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
             library("xmlunit-core", "org.xmlunit", "xmlunit-core").versionRef("xmlunit")

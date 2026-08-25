@@ -19,7 +19,11 @@ dependencies {
     implementation(libs.okhttp.logging)
 
     testImplementation(testLibs.jupiter.api)
+    testImplementation(testLibs.mockwebserver)
     testRuntimeOnly(testLibs.jupiter.engine)
+    // excluded from midpoint-common above (provided by IDE at runtime), needed on test classpath
+    testRuntimeOnly(libs.slf4j.api)
+    testRuntimeOnly("xerces:xercesImpl:2.12.2")
 }
 
 java {

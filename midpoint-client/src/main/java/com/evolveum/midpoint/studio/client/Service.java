@@ -59,6 +59,17 @@ public interface Service {
     OperationResult testResourceConnection(String oid)
             throws ObjectNotFoundException, AuthenticationException, IOException, SchemaException;
 
+    /**
+     * Fetches a fragment of the server log file. Both parameters are mandatory by design:
+     * omitting fromPosition server-side means "from offset 0" (the whole file), omitting
+     * maxSize means "to EOF". Negative fromPosition is an offset from EOF (tail).
+     */
+    LogFileContent getLog(long fromPosition, long maxSize)
+            throws IOException, AuthenticationException;
+
+    long getLogFileSize()
+            throws IOException, AuthenticationException;
+
     ServiceContext context();
 
     TestConnectionResult testServiceConnection();

@@ -200,6 +200,7 @@ dependencies {
         because("Only needed to run tests in a version of IntelliJ IDEA that bundles older versions")
     }
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("junit:junit:4.13.2")
 
     testImplementation(testLibs.remote.robot)
     testImplementation(testLibs.remote.fixtures)

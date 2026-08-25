@@ -172,14 +172,16 @@ public class ServiceFactory {
         builder.addInterceptor(chain -> {
 
             Request request = chain.request();
-            Request newRequest;
+            Request.Builder newRequest = request.newBuilder();
 
-            newRequest = request.newBuilder()
-                    .addHeader("Accept", MediaType.APPLICATION_XML)
-                    .addHeader("Content-Type", MediaType.APPLICATION_XML)
-                    .build();
+            if (request.header("Accept") == null) {
+                newRequest.addHeader("Accept", MediaType.APPLICATION_XML);
+            }
+            if (request.header("Content-Type") == null) {
+                newRequest.addHeader("Content-Type", MediaType.APPLICATION_XML);
+            }
 
-            return chain.proceed(newRequest);
+            return chain.proceed(newRequest.build());
         });
 
         setupLogging(builder);
@@ -259,8 +261,7 @@ public class ServiceFactory {
 
     private void setupLogging(OkHttpClient.Builder builder) {
         if (messageListener == null) {
-            messageListener = message -> {
-            };
+            return;
         }
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> messageListener.handleMessage(message));
