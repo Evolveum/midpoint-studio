@@ -298,6 +298,10 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
         if (message != null) {
             // stop() only ever gets a message on the fatal-error path
             setErrorStatus(message);
+        } else {
+            // manual stop: whatever transient status was showing (reconnecting, ...)
+            // no longer applies
+            setStatus("");
         }
     }
 
