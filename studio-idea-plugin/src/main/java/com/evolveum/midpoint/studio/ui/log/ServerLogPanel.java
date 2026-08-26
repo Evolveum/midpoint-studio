@@ -58,6 +58,13 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
 
     private final Alarm filterAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, this);
 
+    private final Alarm retryCountdownAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, this);
+
+    /** When the next retry poll fires, or 0 when not in backoff. Written on the poll thread. */
+    private volatile long retryDeadline;
+
+    private volatile String retryErrorMessage;
+
     private static final DateTimeFormatter SESSION_STAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS");
 
     private final Object lock = new Object();
@@ -295,6 +302,7 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
         // the capture stays armed; only the session file is finished. Restarting the tail
         // opens a new one.
         closeCaptureSession();
+        stopRetryCountdown();
         if (message != null) {
             // stop() only ever gets a message on the fatal-error path
             setErrorStatus(message);
@@ -469,12 +477,17 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
 
         @Override
         public void onTransientError(Exception ex, long retryInMillis) {
-            setErrorStatus(StudioLocalization.message("ServerLogPanel.reconnecting",
-                    retryInMillis / 1000, ex.getMessage()));
+            retryDeadline = System.currentTimeMillis() + retryInMillis;
+            retryErrorMessage = ex.getMessage();
+            ApplicationManager.getApplication().invokeLater(() -> {
+                retryCountdownAlarm.cancelAllRequests();
+                tickRetryCountdown();
+            });
         }
 
         @Override
         public void onRecovered() {
+            stopRetryCountdown();
             setStatus("");
         }
     }
@@ -525,6 +538,33 @@ public class ServerLogPanel extends BorderLayoutPanel implements Disposable {
             default:
                 return ConsoleViewContentType.NORMAL_OUTPUT;
         }
+    }
+
+    /**
+     * Rewrites the backoff status once a second so the "retrying in N s" number counts
+     * down instead of going stale. Runs on the EDT via {@link #retryCountdownAlarm};
+     * a zeroed {@link #retryDeadline} makes any queued tick a no-op.
+     */
+    private void tickRetryCountdown() {
+        long deadline = retryDeadline;
+        if (deadline == 0) {
+            return;
+        }
+
+        long remaining = deadline - System.currentTimeMillis();
+        if (remaining > 0) {
+            setErrorStatus(StudioLocalization.message("ServerLogPanel.reconnecting",
+                    (remaining + 999) / 1000, retryErrorMessage));
+            retryCountdownAlarm.addRequest(this::tickRetryCountdown, 1000);
+        } else {
+            // the retry poll is due; hold a numberless message until it resolves
+            setErrorStatus(StudioLocalization.message("ServerLogPanel.reconnecting.now", retryErrorMessage));
+        }
+    }
+
+    private void stopRetryCountdown() {
+        retryDeadline = 0;
+        ApplicationManager.getApplication().invokeLater(retryCountdownAlarm::cancelAllRequests);
     }
 
     private void setStatus(String text) {
