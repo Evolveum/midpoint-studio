@@ -23,7 +23,7 @@ public class ItemConsolidationOverviewProvider implements OverviewProvider<ItemC
             deltaSetTripleNode.setBackgroundColor(Colors.INPUT_1_COLOR, true);
             initialState.addExpandedPath(root, deltaSetTripleNode);
 
-            PrismValueNode existingItemNode = PrismValueNode.create("Existing item", trace.getExistingItem(), root); // todo change to item
+            ItemTypeNode existingItemNode = ItemTypeNode.create("Existing item", trace.getExistingItem(), root);
             existingItemNode.setBackgroundColor(Colors.INPUT_2_COLOR, true);
 
             ItemDeltaTypeListNode aprioriDeltaNode = ItemDeltaTypeListNode.create("A priori delta", trace.getAprioriDelta(), root);

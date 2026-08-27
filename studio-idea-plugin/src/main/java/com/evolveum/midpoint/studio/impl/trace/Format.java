@@ -12,7 +12,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import org.w3c.dom.*;
 
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 
@@ -54,12 +54,20 @@ public enum Format {
     }
 
     private static String formatAutomatically(Object obj, FormattingContext ctx) {
-        String first = formatDebugDumpable(obj);
-        if (!first.contains("com.evolveum.midpoint.xml.ns._public")) {
-            return first;
-        } else {
-            return formatValue(obj, PrismContext.LANG_YAML, ctx);
+        if (obj instanceof DebugDumpable) {
+            String first = formatDebugDumpable(obj);
+            if (!first.contains("com.evolveum.midpoint.xml.ns._public")) {
+                return first;
+            } else {
+                return formatValue(obj, PrismContext.LANG_YAML, ctx);
+            }
         }
+        String toString = String.valueOf(obj);
+        if (toString.contains("RawType:")) {
+            // raw 'toString' of a structured prism value (e.g. ItemDeltaType) - serialize instead
+            return formatValueXmlSimplified(obj, ctx);
+        }
+        return toString;
     }
 
     private static String formatDebugDumpable(Object obj) {

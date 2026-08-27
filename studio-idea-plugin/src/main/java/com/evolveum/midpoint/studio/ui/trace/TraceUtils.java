@@ -39,6 +39,8 @@ public class TraceUtils {
             return prettyPrint((ItemDeltaType) object);
         } else if (object instanceof DeltaSetTripleType) {
             return prettyPrint((DeltaSetTripleType) object);
+        } else if (object instanceof ItemType) {
+            return prettyPrint((ItemType) object);
         } else if (object instanceof Collection) {
             return prettyPrintCollection((Collection<?>) object);
         } else if (object instanceof RawType) {
@@ -57,12 +59,17 @@ public class TraceUtils {
     }
 
     public static String prettyPrint(ItemDeltaType itemDelta, boolean showPath) {
-        if (itemDelta != null) {
-            return (showPath ? itemDelta.getPath() + " " : "") +
-                    itemDelta.getModificationType() + " " + prettyPrintCollection(itemDelta.getValue());
-        } else {
+        if (itemDelta == null) {
             return "";
         }
+        String pretty = PrismPrettyPrinter.prettyPrint(itemDelta);
+        if (!showPath && itemDelta.getPath() != null) {
+            String prefix = itemDelta.getPath() + ": ";
+            if (pretty.startsWith(prefix)) {
+                pretty = pretty.substring(prefix.length());
+            }
+        }
+        return pretty;
     }
 
     public static String prettyPrint(ItemDeltaItemType itemDeltaItem) {
@@ -73,22 +80,12 @@ public class TraceUtils {
         }
     }
 
-    public static String prettyPrint(DeltaSetTripleType triple) {
-        StringBuilder sb = new StringBuilder();
-        if (triple != null) {
-            List<String> components = new ArrayList<>();
-            addSet(components, "Plus", triple.getPlus());
-            addSet(components, "Minus", triple.getMinus());
-            addSet(components, "Zero", triple.getZero());
-            sb.append(String.join("; ", components));
-        }
-        return sb.toString();
+    public static String prettyPrint(ItemType itemType) {
+        return itemType != null ? PrismPrettyPrinter.prettyPrint(itemType) : "";
     }
 
-    private static void addSet(List<String> components, String label, List<Object> objects) {
-        if (!objects.isEmpty()) {
-            components.add(label + ": " + prettyPrintCollection(objects));
-        }
+    public static String prettyPrint(DeltaSetTripleType triple) {
+        return triple != null ? PrismPrettyPrinter.prettyPrint(triple) : "";
     }
 
     public static String prettyPrintCollection(Collection<?> objects) {
