@@ -1,135 +1,137 @@
 package com.evolveum.midpoint.studio.lang.mel.impl;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intellij.openapi.diagnostic.Logger;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
+/**
+ * Registry of MEL functions available in expressions, backed by introspection of CEL
+ * function declarations from midPoint extension libraries (see MelCelIntrospector).
+ * Drives semantic analysis, code completion and quick documentation.
+ */
 public class MelExtensionRegistry {
 
-    private static final String DEFINITIONS_RESOURCE = "/mel-extensions.json";
+    private static final Logger LOG = Logger.getInstance(MelExtensionRegistry.class);
 
-    record Parameter(String name, String type) {
+    /**
+     * One CEL overload. For member overloads, parameterTypes includes the receiver
+     * as the first element (matching CEL's declaration model).
+     */
+    record Overload(boolean member, List<String> parameterTypes, String returnType, String documentation) {
     }
 
-    record ExtensionFunction(
-            String name,
-            Set<String> receiverTypes,
-            List<Parameter> parameters,
-            String returnType,
-            boolean variadic,
-            String documentation
-    ) {
-    }
+    /**
+     * One callable MEL function. Namespace is null for bare functions (member calls
+     * like value.isBlank() and globals like isBlank(value) or debugDump(x)).
+     */
+    record ExtensionFunction(String namespace, String name, List<Overload> overloads) {
 
-    // JSON DTOs, mirroring mel-extensions.json structure
-    @JsonIgnoreProperties({"$schema"}) // editor hint for JSON Schema validation/autocomplete, not part of the data model
-    private record Definitions(Map<String, Namespace> namespaces) {
-    }
+        boolean memberCallable() {
+            return overloads.stream().anyMatch(Overload::member);
+        }
 
-    private record Namespace(List<FunctionDef> functions) {
-    }
+        boolean globalCallable() {
+            return overloads.stream().anyMatch(o -> !o.member());
+        }
 
-    private record FunctionDef(
-            String name,
-            List<String> receiverTypes,
-            List<Parameter> parameters,
-            String returnType,
-            boolean variadic,
-            String documentation
-    ) {
-    }
+        String returnType() {
+            return overloads.get(0).returnType();
+        }
 
-    // Map: namespace -> (functionName -> ExtensionFunction)
-    private static final Map<String, Map<String, ExtensionFunction>> EXTENSIONS;
-
-    // Secondary index: function name -> ExtensionFunction, for dual-mode functions only (non-empty receiverTypes)
-    private static final Set<String> DUAL_MODE_FUNCTIONS;
-
-    static {
-        EXTENSIONS = loadExtensions();
-        DUAL_MODE_FUNCTIONS = EXTENSIONS.values().stream()
-                .flatMap(m -> m.values().stream())
-                .filter(f -> !f.receiverTypes().isEmpty())
-                .map(ExtensionFunction::name)
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
-    }
-
-    private static Map<String, Map<String, ExtensionFunction>> loadExtensions() {
-        var mapper = new ObjectMapper();
-
-        try (InputStream is = MelExtensionRegistry.class.getResourceAsStream(DEFINITIONS_RESOURCE)) {
-            if (is == null) {
-                throw new IllegalStateException("MEL extension definitions not found on classpath: " + DEFINITIONS_RESOURCE);
-            }
-
-            var definitions = mapper.readValue(is, Definitions.class);
-
-            var result = new LinkedHashMap<String, Map<String, ExtensionFunction>>();
-            for (var entry : definitions.namespaces().entrySet()) {
-                var fns = entry.getValue().functions().stream()
-                        .map(f -> new ExtensionFunction(
-                                f.name(),
-                                Set.copyOf(f.receiverTypes()),
-                                f.parameters(),
-                                f.returnType(),
-                                f.variadic(),
-                                f.documentation()))
-                        .toList();
-                result.put(entry.getKey(), toMap(fns));
-            }
-            return Collections.unmodifiableMap(result);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to load MEL extension definitions from " + DEFINITIONS_RESOURCE, e);
+        String documentation() {
+            return overloads.stream()
+                    .map(Overload::documentation)
+                    .filter(d -> d != null && !d.isBlank())
+                    .findFirst()
+                    .orElse(null);
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Query API (used by MelSemanticAnalyzer today)
-    // -------------------------------------------------------------------------
+    // namespace -> (functionName -> function), e.g. "format" -> "strftime" -> ...
+    private final Map<String, Map<String, ExtensionFunction>> namespaced;
+    // bare function name -> function, e.g. "isBlank", "debugDump"
+    private final Map<String, ExtensionFunction> bare;
+    private final Set<String> macroFunctions;
+    private final Set<String> standardFunctions;
 
-    /**
-     * Returns true if {@code function} is a valid call on the given extension namespace.
-     */
+    MelExtensionRegistry() {
+        MelCelIntrospector.Result result;
+        try {
+            result = MelCelIntrospector.introspect();
+        } catch (Throwable t) {
+            // Introspection instantiates midPoint extension libraries with null services;
+            // if that contract breaks upstream, degrade to an empty registry.
+            LOG.warn("MEL extension introspection failed, extension functions will be unknown", t);
+            result = new MelCelIntrospector.Result(Map.of(), Map.of(), Set.of(), Set.of());
+        }
+        this.namespaced = result.namespaced();
+        this.bare = result.bare();
+        this.macroFunctions = result.macroFunctions();
+        this.standardFunctions = result.standardFunctions();
+    }
+
     boolean isValidNamespaceCall(String namespace, String function) {
-        var fns = EXTENSIONS.get(namespace);
-        return fns != null && fns.containsKey(function);
+        var functions = namespaced.get(namespace);
+        return functions != null && functions.containsKey(function);
     }
 
-    /**
-     * Returns true if {@code function} is valid as a dual-mode member call on any receiver.
-     * Specifically: returns true if and only if the function is registered under any namespace
-     * with a non-empty receiverTypes set. Namespace-only functions (empty receiverTypes) return
-     * false. A set containing "*" is also non-empty and therefore returns true (future wildcard).
-     */
     boolean isValidMemberCall(String function) {
-        return DUAL_MODE_FUNCTIONS.contains(function);
+        var fn = bare.get(function);
+        return fn != null && fn.memberCallable();
     }
 
-    /**
-     * Returns the set of all known extension namespace identifiers.
-     */
+    boolean isValidGlobalCall(String function) {
+        var fn = bare.get(function);
+        return fn != null && fn.globalCallable();
+    }
+
+    boolean isMacro(String function) {
+        return macroFunctions.contains(function);
+    }
+
+    boolean isStandardFunction(String function) {
+        return standardFunctions.contains(function);
+    }
+
     Set<String> namespaces() {
-        return EXTENSIONS.keySet();
+        return namespaced.keySet();
     }
 
-    /**
-     * Returns true if {@code identifier} is a known extension namespace.
-     */
     boolean isNamespace(String identifier) {
-        return EXTENSIONS.containsKey(identifier);
+        return namespaced.containsKey(identifier);
     }
 
     Collection<ExtensionFunction> functionsForNamespace(String namespace) {
-        var fns = EXTENSIONS.get(namespace);
-        return fns != null ? fns.values() : List.of();
+        var functions = namespaced.get(namespace);
+        return functions != null ? functions.values() : List.of();
     }
 
-    private static Map<String, ExtensionFunction> toMap(List<ExtensionFunction> fns) {
-        var map = new LinkedHashMap<String, ExtensionFunction>();
-        for (var f : fns) map.put(f.name(), f);
-        return Collections.unmodifiableMap(map);
+    ExtensionFunction bareFunction(String name) {
+        return bare.get(name);
+    }
+
+    Collection<ExtensionFunction> memberFunctions() {
+        return bare.values().stream().filter(ExtensionFunction::memberCallable).toList();
+    }
+
+    Collection<ExtensionFunction> globalFunctions() {
+        return bare.values().stream().filter(ExtensionFunction::globalCallable).toList();
+    }
+
+    Set<String> standardFunctionNames() {
+        return standardFunctions;
+    }
+
+    Set<String> macroNames() {
+        return macroFunctions;
+    }
+
+    /**
+     * All introspected functions, for the golden surface test.
+     */
+    Collection<ExtensionFunction> allFunctions() {
+        var all = new ArrayList<>(bare.values());
+        namespaced.values().forEach(m -> all.addAll(m.values()));
+        return all;
     }
 }

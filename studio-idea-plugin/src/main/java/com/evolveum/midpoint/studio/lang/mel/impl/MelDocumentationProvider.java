@@ -22,7 +22,7 @@ public class MelDocumentationProvider extends AbstractDocumentationProvider {
 
     @Override
     public PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file,
-                                                     @Nullable PsiElement contextElement, int targetOffset) {
+                                                    @Nullable PsiElement contextElement, int targetOffset) {
         return contextElement;
     }
 
@@ -33,12 +33,19 @@ public class MelDocumentationProvider extends AbstractDocumentationProvider {
 
         var sb = new StringBuilder();
         sb.append(DocumentationMarkup.DEFINITION_START)
-                .append(signature(fn))
+                .append(signatures(fn))
                 .append(DocumentationMarkup.DEFINITION_END);
 
-        if (fn.documentation() != null && !fn.documentation().isBlank()) {
+        // Overloads may carry different documentation (e.g. the global form of a function
+        // documents its null behavior); show each distinct text once.
+        var docs = fn.overloads().stream()
+                .map(MelExtensionRegistry.Overload::documentation)
+                .filter(d -> d != null && !d.isBlank())
+                .distinct()
+                .toList();
+        if (!docs.isEmpty()) {
             sb.append(DocumentationMarkup.CONTENT_START)
-                    .append(fn.documentation())
+                    .append(String.join("<p>", docs))
                     .append(DocumentationMarkup.CONTENT_END);
         }
 
@@ -48,19 +55,39 @@ public class MelDocumentationProvider extends AbstractDocumentationProvider {
     @Override
     public @Nullable String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
         var fn = resolveFunction(element);
-        return fn == null ? null : signature(fn);
+        return fn == null ? null : signatures(fn);
     }
 
-    private String signature(MelExtensionRegistry.ExtensionFunction fn) {
-        var sb = new StringBuilder(fn.name()).append("(");
-        var params = fn.parameters();
-        int start = fn.receiverTypes().isEmpty() ? 0 : 1;
+    /**
+     * All overload signatures, one per line. Member overloads are rendered receiver-style
+     * ("string.isBlank(): bool"), global overloads call-style ("isBlank(string): bool"),
+     * so variants that would otherwise render identically stay distinguishable.
+     */
+    private String signatures(MelExtensionRegistry.ExtensionFunction fn) {
+        var lines = new java.util.LinkedHashSet<String>();
+        for (var overload : fn.overloads()) {
+            lines.add(signature(fn, overload));
+        }
+        return String.join("<br/>", lines);
+    }
+
+    private String signature(MelExtensionRegistry.ExtensionFunction fn, MelExtensionRegistry.Overload overload) {
+        var sb = new StringBuilder();
+        var params = overload.parameterTypes();
+        int start = 0;
+        if (overload.member() && !params.isEmpty()) {
+            sb.append(params.get(0)).append('.');
+            start = 1;
+        }
+        if (fn.namespace() != null) {
+            sb.append(fn.namespace()).append('.');
+        }
+        sb.append(fn.name()).append("(");
         for (int i = start; i < params.size(); i++) {
             if (i > start) sb.append(", ");
-            sb.append(params.get(i).name()).append(": ").append(params.get(i).type());
+            sb.append(params.get(i));
         }
-        if (fn.variadic()) sb.append(", ...");
-        sb.append("): ").append(fn.returnType());
+        sb.append("): ").append(overload.returnType());
         return sb.toString();
     }
 
@@ -90,13 +117,10 @@ public class MelDocumentationProvider extends AbstractDocumentationProvider {
             return null;
         }
 
-        // Not a namespace call - check dual-mode member functions (e.g. value.strftime(...))
-        for (String namespace : REGISTRY.namespaces()) {
-            for (var fn : REGISTRY.functionsForNamespace(namespace)) {
-                if (!fn.receiverTypes().isEmpty() && fn.name().equals(name)) {
-                    return fn;
-                }
-            }
+        // Not a namespace call - check bare member functions (e.g. value.isBlank())
+        var fn = REGISTRY.bareFunction(name);
+        if (fn != null && fn.memberCallable()) {
+            return fn;
         }
         return null;
     }

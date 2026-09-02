@@ -174,6 +174,14 @@ dependencies {
         isTransitive = false
     }
     implementation(libs.midpoint.localization)
+
+    // CEL declarations for MEL extension introspection (MelCelIntrospector).
+    // antlr4-runtime is excluded: the plugin ships 4.10.1 matching its generated MEL
+    // lexer/parser, and the dev.cel ANTLR-based parser is never invoked by introspection.
+    implementation(libs.cel) {
+        exclude("org.antlr", "antlr4-runtime")
+        exclude("org.yaml", "snakeyaml")
+    }
 //    implementation(libs.midpoint.client)
 
     implementation(libs.asciidoctorj.tabbed.code)

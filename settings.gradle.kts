@@ -45,6 +45,7 @@ dependencyResolutionManagement {
             version("velocity", "2.3")
             version("jruby", "9.2.19.0")
             version("antlr", "4.10.1")
+            version("cel", "0.13.1e-M1")
 
             // plugins
             plugin("changelog", "org.jetbrains.changelog").versionRef("changelog")
@@ -88,6 +89,7 @@ dependencyResolutionManagement {
             library("slf4j-api", "org.slf4j", "slf4j-api").versionRef("slf4j")
             library("velocity", "org.apache.velocity", "velocity-engine-core").versionRef("velocity")
             library("antlr", "org.antlr", "antlr4").versionRef("antlr")
+            library("cel", "dev.cel", "cel").versionRef("cel")
         }
         create("testLibs") {
             version("jupiter", "5.8.1")

@@ -11,9 +11,9 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
  * Provides code completion for MEL expressions:
- *   - bare identifiers and global functions at the top level
- *   - namespace functions after "namespace."
- *   - member functions after "expr."
+ * - bare identifiers and global functions at the top level
+ * - namespace functions after "namespace."
+ * - member functions after "expr."
  */
 public class MelCompletionContributor extends CompletionContributor {
 
@@ -58,28 +58,31 @@ public class MelCompletionContributor extends CompletionContributor {
             for (var fn : REGISTRY.functionsForNamespace(namespace)) {
                 result.addElement(
                         LookupElementBuilder.create(fn.name())
-                                .withTailText(formatParams(fn) + tailDescription(fn), true)
+                                .withTailText(formatParams(fn, false) + tailDescription(fn), true)
                                 .withTypeText(fn.returnType())
                                 .withInsertHandler(PARENS_INSERT));
             }
         }
 
         private void addMemberFunctions(CompletionResultSet result) {
-            for (String name : MelExtensionValidator.KNOWN_MEMBER_FUNCTIONS) {
+            for (var fn : REGISTRY.memberFunctions()) {
+                result.addElement(
+                        LookupElementBuilder.create(fn.name())
+                                .withTailText(formatParams(fn, true) + tailDescription(fn), true)
+                                .withTypeText(fn.returnType())
+                                .withInsertHandler(PARENS_INSERT));
+            }
+            for (String name : MelExtensionValidator.EXTRA_MEMBER_FUNCTIONS) {
                 result.addElement(
                         LookupElementBuilder.create(name)
                                 .withInsertHandler(PARENS_INSERT));
             }
-            // dual-mode extension functions (e.g. strftime on a timestamp receiver)
-            for (String namespace : REGISTRY.namespaces()) {
-                for (var fn : REGISTRY.functionsForNamespace(namespace)) {
-                    if (!fn.receiverTypes().isEmpty()) {
-                        result.addElement(
-                                LookupElementBuilder.create(fn.name())
-                                        .withTailText(formatParams(fn) + tailDescription(fn), true)
-                                        .withTypeText(fn.returnType())
-                                        .withInsertHandler(PARENS_INSERT));
-                    }
+            for (String name : REGISTRY.macroNames()) {
+                if (!name.equals("has")) { // has(...) is global-only
+                    result.addElement(
+                            LookupElementBuilder.create(name)
+                                    .withTypeText("macro")
+                                    .withInsertHandler(PARENS_INSERT));
                 }
             }
         }
@@ -95,25 +98,52 @@ public class MelCompletionContributor extends CompletionContributor {
         }
 
         private void addGlobalFunctions(CompletionResultSet result) {
-            for (String name : MelExtensionValidator.KNOWN_GLOBAL_FUNCTIONS) {
+            for (var fn : REGISTRY.globalFunctions()) {
+                result.addElement(
+                        LookupElementBuilder.create(fn.name())
+                                .withTailText(formatParams(fn, false) + tailDescription(fn), true)
+                                .withTypeText(fn.returnType())
+                                .withInsertHandler(PARENS_INSERT));
+            }
+            for (String name : REGISTRY.standardFunctionNames()) {
+                if (REGISTRY.isValidGlobalCall(name)) {
+                    continue; // already offered above with a signature (e.g. string, size, matches)
+                }
                 result.addElement(
                         LookupElementBuilder.create(name)
                                 .withInsertHandler(PARENS_INSERT));
             }
+            result.addElement(
+                    LookupElementBuilder.create("has")
+                            .withTypeText("macro")
+                            .withInsertHandler(PARENS_INSERT));
         }
 
-        private String formatParams(MelExtensionRegistry.ExtensionFunction fn) {
+        /**
+         * Parameter list for the completion tail, using the first overload matching the
+         * call form being completed (member vs global); other overloads of that form are
+         * indicated by a "(+N)" marker.
+         */
+        private String formatParams(MelExtensionRegistry.ExtensionFunction fn, boolean memberCall) {
+            var overloads = fn.overloads().stream()
+                    .filter(o -> o.member() == memberCall)
+                    .toList();
+            if (overloads.isEmpty()) {
+                overloads = fn.overloads();
+            }
+            var overload = overloads.get(0);
             var sb = new StringBuilder("(");
-            var params = fn.parameters();
-            // skip the first parameter for dual-mode functions since it's the implicit receiver
-            int start = fn.receiverTypes().isEmpty() ? 0 : 1;
+            var params = overload.parameterTypes();
+            // for member overloads the first parameter is the implicit receiver
+            int start = overload.member() ? 1 : 0;
             for (int i = start; i < params.size(); i++) {
                 if (i > start) sb.append(", ");
-                sb.append(params.get(i).name());
-                sb.append(": ").append(params.get(i).type());
+                sb.append(params.get(i));
             }
-            if (fn.variadic()) sb.append(", ...");
             sb.append(")");
+            if (overloads.size() > 1) {
+                sb.append(" (+").append(overloads.size() - 1).append(")");
+            }
             return sb.toString();
         }
 
