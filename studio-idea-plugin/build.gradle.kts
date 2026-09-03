@@ -123,6 +123,11 @@ val useInstaller = !platformVersion.contains("SNAPSHOT")
 
 dependencies {
     // implementation(libs.annotations)
+    // Local midpoint smart-api
+//    implementation(files("../local/smart_api_jar/smart-api.jar"))
+    // Local prism api & api .jar
+//    implementation(files("../local/prism/prism-api.jar"))
+//    implementation(files("../local/prism/prism-impl.jar"))
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
@@ -145,6 +150,7 @@ dependencies {
     }
     implementation("org.antlr:antlr4-runtime:4.10.1")
     implementation("org.antlr:antlr4-intellij-adaptor:0.1")
+    implementation("org.commonmark:commonmark:0.21.0")
 
     implementation(projects.midpointClient)
 
@@ -167,6 +173,11 @@ dependencies {
         exclude("ch.qos.logback")
         exclude("xerces")
     }
+
+    implementation(libs.midpoint.model.smart.api) {
+        isTransitive = false
+    }
+
     implementation(libs.midpoint.security.api) {
         isTransitive = false
     }
@@ -196,6 +207,9 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.okhttp3)
     implementation(libs.okhttp.logging)
+
+    implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
+    implementation("com.fifesoft:rsyntaxtextarea:3.3.3")
 
     runtimeOnly(libs.jaxb.runtime) // needed because of NamespacePrefixMapper class
     runtimeOnly(libs.spring.core) {

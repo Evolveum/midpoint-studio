@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.lang.axiomquery;
 
 import com.evolveum.axiom.lang.antlr.AxiomStrings;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
+import com.evolveum.midpoint.common.LocalizationService;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.impl.query.lang.Filter;
@@ -9,11 +10,16 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
+import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.studio.client.LocalizationServiceImpl;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
+import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.QNameUtil;
+import com.evolveum.midpoint.util.SingleLocalizableMessage;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.*;
@@ -30,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 import java.util.*;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -37,6 +44,8 @@ import java.util.List;
 public class AxiomQueryCompletionContributor extends CompletionContributorBase implements AxiomQueryHints {
 
     private static final Logger LOG = Logger.getInstance(AxiomQueryCompletionContributor.class);
+
+    private final LocalizationServiceImpl localizationService;
 
     public AxiomQueryCompletionContributor() {
         extend(null,
@@ -53,6 +62,8 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                     }
                 }
         );
+
+        localizationService = new LocalizationServiceImpl();
     }
 
     private void addCompletions(CompletionParameters parameters, CompletionResultSet resultSet) {
@@ -250,9 +261,20 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
             alias = key;
         }
 
+        String translatedAlias = localizationService.translate(new SingleLocalizableMessage(alias), Locale.US);
+
+
+        if (Objects.equals(key, "\'")) {
+            translatedAlias = "String value";
+        }
+
+        if (Objects.equals(key, "\"")) {
+            translatedAlias = "String value";
+        }
+
         LookupElementBuilder builder = LookupElementBuilder.create(key)
-                .withTypeText(alias)
-                .withLookupStrings(Arrays.asList(key, key.toLowerCase(), alias, alias.toLowerCase()))
+                .withTypeText(translatedAlias)
+                .withLookupStrings(Arrays.asList(key, key.toLowerCase(), translatedAlias, translatedAlias.toLowerCase()))
                 .withBoldness(true)
                 .withCaseSensitivity(true);
 

@@ -7,6 +7,7 @@
     <depends>com.intellij.modules.java</depends>
     <depends>org.intellij.groovy</depends>
     <depends>org.jetbrains.idea.maven</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
 
     <resource-bundle>messages.MidPointStudio</resource-bundle>
 
@@ -34,6 +35,8 @@
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.trace.TraceService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationManager"/>
+
+        <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.OpenApiTypeMappingCacheService"/>
 
         <projectConfigurable
                 parentId="language"
@@ -76,6 +79,9 @@
                 bundle="messages.MidPointStudio"/>
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
+
+<!--        Prototyping for VAIA -->
+<!--        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.vaia.assistant.assistant.ConnectorAssistantActivity"/>-->
 
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
@@ -124,6 +130,22 @@
                           order="last"
                           icon="AllIcons.Actions.Refresh"
                           factoryClass="com.evolveum.midpoint.studio.ui.synchronization.SynchronizationToolWindowFactory"/>
+
+        
+        <facet.toolWindow facetIdList="MidPointFacet"
+                          factoryClass="com.evolveum.midpoint.studio.ui.smart.suggestion.SmartSuggestionToolWindowFactory"
+                          id="SmartSuggestionToolWindow"
+                          order="last"
+                          anchor="right"
+                          icon="/icons/toolwindow_midpoint.svg"/>
+        
+            <!--        Prototyping for VAIA-->
+<!--        <facet.toolWindow id="ConnectorAssistant"-->
+<!--                          facetIdList="MidPointFacet"-->
+<!--                          anchor="right"-->
+<!--                          order="last"-->
+<!--                          icon="/icons/toolwindow_midpoint.svg"-->
+<!--                          factoryClass="com.evolveum.midpoint.studio.ui.prototype.vaia.assistant.AssistantToolWindowFactory"/>-->
 
         <fileType
                 name="MPTrace"
@@ -234,31 +256,39 @@
 
         <psi.referenceContributor implementation="com.evolveum.midpoint.studio.impl.psi.OidReferenceContributor"/>
 
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.TaskHandlerAnnotatorCompletionProvider"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotator"/>
-        <annotator language="XML"
-                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>
+        <externalAnnotator language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.validator.PrismExternalAnnotator"/>
+        <externalAnnotator language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.validator.PrismExternalAnnotator"/>
+        <externalAnnotator language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.validator.PrismExternalAnnotator"/>
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>
+        <completion.contributor language="XML" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.contributor.PrismXNodeContributor"/>
+        <completion.contributor language="JSON" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.contributor.PrismXNodeContributor"/>
+        <completion.contributor language="yaml" implementationClass="com.evolveum.midpoint.studio.impl.lang.prism.contributor.PrismXNodeContributor"/>
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"
-                                order="before xmlLocation"/>
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.RefOidAnnotator"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ResourceTypeAnnotator"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.TaskHandlerAnnotatorCompletionProvider"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ReplaceShadowRefAnnotatorIntention"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.annotation.ShadowRefAnnotator"/>-->
+<!--        <annotator language="XML"-->
+<!--                   implementationClass="com.evolveum.midpoint.studio.impl.lang.intention.ProtectedStringAnnotatorIntention"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.MidPointCompletionContributor"/>-->
 
-        <completion.contributor language="XML"
-                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.EnumerationRefCompletionContributor"/>
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.NonexistentNamespaceUriCompletionProvider"-->
+<!--                                order="before xmlLocation"/>-->
+
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.SecretsProvidersCompletionContributor"/>-->
+
+<!--        <completion.contributor language="XML"-->
+<!--                                implementationClass="com.evolveum.midpoint.studio.impl.lang.codeInsight.EnumerationRefCompletionContributor"/>-->
 
         <xml.tagNameProvider
                 implementation="com.evolveum.midpoint.studio.impl.lang.codeInsight.ExpressionEvaluatorTagNameProvider"/>
@@ -341,6 +371,19 @@
             <descriptionDirectoryName>ProtectedStringAnnotatorIntention</descriptionDirectoryName>
             <skipBeforeAfter>false</skipBeforeAfter>
         </intentionAction>
+
+        <!-- Groovy dsl schema support-->
+        <postStartupActivity implementation="com.evolveum.midpoint.studio.lang.groovy.GroovySchemaStartupActivity" />
+        <completion.contributor language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaContributor"/>
+        <psi.referenceContributor language="Groovy" implementation="com.evolveum.midpoint.studio.lang.groovy.SchemaReferenceContributor"/>
+        <annotator language="Groovy" implementationClass="com.evolveum.midpoint.studio.lang.groovy.SchemaAnnotator"/>
+
+        <notificationGroup id="midpointSmartSuggestion" displayType="BALLOON" />
+        <notificationGroup id="midpointConnectorGenerator" displayType="BALLOON"/>
+
+        <lang.foldingBuilder language="XML" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
+        <lang.foldingBuilder language="JSON" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
+        <lang.foldingBuilder language="yaml" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.intellij.groovy">
@@ -489,6 +532,59 @@
         <action id="MidPoint.Action.ComboEnvironmentAction"
                 class="com.evolveum.midpoint.studio.action.environment.ComboEnvironments"/>
 
+        <!-- converters actions -->
+        <action id="MidPoint.Action.Converter.ConvertToJson"
+                class="com.evolveum.midpoint.studio.action.ConvertAction"
+                text="JSON"
+                description="Convert to JSON">
+        </action>
+
+        <action id="MidPoint.Action.Converter.ConvertToXml"
+                class="com.evolveum.midpoint.studio.action.ConvertAction"
+                text="XML"
+                description="Convert to XML">
+        </action>
+
+        <action id="MidPoint.Action.Converter.ConvertToYaml"
+                class="com.evolveum.midpoint.studio.action.ConvertAction"
+                text="YAML"
+                description="Convert to YAML">
+        </action>
+
+        <!-- smart suggestion -->
+        <action id="MidPoint.Action.Suggestion.ResourceObjectType"
+                class="com.evolveum.midpoint.studio.action.smart.suggestion.ObjectTypeSuggestionAction"
+                text="Resource Object Types"
+                description="The AI analyzes the imported resource schema and proposes appropriate resource object types based on the detected structure. It suggests relevant object classes and helps administrators avoid manual schema inspection. This significantly accelerates onboarding of new systems and reduces configuration errors during resource integration.">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt R"/>
+        </action>
+        <action id="MidPoint.Action.Suggestion.Mapping"
+                class="com.evolveum.midpoint.studio.action.smart.suggestion.MappingSuggestionAction"
+                text="Mappings"
+                description="The AI generates mapping suggestions by interpreting attribute names, types, and common identity patterns (e.g., first name, or last name). It proposes inbound and outbound mappings aligned with the midPoint’s data model, reducing the need for manual expression writing. This enables faster configuration while promoting use of semantically relevant attributes.">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt M"/>
+        </action>
+        <action id="MidPoint.Action.Suggestion.CorrelationRule"
+                class="com.evolveum.midpoint.studio.action.smart.suggestion.CorrelationRuleSuggestionAction"
+                text="Correlation Rules"
+                description="The AI recommends correlation rules that identify how accounts should be matched to existing focal objects (users) in midPoint. It identifies strong candidate identifiers such as employee IDs, usernames, or emails. This improves matching accuracy and shortens the time needed to configure reliable account-to-user correlation.">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt C"/>
+        </action>
+        <action id="MidPoint.Action.Suggestion.AssociationType"
+                class="com.evolveum.midpoint.studio.action.smart.suggestion.AssociationSuggestionAction"
+                text="Association Types"
+                description="The AI identifies potential group or entitlement structures and suggests corresponding association definitions. It detects likely membership or role-related attributes and proposes appropriate association mappings. This helps administrators quickly model entitlements and access relationships without deep manual schema analysis.">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt A"/>
+        </action>
+
+        <!-- generate connector development -->
+        <action id="MidPoint.Action.ConnectorGenerator"
+                class="com.evolveum.midpoint.studio.action.ConnectorGeneratorAction"
+                text="Connector Generator"
+                description="Connector generator"
+                internal="true"
+                icon="AllIcons.Diff.MagicResolve"/>
+
         <!-- GROUPS -->
 
         <group id="MidPoint.Group.Menu" class="com.evolveum.midpoint.studio.action.MidPointFacetActionGroup">
@@ -531,6 +627,24 @@
                 <reference ref="MidPoint.Action.DeleteRaw"/>
                 <reference ref="MidPoint.Action.Delete"/>
 
+                <group id="ConverterActionGroup"
+                       text="Convert"
+                       description="Convert file to another format"
+                       popup="true">
+                    <reference ref="MidPoint.Action.Converter.ConvertToXml"/>
+                    <reference ref="MidPoint.Action.Converter.ConvertToJson"/>
+                    <reference ref="MidPoint.Action.Converter.ConvertToYaml"/>
+                </group>
+
+                <group id="SmartSuggestionActionGroup"
+                       text="Suggestion"
+                       description="Suggestion"
+                       popup="true">
+                    <reference ref="MidPoint.Action.Suggestion.ResourceObjectType"/>
+                    <reference ref="MidPoint.Action.Suggestion.CorrelationRule"/>
+                    <reference ref="MidPoint.Action.Suggestion.Mapping"/>
+                    <reference ref="MidPoint.Action.Suggestion.AssociationType"/>
+                </group>
             </group>
 
             <group id="MidPoint.Group.Menu.ServerLog"
@@ -578,6 +692,7 @@
 
             <reference ref="MidPoint.Action.TestAction"/>
 
+            <reference ref="MidPoint.Action.ConnectorGenerator"/>
             <reference ref="MidPoint.Action.UploadFullProcessing"/>
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.SynchronizeObjects"/>
@@ -642,6 +757,7 @@
 
             <reference ref="MidPoint.Action.TestAction"/>
 
+            <reference ref="MidPoint.Action.ConnectorGenerator"/>
             <reference ref="MidPoint.Action.UploadFullProcessing"/>
             <reference ref="MidPoint.Action.Refresh"/>
             <reference ref="MidPoint.Action.SynchronizeObjects"/>
@@ -710,5 +826,18 @@
             <add-to-group anchor="last" group-id="StructureViewPopupMenu"/>
         </group>
 
+<!--        Prototype for VAIA experiments -->
+<!--        <action id="WizardAction"-->
+<!--                class="com.evolveum.midpoint.studio.ui.prototype.vaia.wizard.LaunchWizardAction"-->
+<!--                text="Run Wizard"-->
+<!--                description="Launches the custom wizard">-->
+<!--            <add-to-group group-id="ToolsMenu" anchor="last"/>-->
+<!--        </action>-->
     </actions>
+
+    <projectListeners>
+        <listener
+                class="com.evolveum.midpoint.studio.ui.smart.suggestion.listener.EditorFileOpenListener"
+                topic="com.intellij.openapi.fileEditor.FileEditorManagerListener"/>
+    </projectListeners>
 </idea-plugin>

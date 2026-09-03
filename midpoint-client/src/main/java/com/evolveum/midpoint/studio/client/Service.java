@@ -9,9 +9,12 @@ import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
-import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaFileType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.xml.namespace.QName;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -37,6 +40,9 @@ public interface Service {
 
     String modify(MidPointObject object, List<String> opts)
             throws IOException, AuthenticationException;
+
+    <T extends ObjectType> T upsert(MidPointObject object, List<String> opts)
+            throws IOException, AuthenticationException, SchemaException;
 
     ExecuteScriptResponseType execute(String input)
             throws IOException, SchemaException, AuthenticationException;
@@ -77,4 +83,66 @@ public interface Service {
     PrismContext prismContext();
 
     Map<SchemaFileType, String> getExtensionSchemas() throws IOException, SchemaException, AuthenticationException, ClientException;
+
+    String submitOperationSuggestionObjectType(@NotNull String oid, QName objectClass) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionObjectType(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationSuggestionCorrelation(@NotNull String oid, String kind, String intent) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionCorrelation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationSuggestionMapping(@NotNull String oid, String kind, String intent, boolean isInbound) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionMapping(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationSuggestionAssociation(@NotNull String oid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionAssociation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    File downloadConnector(@NotNull String bundleName) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    ConnectorDevelopmentType startFromNew(@NotNull String rawConnDevApplicationInfoType) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    ConnectorDevelopmentType continueFrom(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationCreateConnector(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoCreateConnector(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationDiscoverBasicInformation(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverBasicInformation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationDiscoverDocumentation(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverDocumentation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationProcessDocumentation(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoProcessDocumentation(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationGenerateAuthenticationScript(@NotNull String connectorDevelopmentOid, boolean retry) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoGenerateArtifact(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationDiscoverConnectivityEndpoint(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverConnectivityEndpoint(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationDiscoverObjectClasses(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClasses(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationDiscoverObjectClassAttributes(@NotNull String connectorDevelopmentOid, String objectClass) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassAttributes(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitOperationDiscoverObjectClassEndpoints(@NotNull String connectorDevelopmentOid, String objectClass) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassEndpoints(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitRefreshSchema(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getRefreshSchemaStatus(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
 }

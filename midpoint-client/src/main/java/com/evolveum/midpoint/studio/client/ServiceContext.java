@@ -24,6 +24,8 @@ public class ServiceContext {
 
     public static final MediaType APPLICATION_XML = MediaType.get(jakarta.ws.rs.core.MediaType.APPLICATION_XML);
 
+    public static final MediaType APPLICATION_JSON = MediaType.get(jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
+
     private String url;
 
     private PrismContext prismContext;

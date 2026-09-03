@@ -1,10 +1,8 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismParser;
-import com.evolveum.midpoint.prism.PrismSerializer;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.*;
@@ -14,6 +12,7 @@ import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -24,7 +23,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -386,6 +387,15 @@ public class MidPointClient {
         return response;
     }
 
+    public <O extends ObjectType> O upsert(PrismObject<O> obj, List<String> options) throws AuthenticationException, IOException, SchemaException {
+        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML);
+
+        String content = serializer.serialize(obj.getValue(), obj.getElementName().asSingleName());
+        MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(Objects.requireNonNull(obj.getCompileTimeClass())), false);
+
+        return client.upsert(object, options);
+    }
+
     public String serialize(Object obj) throws SchemaException {
         return client.context().serialize(obj);
     }
@@ -493,5 +503,144 @@ public class MidPointClient {
 
     public void setSuppressNotifications(boolean suppressNotifications) {
         this.suppressNotifications = suppressNotifications;
+    }
+
+    public String submitOperationSuggestionObjectType(String oid, QName objectClassName) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationSuggestionObjectType(oid, objectClassName);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionObjectType(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoSuggestionObjectType(token);
+    }
+
+    public String submitOperationSuggestionCorrelation(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationSuggestionCorrelation(oid, kind, intent);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionCorrelation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoSuggestionCorrelation(token);
+    }
+
+    public String submitOperationSuggestionMapping(String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationSuggestionMapping(oid, kind, intent, isInbound);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionMapping(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoSuggestionMapping(token);
+    }
+
+    public String submitOperationSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationSuggestionAssociation(oid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionAssociation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoSuggestionAssociation(token);
+    }
+
+    public File downloadConnector(String bundleName) {
+        try {
+            return client.downloadConnector(bundleName);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public ConnectorDevelopmentType startFromNew(ConnDevApplicationInfoType connDevApplicationInfoType) throws SchemaException, AuthenticationException, IOException {
+        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML);
+
+        PrismContainerValue<Containerable> pcv = connDevApplicationInfoType.asPrismContainerValue();
+        var connectorDevelopmentTypeDefinition = getPrismContext().getSchemaRegistry().findContainerDefinitionByType(ConnectorDevelopmentType.COMPLEX_TYPE);
+        var containerDefinition = connectorDevelopmentTypeDefinition.findContainerDefinition(ItemPath.create(ConnectorDevelopmentType.F_APPLICATION));
+        var container = containerDefinition.instantiate();
+        container.add(pcv);
+        String xml = serializer.serialize(container);
+
+        return client.startFromNew(xml);
+    }
+
+    public ConnectorDevelopmentType continueFrom(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.continueFrom(token);
+    }
+
+    public String submitOperationCreateConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationCreateConnector(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoCreateConnector(token);
+    }
+
+    public String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverBasicInformation(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverBasicInformation(token);
+    }
+
+    public String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverDocumentation(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverDocumentation(token);
+    }
+
+    public String submitOperationProcessDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationProcessDocumentation(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoProcessDocumentation(token);
+    }
+
+    public String submitOperationGenerateAuthenticationScript(String connectorDevelopmentOid, boolean retry) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationGenerateAuthenticationScript(connectorDevelopmentOid, retry);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoGenerateArtifact(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoGenerateArtifact(token);
+    }
+
+    public String submitOperationDiscoverConnectivityEndpoint(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverConnectivityEndpoint(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverConnectivityEndpoint(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverConnectivityEndpoint(token);
+    }
+
+    public String submitOperationDiscoverObjectClasses(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverObjectClasses(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClasses(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverObjectClasses(token);
+    }
+
+    public String submitOperationDiscoverObjectClassAttributes(String connectorDevelopmentOid, String objectClass) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverObjectClassAttributes(connectorDevelopmentOid, objectClass);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassAttributes(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverObjectClassAttributes(token);
+    }
+
+    public String submitOperationDiscoverObjectClassEndpoints(String connectorDevelopmentOid, String objectClass) throws SchemaException, AuthenticationException, IOException {
+        return client.submitOperationDiscoverObjectClassEndpoints(connectorDevelopmentOid, objectClass);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassEndpoints(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getStatusInfoDiscoverObjectClassEndpoints(token);
+    }
+
+    public String submitRefreshSchema(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitRefreshSchema(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getRefreshSchemaStatus(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getRefreshSchemaStatus(token);
     }
 }

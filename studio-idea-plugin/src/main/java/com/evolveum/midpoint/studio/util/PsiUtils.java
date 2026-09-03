@@ -11,15 +11,20 @@ import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType;
+import com.intellij.json.psi.JsonProperty;
 import com.intellij.lang.injection.InjectedLanguageManager;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.impl.source.xml.TagNameReference;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.jetbrains.yaml.psi.YAMLValue;
 
 import javax.xml.namespace.QName;
 import java.util.*;
@@ -310,5 +315,46 @@ public class PsiUtils {
         }
 
         return objectDefinition.findItemDefinition(path.rest().namedSegmentsOnly());
+    }
+
+    public static PsiElement getElementAtLineColumn(PsiFile file, int line, int column) {
+        if (file == null) return null;
+
+        Document document = PsiDocumentManager.getInstance(file.getProject()).getDocument(file);
+        if (document == null) return null;
+
+        int lineIndex = line - 1;
+        int columnIndex = column - 1;
+
+        if (lineIndex < 0 || lineIndex >= document.getLineCount()) return null;
+
+        int lineStartOffset = document.getLineStartOffset(lineIndex);
+        int offset = lineStartOffset + columnIndex;
+
+        if (offset >= document.getTextLength()) offset = document.getTextLength() - 1;
+        if (offset < 0) offset = 0;
+
+        return file.findElementAt(offset);
+    }
+
+    public static XmlTag findXmlTagParent(PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+        return PsiTreeUtil.getParentOfType(element, XmlTag.class, false);
+    }
+
+    public static JsonProperty findJsonParent(PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+        return PsiTreeUtil.getParentOfType(element, JsonProperty.class, false);
+    }
+
+    public static YAMLValue findYamlKeyValueParent(PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+        return PsiTreeUtil.getParentOfType(element, YAMLValue.class, false);
     }
 }
