@@ -1,8 +1,13 @@
+/*
+ * Copyright (C) 2010-2026 Evolveum and contributors
+ *
+ * Licensed under the EUPL-1.2 or later.
+ */
+
 package com.evolveum.midpoint.studio.ui.connector.generator.step.connection
 
 import com.evolveum.midpoint.smart.api.conndev.SupportedAuthorization
 import com.evolveum.midpoint.studio.impl.MidPointClient
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
 import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge
 import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep
@@ -32,83 +37,67 @@ import javax.swing.*
 class AuthMethodSupportStep(
     wizardContext : ConnectorGeneratorWizard,
     client : MidPointClient,
-    dataModel : ConnectorGeneratorDataModel,
     state : GenerateConnectorBadge.State,
     isHeader : Boolean
-) : ConnectorGeneratorGeneralWizardStep(wizardContext, client, dataModel, state, isHeader) {
+) : ConnectorGeneratorGeneralWizardStep(wizardContext, client, state, isHeader) {
 
-    private val selectedOptions = mutableSetOf<ConnDevAuthInfoType>()
-    private var toggleBtn = JToggleButton()
-
-    private val mainPanel = JPanel(BorderLayout())
+    private var expandToggleBtn = JToggleButton()
     private val dynamicallyListPanel = JPanel(BorderLayout())
-    private val stepComponent: DialogPanel by lazy {
-        panel {
+
+    override val dialogPanel: DialogPanel by lazy {
+        createDialogPanel(
+            "Auth Method Support"
+        ) {
             row {
-                cell(mainPanel)
-                    .align(Align.FILL)
-            }.resizableRow()
-        }.apply {
-            name = "Auth Method Support"
+                cell(JBLabel("Select Supported Authentication Methods").apply {
+                    font = JBFont.label().deriveFont(16f)
+                })
+            }
+
+            row {
+                text("""
+                Choose which authentication methods your connector should support. Users will be able to authenticate via any of the selected options when using this integration.
+                """.trimIndent()).align(AlignX.FILL)
+            }.bottomGap(BottomGap.MEDIUM)
+
+            separator()
+
+            row {
+                cell(dynamicallyListPanel).align(Align.FILL)
+            }
         }
     }
 
     override fun _init() {
-        mainPanel.add(createPanel())
+        super._init()
 
-        dataModel.connectorDevelopmentType.connector.auth.forEach { item -> selectedOptions.add(item.clone()) }
+        dataModel.connectorDevelopment.connector.auth.forEach {
+            item -> dataModel.connectorDevelopment.application.auth.add(item.clone()) }
 
         refreshAuthOptions()
 
-        toggleBtn.border = JBUI.Borders.empty()
-        toggleBtn.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-        toggleBtn.addActionListener { _: ActionEvent? -> refreshAuthOptions() }
+        expandToggleBtn.border = JBUI.Borders.empty()
+        expandToggleBtn.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+        expandToggleBtn.addActionListener { _: ActionEvent? -> refreshAuthOptions() }
 
-        canGoNext(true)
-        super._init()
+        originalConnectorDevelopmentType = dataModel.connectorDevelopment.clone()
+        canGoNext = true
     }
 
     override fun _commit(finishChosen: Boolean) {
 
-        if (selectedOptions.isEmpty()) {
+        if (dataModel.connectorDevelopment.connector.auth.isEmpty()) {
             throw CommitStepException("Authentication method support selection is required.")
         }
 
-        try {
-            dataModel.connectorDevelopmentType.connector.auth.clear()
-            dataModel.connectorDevelopmentType.connector.auth.addAll(selectedOptions)
-
-            dataModel.connectorDevelopmentType =
-                upsertConnectorDevelopmentType(dataModel.connectorDevelopmentType)
-        } catch (ex: Exception) {
-            throw CommitStepException("Couldn't update connector development object. \n Error: ${ex.message}")
+        if (state == GenerateConnectorBadge.State.IN_PROGRESS ||
+            state == GenerateConnectorBadge.State.EDITED
+        ) {
+            dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
+            state = GenerateConnectorBadge.State.COMPLETE
         }
 
         super._commit(finishChosen)
-    }
-
-    override fun getComponent(): JComponent = stepComponent
-
-    private fun createPanel(): JPanel = panel {
-
-        row {
-            cell(JBLabel("Select Supported Authentication Methods").apply {
-                font = JBFont.label().deriveFont(16f)
-            })
-        }
-
-        row {
-            text("""
-                Choose which authentication methods your connector should support. Users will be able to authenticate via any of the selected options when using this integration.
-            """.trimIndent())
-                .align(AlignX.FILL)
-        }.bottomGap(BottomGap.MEDIUM)
-
-        separator()
-
-        row {
-            cell(dynamicallyListPanel).align(Align.FILL)
-        }
     }
 
     fun createDynamicallyListPanel(listAuthInfoType: List<ConnDevAuthInfoType?>): DialogPanel = panel {
@@ -142,7 +131,7 @@ class AuthMethodSupportStep(
         }
 
         row {
-            cell(toggleBtn).align(AlignX.CENTER)
+            cell(expandToggleBtn).align(AlignX.CENTER)
         }
     }
 
@@ -163,13 +152,14 @@ class AuthMethodSupportStep(
             cardPanel.repaint()
         }
 
-        if (selectedOptions.contains(authInfo)) {
-            updateState(cardCheckbox.isSelected)
-        }
+        updateState(authInfo in dataModel.connectorDevelopment.connector.auth)
 
         cardCheckbox.addItemListener { event ->
             val isSelected = event.stateChange == ItemEvent.SELECTED
-            if (isSelected) selectedOptions.add(authInfo.clone()) else selectedOptions.remove(authInfo)
+
+            if (isSelected) dataModel.connectorDevelopment.connector.auth.add(authInfo.clone())
+            else dataModel.connectorDevelopment.connector.auth.remove(authInfo)
+
             updateState(isSelected)
         }
 
@@ -220,9 +210,9 @@ class AuthMethodSupportStep(
     }
 
     private fun refreshAuthOptions() {
-        val selected = toggleBtn.isSelected
+        val selected = expandToggleBtn.isSelected
 
-        toggleBtn.setText(
+        expandToggleBtn.setText(
             if (selected)
                 "Hide not recommended options"
             else
@@ -236,7 +226,7 @@ class AuthMethodSupportStep(
     }
 
     private fun getValues(showAllOptions: Boolean): List<ConnDevAuthInfoType?> {
-        val values = dataModel.connectorDevelopmentType.application.auth
+        val values = dataModel.connectorDevelopment.application.auth
 
         if (!showAllOptions) {
             values.removeIf { v: ConnDevAuthInfoType? -> java.lang.Boolean.TRUE != v!!.isRecommended }

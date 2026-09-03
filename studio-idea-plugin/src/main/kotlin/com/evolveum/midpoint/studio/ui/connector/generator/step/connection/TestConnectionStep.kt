@@ -1,22 +1,25 @@
+/*
+ * Copyright (C) 2010-2026 Evolveum and contributors
+ *
+ * Licensed under the EUPL-1.2 or later.
+ */
+
 package com.evolveum.midpoint.studio.ui.connector.generator.step.connection
 
 import com.evolveum.midpoint.prism.PrismObject
+import com.evolveum.midpoint.prism.PrismProperty
 import com.evolveum.midpoint.prism.path.ItemName
 import com.evolveum.midpoint.prism.path.ItemPath
 import com.evolveum.midpoint.schema.constants.SchemaConstants
-import com.evolveum.midpoint.studio.client.MidPointObject
 import com.evolveum.midpoint.studio.impl.MidPointClient
-import com.evolveum.midpoint.studio.impl.SearchOptions
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
 import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge
 import com.evolveum.midpoint.studio.ui.connector.generator.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep
+import com.evolveum.midpoint.util.exception.SchemaException
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevHttpEndpointType
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType
-import com.evolveum.prism.xml.ns._public.types_3.RawType
 import com.intellij.ide.wizard.CommitStepException
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.components.JBLabel
@@ -27,98 +30,250 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.concurrency.EdtExecutorService
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
+import org.jetbrains.annotations.NotNull
 import java.awt.BorderLayout
 import java.awt.Container
 import java.awt.Dimension
 import java.awt.Font
+import java.awt.event.FocusAdapter
+import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
 import javax.swing.*
 
 class TestConnectionStep(
     wizardContext : ConnectorGeneratorWizard,
     client : MidPointClient,
-    dataModel : ConnectorGeneratorDataModel,
     state : GenerateConnectorBadge.State,
     isHeader : Boolean
-) : ConnectorGeneratorGeneralWizardStep(wizardContext, client, dataModel, state, isHeader) {
-
-    private lateinit var prismObjectResource : PrismObject<ResourceType>
+): ConnectorGeneratorGeneralWizardStep(wizardContext, client, state, isHeader) {
 
     private val globalRadioBtnGroup = ButtonGroup()
     private val endpointsListPanel = JPanel(BorderLayout())
-    private val statusPanel = StatusPanel()
-    private val mainPanel = JPanel(BorderLayout())
-    private val stepComponent: DialogPanel by lazy {
-        panel {
+    private var restUriEndpoint: String? = null
+
+    override val nextButtonText: String
+        get() = "Test Connection"
+
+    override val dialogPanel: DialogPanel by lazy {
+        createDialogPanel(
+            "Test Connection"
+        ) {
             row {
-                cell(mainPanel)
-                    .align(Align.FILL)
-            }.resizableRow()
-        }.apply {
-            name = "Test Connection"
-        }
-    }
+                cell(JBLabel("Provide Endpoint for Connection Test").apply {
+                    font = JBFont.label().deriveFont(16f)
+                })
+            }
 
-    init {
-        val prismObject = getPrismObjectResource()
+            row {
+                text("""
+                Determine the best endpoint for running a test operation. This helps validate that the connector can communicate with the target system and start discovering available data structures.
+                """.trimIndent()).align(AlignX.FILL)
+            }.bottomGap(BottomGap.MEDIUM)
 
-        if (prismObject != null) {
-            prismObjectResource = prismObject
-        } else {
-            // TODO
+            separator()
+
+            row {
+                cell(endpointsListPanel).align(Align.FILL)
+            }
         }
     }
 
     override fun _init() {
-
-        endpointsListPanel.add(createEndpointsListPanelPanel(
-            dataModel.connectorDevelopmentType.testing.suggestedEndpoint
-        ))
-
-        mainPanel.add(createPanel())
-
-        canGoNext(true)
-
         super._init()
+
+        if (!wizardContext.isLeavingStepByPreviousTouch && dataModel.occurredChanges) {
+            submitOperationDiscoverConnectivityEndpoint()
+        }
     }
 
     override fun _commit(finishChosen: Boolean) {
 
-        try {
-            val resultUpsert = client.upsert(prismObjectResource, null)
-                ?: throw CommitStepException("PrismObject resource not found")
+        if (!wizardContext.isLeavingStepByPreviousTouch && dataModel.occurredChanges) {
 
-            client.testResource(resultUpsert.oid)
-        } catch (ex: Exception) {
-            throw CommitStepException("Couldn't update Resource object. \n Error: " + ex.message)
+            dataModel.connectorDevelopment.testing?.testingResource?.oid.requireNotBlank(
+                "Resource oid"
+            )
+
+            try {
+                restUriEndpoint.requireNotBlank(" rest URI endpoint ")
+
+                val resource = getObjectByOid(
+                    dataModel.connectorDevelopment.testing.testingResource.oid,
+                    ResourceType::class.java
+                )
+
+//                setRestTestEndpoint(resource, restUriEndpoint)
+
+                val path = ItemPath.create(
+                    "connectorConfiguration",
+                    SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME,
+                    PROPERTY_ITEM_NAME
+                )
+
+                println("KASKAKSKKASK>>34131> " + resource)
+                val prop: PrismProperty<String> = resource.findProperty(path)
+                println("KASKASKAKSKA>1>> " + prop)
+                println("KASKASKAKSKA>2>> " + prop.realValue)
+                println("KASKASKAKSKA>3>> " + prop.value)
+
+//                val path = ItemPath.create(
+//                    ResourceType.F_CONNECTOR_CONFIGURATION,
+//                    SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME,
+//                    PROPERTY_ITEM_NAME
+//                )
+//                val property: PrismProperty<String>  = resource.findProperty(path)
+//                println("KAKSKAKSKAKS>>2> " + property)
+//                println("KAKSKAKSKAKS>>3> " + property.value)
+//                println("KAKSKAKSKAKS>>4> " + property.realValue)
+
+                upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
+
+//                val r = updateResource(resource)
+//                println("KAKSAKSKAKS:::>3>> " + property)
+//                val value = property.getRealValue()
+//                println("Value: " + value)
+
+//                resourceTesting(resource.oid)
+
+//                submitOperation()
+            } catch (e: Exception) {
+                throw CommitStepException(e.message)
+            }
         }
 
         super._commit(finishChosen)
     }
 
-    override fun getComponent(): JComponent = stepComponent
+    private fun submitOperationDiscoverConnectivityEndpoint() {
 
-    private fun createPanel(): JPanel = panel {
+        replaceContent(
+            getLoadingComponent(
+                statusPanel,
+                "Identifying Connectivity endpoints...",
+                """
+                Please wait while the system is analyzing your connector configuration and discovering available connectivity endpoints.
+                """.trimIndent()
+            )
+        )
 
-        row {
-            cell(JBLabel("Provide Endpoint for Connection Test").apply {
-                font = JBFont.label().deriveFont(16f)
-            })
-        }
+        submitOperation(
+            {
+                client.submitOperationDiscoverConnectivityEndpoint(
+                    dataModel.connectorDevelopment.oid
+                )
+            },
+            { token ->
+                client.getStatusInfoDiscoverConnectivityEndpoint(token)
+            },
+            client.project,
+            "Discover Connectivity Endpoints submit operation",
+            true
+        ).thenAcceptAsync(
+            { statusInfo ->
+                statusPanel.elapsedLabel?.stop()
 
-        row {
-            text("""
-                Determine the best endpoint for running a test operation. This helps validate that the connector can communicate with the target system and start discovering available data structures.
-                """.trimIndent()).align(AlignX.FILL)
-        }.bottomGap(BottomGap.MEDIUM)
+                if (statusInfo.status.equals(OperationResultStatusType.SUCCESS)) {
+                    dynamicPanel.removeAll()
+                    dynamicPanel.revalidate()
+                    dynamicPanel.repaint()
 
-        separator()
+                    endpointsListPanel.add(createEndpointsListPanelPanel(
+                        dataModel.connectorDevelopment.testing.suggestedEndpoint
+                    ))
 
-        row {
-            cell(endpointsListPanel).align(Align.FILL)
-        }
+                    canGoNext = true
+                } else {
+                    statusPanel.status = StatusPanel.Status.ERROR
+                    replaceContent(
+                        getAlertComponent(
+                            statusPanel,
+                            statusPanel.status?.name ?: "",
+                            statusInfo.message
+                        )
+                    )
+                }
+            },
+            EdtExecutorService.getInstance()
+        ).whenCompleteAsync(
+            { _, throwable ->
+                if (throwable != null) {
+                    statusPanel.status = StatusPanel.Status.ERROR
+                    replaceContent(
+                        getAlertComponent(
+                            statusPanel,
+                            statusPanel.status?.name ?: "",
+                            throwable.localizedMessage
+                        )
+                    )
+
+                    statusPanel.elapsedLabel?.stop()
+                }
+            },
+            EdtExecutorService.getInstance()
+        )
+    }
+
+    private fun submitOperation() {
+
+        replaceContent(
+            getLoadingComponent(
+                statusPanel,
+                "Discovering schema...",
+                """
+                Object classes and their attributes are extracted from the shadows and saved as processed documentation for connector code generation.
+                """.trimIndent()
+            )
+        )
+
+        submitOperation(
+            {
+                client.submitRefreshSchema(
+                    dataModel.connectorDevelopment.oid
+                )
+            },
+            { token ->
+                client.getStatusInfoDiscoverConnectivityEndpoint(token)
+            },
+            client.project,
+            "Refresh Schema submit operation",
+            true
+        ).thenAcceptAsync(
+            { statusInfo ->
+                statusPanel.elapsedLabel?.stop()
+                if (statusInfo.status.equals(OperationResultStatusType.SUCCESS)) {
+                    canGoNext = true
+                } else {
+                    statusPanel.status = StatusPanel.Status.ERROR
+                    replaceContent(
+                        getAlertComponent(
+                            statusPanel,
+                            statusPanel.status?.name ?: "",
+                            statusInfo.message
+                        )
+                    )
+                }
+            },
+            EdtExecutorService.getInstance()
+        ).whenCompleteAsync(
+            { _, throwable ->
+                if (throwable != null) {
+                    statusPanel.status = StatusPanel.Status.ERROR
+                    replaceContent(
+                        getAlertComponent(
+                            statusPanel,
+                            statusPanel.status?.name ?: "",
+                            throwable.localizedMessage
+                        )
+                    )
+
+                    statusPanel.elapsedLabel?.stop()
+                }
+            },
+            EdtExecutorService.getInstance()
+        )
     }
 
     private fun createEndpointsListPanelPanel(listHttpEndpointType: List<ConnDevHttpEndpointType?>): JPanel = panel {
@@ -128,7 +283,7 @@ class TestConnectionStep(
                 layout = BoxLayout(this, BoxLayout.Y_AXIS)
                 isOpaque = false
 
-                var currentRestTextEndpoint = getRestTestEndpointProp()
+                var currentRestTextEndpoint: Nothing? = null
                 var hasMatch = false
 
                 listHttpEndpointType.forEach { item ->
@@ -172,7 +327,7 @@ class TestConnectionStep(
     }
 
     private fun createCardComponent(
-        restUriEndpoint: String?,
+        endpoint: String?,
         isSelected: Boolean,
         enterUrlManually: Boolean
     ): JComponent {
@@ -194,10 +349,10 @@ class TestConnectionStep(
             isOpaque = false
         }
 
-
         val updateState = { isSelected: Boolean ->
             cardRadioButton.isSelected = isSelected
             cardPanel.border = if (isSelected) getSelectedBorder() else getUnselectedBorder()
+
             if (isSelected) {
                 if (enterUrlManually) {
                     cardPanel.maximumSize = Dimension(
@@ -205,12 +360,17 @@ class TestConnectionStep(
                         cardPanel.preferredSize.height + JBUI.scale(24)
                     )
 
-                    verticalContainer.add(JBTextField(restUriEndpoint).apply {
+                    verticalContainer.add(JBTextField(endpoint).apply {
                         name = ENTER_URL_MANUALLY_TEXT_FIELD_ID
                         font = font.deriveFont(Font.BOLD, JBUI.scaleFontSize(13f).toFloat())
                         alignmentX = JPanel.LEFT_ALIGNMENT
-                    })
 
+                        addFocusListener(object : FocusAdapter() {
+                            override fun focusLost(e: FocusEvent?) {
+                                restUriEndpoint = text
+                            }
+                        })
+                    })
                 } else {
 
                     val parent = cardPanel.parent
@@ -233,7 +393,7 @@ class TestConnectionStep(
                         }
                     }
 
-                    setRestTestEndpointProp(restUriEndpoint)
+                    restUriEndpoint = endpoint
                 }
             }
 
@@ -267,7 +427,7 @@ class TestConnectionStep(
                     cardPanel.preferredSize.height + JBUI.scale(24)
                 )
 
-                verticalContainer.add(JBTextField(restUriEndpoint).apply {
+                verticalContainer.add(JBTextField(endpoint).apply {
                     name = ENTER_URL_MANUALLY_TEXT_FIELD_ID
                     font = font.deriveFont(Font.PLAIN, JBUI.scaleFontSize(13f).toFloat())
                     alignmentX = JPanel.LEFT_ALIGNMENT
@@ -276,7 +436,7 @@ class TestConnectionStep(
                 })
             }
         } else {
-            restUriEndpoint?.let { endpointText ->
+            endpoint?.let { endpointText ->
                 verticalContainer.add(Box.createRigidArea(Dimension(JBUI.scale(0), 12)))
                 verticalContainer.add(JBLabel(endpointText).apply {
                     font = font.deriveFont(Font.BOLD, JBUI.scaleFontSize(13f).toFloat())
@@ -293,51 +453,61 @@ class TestConnectionStep(
         return cardPanel
     }
 
-    private fun <O : ObjectType> getClassFromReference(objectReference: ObjectReferenceType?): Class<O>? {
-        if (objectReference?.type == null) return null
-        val prismContext = client.prismContext
-        val standardClass = prismContext.schemaRegistry
-            .determineCompileTimeClass<ObjectType>(objectReference.type)
-
-        @Suppress("UNCHECKED_CAST")
-        return standardClass as? Class<O>
+    @Throws(SchemaException::class)
+    private fun setRestTestEndpoint(
+        @NotNull resource: PrismObject<ResourceType>,
+        url: String?
+    ) {
+//
+//        try {
+//            val container: PrismContainer<Containerable> = resource.findOrCreateContainer(
+//                ItemPath.create(
+//                    "connectorConfiguration",
+//                    SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME
+//                )
+//            )
+//
+//            println("AKSKAKSKAKSK11111 " + container)
+//
+//            container.definition?.definitions?.forEach {
+//                log.info("Defined configuration property: ${it.itemName}")
+//            }
+//
+////            container.findOrCreateProperty<String>(
+////                ItemPath.create(PROPERTY_ITEM_NAME)
+////            ).realValue = url
+//        } catch (e: Exception) {
+//            log.error(e)
+//            throw e
+//        }
     }
 
-    private fun getPrismObjectResource() : PrismObject<ResourceType>? {
-        dataModel.connectorDevelopmentType.testing?.let { testing ->
-            val midpointObject : MidPointObject = client.get(
-                getClassFromReference<ResourceType>(testing.testingResource),
-                testing.testingResource.oid,
-                SearchOptions().raw(false)
+    @Throws(SchemaException::class)
+    private fun updateResource(
+        @NotNull resource: PrismObject<ResourceType>
+    ): ResourceType? {
+        return client.upsert(resource, null)
+    }
+
+    private fun resourceTesting(@NotNull oid: String) {
+
+        replaceContent(
+            getLoadingComponent(
+                statusPanel,
+                "Testing Connection...",
+                """
+                Please wait while we're checking if the connector can reach the system and respond correctly.
+                """.trimIndent()
             )
+        )
 
-            return client.prismContext.parseObject(midpointObject.content)
-        }
-
-        return null
-    }
-
-    private fun getRestTestEndpointProp() : String? {
-        return when (val realValue = prismObjectResource.findProperty<Any>(REST_TEST_ENDPOINT_ITEM_PATH)?.realValue) {
-            is String -> realValue
-            is RawType -> realValue.value as? String
-            else -> null
-        }
-    }
-
-    private fun setRestTestEndpointProp(restUriEndpoint: String?) {
-        prismObjectResource.findOrCreateProperty<Any>(REST_TEST_ENDPOINT_ITEM_PATH).realValue =
-            restUriEndpoint
+        client.testResource(oid)
     }
 
     companion object {
         private const val ENTER_URL_MANUALLY_CARD_ID = "urlManuallyCard"
         private const val ENTER_URL_MANUALLY_TEXT_FIELD_ID = "urlManuallyTextField"
         private const val ENTER_URL_MANUALLY_LABEL = "Enter URL manually"
-        private val REST_TEST_ENDPOINT_ITEM_PATH = ItemPath.create(
-            ResourceType.F_CONNECTOR_CONFIGURATION,
-            SchemaConstants.ICF_CONFIGURATION_PROPERTIES_NAME,
-            ItemName.from("", "restTestEndpoint")
-        )
+        private val PROPERTY_ITEM_NAME = ItemName.from("", "restTestEndpoint")
     }
 }

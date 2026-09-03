@@ -1,21 +1,23 @@
+/*
+ * Copyright (C) 2010-2026 Evolveum and contributors
+ *
+ * Licensed under the EUPL-1.2 or later.
+ */
+
 package com.evolveum.midpoint.studio.ui.connector.generator.step.basic
 
+import com.evolveum.midpoint.schema.util.SmartMetadataUtil
 import com.evolveum.midpoint.studio.impl.MidPointClient
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
 import com.evolveum.midpoint.studio.ui.connector.generator.component.AlertPanel
 import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge
 import com.evolveum.midpoint.studio.ui.connector.generator.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDocumentationSourceType
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
 import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
-import com.intellij.ide.wizard.CommitStepException
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -26,6 +28,7 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.concurrency.EdtExecutorService
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -36,159 +39,38 @@ import java.awt.event.MouseEvent
 import javax.swing.*
 
 class DiscoverDocumentationStep(
-    wizardContext: ConnectorGeneratorWizard,
+    wizardContext : ConnectorGeneratorWizard,
     client: MidPointClient,
-    dataModel: ConnectorGeneratorDataModel,
-    state: GenerateConnectorBadge.State,
+    state : GenerateConnectorBadge.State,
     isHeader: Boolean
-) : ConnectorGeneratorGeneralWizardStep(wizardContext, client, dataModel, state, isHeader) {
+): ConnectorGeneratorGeneralWizardStep(wizardContext, client, state, isHeader) {
 
-    private var statusPanel = StatusPanel()
-    private val mainPanel = JPanel(BorderLayout())
-    private val stepComponent: DialogPanel by lazy {
-        panel {
-            row {
-                cell(mainPanel)
-                    .align(Align.FILL)
-            }.resizableRow()
-        }.apply {
-            name = "Documentation"
-        }
+    override val dialogPanel: DialogPanel by lazy {
+        createDialogPanel(
+            "Documentation"
+        ) { }
     }
 
     override fun _init() {
-
-        if (getState() != GenerateConnectorBadge.State.COMPLETE) {
-            setState(GenerateConnectorBadge.State.IN_PROGRESS)
-        }
-
-        if (dataModel.connectorDevelopmentType == null) {
-            printAlertPanel(
-                StatusPanel.Status.ERROR,
-                mainPanel,
-                statusPanel,
-                "Error",
-                """
-                    Object Connector Development is null.
-                """.trimIndent()
-            )
-            return
-        }
-
-        if (getState() == GenerateConnectorBadge.State.IN_PROGRESS ||
-            getState() == GenerateConnectorBadge.State.EDITED
-        ) {
-            ProgressManager.getInstance().run(object : Backgroundable(
-                client.project,
-                "Discover Documentation submit operation",
-                true
-            ) {
-                private var token: String? = null
-
-                override fun run(progressIndicator: ProgressIndicator) {
-                    try {
-                        statusPanel.elapsedLabel?.start()
-                        token = client.submitOperationDiscoverDocumentation(
-                            dataModel.connectorDevelopmentType.oid
-                        )
-                    } catch (e: Exception) {
-                        ApplicationManager.getApplication().invokeLater {
-                            printAlertPanel(
-                                StatusPanel.Status.ERROR,
-                                mainPanel,
-                                statusPanel,
-                                "Error",
-                                "Failed to create connector:\n${e.message}"
-                            )
-                        }
-                        statusPanel.elapsedLabel?.stop()
-                        return
-                    }
-                }
-
-                override fun onSuccess() {
-
-                    if (token == null) {
-                        printTokenNullAlertPanel(mainPanel, statusPanel)
-                        setState(GenerateConnectorBadge.State.FIXING)
-                        return
-                    }
-
-                    printWaitingPanel(
-                        mainPanel,
-                        statusPanel,
-                        "Identifying Documentation...",
-                        """
-                    Analyzing your target application details to locate the right documentation.
-                    """)
-
-                    getResult {
-                        client.getStatusInfoDiscoverDocumentation(token)
-                    }.whenComplete { statusInfoResult, ex ->
-                        ApplicationManager.getApplication().invokeLater({
-                            if (ex != null) {
-                                printAlertPanel(
-                                    StatusPanel.Status.ERROR,
-                                    mainPanel,
-                                    statusPanel,
-                                    "Error",
-                                    ex.message
-                                )
-                            } else {
-                                val result = statusInfoResult!!.connDevDiscoverDocumentationResult
-
-                                if (result != null && !result.documentation.isEmpty()) {
-                                    mainPanel.removeAll()
-                                    cardsContainer.removeAll()
-                                    mainPanel.add(createPanel(result.documentation))
-                                    mainPanel.revalidate()
-                                    mainPanel.repaint()
-                                } else {
-                                    printAlertPanel(
-                                        StatusPanel.Status.ERROR,
-                                        mainPanel,
-                                        statusPanel,
-                                        "Error",
-                                        "No documentation found."
-                                    )
-                                }
-
-                                canGoNext(true)
-                                wizardContext.updateWizardButtons()
-                            }
-
-                            statusPanel.elapsedLabel?.stop()
-                        }, ModalityState.any())
-                    }
-
-                    super.onSuccess()
-                }
-            })
-        }
-
         super._init()
+
+        if (!existConnDev()) return
+
+        if (!wizardContext.isLeavingStepByPreviousTouch && dataModel.occurredChanges) {
+            submitOperation()
+        }
     }
 
-    @Throws(CommitStepException::class)
     override fun _commit(finishChosen: Boolean) {
 
-        if (getState() == GenerateConnectorBadge.State.IN_PROGRESS ||
-            getState() == GenerateConnectorBadge.State.EDITED
+        if (state == GenerateConnectorBadge.State.IN_PROGRESS ||
+            state == GenerateConnectorBadge.State.EDITED
         ) {
-            try {
-                dataModel.connectorDevelopmentType =
-                    upsertConnectorDevelopmentType(dataModel.connectorDevelopmentType)
-            } catch (ex: Exception) {
-                throw CommitStepException("Couldn't update connector development object. \n Error: " + ex.message)
-            }
-
-            setState(GenerateConnectorBadge.State.COMPLETE)
+            state = GenerateConnectorBadge.State.COMPLETE
         }
 
         super._commit(finishChosen)
     }
-
-    override fun getComponent(): JComponent = stepComponent
 
     fun createPanel(documentations : List<ConnDevDocumentationSourceType>): JPanel = panel {
 
@@ -199,7 +81,9 @@ class DiscoverDocumentationStep(
         }
 
         row {
-            text("Tell us which application you want to connect to. Based on this information, the system will identify the target and locate appropriate documentation.")
+            text("""
+            Tell us which application you want to connect to. Based on this information, the system will identify the target and locate appropriate documentation.
+            """.trimIndent())
                 .align(AlignX.FILL)
         }.bottomGap(BottomGap.MEDIUM)
 
@@ -242,12 +126,85 @@ class DiscoverDocumentationStep(
                 .align(AlignX.FILL)
         }
 
+        cardsContainer.removeAll()
+        cardsContainer.revalidate()
+        cardsContainer.repaint()
+
         documentations.forEach { data ->
             cardsContainer.add(createCardComponent(data))
         }
     }
 
+    private fun submitOperation() {
+
+        replaceContent(
+            getLoadingComponent(
+                statusPanel,
+                "Identifying Documentation...",
+                """
+                Analyzing your target application details to locate the right documentation.
+                """.trimIndent()
+            )
+        )
+
+        submitOperation(
+            {
+                client.submitOperationDiscoverDocumentation(
+                    dataModel.connectorDevelopment.oid
+                )
+            },
+            { token ->
+                client.getStatusInfoDiscoverDocumentation(token)
+            },
+            client.project,
+            "Discover Documentation submit operation",
+            true
+        ).thenAcceptAsync(
+            { statusInfo ->
+                if (statusInfo.status.equals(OperationResultStatusType.SUCCESS)) {
+                    dynamicPanel.removeAll()
+                    dynamicPanel.add(
+                        createPanel(
+                            statusInfo.result.connDevDiscoverDocumentationResult.documentation
+                        )
+                    )
+                    dynamicPanel.revalidate()
+                    dynamicPanel.repaint()
+                    statusPanel.elapsedLabel?.stop()
+                    canGoNext = true
+                } else {
+                    statusPanel.status = StatusPanel.Status.ERROR
+                    replaceContent(
+                        getAlertComponent(
+                            statusPanel,
+                            statusPanel.status?.name ?: "",
+                            statusInfo.message
+                        )
+                    )
+                }
+            },
+            EdtExecutorService.getInstance()
+        ).whenCompleteAsync(
+            { _, throwable ->
+                if (throwable != null) {
+                    statusPanel.status = StatusPanel.Status.ERROR
+                    replaceContent(
+                        getAlertComponent(
+                            statusPanel,
+                            statusPanel.status?.name ?: "",
+                            throwable.localizedMessage
+                        )
+                    )
+
+                    statusPanel.elapsedLabel?.stop()
+                }
+            },
+            EdtExecutorService.getInstance()
+        )
+    }
+
     private fun toggleAllCardsSelection(shouldSelectAll: Boolean) {
+
         for (component in cardsContainer.components) {
             if (component is JPanel) {
                 val leftPanel = component.components.firstOrNull {
@@ -258,6 +215,7 @@ class DiscoverDocumentationStep(
                 checkBox?.isSelected = shouldSelectAll
             }
         }
+
         cardsContainer.revalidate()
         cardsContainer.repaint()
     }
@@ -288,7 +246,7 @@ class DiscoverDocumentationStep(
             cardPanel.repaint()
         }
 
-        if (dataModel.connectorDevelopmentType.documentationSource.contains(documentationSource)) {
+        if (dataModel.connectorDevelopment.documentationSource?.contains(documentationSource) == true) {
             updateState(true)
         }
 
@@ -296,9 +254,9 @@ class DiscoverDocumentationStep(
             val isSelected = event.stateChange == ItemEvent.SELECTED
 
             if (isSelected) {
-                dataModel.connectorDevelopmentType.documentationSource.add(documentationSource.clone())
+                dataModel.connectorDevelopment.documentationSource?.add(documentationSource.clone())
             } else {
-                dataModel.connectorDevelopmentType.documentationSource.remove(documentationSource.clone())
+                dataModel.connectorDevelopment.documentationSource?.remove(documentationSource.clone())
             }
 
             updateState(isSelected)
@@ -334,8 +292,7 @@ class DiscoverDocumentationStep(
                 }
                 add(titleLabel)
 
-                // use AI tag
-                if (true) {
+                if (SmartMetadataUtil.isMarkedAsInvalid(documentationSource.asPrismContainerValue())) {
                     add(Box.createRigidArea(Dimension(JBUI.scale(8), 0)))
                     add(GenerateConnectorBadge(GenerateConnectorBadge.AiTag.AI_TAG))
                 }
@@ -380,8 +337,8 @@ class DiscoverDocumentationStep(
 
                 addMouseListener(object : MouseAdapter() {
                     override fun mouseClicked(e: MouseEvent) {
-                        if (dataModel.connectorDevelopmentType.documentationSource.contains(documentationSource)) {
-                            dataModel.connectorDevelopmentType.documentationSource.remove(documentationSource.clone())
+                        if (dataModel.connectorDevelopment.documentationSource?.contains(documentationSource) == true) {
+                            dataModel.connectorDevelopment.documentationSource?.remove(documentationSource.clone())
                         }
                         cardsContainer.remove(cardPanel)
                         cardsContainer.validate()
@@ -393,6 +350,7 @@ class DiscoverDocumentationStep(
             add(viewOptionButtonLabel)
             add(deleteActionTrashLabel)
         }
+
         cardPanel.add(rightActionsDeckPanel, BorderLayout.EAST)
 
         return cardPanel

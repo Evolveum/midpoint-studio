@@ -29,7 +29,6 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.awt.RelativePoint;
-import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 
@@ -155,7 +154,7 @@ public class ActionsEditor extends AbstractCellEditor implements TableCellEditor
         Rectangle rect = table.getCellRect(row, 0, true);
         Point point = new Point(rect.x, rect.y + rect.height);
 
-        JBPanel<?> popupRoot = new JBPanel<>(new BorderLayout());
+        JPanel popupRoot = new JPanel(new BorderLayout());
         popupRoot.removeAll();
         popupRoot.add(smartEditor, BorderLayout.CENTER);
         popupRoot.setBorder(JBUI.Borders.empty(1));

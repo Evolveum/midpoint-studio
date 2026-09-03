@@ -1,11 +1,11 @@
 package com.evolveum.midpoint.studio.ui.dialog.wizard;
 
-import com.intellij.ui.components.JBPanel;
+import javax.swing.JPanel;
 
 
 public interface WizardContent {
 
-    JBPanel<?> getPanel();
+    JPanel getPanel();
 
     default void beforeChangeAction() {
     }

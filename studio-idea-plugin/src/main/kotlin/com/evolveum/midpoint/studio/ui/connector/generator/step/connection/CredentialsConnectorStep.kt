@@ -1,64 +1,108 @@
+/*
+ * Copyright (C) 2010-2026 Evolveum and contributors
+ *
+ * Licensed under the EUPL-1.2 or later.
+ */
+
 package com.evolveum.midpoint.studio.ui.connector.generator.step.connection
 
+import com.evolveum.midpoint.prism.Containerable
+import com.evolveum.midpoint.prism.PrismContainer
+import com.evolveum.midpoint.prism.PrismContainerDefinition
+import com.evolveum.midpoint.prism.PrismObject
+import com.evolveum.midpoint.prism.PrismProperty
+import com.evolveum.midpoint.prism.PrismPropertyDefinition
+import com.evolveum.midpoint.prism.path.ItemName
+import com.evolveum.midpoint.prism.path.ItemPath
+import com.evolveum.midpoint.schema.constants.SchemaConstants
+import com.evolveum.midpoint.schema.util.ConnectorTypeUtil
+import com.evolveum.midpoint.smart.api.conndev.SupportedAuthorization
 import com.evolveum.midpoint.studio.impl.MidPointClient
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
 import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge
 import com.evolveum.midpoint.studio.ui.connector.generator.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevAuthInfoType
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevHttpAuthTypeType
+import com.evolveum.midpoint.xml.ns._public.common.common_3.*
 import com.intellij.icons.AllIcons
+import com.intellij.ide.wizard.CommitStepException
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBPasswordField
-import com.intellij.ui.components.JBRadioButton
-import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextField
-import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.AlignX
-import com.intellij.ui.dsl.builder.BottomGap
-import com.intellij.ui.dsl.builder.TopGap
-import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.DocumentAdapter
+import com.intellij.ui.components.*
+import com.intellij.ui.dsl.builder.*
+import com.intellij.util.concurrency.EdtExecutorService
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
+import fleet.util.async.resource
+import org.jetbrains.annotations.NotNull
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.event.ItemEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.ButtonGroup
-import javax.swing.JComponent
-import javax.swing.JPanel
-import javax.swing.ScrollPaneConstants
+import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.xml.namespace.QName
 
 class CredentialsConnectorStep(
     wizardContext : ConnectorGeneratorWizard,
     client : MidPointClient,
-    dataModel : ConnectorGeneratorDataModel,
     state : GenerateConnectorBadge.State,
     isHeader : Boolean
-) : ConnectorGeneratorGeneralWizardStep(wizardContext, client, dataModel, state, isHeader) {
+) : ConnectorGeneratorGeneralWizardStep(wizardContext, client, state, isHeader) {
 
     private val globalRadioBtnGroup = ButtonGroup()
-    private var statusPanel = StatusPanel()
-    private val mainPanel = JPanel(BorderLayout())
     private val credentialDynamicallyPanel = JPanel(BorderLayout())
-    private val stepComponent: DialogPanel by lazy {
-        panel {
+
+    private var apiKey: String = ""
+    private var tokenValue: String = ""
+
+    override val dialogPanel: DialogPanel by lazy {
+
+        createDialogPanel(
+            "Credentials"
+        ) {
+
             row {
-                cell(mainPanel)
-                    .align(Align.FILL)
-            }.resizableRow()
-        }.apply {
-            name = "Credentials"
+                cell(JBLabel("Authentication Method for Testing").apply {
+                    font = JBFont.label().deriveFont(16f)
+                })
+            }
+
+            row {
+                text(
+                    """
+                    Choose an authentication method for this connector and fill in the corresponding credential fields for testing. The fields below will update based on the selected method.
+                    """.trimIndent()
+                ).align(AlignX.FILL)
+            }.bottomGap(BottomGap.MEDIUM)
+
+            separator()
+
+            row {
+                cell(JBLabel("Method").apply {
+                    font = JBFont.label().deriveFont(16f)
+                })
+            }
+
+            row {
+                cell(createAuthMethodListPanel(dataModel.connectorDevelopment.connector.auth))
+            }
+
+            row {
+                cell(JBLabel("Credentials").apply {
+                    font = JBFont.label().deriveFont(16f)
+                }).align(Align.FILL)
+            }
+
+            row {
+                cell(credentialDynamicallyPanel).align(Align.FILL)
+            }
         }
     }
 
     override fun _init() {
+        super._init()
 
         credentialDynamicallyPanel.add(panel {
             row {
@@ -67,57 +111,34 @@ class CredentialsConnectorStep(
                 """.trimIndent()).align(AlignX.FILL)
             }
         })
-
-        mainPanel.add(createPanel())
-
-        super._init()
     }
 
     override fun _commit(finishChosen: Boolean) {
         super._commit(finishChosen)
-    }
 
-    override fun getComponent(): JComponent = stepComponent
+        apiKey.requireNotBlank("API key")
+        tokenValue.requireNotBlank("token value")
 
-    private fun createPanel(): JPanel = panel {
+        try {
+            val resource = getObjectByOid(
+                dataModel.connectorDevelopment.testing.testingResource.oid,
+                ResourceType::class.java
+            )
 
-        row {
-            cell(JBLabel("Authentication Method for Testing").apply {
-                font = JBFont.label().deriveFont(16f)
-            })
-        }
+            setConfigurationProperties(resource, "basic")
 
-        row {
-            text("""
-            Choose an authentication method for this connector and fill in the corresponding credential fields for testing. The fields below will update based on the selected method.
-            """.trimIndent())
-                .align(AlignX.FILL)
-        }.bottomGap(BottomGap.MEDIUM)
-
-        separator()
-
-        row {
-            cell(JBLabel("Method").apply {
-                font = JBFont.label().deriveFont(16f)
-            })
-        }
-
-        row {
-            cell(createDynamicallyListPanel(dataModel.connectorDevelopmentType.connector.auth))
-        }
-
-        row {
-            cell(JBLabel("Credentials").apply {
-                font = JBFont.label().deriveFont(16f)
-            }).align(Align.FILL)
-        }
-
-        row {
-            cell(credentialDynamicallyPanel).align(Align.FILL)
+            if (state == GenerateConnectorBadge.State.IN_PROGRESS ||
+                state == GenerateConnectorBadge.State.EDITED
+            ) {
+                dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
+                state = GenerateConnectorBadge.State.COMPLETE
+            }
+        } catch (e : Exception) {
+            throw CommitStepException(e.message)
         }
     }
 
-    private fun createDynamicallyListPanel(listAuthInfoType: List<ConnDevAuthInfoType?>): JPanel = panel {
+    private fun createAuthMethodListPanel(listAuthInfoType: List<ConnDevAuthInfoType?>): JPanel = panel {
 
         row {
             val cardsContainer = JPanel().apply {
@@ -183,6 +204,9 @@ class CredentialsConnectorStep(
 
             if (isSelected) {
                 updateCredentialDynamicallyPanel(authInfo)
+                canGoNext = true
+            } else {
+                canGoNext = false
             }
         }
 
@@ -216,12 +240,29 @@ class CredentialsConnectorStep(
 
     private fun credentialsSectionForm(authInfo : ConnDevAuthInfoType): JComponent {
 
-//        val attributes = SupportedAuthorization.attributesFor(dataModel.connectorDevelopmentType.connector.integrationType,
-//            authInfo.type)
-
         if (authInfo.type.equals(ConnDevHttpAuthTypeType.BASIC)) {
-            return panel {
 
+            val tokenField = JBPasswordField().apply {
+                text = tokenValue
+
+                document.addDocumentListener(object : DocumentAdapter() {
+                    override fun textChanged(e: DocumentEvent) {
+                        tokenValue = text
+                    }
+                })
+            }
+
+            val apiKeyField = JBTextField().apply {
+                text = apiKey
+
+                document.addDocumentListener(object : DocumentAdapter() {
+                    override fun textChanged(e: DocumentEvent) {
+                        apiKey = text
+                    }
+                })
+            }
+
+            return panel {
                 row {
                     label("Token")
                     icon(AllIcons.General.ContextHelp).apply {
@@ -230,27 +271,65 @@ class CredentialsConnectorStep(
                 }.topGap(TopGap.SMALL)
 
                 row {
-                    cell(JBPasswordField().apply {
-                        text = ""
-                        putClientProperty("JTextField.variant", "passwordWithoutCloud")
-                    }).align(Align.FILL)
+                    cell(tokenField)
+                        .align(Align.FILL)
                 }
 
                 row {
-                    label("Username")
+                    label("API Key")
                     icon(AllIcons.General.ContextHelp).apply {
                         component.toolTipText = "Enter your API key or account username here."
                     }
                 }.topGap(TopGap.SMALL)
 
                 row {
-                    cell(JBTextField("apikey").apply {
-                        putClientProperty("JTextField.trailingIcon", AllIcons.General.InlineRefresh)
-                    }).align(Align.FILL)
+                    cell(apiKeyField)
+                        .align(Align.FILL)
+                }
+            }
+        } else {
+            return panel {
+                row {
+                    label("Render for ${authInfo.type}")
                 }
             }
         }
 
         return panel {}
+    }
+
+    private fun setConfigurationProperties(
+        @NotNull resource: PrismObject<ResourceType>,
+        @NotNull property: String
+    ) {
+
+        val connector = getObjectByOid(
+            dataModel.connectorDevelopment.connector.connectorRef.oid,
+            ConnectorType::class.java
+        )
+
+        val connectorSchema = ConnectorTypeUtil.parseConnectorSchema(
+            connector.asObjectable()
+        )
+
+        val itemDefinition = connectorSchema.findItemDefinitionByElementName(
+            QName("connectorConfiguration")
+        )
+
+        val propertyDefinition = itemDefinition.findItemDefinition(
+            ItemPath.create(
+                SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME,
+                property
+            ),
+            PrismPropertyDefinition::class.java
+        )
+
+        val resourceConfigurationProperties = resource.findOrCreateProperty<PrismPropertyDefinition<*>>(
+            ItemPath.create(
+                ResourceType.F_CONNECTOR_CONFIGURATION,
+                SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME,
+                propertyDefinition
+            )
+        )
     }
 }

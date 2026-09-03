@@ -42,7 +42,7 @@ public interface Service {
             throws IOException, AuthenticationException;
 
     <T extends ObjectType> T upsert(MidPointObject object, List<String> opts)
-            throws IOException, AuthenticationException;
+            throws IOException, AuthenticationException, SchemaException;
 
     ExecuteScriptResponseType execute(String input)
             throws IOException, SchemaException, AuthenticationException;
@@ -91,6 +91,8 @@ public interface Service {
 
     File downloadConnector(@NotNull String bundleName) throws ClientException, SchemaException, AuthenticationException, IOException;
 
+    ConnectorDevelopmentType startFromNew(@NotNull String rawConnDevApplicationInfoType) throws ClientException, SchemaException, AuthenticationException, IOException;
+
     ConnectorDevelopmentType continueFrom(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
 
     String submitOperationCreateConnector(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
@@ -128,4 +130,8 @@ public interface Service {
     String submitOperationDiscoverObjectClassEndpoints(@NotNull String connectorDevelopmentOid, String objectClass) throws ClientException, SchemaException, AuthenticationException, IOException;
 
     @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassEndpoints(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    String submitRefreshSchema(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException;
+
+    @Nullable SmartIntegrationOperationStatusInfoType getRefreshSchemaStatus(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException;
 }

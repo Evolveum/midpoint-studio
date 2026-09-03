@@ -1,10 +1,8 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismParser;
-import com.evolveum.midpoint.prism.PrismSerializer;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.*;
@@ -14,6 +12,7 @@ import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -542,6 +541,19 @@ public class MidPointClient {
         return null;
     }
 
+    public ConnectorDevelopmentType startFromNew(ConnDevApplicationInfoType connDevApplicationInfoType) throws SchemaException, AuthenticationException, IOException {
+        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML);
+
+        PrismContainerValue<Containerable> pcv = connDevApplicationInfoType.asPrismContainerValue();
+        var connectorDevelopmentTypeDefinition = getPrismContext().getSchemaRegistry().findContainerDefinitionByType(ConnectorDevelopmentType.COMPLEX_TYPE);
+        var containerDefinition = connectorDevelopmentTypeDefinition.findContainerDefinition(ItemPath.create(ConnectorDevelopmentType.F_APPLICATION));
+        var container = containerDefinition.instantiate();
+        container.add(pcv);
+        String xml = serializer.serialize(container);
+
+        return client.startFromNew(xml);
+    }
+
     public ConnectorDevelopmentType continueFrom(String token) throws SchemaException, AuthenticationException, IOException {
         return client.continueFrom(token);
     }
@@ -616,5 +628,13 @@ public class MidPointClient {
 
     public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassEndpoints(String token) throws SchemaException, AuthenticationException, IOException {
         return client.getStatusInfoDiscoverObjectClassEndpoints(token);
+    }
+
+    public String submitRefreshSchema(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
+        return client.submitRefreshSchema(connectorDevelopmentOid);
+    }
+
+    public SmartIntegrationOperationStatusInfoType getRefreshSchemaStatus(String token) throws SchemaException, AuthenticationException, IOException {
+        return client.getRefreshSchemaStatus(token);
     }
 }

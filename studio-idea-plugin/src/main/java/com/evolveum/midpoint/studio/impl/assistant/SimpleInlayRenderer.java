@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.Inlay;
 import com.intellij.openapi.editor.colors.EditorFontType;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.ui.Gray;
+import kotlinx.serialization.protobuf.ProtoType;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;

@@ -1,170 +1,64 @@
+/*
+ * Copyright (C) 2010-2026 Evolveum and contributors
+ *
+ * Licensed under the EUPL-1.2 or later.
+ */
+
 package com.evolveum.midpoint.studio.ui.connector.generator.step.connection
 
 import com.evolveum.midpoint.studio.impl.MidPointClient
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorDataModel
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
 import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge
 import com.evolveum.midpoint.studio.ui.connector.generator.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep
 import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.concurrency.EdtExecutorService
 import com.intellij.util.ui.JBFont
 import org.jetbrains.plugins.groovy.GroovyLanguage
-import java.awt.BorderLayout
-import javax.swing.JComponent
 import javax.swing.JPanel
 
 class AuthScriptsConnectorStep(
     wizardContext : ConnectorGeneratorWizard,
     client : MidPointClient,
-    dataModel : ConnectorGeneratorDataModel,
     state : GenerateConnectorBadge.State,
     isHeader : Boolean
-) : ConnectorGeneratorGeneralWizardStep(wizardContext, client, dataModel, state, isHeader) {
+) : ConnectorGeneratorGeneralWizardStep(wizardContext, client, state, isHeader) {
 
-    private var smartEditorComponent: SmartEditorComponent = SmartEditorComponent(client.project)
-
-    private var statusPanel = StatusPanel()
-    private val mainPanel = JPanel(BorderLayout())
-    private val stepComponent: DialogPanel by lazy {
-        panel {
-            row {
-                cell(mainPanel)
-                    .align(Align.FILL)
-            }.resizableRow()
-        }.apply {
-            name = "Auth Scripts Connector"
-        }
+    override val dialogPanel: DialogPanel by lazy {
+        createDialogPanel(
+            "Auth Scripts Connector"
+        ) { }
     }
 
     override fun _init() {
-
-        if (dataModel.connectorDevelopmentType == null) {
-            printAlertPanel(
-                StatusPanel.Status.ERROR,
-                mainPanel,
-                statusPanel,
-                "Error",
-                """
-                    Object Connector Development is null.
-                """.trimIndent()
-            )
-            return
-        }
-
-        ProgressManager.getInstance().run(object : Backgroundable(
-            client.project,
-            "Generate Auth Script connector",
-            true
-        ) {
-            private var token: String? = null
-
-            override fun run(progressIndicator: ProgressIndicator) {
-                try {
-                    statusPanel.elapsedLabel?.start()
-                    token = client.submitOperationGenerateAuthenticationScript(
-                        dataModel.connectorDevelopmentType.oid,
-                        false
-                    )
-                } catch (e: Exception) {
-                    ApplicationManager.getApplication().invokeLater {
-                        printAlertPanel(
-                            StatusPanel.Status.ERROR,
-                            mainPanel,
-                            statusPanel,
-                            "Error",
-                            "Failed to generate auth script connector:\n${e.message}"
-                        )
-                    }
-                    statusPanel.elapsedLabel?.stop()
-                    return
-                }
-            }
-
-            override fun onSuccess() {
-
-                if (token == null) {
-                    printTokenNullAlertPanel(mainPanel, statusPanel)
-                    setState(GenerateConnectorBadge.State.FIXING)
-                    return
-                }
-
-                printWaitingPanel(
-                    mainPanel,
-                    statusPanel,
-                    "Generating Authentication Script...",
-                    """
-                    We're creating a functional authentication script based on the authentication methods supported by system. This usually takes a few seconds.
-                    """)
-
-                getResult {
-                    client.getStatusInfoGenerateArtifact(token)
-                }.whenComplete { statusInfoResult, ex ->
-                    ApplicationManager.getApplication().invokeLater({
-                        if (ex != null) {
-                            printAlertPanel(
-                                StatusPanel.Status.ERROR,
-                                mainPanel,
-                                statusPanel,
-                                "Error",
-                                ex.message
-                            )
-                        } else {
-                            val result = statusInfoResult!!.connDevGenerateArtifactResult
-
-                            if (result != null) {
-                                mainPanel.removeAll()
-
-                                smartEditorComponent.setText(
-                                    result.artifact.content,
-                                    GroovyLanguage
-                                )
-
-                                mainPanel.add(createPanel())
-                                mainPanel.revalidate()
-                                mainPanel.repaint()
-                            } else {
-                                printAlertPanel(
-                                    StatusPanel.Status.ERROR,
-                                    mainPanel,
-                                    statusPanel,
-                                    "Error",
-                                    "No auth script found."
-                                )
-                            }
-
-                            canGoNext(true)
-                            wizardContext.updateWizardButtons()
-                        }
-
-                        statusPanel.elapsedLabel?.stop()
-                    }, ModalityState.any())
-                }
-
-                super.onSuccess()
-            }
-        })
-
         super._init()
+
+        if (!wizardContext.isLeavingStepByPreviousTouch) {
+            submitOperation()
+        }
     }
 
     override fun _commit(finishChosen: Boolean) {
         super._commit(finishChosen)
+
+        if (state == GenerateConnectorBadge.State.IN_PROGRESS ||
+            state == GenerateConnectorBadge.State.EDITED
+        ) {
+            dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
+            state = GenerateConnectorBadge.State.COMPLETE
+        }
     }
 
-    override fun getComponent(): JComponent = stepComponent
-
-    private fun createPanel(): JPanel = panel {
+    fun createPanel(content: String): JPanel = panel {
 
         row {
             cell(JBLabel("Authentication script validation").apply {
@@ -182,7 +76,90 @@ class AuthScriptsConnectorStep(
         separator()
 
         row {
+            val smartEditorComponent = SmartEditorComponent(client.project)
+            smartEditorComponent.setText(content, GroovyLanguage)
             cell(smartEditorComponent).align(Align.FILL)
         }
+    }
+
+    private fun submitOperation() {
+
+        replaceContent(
+            getLoadingComponent(
+                statusPanel,
+                "Generating Authentication Script...",
+                """
+                We're creating a functional authentication script based on the authentication methods supported by system. This usually takes a few seconds.
+                """.trimIndent()
+            )
+        )
+
+        submitOperation(
+            {
+                client.submitOperationGenerateAuthenticationScript(
+                    dataModel.connectorDevelopment.oid,
+                    false
+                )
+            },
+            { token ->
+                client.getStatusInfoGenerateArtifact(token)
+            },
+            client.project,
+            "Generate Auth Script connector",
+            true
+        ).thenAcceptAsync(
+            { statusInfo ->
+
+                statusPanel.elapsedLabel?.stop()
+
+                if (statusInfo.status == OperationResultStatusType.SUCCESS) {
+                    val content = statusInfo.result?.connDevGenerateArtifactResult?.artifact?.content?: run {
+                        statusPanel.status = StatusPanel.Status.ERROR
+                        replaceContent(
+                            getAlertComponent(
+                                statusPanel,
+                                statusPanel.status?.name?: "",
+                                "Failed to generate authentication script",
+                            )
+                        )
+
+                        return@thenAcceptAsync
+                    }
+
+                    dynamicPanel.removeAll()
+                    dynamicPanel.add(createPanel(content))
+                    dynamicPanel.revalidate()
+                    dynamicPanel.repaint()
+
+                    canGoNext = true
+
+                } else {
+                    statusPanel.status = StatusPanel.Status.ERROR
+                    replaceContent(
+                        getAlertComponent(
+                            statusPanel,
+                            statusPanel.status?.name?: "",
+                            statusInfo.message
+                        )
+                    )
+                }
+            },
+            EdtExecutorService.getInstance()
+        ).whenCompleteAsync(
+            { _, throwable ->
+                if (throwable != null) {
+                    statusPanel.status = StatusPanel.Status.ERROR
+                    replaceContent(
+                        getAlertComponent(
+                            statusPanel,
+                            statusPanel.status?.name?: "",
+                            throwable.localizedMessage
+                        )
+                    )
+                    statusPanel.elapsedLabel?.stop()
+                }
+            },
+            EdtExecutorService.getInstance()
+        )
     }
 }

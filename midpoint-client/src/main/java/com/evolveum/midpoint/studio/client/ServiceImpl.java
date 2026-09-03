@@ -204,7 +204,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public <T extends ObjectType> T upsert(MidPointObject object, List<String> opts) throws IOException, AuthenticationException {
+    public <T extends ObjectType> T upsert(MidPointObject object, List<String> opts) throws IOException, AuthenticationException, SchemaException {
         if (opts == null) {
             opts = new ArrayList<>();
         }
@@ -217,11 +217,7 @@ public class ServiceImpl implements Service {
         Request.Builder builder = context.build(path, options)
                 .put(RequestBody.create(object.getContent(), ServiceContext.APPLICATION_XML));
 
-        try {
-            return executeRequest(builder.build(), object.getType().getClassDefinition());
-        } catch (SchemaException ex) {
-            throw new RuntimeException(ex);
-        }
+        return executeRequest(builder.build(), object.getType().getClassDefinition());
     }
 
     private ObjectTypes getObjectType(String oid) {
@@ -694,6 +690,17 @@ public class ServiceImpl implements Service {
     }
 
     @Override
+    public ConnectorDevelopmentType startFromNew(@NotNull String rawConnDevApplicationInfoType) throws ClientException, SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build(
+                "/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_START_FROM_NEW,
+                Map.of()
+        ).post(RequestBody.create(rawConnDevApplicationInfoType, ServiceContext.APPLICATION_XML));
+
+        return executeRequest(builder.build(), ConnectorDevelopmentType.class);
+    }
+
+    @Override
     public ConnectorDevelopmentType continueFrom(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_CONTINUE_FROM,
@@ -828,8 +835,6 @@ public class ServiceImpl implements Service {
         return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
     }
 
-
-
     @Override
     public String submitOperationDiscoverObjectClasses(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
@@ -892,6 +897,28 @@ public class ServiceImpl implements Service {
     public @Nullable SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassEndpoints(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build("/ws/connector-generator",
                 ConnectorGeneratorConstants.RPC_DISCOVER_OBJECT_CLASS_ENDPOINTS_STATUS_INFO,
+                Map.of("token", token)
+        ).get();
+
+        return executeRequest(builder.build(), SmartIntegrationOperationStatusInfoType.class);
+    }
+
+    @Override
+    public String submitRefreshSchema(@NotNull String connectorDevelopmentOid) throws ClientException, SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_REFRESH_SCHEMA_SUBMIT_OPERATION,
+                Map.of(
+                        "oid", connectorDevelopmentOid
+                )
+        ).post(RequestBody.EMPTY);
+
+        return executeRequest(builder.build(), String.class);
+    }
+
+    @Override
+    public @Nullable SmartIntegrationOperationStatusInfoType getRefreshSchemaStatus(@NotNull String token) throws ClientException, SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build("/ws/connector-generator",
+                ConnectorGeneratorConstants.RPC_REFRESH_SCHEMA_STATUS_INFO,
                 Map.of("token", token)
         ).get();
 

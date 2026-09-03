@@ -1,21 +1,23 @@
+/*
+ * Copyright (C) 2010-2026 Evolveum and contributors
+ *
+ * Licensed under the EUPL-1.2 or later.
+ */
+
 package com.evolveum.midpoint.studio.action;
 
-import com.evolveum.midpoint.smart.api.conndev.ConnectorDevelopmentOperation;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.client.SearchResult;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorBasicWizard;
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorContinueWizard;
-import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.ListPopup;
 import org.jetbrains.annotations.NotNull;
@@ -42,16 +44,7 @@ public class ConnectorGeneratorAction extends AnAction {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             var connection = client.testConnection();
 
-            if (!connection.success()) {
-                MidPointUtils.publishExceptionNotification(
-                        project,
-                        env,
-                        ConnectorGeneratorAction.class,
-                        "Midpoint Connection Failed",
-                        connection.exception().getMessage(),
-                        connection.exception()
-                );
-            } else {
+            if (connection.success()) {
                 SearchResult searchResult = client.search(
                         ConnectorDevelopmentType.class,
                         null,
@@ -62,7 +55,8 @@ public class ConnectorGeneratorAction extends AnAction {
                 actionGroup.add(new HoverableRowAction("New Development Connector",
                         "",
                         null,
-                        client));
+                        client
+                ));
                 actionGroup.addSeparator("In-Progress Connectors");
 
                 if (searchResult == null || searchResult.getObjects().isEmpty()) {
@@ -100,11 +94,20 @@ public class ConnectorGeneratorAction extends AnAction {
                         }
                     });
                 }
+            } else {
+                MidPointUtils.publishExceptionNotification(
+                        project,
+                        env,
+                        ConnectorGeneratorAction.class,
+                        "Midpoint Connection Failed",
+                        connection.exception().getMessage(),
+                        connection.exception()
+                );
             }
         });
     }
 
-    private static class HoverableRowAction extends AnAction implements CustomComponentAction {
+    private static class HoverableRowAction extends AnAction {
 
         private final String oid;
         private final MidPointClient client;
