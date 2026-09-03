@@ -576,6 +576,7 @@
                 class="com.evolveum.midpoint.studio.action.ConnectorGeneratorAction"
                 text="Connector Generator"
                 description="Connector generator"
+                internal="true"
                 icon="AllIcons.Diff.MagicResolve"/>
 
         <!-- GROUPS -->

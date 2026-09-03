@@ -105,40 +105,9 @@ class TestConnectionStep(
                     ResourceType::class.java
                 )
 
-//                setRestTestEndpoint(resource, restUriEndpoint)
-
-                val path = ItemPath.create(
-                    "connectorConfiguration",
-                    SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME,
-                    PROPERTY_ITEM_NAME
-                )
-
-                println("KASKAKSKKASK>>34131> " + resource)
-                val prop: PrismProperty<String> = resource.findProperty(path)
-                println("KASKASKAKSKA>1>> " + prop)
-                println("KASKASKAKSKA>2>> " + prop.realValue)
-                println("KASKASKAKSKA>3>> " + prop.value)
-
-//                val path = ItemPath.create(
-//                    ResourceType.F_CONNECTOR_CONFIGURATION,
-//                    SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME,
-//                    PROPERTY_ITEM_NAME
-//                )
-//                val property: PrismProperty<String>  = resource.findProperty(path)
-//                println("KAKSKAKSKAKS>>2> " + property)
-//                println("KAKSKAKSKAKS>>3> " + property.value)
-//                println("KAKSKAKSKAKS>>4> " + property.realValue)
-
                 upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
 
-//                val r = updateResource(resource)
-//                println("KAKSAKSKAKS:::>3>> " + property)
-//                val value = property.getRealValue()
-//                println("Value: " + value)
-
-//                resourceTesting(resource.oid)
-
-//                submitOperation()
+                submitOperation()
             } catch (e: Exception) {
                 throw CommitStepException(e.message)
             }
@@ -466,8 +435,6 @@ class TestConnectionStep(
 //                    SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME
 //                )
 //            )
-//
-//            println("AKSKAKSKAKSK11111 " + container)
 //
 //            container.definition?.definitions?.forEach {
 //                log.info("Defined configuration property: ${it.itemName}")
