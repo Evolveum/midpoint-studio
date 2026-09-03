@@ -4,11 +4,13 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.ui.ColumnInfo;
+import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.util.Enumeration;
 import java.util.List;
@@ -114,7 +116,7 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
         filteredRoot = filterNode((DefaultMutableTreeTableNode) originalRoot, node -> {
                     for (ColumnInfo column : columns) {
                         if (column instanceof FilterableColumnInfo<?, ?> filterableColumnInfo) {
-                            Object value = filterableColumnInfo.valueOf(node);
+                            Object value = filterableColumnInfo.valueOf((MutableTreeNode) node);
                             if (value instanceof String s) {
                                 if (s.toLowerCase().contains(lower)) {
                                     return true;

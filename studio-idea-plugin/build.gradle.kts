@@ -134,8 +134,10 @@ dependencies {
         create(properties("platformType"), properties("platformVersion"), useInstaller = useInstaller)
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        bundledPlugins(properties("platformBundledPlugins").map { it.split(',').map(String::trim) })
-
+        bundledPlugins(properties("platformBundledPlugins")
+            .map { it.split(',').map(String::trim) }
+            .map { it + "com.intellij.modules.json" }
+        )
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(properties("platformPlugins").map { it.split(',').map(String::trim) })
 

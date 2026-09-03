@@ -118,33 +118,33 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
                         }
                     }
                     return null;
-                }),
-                new DefaultColumnInfo<>("Activities") {
-                    @Override
-                    public @Nullable Object valueOf(DefaultMutableTreeTableNode node) {
-                        return node.getUserObject();
-                    }
-
-                    @Override
-                    public boolean isCellEditable(DefaultMutableTreeTableNode node) {
-                        return true;
-                    }
-
-                    @Override
-                    public TableCellRenderer getCustomizedRenderer(DefaultMutableTreeTableNode node, TableCellRenderer renderer) {
-                        return new ActionsRenderer();
-                    }
-
-                    @Override
-                    public @NotNull TableCellRenderer getRenderer(DefaultMutableTreeTableNode o) {
-                        return new ActionsRenderer();
-                    }
-
-                    @Override
-                    public TableCellEditor getEditor(DefaultMutableTreeTableNode o) {
-                        return new ActionsEditor(project, prismContext);
-                    }
-                }
+                })
+//                new DefaultColumnInfo<>("Activities") {
+//                    @Override
+//                    public @Nullable Object valueOf(DefaultMutableTreeTableNode node) {
+//                        return node.getUserObject();
+//                    }
+//
+//                    @Override
+//                    public boolean isCellEditable(DefaultMutableTreeTableNode node) {
+//                        return true;
+//                    }
+//
+//                    @Override
+//                    public TableCellRenderer getCustomizedRenderer(DefaultMutableTreeTableNode node, TableCellRenderer renderer) {
+//                        return new ActionsRenderer();
+//                    }
+//
+//                    @Override
+//                    public @NotNull TableCellRenderer getRenderer(DefaultMutableTreeTableNode o) {
+//                        return new ActionsRenderer();
+//                    }
+//
+//                    @Override
+//                    public TableCellEditor getEditor(DefaultMutableTreeTableNode o) {
+//                        return new ActionsEditor(project, prismContext);
+//                    }
+//                }
         ));
     }
 
