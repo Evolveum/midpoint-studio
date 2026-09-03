@@ -19,6 +19,7 @@ dependencyResolutionManagement {
             version("intelliJPlatform", "2.10.5")
             version("kover", "0.9.3")
             version("qodana", "2025.2.2")
+            version("cyclonedx", "3.2.4")
 
             // versions of midpoint libraries
             version("midpoint", "4.11-SNAPSHOT")
@@ -29,6 +30,7 @@ dependencyResolutionManagement {
             version("asciidoctorj-tabbed-code", "0.3")
             version("commons-io", "2.21.0")
             version("commons-lang3", "3.20.0")
+            version("jackson", "2.17.2")
             version("jaxb-runtime", "2.3.2")
             version("jcommander", "1.81")
             version("logback", "1.2.3")
@@ -44,6 +46,7 @@ dependencyResolutionManagement {
             version("velocity", "2.3")
             version("jruby", "9.2.19.0")
             version("antlr", "4.10.1")
+            version("cel", "0.13.1e-M1")
 
             // plugins
             plugin("changelog", "org.jetbrains.changelog").versionRef("changelog")
@@ -51,6 +54,7 @@ dependencyResolutionManagement {
             plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("kover", "org.jetbrains.kotlinx.kover").versionRef("kover")
             plugin("qodana", "org.jetbrains.qodana").versionRef("qodana")
+            plugin("cyclonedx", "org.cyclonedx.bom").versionRef("cyclonedx")
 
             // midpoint libraries
             library("midpoint-common", "com.evolveum.midpoint.infra", "common").versionRef("midpoint")
@@ -75,6 +79,7 @@ dependencyResolutionManagement {
             ).versionRef("asciidoctorj-tabbed-code")
             library("commons-io", "commons-io", "commons-io").versionRef("commons-io")
             library("commons-lang", "org.apache.commons", "commons-lang3").versionRef("commons-lang3")
+            library("jackson-databind", "com.fasterxml.jackson.core", "jackson-databind").versionRef("jackson")
             library("jaxb-runtime", "org.glassfish.jaxb", "jaxb-runtime").versionRef("jaxb-runtime")
             library("jcommander", "com.beust", "jcommander").versionRef("jcommander")
             library("logback-classic", "ch.qos.logback", "logback-classic").versionRef("logback")
@@ -86,6 +91,7 @@ dependencyResolutionManagement {
             library("slf4j-api", "org.slf4j", "slf4j-api").versionRef("slf4j")
             library("velocity", "org.apache.velocity", "velocity-engine-core").versionRef("velocity")
             library("antlr", "org.antlr", "antlr4").versionRef("antlr")
+            library("cel", "dev.cel", "cel").versionRef("cel")
         }
         create("testLibs") {
             version("jupiter", "5.8.1")
@@ -95,6 +101,7 @@ dependencyResolutionManagement {
 
             library("jupiter-api", "org.junit.jupiter", "junit-jupiter-api").versionRef("jupiter")
             library("jupiter-engine", "org.junit.jupiter", "junit-jupiter-engine").withoutVersion()
+            library("mockwebserver", "com.squareup.okhttp3", "mockwebserver").version("5.1.0")
             library("remote-robot", "com.intellij.remoterobot", "remote-robot").versionRef("remote-robot")
             library("remote-fixtures", "com.intellij.remoterobot", "remote-fixtures").versionRef("remote-robot")
             library("xmlunit-core", "org.xmlunit", "xmlunit-core").versionRef("xmlunit")

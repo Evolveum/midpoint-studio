@@ -7,7 +7,7 @@ import com.evolveum.midpoint.studio.ui.trace.entry.PrismValueNode;
 import com.evolveum.midpoint.studio.ui.trace.entry.TextNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.FullShadowLoadedTraceType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  *
@@ -15,7 +15,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 public class FullProjectionLoadOverviewProvider implements OverviewProvider<FullProjectionLoadOpNode> {
 
     @Override
-    public void provideOverview(FullProjectionLoadOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(FullProjectionLoadOpNode node, DefaultMutableTreeNode root,
             ViewingState initialState) throws SchemaException {
 
         FullShadowLoadedTraceType trace = node.getTrace(FullShadowLoadedTraceType.class);

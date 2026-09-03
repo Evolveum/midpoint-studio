@@ -23,7 +23,7 @@ public class TraceService {
     public TraceService(@NotNull Project project) {
         this.project = project;
 
-        this.opViewType = PredefinedOpView.ALL;
+        this.opViewType = PredefinedOpView.SIMPLE;
 
         this.options = createOptions(opViewType);
     }

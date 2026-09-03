@@ -10,7 +10,7 @@ import com.evolveum.midpoint.studio.ui.trace.entry.TextNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.MappingEvaluationTraceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.MappingSourceEvaluationTraceType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 public class MappingEvaluationOverviewProvider implements OverviewProvider<MappingEvaluationOpNode> {
 
     @Override
-    public void provideOverview(MappingEvaluationOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(MappingEvaluationOpNode node, DefaultMutableTreeNode root,
             ViewingState initialState) throws SchemaException {
 
         MappingEvaluationTraceType trace = node.getTrace();

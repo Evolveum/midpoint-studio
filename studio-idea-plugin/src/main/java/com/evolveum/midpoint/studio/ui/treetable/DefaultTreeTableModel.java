@@ -4,7 +4,6 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.ui.ColumnInfo;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -26,6 +25,8 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
     private final Object originalRoot;
     private Object filteredRoot;
 
+    private RowStyleProvider rowStyleProvider;
+
     public DefaultTreeTableModel() {
         super(new DefaultMutableTreeNode());
 
@@ -34,7 +35,7 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
     }
 
     public DefaultTreeTableModel(@NotNull List<ColumnInfo> columns) {
-        super(new DefaultMutableTreeTableNode());
+        super(new DefaultMutableTreeNode());
 
         this.columns = columns;
 
@@ -155,4 +156,12 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
         return null;
     }
 
+
+    public RowStyleProvider getRowStyler() {
+        return rowStyleProvider;
+    }
+
+    public void setRowStyler(RowStyleProvider rowStyleProvider) {
+        this.rowStyleProvider = rowStyleProvider;
+    }
 }

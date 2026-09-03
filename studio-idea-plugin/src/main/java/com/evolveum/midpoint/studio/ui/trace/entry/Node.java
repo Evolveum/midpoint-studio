@@ -1,12 +1,11 @@
 package com.evolveum.midpoint.studio.ui.trace.entry;
 
-import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
-
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
+import java.util.Collections;
 import java.util.Objects;
 
-public abstract class Node<T> extends AbstractMutableTreeTableNode {
+public abstract class Node<T> extends DefaultMutableTreeNode {
 
     private String label;
 
@@ -22,25 +21,9 @@ public abstract class Node<T> extends AbstractMutableTreeTableNode {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public T getUserObject() {
         return (T) super.getUserObject();
-    }
-
-    @Override
-    public Object getValueAt(int i) {
-        switch (i) {
-            case 0:
-                return getLabel();
-            case 1:
-                return getValue();
-        }
-
-        return null;
-    }
-
-    @Override
-    public int getColumnCount() {
-        return 2;
     }
 
     public String getLabel() {
@@ -66,11 +49,11 @@ public abstract class Node<T> extends AbstractMutableTreeTableNode {
     public void setBackgroundColor(Color backgroundColor, boolean deep) {
         setBackgroundColor(backgroundColor);
         if (deep) {
-            for (MutableTreeTableNode child : children) {
-                if (child instanceof Node) {
-                    ((Node<?>) child).setBackgroundColor(backgroundColor, true);
+            Collections.list(children()).forEach(child -> {
+                if (child instanceof Node<?> n) {
+                    n.setBackgroundColor(backgroundColor, true);
                 }
-            }
+            });
         }
     }
 

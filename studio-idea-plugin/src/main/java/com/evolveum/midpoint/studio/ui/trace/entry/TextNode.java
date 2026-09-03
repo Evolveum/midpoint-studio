@@ -1,6 +1,6 @@
 package com.evolveum.midpoint.studio.ui.trace.entry;
 
-import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 public class TextNode extends Node<String> {
 
@@ -11,7 +11,7 @@ public class TextNode extends Node<String> {
         setValue(value);
     }
 
-    public static TextNode create(String label, Object value, AbstractMutableTreeTableNode parent) {
+    public static TextNode create(String label, Object value, DefaultMutableTreeNode parent) {
         TextNode node = new TextNode(label, value != null ? value.toString() : "");
         if (parent != null) {
             parent.add(node);

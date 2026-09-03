@@ -9,7 +9,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -43,7 +43,7 @@ public class OpDetailsTreePanel extends AbstractOpTreePanel {
             trace = TextNode.create("Trace", "", null);
         }
 
-        DefaultMutableTreeTableNode root = new DefaultMutableTreeTableNode();
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         root.add(result);
         root.add(trace);
         updateTreeModel(root);

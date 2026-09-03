@@ -318,6 +318,64 @@ public class ServiceImpl implements Service {
     }
 
     @Override
+    public LogFileContent getLog(long fromPosition, long maxSize) throws IOException, AuthenticationException {
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromPosition", fromPosition);
+        params.put("maxSize", maxSize);
+
+        Request req = context.build("/log", params)
+                .header("Accept", jakarta.ws.rs.core.MediaType.TEXT_PLAIN)
+                .get()
+                .build();
+
+        OkHttpClient client = context.getClient();
+        try (Response response = client.newCall(req).execute()) {
+            context.validateResponse(response);
+
+            long at = parseLongHeader(response, "ReturnedDataPosition", Math.max(fromPosition, 0));
+            boolean complete = Boolean.parseBoolean(response.header("ReturnedDataComplete", "true"));
+            long logFileSize = parseLongHeader(response, "CurrentLogFileSize", -1);
+
+            byte[] body = response.body() != null ? response.body().bytes() : new byte[0];
+
+            return new LogFileContent(body, at, complete, logFileSize);
+        }
+    }
+
+    @Override
+    public long getLogFileSize() throws IOException, AuthenticationException {
+        Request req = context.build("/log/size")
+                .header("Accept", jakarta.ws.rs.core.MediaType.TEXT_PLAIN)
+                .get()
+                .build();
+
+        OkHttpClient client = context.getClient();
+        try (Response response = client.newCall(req).execute()) {
+            context.validateResponse(response);
+
+            String body = response.body() != null ? response.body().string() : null;
+            if (body == null || body.isBlank()) {
+                throw new ClientException("Empty response body for log file size");
+            }
+
+            return Long.parseLong(body.trim());
+        }
+    }
+
+    private long parseLongHeader(Response response, String name, long defaultValue) {
+        String value = response.header(name);
+        if (value == null) {
+            return defaultValue;
+        }
+
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException ex) {
+            return defaultValue;
+        }
+    }
+
+    @Override
     public TestConnectionResult testServiceConnection() {
         Request.Builder builder = context.build("/" + ObjectTypes.NODE.getRestType() + "/current")
                 .get();

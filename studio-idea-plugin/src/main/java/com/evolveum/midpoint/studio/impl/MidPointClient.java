@@ -108,14 +108,16 @@ public class MidPointClient {
                     .useHttp2(environment.isUseHttp2())
                     .responseTimeout(settings.getRestResponseTimeout());
 
-            factory.messageListener((message) -> {
+            if (!suppressConsole) {
+                factory.messageListener((message) -> {
 
-                if (!settings.isPrintRestCommunicationToConsole() || suppressConsole) {
-                    return;
-                }
+                    if (!settings.isPrintRestCommunicationToConsole()) {
+                        return;
+                    }
 
-                console.ifPresent(c -> c.printToConsole(environment, MidPointClient.class, message, null, Console.ContentType.INFO_OUTPUT));
-            });
+                    console.ifPresent(c -> c.printToConsole(environment, MidPointClient.class, message, null, Console.ContentType.INFO_OUTPUT));
+                });
+            }
 
             client = factory.create();
 
@@ -462,6 +464,10 @@ public class MidPointClient {
 
     public TestConnectionResult testConnection() {
         return client.testServiceConnection();
+    }
+
+    public LogFileContent getLog(long fromPosition, long maxSize) throws IOException, AuthenticationException {
+        return client.getLog(fromPosition, maxSize);
     }
 
     public <O extends ObjectType> OperationResult recompute(Class<O> type, String oid) {

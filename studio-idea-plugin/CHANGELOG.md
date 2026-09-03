@@ -3,12 +3,15 @@
 ## [4.11.0]
 ### Added
 - Support for Intellij Idea 2026.1
-- MEL support
+- Basic MEL support - syntax highlighting, autocompletion, inlays, documentation
 
 ### Changed
 - Updated MidPoint libraries to version 4.11
+- UI improvements in trace viewer
 
 ### Fixed
+- MID-11215 Fixed NPE in documentation generator.
+- MID-11199 Fixed issue when trying to upload whole directory containing objects.
 
 ## [4.10.0]
 ### Added

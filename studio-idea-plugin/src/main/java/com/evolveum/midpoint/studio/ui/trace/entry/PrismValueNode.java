@@ -5,7 +5,7 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import org.jdesktop.swingx.treetable.AbstractMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class PrismValueNode extends Node<PrismValue> {
         return rv;
     }
 
-    public static PrismValueNode create(String string, Object realValue, AbstractMutableTreeTableNode parent) throws SchemaException {
+    public static PrismValueNode create(String string, Object realValue, DefaultMutableTreeNode parent) throws SchemaException {
         if (realValue instanceof Containerable) {
             return create(string, ((Containerable) realValue).asPrismContainerValue(), parent);
         } else if (realValue instanceof Referencable) {
@@ -73,7 +73,7 @@ public class PrismValueNode extends Node<PrismValue> {
         }
     }
 
-    public static PrismValueNode create(String string, PrismValue value, AbstractMutableTreeTableNode parent) throws SchemaException {
+    public static PrismValueNode create(String string, PrismValue value, DefaultMutableTreeNode parent) throws SchemaException {
         PrismValueNode node = new PrismValueNode(string, value);
         if (parent != null) {
             parent.add(node);

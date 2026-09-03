@@ -11,7 +11,7 @@ import com.evolveum.midpoint.studio.ui.trace.entry.TextNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectDeltaOperationType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  *
@@ -19,7 +19,7 @@ import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 public class ProjectionChangeExecutionOverviewProvider implements OverviewProvider<ProjectionChangeExecutionOpNode> {
 
     @Override
-    public void provideOverview(ProjectionChangeExecutionOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(ProjectionChangeExecutionOpNode node, DefaultMutableTreeNode root,
             ViewingState initialState) throws SchemaException {
 
         TextNode.create("Resource", node.getResourceName(), root);

@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -79,8 +80,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
                     if (key == null || !key.useDefaultPrismContext) {
                         LOG.warn(
                                 "No project set for PrismService override supplier (empty thread local), " +
-                                        "returning default prism context instance",
-                                new RuntimeException("Exception just for stacktrace"));
+                                        "returning default prism context instance");
                     }
                     return DEFAULT_PRISM_CONTEXT;
                 }
@@ -118,6 +118,10 @@ public final class StudioPrismContextService implements ProjectManagerListener {
      * Prism context specific for each project.
      */
     private PrismContext prismContext;
+
+    private final AtomicLong reloadCount = new AtomicLong();
+
+    private final AtomicLong totalReloadTimeMs = new AtomicLong();
 
     @SuppressWarnings("unused")
     public StudioPrismContextService(@NotNull Project project) {
@@ -157,6 +161,8 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     }
 
     private synchronized PrismContext reloadPrismContext() {
+        long now = System.currentTimeMillis();
+
         LOG.info("Creating prism context for project: " + project.getName());
 
         var previousContext = prismContext != null ? prismContext : DEFAULT_PRISM_CONTEXT;
@@ -183,6 +189,12 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         } finally {
             PRISM_SERVICE_PROJECT.remove();
         }
+
+        long elapsed  = System.currentTimeMillis() - now;
+        long count = reloadCount.incrementAndGet();
+        long totalMs = totalReloadTimeMs.addAndGet(elapsed);
+
+        LOG.info("Prism context reload time: " + elapsed + " ms (reload count: " + count + ", total reload time: " + totalMs + " ms)");
 
         return prismContext;
     }
@@ -328,10 +340,6 @@ public final class StudioPrismContextService implements ProjectManagerListener {
      * @param useDefaultPrismContext whether to use default prism if project identifier is not set
      */
     private record ContextKey(String projectId, boolean useDefaultPrismContext) {
-
-        public ContextKey(@NotNull String projectId) {
-            this(projectId, false);
-        }
 
         public ContextKey(@NotNull Project project) {
             this(project.getLocationHash(), false);

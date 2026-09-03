@@ -6,9 +6,9 @@ import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.tree.MutableTreeNode;
 import javax.xml.namespace.QName;
 
 public class MissingRefColumn extends DefaultColumnInfo {
@@ -22,8 +22,8 @@ public class MissingRefColumn extends DefaultColumnInfo {
 
     @Nullable
     @Override
-    public Object valueOf(DefaultMutableTreeTableNode node) {
-        Object object = node.getUserObject();
+    public Object valueOf(MutableTreeNode node) {
+        Object object = getUserObject(node);
 
         if (object instanceof MissingRefNode refNode) {
             Object value = refNode.getValue();

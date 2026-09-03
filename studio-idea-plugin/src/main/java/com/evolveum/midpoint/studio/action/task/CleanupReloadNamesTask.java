@@ -16,7 +16,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -53,31 +53,31 @@ public class CleanupReloadNamesTask extends SimpleBackgroundableTask {
             return;
         }
 
-        DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) table.getTableModel().getRoot();
-        Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>> toResolve = listNodesToResolve(node, new HashMap<>());
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) table.getTableModel().getRoot();
+        Map<ObjectReferenceType, List<DefaultMutableTreeNode>> toResolve = listNodesToResolve(node, new HashMap<>());
         if (toResolve.isEmpty()) {
             return;
         }
 
-        List<Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>>> chunks = chunkMap(toResolve);
+        List<Map<ObjectReferenceType, List<DefaultMutableTreeNode>>> chunks = chunkMap(toResolve);
 
         // todo implement only max 4 threads executing at once
-        for (Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>> chunk : chunks) {
+        for (Map<ObjectReferenceType, List<DefaultMutableTreeNode>> chunk : chunks) {
             ApplicationManager.getApplication().executeOnPooledThread(
                     new ResolveChunkRunnable(client, table, chunk));
         }
     }
 
-    private List<Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>>> chunkMap(
-            Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>> map) {
+    private List<Map<ObjectReferenceType, List<DefaultMutableTreeNode>>> chunkMap(
+            Map<ObjectReferenceType, List<DefaultMutableTreeNode>> map) {
 
-        List<Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>>> chunks = new ArrayList<>();
+        List<Map<ObjectReferenceType, List<DefaultMutableTreeNode>>> chunks = new ArrayList<>();
 
         List<ObjectReferenceType> keys = new ArrayList<>(map.keySet());
         for (int i = 0; i < keys.size(); i += CHUNK_SIZE) {
             List<ObjectReferenceType> chunkKeys = keys.subList(i, Math.min(keys.size(), i + CHUNK_SIZE));
 
-            Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>> chunk = new HashMap<>();
+            Map<ObjectReferenceType, List<DefaultMutableTreeNode>> chunk = new HashMap<>();
             for (ObjectReferenceType key : chunkKeys) {
                 chunk.put(key, map.get(key));
             }
@@ -87,8 +87,8 @@ public class CleanupReloadNamesTask extends SimpleBackgroundableTask {
         return chunks;
     }
 
-    private Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>> listNodesToResolve(
-            DefaultMutableTreeTableNode node, Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>> toResolve) {
+    private Map<ObjectReferenceType, List<DefaultMutableTreeNode>> listNodesToResolve(
+            DefaultMutableTreeNode node, Map<ObjectReferenceType, List<DefaultMutableTreeNode>> toResolve) {
 
         if (node == null) {
             return toResolve;
@@ -98,21 +98,21 @@ public class CleanupReloadNamesTask extends SimpleBackgroundableTask {
 
         if (ref != null) {
             ObjectReferenceType or = ref.toObjectReferenceType();
-            List<DefaultMutableTreeTableNode> nodes = toResolve.getOrDefault(or, new ArrayList<>());
+            List<DefaultMutableTreeNode> nodes = toResolve.getOrDefault(or, new ArrayList<>());
             nodes.add(node);
 
             toResolve.putIfAbsent(or, nodes);
         }
 
         for (int i = 0; i < node.getChildCount(); i++) {
-            DefaultMutableTreeTableNode child = (DefaultMutableTreeTableNode) node.getChildAt(i);
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
             listNodesToResolve(child, toResolve);
         }
 
         return toResolve;
     }
 
-    private Referencable getReferencable(DefaultMutableTreeTableNode node) {
+    private Referencable getReferencable(DefaultMutableTreeNode node) {
         Object userObject = node.getUserObject();
         if (userObject instanceof MissingRefNode<?> refNode) {
             userObject = refNode.getValue();
@@ -127,7 +127,7 @@ public class CleanupReloadNamesTask extends SimpleBackgroundableTask {
 
     private record ResolveChunkRunnable(MidPointClient client,
                                         MissingRefObjectsTable table,
-                                        Map<ObjectReferenceType, List<DefaultMutableTreeTableNode>> chunk)
+                                        Map<ObjectReferenceType, List<DefaultMutableTreeNode>> chunk)
             implements Runnable {
 
         private static final Logger LOG = Logger.getInstance(ResolveChunkRunnable.class);
@@ -148,8 +148,8 @@ public class CleanupReloadNamesTask extends SimpleBackgroundableTask {
                             .oid(object.getOid())
                             .type(object.getType().getTypeQName());
 
-                    List<DefaultMutableTreeTableNode> nodes = chunk.getOrDefault(key, List.of());
-                    for (DefaultMutableTreeTableNode node : nodes) {
+                    List<DefaultMutableTreeNode> nodes = chunk.getOrDefault(key, List.of());
+                    for (DefaultMutableTreeNode node : nodes) {
                         updateNodeName(node, object.getName());
                     }
                 }
@@ -158,7 +158,7 @@ public class CleanupReloadNamesTask extends SimpleBackgroundableTask {
             }
         }
 
-        private void updateNodeName(DefaultMutableTreeTableNode node, String name) {
+        private void updateNodeName(DefaultMutableTreeNode node, String name) {
             Object userObject = node.getUserObject();
             if (userObject instanceof MissingRefNode<?> refNode) {
                 userObject = refNode.getValue();

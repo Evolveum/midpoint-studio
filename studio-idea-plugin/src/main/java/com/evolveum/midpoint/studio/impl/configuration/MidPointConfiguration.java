@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.configuration;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.MidPointConstants;
 import com.evolveum.midpoint.studio.impl.DocGeneratorOptions;
+import com.evolveum.midpoint.studio.impl.log.LogEntryParser;
 import com.evolveum.midpoint.studio.impl.cache.Cache;
 import com.evolveum.midpoint.studio.util.ObjectTypesListConverter;
 import com.intellij.util.xmlb.annotations.OptionTag;
@@ -17,6 +18,18 @@ import java.util.UUID;
  * Created by Viliam Repan (lazyman).
  */
 public class MidPointConfiguration implements Serializable {
+
+    public static final int DEFAULT_LOG_POLL_INTERVAL = 3;
+
+    public static final int DEFAULT_LOG_INITIAL_TAIL_SIZE = 64;
+
+    public static final int DEFAULT_LOG_MAX_CHUNK_SIZE = 1024;
+
+    public static final int DEFAULT_LOG_BUFFER_ENTRIES = 2000;
+
+    public static final int DEFAULT_LOG_CAPTURE_MAX_FILE_SIZE = 10;
+
+    public static final int DEFAULT_LOG_CAPTURE_MAX_FILES = 5;
 
     private static final List<ObjectTypes> DEFAULT_DOWNLOAD_EXCLUDE;
 
@@ -64,6 +77,20 @@ public class MidPointConfiguration implements Serializable {
     private boolean updateOnUpload;
 
     private int cacheTTL = Cache.DEFAULT_CACHE_TTL;
+
+    private int logPollInterval = DEFAULT_LOG_POLL_INTERVAL;                    // seconds
+
+    private int logInitialTailSize = DEFAULT_LOG_INITIAL_TAIL_SIZE;             // KB
+
+    private int logMaxChunkSize = DEFAULT_LOG_MAX_CHUNK_SIZE;                   // KB
+
+    private int logBufferEntries = DEFAULT_LOG_BUFFER_ENTRIES;
+
+    private int logCaptureMaxFileSize = DEFAULT_LOG_CAPTURE_MAX_FILE_SIZE;      // MB
+
+    private int logCaptureMaxFiles = DEFAULT_LOG_CAPTURE_MAX_FILES;
+
+    private String logEntryStartPattern = LogEntryParser.DEFAULT_ENTRY_START_PATTERN;
 
     public MidPointConfiguration() {
     }
@@ -202,6 +229,62 @@ public class MidPointConfiguration implements Serializable {
         this.cacheTTL = cacheTTL;
     }
 
+    public int getLogPollInterval() {
+        return logPollInterval;
+    }
+
+    public void setLogPollInterval(int logPollInterval) {
+        this.logPollInterval = logPollInterval;
+    }
+
+    public int getLogInitialTailSize() {
+        return logInitialTailSize;
+    }
+
+    public void setLogInitialTailSize(int logInitialTailSize) {
+        this.logInitialTailSize = logInitialTailSize;
+    }
+
+    public int getLogMaxChunkSize() {
+        return logMaxChunkSize;
+    }
+
+    public void setLogMaxChunkSize(int logMaxChunkSize) {
+        this.logMaxChunkSize = logMaxChunkSize;
+    }
+
+    public int getLogBufferEntries() {
+        return logBufferEntries;
+    }
+
+    public void setLogBufferEntries(int logBufferEntries) {
+        this.logBufferEntries = logBufferEntries;
+    }
+
+    public int getLogCaptureMaxFileSize() {
+        return logCaptureMaxFileSize;
+    }
+
+    public void setLogCaptureMaxFileSize(int logCaptureMaxFileSize) {
+        this.logCaptureMaxFileSize = logCaptureMaxFileSize;
+    }
+
+    public int getLogCaptureMaxFiles() {
+        return logCaptureMaxFiles;
+    }
+
+    public void setLogCaptureMaxFiles(int logCaptureMaxFiles) {
+        this.logCaptureMaxFiles = logCaptureMaxFiles;
+    }
+
+    public String getLogEntryStartPattern() {
+        return logEntryStartPattern;
+    }
+
+    public void setLogEntryStartPattern(String logEntryStartPattern) {
+        this.logEntryStartPattern = logEntryStartPattern;
+    }
+
     public MidPointConfiguration copy() {
         MidPointConfiguration other = new MidPointConfiguration();
         other.projectId = projectId;
@@ -219,6 +302,13 @@ public class MidPointConfiguration implements Serializable {
         other.midpointVersion = midpointVersion;
         other.updateOnUpload = updateOnUpload;
         other.cacheTTL = cacheTTL;
+        other.logPollInterval = logPollInterval;
+        other.logInitialTailSize = logInitialTailSize;
+        other.logMaxChunkSize = logMaxChunkSize;
+        other.logBufferEntries = logBufferEntries;
+        other.logCaptureMaxFileSize = logCaptureMaxFileSize;
+        other.logCaptureMaxFiles = logCaptureMaxFiles;
+        other.logEntryStartPattern = logEntryStartPattern;
         // todo copy doc generator options
 
         return other;
@@ -244,7 +334,14 @@ public class MidPointConfiguration implements Serializable {
                 && Objects.equals(downloadFilePattern, that.downloadFilePattern)
                 && Objects.equals(midpointVersion, that.midpointVersion)
                 && Objects.equals(updateOnUpload, that.updateOnUpload)
-                && Objects.equals(cacheTTL, that.cacheTTL);
+                && Objects.equals(cacheTTL, that.cacheTTL)
+                && logPollInterval == that.logPollInterval
+                && logInitialTailSize == that.logInitialTailSize
+                && logMaxChunkSize == that.logMaxChunkSize
+                && logBufferEntries == that.logBufferEntries
+                && logCaptureMaxFileSize == that.logCaptureMaxFileSize
+                && logCaptureMaxFiles == that.logCaptureMaxFiles
+                && Objects.equals(logEntryStartPattern, that.logEntryStartPattern);
     }
 
     @Override
@@ -253,7 +350,8 @@ public class MidPointConfiguration implements Serializable {
                 projectId, dowloadFilePattern, generatedFilePattern, printRestCommunicationToConsole, docGeneratorOptions,
                 askToAddMidpointFacet, askToValidateEnvironmentCredentials, ignoreMissingKeys, downloadTypesInclude,
                 downloadTypesExclude, typesToDownloadLimit, restResponseTimeout, downloadFilePattern, midpointVersion,
-                updateOnUpload, cacheTTL);
+                updateOnUpload, cacheTTL, logPollInterval, logInitialTailSize, logMaxChunkSize, logBufferEntries,
+                logCaptureMaxFileSize, logCaptureMaxFiles, logEntryStartPattern);
     }
 
     @Override

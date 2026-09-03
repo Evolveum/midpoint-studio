@@ -1,15 +1,11 @@
 package com.evolveum.midpoint.studio.lang.mel.impl;
 
-import com.evolveum.midpoint.studio.lang.mel.antlr.MELLexer;
-import com.evolveum.midpoint.studio.lang.mel.antlr.MELParser;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,16 +24,7 @@ public class MelExternalAnnotator
 
     @Override
     public List<ValidationMessage> doAnnotate(Info info) {
-        ANTLRInputStream input = new ANTLRInputStream(info.text());
-        MELLexer lexer = new MELLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        MELParser parser = new MELParser(tokens);
-        parser.removeErrorListeners();
-        lexer.removeErrorListeners();
-
-        MELParser.StartContext tree = parser.start();
-        MelExtensionValidator validator = new MelExtensionValidator();
-        return validator.analyze(tree);
+        return MelValidator.validate(info.text());
     }
 
     @Override

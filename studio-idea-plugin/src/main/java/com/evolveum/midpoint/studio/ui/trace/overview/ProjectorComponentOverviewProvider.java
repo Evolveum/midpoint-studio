@@ -11,7 +11,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.LensContextType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.LensFocusContextType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ProjectorComponentTraceType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import static com.evolveum.midpoint.studio.ui.trace.TraceUtils.getObjectFromReference;
 
@@ -21,7 +21,7 @@ import static com.evolveum.midpoint.studio.ui.trace.TraceUtils.getObjectFromRefe
 public class ProjectorComponentOverviewProvider implements OverviewProvider<ProjectorComponentOpNode> {
 
     @Override
-    public void provideOverview(ProjectorComponentOpNode node, DefaultMutableTreeTableNode root,
+    public void provideOverview(ProjectorComponentOpNode node, DefaultMutableTreeNode root,
                                 ViewingState initialState) throws SchemaException {
 
         ProjectorComponentTraceType trace = node.getTrace();
@@ -30,8 +30,8 @@ public class ProjectorComponentOverviewProvider implements OverviewProvider<Proj
             if (inputContext != null) {
                 LensFocusContextType focusContext = inputContext.getFocusContext();
                 if (focusContext != null) {
-                    PrismValueNode.create("Focus old", getObjectFromReference(focusContext.getObjectOldRef()), root);
-                    PrismValueNode.create("Focus current", getObjectFromReference(focusContext.getObjectCurrentRef()), root)
+                    PrismValueNode.create("Focus old", (Object) getObjectFromReference(focusContext.getObjectOldRef()), root);
+                    PrismValueNode.create("Focus current", (Object) getObjectFromReference(focusContext.getObjectCurrentRef()), root)
                             .setBackgroundColor(Colors.INPUT_1_COLOR, true);
 
                     ObjectDeltaType primaryDelta = focusContext.getPrimaryDelta();
@@ -57,7 +57,7 @@ public class ProjectorComponentOverviewProvider implements OverviewProvider<Proj
                     if (deltaNode != null) {
                         deltaNode.setBackgroundColor(Colors.OUTPUT_2_COLOR, true);
                     }
-                    PrismValueNode.create("Focus new", getObjectFromReference(focusContext.getObjectNewRef()), root)
+                    PrismValueNode.create("Focus new", (Object) getObjectFromReference(focusContext.getObjectNewRef()), root)
                             .setBackgroundColor(Colors.OUTPUT_1_COLOR, true);
                 }
             }

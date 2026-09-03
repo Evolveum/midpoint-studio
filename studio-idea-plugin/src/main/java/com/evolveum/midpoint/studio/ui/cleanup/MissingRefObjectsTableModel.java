@@ -6,8 +6,7 @@ import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefObject;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
-
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.xml.namespace.QName;
 import java.util.*;
@@ -34,11 +33,11 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
             data = new ArrayList<>();
         }
 
-        DefaultMutableTreeTableNode rootNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(NODE_ROOT));
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new MissingRefNode<>(NODE_ROOT));
 
-        DefaultMutableTreeTableNode allNode = null;
+        DefaultMutableTreeNode allNode = null;
         if (!data.isEmpty()) {
-            allNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(NODE_ALL));
+            allNode = new DefaultMutableTreeNode(new MissingRefNode<>(NODE_ALL));
             rootNode.add(allNode);
         }
 
@@ -54,15 +53,15 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
                 continue;
             }
 
-            DefaultMutableTreeTableNode typeNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(type));
+            DefaultMutableTreeNode typeNode = new DefaultMutableTreeNode(new MissingRefNode<>(type));
             allNode.add(typeNode);
 
             for (MissingRefObject object : list) {
-                DefaultMutableTreeTableNode objectNode = new DefaultMutableTreeTableNode(new MissingRefNode<>(object));
+                DefaultMutableTreeNode objectNode = new DefaultMutableTreeNode(new MissingRefNode<>(object));
                 typeNode.add(objectNode);
 
                 for (MissingRef ref : object.getReferences()) {
-                    DefaultMutableTreeTableNode refNode = new DefaultMutableTreeTableNode(ref);
+                    DefaultMutableTreeNode refNode = new DefaultMutableTreeNode(ref);
                     objectNode.add(refNode);
                 }
             }
@@ -81,20 +80,20 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
 
         for (int i = 0; i < selected.length; i++) {
             TreePath path = getTree().getPathForRow(selected[i]);
-            DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) path.getLastPathComponent();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
 
             markSelectedAction(node, action);
         }
     }
 
-    private void markSelectedAction(DefaultMutableTreeTableNode node, MissingRefAction action) {
+    private void markSelectedAction(DefaultMutableTreeNode node, MissingRefAction action) {
         Object userObject = node.getUserObject();
 
         if (userObject instanceof MissingRefNode refNode) {
             refNode.setAction(action);
 
             for (int i = 0; i < node.getChildCount(); i++) {
-                markSelectedAction((DefaultMutableTreeTableNode) node.getChildAt(i), action);
+                markSelectedAction((DefaultMutableTreeNode) node.getChildAt(i), action);
             }
         } else if (userObject instanceof MissingRef ref) {
             ref.setAction(action);
@@ -110,7 +109,7 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
     public void removeNodes(int[] selected) {
         for (int i = 0; i < selected.length; i++) {
             TreePath path = getTree().getPathForRow(selected[i]);
-            DefaultMutableTreeTableNode node = (DefaultMutableTreeTableNode) path.getLastPathComponent();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
 
             removeNodeFromParent(node);
 
@@ -131,8 +130,8 @@ public class MissingRefObjectsTableModel extends DefaultTreeTableModel<List<Miss
         }
     }
 
-    public void removeNodeFromParent(DefaultMutableTreeTableNode node) {
-        DefaultMutableTreeTableNode parent = (DefaultMutableTreeTableNode) node.getParent();
+    public void removeNodeFromParent(DefaultMutableTreeNode node) {
+        DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
         if (parent == null) {
             return;
         }
