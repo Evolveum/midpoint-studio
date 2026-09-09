@@ -37,7 +37,7 @@ public class SmartEditorComponent extends LanguageTextField {
             String text = event.getDocument().getText();
             Language detected = LanguageUtils.detectLanguage(text);
 
-            if (detected != null && detected != currentLanguage) {
+            if (detected != currentLanguage) {
                 switchLanguage(detected, text);
             }
         }

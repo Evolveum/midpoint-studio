@@ -15,16 +15,11 @@ import com.intellij.json.psi.JsonProperty;
 import com.intellij.lang.Language;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.fileTypes.PlainTextLanguage;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLLanguage;
-
-import java.util.Collection;
 
 public class LanguageUtils {
 
@@ -35,17 +30,8 @@ public class LanguageUtils {
                 .orElse(null);
     }
 
-    public static String getExtension(Language lang) {
-        if (lang instanceof JsonLanguage) return "json";
-        if (lang instanceof XMLLanguage) return "xml";
-        if (lang instanceof YAMLLanguage) return "yaml";
-        return "txt";
-    }
-
-    public static Language detectLanguage(String text) {
+    @NotNull public static Language detectLanguage(@NotNull String text) {
         String s = stripLeadingNoise(text);
-
-        if (s.isEmpty()) return null;
 
         if (s.startsWith("<")) {
             return XMLLanguage.INSTANCE;

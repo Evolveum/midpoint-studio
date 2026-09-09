@@ -247,7 +247,7 @@ class CredentialsConnectorStep(
 
                 document.addDocumentListener(object : DocumentAdapter() {
                     override fun textChanged(e: DocumentEvent) {
-                        tokenValue = text
+                        tokenValue = password.concatToString()
                     }
                 })
             }

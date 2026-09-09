@@ -267,6 +267,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
             MidPointClient client,
             GenerateSuggestionDataModel model
     ) throws SchemaException, AuthenticationException, IOException {
+
         CompletableFuture<List<SmartSuggestionObject<T>>> future =
                 new CompletableFuture<>();
 
@@ -332,6 +333,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
         table.setShowColumns(true);
         table.setRootVisible(false);
         table.setDragEnabled(false);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         table.setRowHeight(50);
 
         SearchTextField searchTextField = new SearchTextField();

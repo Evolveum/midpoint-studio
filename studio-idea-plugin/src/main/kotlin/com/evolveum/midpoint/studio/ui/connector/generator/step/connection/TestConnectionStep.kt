@@ -275,7 +275,7 @@ class TestConnectionStep(
 
                 add(createCardComponent(
                     currentRestTextEndpoint,
-                    !hasMatch && currentRestTextEndpoint != null,
+                    !hasMatch,
                     true
                 ))
             }

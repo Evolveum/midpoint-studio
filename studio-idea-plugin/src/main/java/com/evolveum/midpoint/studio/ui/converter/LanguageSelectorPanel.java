@@ -1,5 +1,10 @@
 package com.evolveum.midpoint.studio.ui.converter;
 
+import com.intellij.json.JsonLanguage;
+import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.ui.ComboBox;
+import org.jetbrains.yaml.YAMLLanguage;
+
 import javax.swing.*;
 
 /**
@@ -7,10 +12,14 @@ import javax.swing.*;
  */
 public class LanguageSelectorPanel extends JPanel {
 
-    private final JComboBox<String> comboBox;
+    private final ComboBox<String> comboBox;
 
     public LanguageSelectorPanel(String title) {
-        comboBox = new JComboBox<>(new String[]{"xml", "json", "yaml"});
+        comboBox = new ComboBox<>(new String[]{
+                XMLLanguage.INSTANCE.getID(),
+                JsonLanguage.INSTANCE.getID(),
+                YAMLLanguage.INSTANCE.getID()
+        });
         add(new JLabel(title));
         add(comboBox);
     }

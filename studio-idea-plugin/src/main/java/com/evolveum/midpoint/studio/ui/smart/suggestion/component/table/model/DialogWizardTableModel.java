@@ -2,8 +2,8 @@ package com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model;
 
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTableModel;
 import com.intellij.util.ui.ColumnInfo;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.List;
 
 public class DialogWizardTableModel<T> extends DefaultTreeTableModel<List<T>> {
@@ -17,14 +17,15 @@ public class DialogWizardTableModel<T> extends DefaultTreeTableModel<List<T>> {
     }
 
     private void buildTree() {
-        DefaultMutableTreeTableNode root = (DefaultMutableTreeTableNode) getRoot();
+
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) getRoot();
 
         for (int i = 0; i < root.getChildCount(); i++) {
             root.remove(i);
         }
 
         for (T item : data) {
-            root.add(new DefaultMutableTreeTableNode(item));
+            root.add(new DefaultMutableTreeNode(item));
         }
 
         setRoot(root);

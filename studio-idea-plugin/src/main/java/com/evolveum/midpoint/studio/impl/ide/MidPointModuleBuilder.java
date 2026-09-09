@@ -18,10 +18,8 @@ import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.ModifiableModuleModel;
+import com.intellij.openapi.module.*;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleType;
-import com.intellij.openapi.module.StdModuleTypes;
 import com.intellij.openapi.project.DumbAwareRunnable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -223,7 +221,7 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
 
     @Override
     public ModuleType<?> getModuleType() {
-        return StdModuleTypes.JAVA;
+        return JavaModuleType.getModuleType();
     }
 
     @Nullable

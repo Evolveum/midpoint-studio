@@ -52,10 +52,8 @@ public class GenerateSuggestionWizard extends AbstractWizard<Step> {
     protected void updateStep() {
         super.updateStep();
 
-        if (isLastStep()) {
-            getNextButton().setText("Allow and continue");
-            setEnabledFinishButton(dataModel.getResourceOid() != null && dataModel.getObjectClass() != null);
-        }
+        getNextButton().setText("Allow and continue");
+        setEnabledFinishButton(dataModel.getResourceOid() != null && dataModel.getObjectClass() != null);
     }
 
     public void setEnabledFinishButton(boolean enabled) {

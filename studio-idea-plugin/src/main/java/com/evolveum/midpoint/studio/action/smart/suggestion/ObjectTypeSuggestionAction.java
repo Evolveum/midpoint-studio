@@ -10,8 +10,6 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
@@ -21,12 +19,8 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import java.io.IOException;
 import java.util.List;
 
@@ -59,6 +53,7 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
 
     @Override
     SmartSuggestionTableModel<ResourceObjectTypeDefinitionType> getModel(Project project, PrismContext prismContext) {
+
         return new SmartSuggestionTableModel<>(List.of(
                 new FilterableColumnInfo<>("Name",
                         obj -> {
@@ -84,33 +79,9 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
                         return ((ResourceObjectTypeDefinitionType) sso.getObject()).getDescription();
                     }
                     return null;
-                })
-//                new DefaultColumnInfo<>("Activities") {
-//                    @Override
-//                    public @Nullable Object valueOf(DefaultMutableTreeTableNode node) {
-//                        return node.getUserObject();
-//                    }
-//
-//                    @Override
-//                    public boolean isCellEditable(DefaultMutableTreeTableNode node) {
-//                        return true;
-//                    }
-//
-//                    @Override
-//                    public TableCellRenderer getCustomizedRenderer(DefaultMutableTreeTableNode node, TableCellRenderer renderer) {
-//                        return new ActionsRenderer();
-//                    }
-//
-//                    @Override
-//                    public @NotNull TableCellRenderer getRenderer(DefaultMutableTreeTableNode o) {
-//                        return new ActionsRenderer();
-//                    }
-//
-//                    @Override
-//                    public TableCellEditor getEditor(DefaultMutableTreeTableNode o) {
-//                        return new ActionsEditor(project, prismContext);
-//                    }
-//                }
+                }),
+                new DefaultColumnInfo<>("Activities") {
+                }
         ));
     }
 

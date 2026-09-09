@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.IOException;
 import java.util.List;
 
@@ -104,9 +105,9 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
                     if (obj instanceof SmartSuggestionObject<?> sso) {
                         var objectList = ((AssociationSuggestionType) sso.getObject()).getDefinition().getObject();
                         var object = (objectList != null && !objectList.isEmpty()
-                                && objectList.get(0).getObjectType() != null
-                                && !objectList.get(0).getObjectType().isEmpty())
-                                ? objectList.get(0).getObjectType().get(0)
+                                && objectList.getFirst().getObjectType() != null
+                                && !objectList.getFirst().getObjectType().isEmpty())
+                                ? objectList.getFirst().getObjectType().getFirst()
                                 : null;
                         var objectTypeDefinition = object != null
                                 ? ResourceTypeUtil.findObjectTypeDefinition(sso.getResource().asPrismObject(), object.getKind(), object.getIntent())
@@ -118,33 +119,9 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
                         }
                     }
                     return null;
-                })
-//                new DefaultColumnInfo<>("Activities") {
-//                    @Override
-//                    public @Nullable Object valueOf(DefaultMutableTreeTableNode node) {
-//                        return node.getUserObject();
-//                    }
-//
-//                    @Override
-//                    public boolean isCellEditable(DefaultMutableTreeTableNode node) {
-//                        return true;
-//                    }
-//
-//                    @Override
-//                    public TableCellRenderer getCustomizedRenderer(DefaultMutableTreeTableNode node, TableCellRenderer renderer) {
-//                        return new ActionsRenderer();
-//                    }
-//
-//                    @Override
-//                    public @NotNull TableCellRenderer getRenderer(DefaultMutableTreeTableNode o) {
-//                        return new ActionsRenderer();
-//                    }
-//
-//                    @Override
-//                    public TableCellEditor getEditor(DefaultMutableTreeTableNode o) {
-//                        return new ActionsEditor(project, prismContext);
-//                    }
-//                }
+                }),
+                new DefaultColumnInfo<>("Activities") {
+                }
         ));
     }
 

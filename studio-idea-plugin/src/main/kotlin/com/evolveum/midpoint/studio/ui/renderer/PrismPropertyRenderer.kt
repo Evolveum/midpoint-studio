@@ -21,5 +21,5 @@ interface PrismPropertyRenderer {
         row: Row,
         definition: PrismPropertyDefinition<*>,
         value: Any?
-    ): Cell<out JComponent>
+    ): Cell<JComponent>
 }

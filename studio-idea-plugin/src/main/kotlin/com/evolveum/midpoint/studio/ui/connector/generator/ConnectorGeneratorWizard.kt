@@ -84,6 +84,7 @@ abstract class ConnectorGeneratorWizard(
         IOException::class
     ) protected abstract fun buildSteps()
 
+    @Deprecated("Deprecated in Java", ReplaceWith("\"\""))
     @NonNls
     override fun getHelpID(): @NonNls String? = ""
 

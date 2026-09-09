@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.OnePixelSplitter;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -65,18 +66,23 @@ public class ConverterPanel extends SimpleToolWindowPanel {
         setContent(split);
     }
 
-    private String convert(Project project, String code, String targetLang) {
+    private String convert(
+            @NotNull Project project,
+            @NotNull String code,
+            @NotNull String targetLang
+    ) {
+
         try {
             PrismContext prismCtx = StudioPrismContextService.getPrismContext(project);
             ParsingContext parsingCtx = prismCtx.createParsingContextForCompatibilityMode();
 
-            if (code != null && !code.isEmpty()) {
+            if (!code.isEmpty()) {
                 RootXNodeImpl root = (RootXNodeImpl) prismCtx.parserFor(code)
                         .language(LanguageUtils.detectLanguage(code).getID().toLowerCase())
                         .context(parsingCtx)
                         .parseToXNode();
 
-                return prismCtx.serializerFor(targetLang).serialize(root);
+                return prismCtx.serializerFor(targetLang.toLowerCase()).serialize(root);
             } else {
                 return "";
             }

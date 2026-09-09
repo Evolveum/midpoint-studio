@@ -4,7 +4,6 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.ui.ColumnInfo;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -113,7 +112,7 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
             return;
         }
 
-        filteredRoot = filterNode((DefaultMutableTreeTableNode) originalRoot, node -> {
+        filteredRoot = filterNode((DefaultMutableTreeNode) originalRoot, node -> {
                     for (ColumnInfo column : columns) {
                         if (column instanceof FilterableColumnInfo<?, ?> filterableColumnInfo) {
                             Object value = filterableColumnInfo.valueOf((MutableTreeNode) node);
@@ -129,21 +128,22 @@ public class DefaultTreeTableModel<T> extends DefaultTreeModel implements TreeTa
 
         setRoot(filteredRoot != null
                 ? (TreeNode) filteredRoot
-                : new DefaultMutableTreeTableNode("No results of filtering"));
+                : new DefaultMutableTreeNode("No results of filtering"));
+
         reload();
     }
 
-    private DefaultMutableTreeTableNode filterNode(DefaultMutableTreeTableNode node, Predicate<DefaultMutableTreeTableNode> filter) {
+    private DefaultMutableTreeNode filterNode(DefaultMutableTreeNode node, Predicate<DefaultMutableTreeNode> filter) {
         boolean matches = filter.test(node);
 
-        DefaultMutableTreeTableNode filteredNode = new DefaultMutableTreeTableNode(node.getUserObject());
+        DefaultMutableTreeNode filteredNode = new DefaultMutableTreeNode(node.getUserObject());
 
         Enumeration<?> children = node.children();
         while (children.hasMoreElements()) {
-            DefaultMutableTreeTableNode child =
-                    (DefaultMutableTreeTableNode) children.nextElement();
+            DefaultMutableTreeNode child =
+                    (DefaultMutableTreeNode) children.nextElement();
 
-            DefaultMutableTreeTableNode filteredChild =
+            DefaultMutableTreeNode filteredChild =
                     filterNode(child, filter);
 
             if (filteredChild != null) {

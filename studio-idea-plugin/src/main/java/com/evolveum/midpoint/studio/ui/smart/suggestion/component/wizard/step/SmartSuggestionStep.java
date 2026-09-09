@@ -21,13 +21,13 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.scale.JBUIScale;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
-import com.intellij.util.ui.JBUI;
-import org.jdesktop.swingx.treetable.DefaultMutableTreeTableNode;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -88,7 +88,7 @@ public class SmartSuggestionStep extends StepAdapter {
 
             TitledBorder resourceTitleBorder = BorderFactory.createTitledBorder("Resource:");
             resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(Font.BOLD));
-            resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
+            resourceTitleBorder.setTitleFont(resourceTitleBorder.getTitleFont().deriveFont(JBUIScale.scale(15f)));
 
             JBScrollPane scrollPane = new JBScrollPane(table);
             scrollPane.setBorder(BorderFactory.createCompoundBorder(
@@ -104,7 +104,7 @@ public class SmartSuggestionStep extends StepAdapter {
                     if (row >= 0) {
                         TreePath path = table.getTree().getPathForRow(row);
                         if (path != null) {
-                            if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
+                            if (path.getLastPathComponent() instanceof DefaultMutableTreeNode node) {
                                 if (node.getUserObject() instanceof ResourceType resource) {
                                     dataModel.setResourceOid(resource.getOid());
                                     dataModel.setObjectType(null);
@@ -158,7 +158,9 @@ public class SmartSuggestionStep extends StepAdapter {
         try {
             ResourceSchema resourceSchema = ResourceSchemaFactory.parseCompleteSchema(resource);
             if (resourceSchema != null) {
+
                 var definitions = resourceSchema.getObjectClassDefinitions();
+
                 DialogWizardTableModel<ResourceObjectClassDefinition> model = new DialogWizardTableModel<>(List.of(
                         new FilterableColumnInfo<>("Name", obj -> {
                             if (obj instanceof ResourceObjectClassDefinitionImpl objectTypeDefinitionType) {
@@ -184,7 +186,7 @@ public class SmartSuggestionStep extends StepAdapter {
                         int row = table.rowAtPoint(e.getPoint());
                         if (row >= 0) {
                             TreePath path = table.getTree().getPathForRow(row);
-                            if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
+                            if (path.getLastPathComponent() instanceof DefaultMutableTreeNode node) {
                                 if (node.getUserObject() instanceof ResourceObjectClassDefinition objectClass) {
                                     dataModel.setObjectClass(objectClass);
                                     wizard.setEnabledFinishButton(dataModel.getResourceOid() != null
@@ -201,7 +203,7 @@ public class SmartSuggestionStep extends StepAdapter {
 
                 TitledBorder titleBorder = BorderFactory.createTitledBorder("Object class:");
                 titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(Font.BOLD));
-                titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
+                titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(JBUIScale.scale(15f)));
 
                 Border spaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);
                 objectClassScrollPane.setBorder(BorderFactory.createCompoundBorder(spaceBorder, titleBorder));
@@ -253,7 +255,7 @@ public class SmartSuggestionStep extends StepAdapter {
                     int row = table.rowAtPoint(e.getPoint());
                     if (row >= 0) {
                         TreePath path = table.getTree().getPathForRow(row);
-                        if (path.getLastPathComponent() instanceof DefaultMutableTreeTableNode node) {
+                        if (path.getLastPathComponent() instanceof DefaultMutableTreeNode node) {
                             if (node.getUserObject() instanceof ResourceObjectTypeDefinitionType objectTypeDefinition) {
                                 dataModel.setObjectType(objectTypeDefinition);
                                 wizard.setEnabledFinishButton(dataModel.getResourceOid() != null
@@ -270,12 +272,13 @@ public class SmartSuggestionStep extends StepAdapter {
 
             TitledBorder titleBorder = BorderFactory.createTitledBorder("Object type:");
             titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(Font.BOLD));
-            titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(JBUI.scale(15f)));
+            titleBorder.setTitleFont(titleBorder.getTitleFont().deriveFont(JBUIScale.scale(15f)));
 
             Border spaceBorder = BorderFactory.createEmptyBorder(0, 0, 25, 0);
             objTypeScrollPane.setBorder(BorderFactory.createCompoundBorder(spaceBorder, titleBorder));
             objTypeScrollPane.setName(OBJECT_CLASS_TABLE_COMPONENT_ID);
             panel.add(objTypeScrollPane);
+
         } else {
             printErrorMsg(panel, "Not found schemaHandling in resource '" + resource.getOid() + "'");
         }
@@ -289,6 +292,7 @@ public class SmartSuggestionStep extends StepAdapter {
             LabeledComponent<JComboBox<String>> dropdown = createDropdown(names, values);
             dropdown.setName(DIRECTION_COMPONENT_ID);
             dropdown.setMaximumSize(new Dimension(Integer.MAX_VALUE, dropdown.getHeight()));
+
             dataModel.setDirection(getSelectedValue(dropdown));
 
             panel.add(dropdown);
@@ -332,6 +336,7 @@ public class SmartSuggestionStep extends StepAdapter {
         table.setShowColumns(true);
         table.setRootVisible(false);
         table.setDragEnabled(false);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         table.setRowHeight(30);
 
         return table;

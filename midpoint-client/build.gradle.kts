@@ -32,6 +32,7 @@ dependencies {
     // excluded from midpoint-common above (provided by IDE at runtime), needed on test classpath
     testRuntimeOnly(libs.slf4j.api)
     testRuntimeOnly("xerces:xercesImpl:2.12.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {

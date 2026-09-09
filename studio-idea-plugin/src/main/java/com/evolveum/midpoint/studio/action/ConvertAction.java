@@ -4,6 +4,8 @@ import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.intellij.json.JsonLanguage;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -14,6 +16,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLLanguage;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -40,15 +43,15 @@ public class ConvertAction extends AnAction {
         if (id != null) {
             switch (id) {
                 case "MidPoint.Action.Converter.ConvertToXml":
-                    convert(project, file, "xml");
+                    convert(project, file, XMLLanguage.INSTANCE.getID());
                     break;
 
                 case "MidPoint.Action.Converter.ConvertToJson":
-                    convert(project, file, "json");
+                    convert(project, file, JsonLanguage.INSTANCE.getID());
                     break;
 
                 case "MidPoint.Action.Converter.ConvertToYaml":
-                    convert(project, file, "yaml");
+                    convert(project, file, YAMLLanguage.INSTANCE.getID());
                     break;
 
                 default:
@@ -68,7 +71,11 @@ public class ConvertAction extends AnAction {
             String ext = file.getExtension();
             if (ext != null) {
                 ext = ext.toLowerCase();
-                enabled = ext.equals("xml") || ext.equals("json") || ext.equals("yaml") || ext.equals("yml");
+                enabled =
+                        ext.equals(XMLLanguage.INSTANCE.getID()) ||
+                        ext.equals(JsonLanguage.INSTANCE.getID()) ||
+                        ext.equals(YAMLLanguage.INSTANCE.getID()) ||
+                        ext.equals("yml");
             }
         }
 

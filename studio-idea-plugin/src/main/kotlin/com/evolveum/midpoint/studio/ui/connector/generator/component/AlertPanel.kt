@@ -10,6 +10,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.ui.JBColor
 import com.intellij.ui.RoundedLineBorder
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.IconUtil.colorize
 import com.intellij.util.IconUtil.scale
 import com.intellij.util.ui.JBFont
@@ -45,7 +46,7 @@ class AlertPanel(layout: LayoutManager?, private val arcSize: Int, text: String,
         contentPanel.setOpaque(false)
 
         val textJBLabel = JBLabel(text)
-        textJBLabel.setFont(JBFont.label().asBold().deriveFont(JBUI.scale(14f)))
+        textJBLabel.setFont(JBFont.label().asBold().deriveFont(JBUIScale.scale(14f)))
         textJBLabel.setForeground(COLOR_FOREGROUND)
         textJBLabel.setBorder(EmptyBorder(JBUI.insets(0, 10)))
         contentPanel.add(textJBLabel)

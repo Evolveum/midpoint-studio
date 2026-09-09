@@ -19,7 +19,7 @@ class PrismComponentFactory(
         row: Row,
         definition: PrismPropertyDefinition<*>,
         value: Any?
-    ): Cell<out JComponent> {
+    ): Cell<JComponent> {
 
         val renderer = rendererRegistry.findRenderer(
             definition
