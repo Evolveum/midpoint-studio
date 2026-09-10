@@ -109,7 +109,7 @@ public class SmartSuggestionStep extends StepAdapter {
                                     dataModel.setResourceOid(resource.getOid());
                                     dataModel.setObjectType(null);
                                     dataModel.setObjectClass(null);
-                                    wizard.setEnabledFinishButton(false);
+                                    wizard.setEnabledNextButton(false);
                                     if (dataModel.getMode().equals(GenerateSuggestionDataModel.ResourceDialogContextMode.OBJECT_TYPE)) {
                                         displayObjectClassTable(panel, resource);
                                     } else {
@@ -189,7 +189,7 @@ public class SmartSuggestionStep extends StepAdapter {
                             if (path.getLastPathComponent() instanceof DefaultMutableTreeNode node) {
                                 if (node.getUserObject() instanceof ResourceObjectClassDefinition objectClass) {
                                     dataModel.setObjectClass(objectClass);
-                                    wizard.setEnabledFinishButton(dataModel.getResourceOid() != null
+                                    wizard.setEnabledNextButton(dataModel.getResourceOid() != null
                                             && dataModel.getObjectClass() != null);
                                 }
                             }
@@ -258,7 +258,7 @@ public class SmartSuggestionStep extends StepAdapter {
                         if (path.getLastPathComponent() instanceof DefaultMutableTreeNode node) {
                             if (node.getUserObject() instanceof ResourceObjectTypeDefinitionType objectTypeDefinition) {
                                 dataModel.setObjectType(objectTypeDefinition);
-                                wizard.setEnabledFinishButton(dataModel.getResourceOid() != null
+                                wizard.setEnabledNextButton(dataModel.getResourceOid() != null
                                         && dataModel.getObjectType() != null);
                             }
                         }

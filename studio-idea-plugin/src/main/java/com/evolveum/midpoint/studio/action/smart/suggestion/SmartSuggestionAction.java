@@ -14,7 +14,6 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
-import com.evolveum.midpoint.studio.ui.dialog.alert.DialogAlert;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionWizard;
@@ -33,6 +32,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiFile;
@@ -50,8 +50,8 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.*;
 import java.io.IOException;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.*;
 
 public abstract class SmartSuggestionAction<T> extends AnAction {
@@ -72,7 +72,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
     abstract String submitOperation(
             MidPointClient client,
-            GenerateSuggestionDataModel resourceOid
+            GenerateSuggestionDataModel dataModel
     ) throws SchemaException, AuthenticationException, IOException;
 
     abstract SmartIntegrationOperationStatusInfoType getStatusInfo(
@@ -82,7 +82,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
     abstract List<SmartSuggestionObject<T>> getResultSuggestions(
             AbstractSmartIntegrationOperationResultType result,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) throws SchemaException;
 
     public @Nullable String getResourceOid() {
@@ -109,24 +109,48 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
         if (resourceOid != null && !resourceOid.isEmpty()) {
 
-            new DialogAlert(
-                    anActionEvent.getProject(),
-                    "Upload (Full Processing)",
-                    "The local resource configuration (OID: '" + resourceOid + "') will be uploaded to midPoint to generate AI suggestions based on the most recent data.",
-                    () -> ProgressManager.getInstance().run(
-                            new UploadFullProcessingTask(
-                                    anActionEvent.getProject(), anActionEvent::getDataContext, env
-                            ) {
-                                @Override
-                                public void onFinished() {
-                                    if (!hasFailures()) {
-                                        ApplicationManager.getApplication().invokeLater(() ->
-                                                showSelectResourceDialogWindow(anActionEvent, client, resourceOid));
-                                    }
-                                }
+            new DialogWrapper(
+                    anActionEvent.getProject()
+            ) {
+
+                {
+                    setTitle("Upload (Full Processing)");
+                    init();
+                }
+
+                @Override
+                protected JComponent createCenterPanel() {
+
+                    JPanel panel = new JPanel(new BorderLayout(0, 10));
+                    JLabel description = new JLabel("""
+                            The local resource configuration (OID: %s) will be uploaded to midPoint to generate AI suggestions based on the most recent data.
+                            """.formatted(resourceOid)
+                    );
+
+                    panel.add(description, BorderLayout.NORTH);
+
+                    return panel;
+                }
+
+                @Override
+                protected void doOKAction() {
+                    new UploadFullProcessingTask(
+                            anActionEvent.getProject(), anActionEvent::getDataContext, env
+                    ) {
+                        @Override
+                        public void onFinished() {
+                            if (!hasFailures()) {
+                                ApplicationManager.getApplication().invokeLater(() ->
+                                        showSelectResourceDialogWindow(anActionEvent, client, resourceOid));
                             }
-                    )
-            ).show();
+                        }
+                    }.queue();
+
+                    super.doOKAction();
+                }
+
+            }.show();
+
         } else {
             ApplicationManager.getApplication().invokeLater(() ->
                     showSelectResourceDialogWindow(anActionEvent, client, null));
@@ -193,6 +217,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
                             try {
 
+                                // FIXME check if action down if scheduler stoped????
                                 generateSuggestions(client, dataModel).whenComplete((
                                         result, ex
                                 ) -> {
@@ -224,34 +249,35 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
                         @Override
                         public void onFinished() {
+
                             if (objectSuggestions != null && !objectSuggestions.isEmpty()) {
                                 var model = getModel(project, prismContext);
                                 model.setData(objectSuggestions);
                                 contentManager.addContent(ContentFactory.getInstance().createContent(
-                                    createTablePanel(model),
-                                    getTemplatePresentation().getText(),
-                                    isLockable()
+                                        createTablePanel(model),
+                                        getTemplatePresentation().getText(),
+                                        isLockable()
                                 ));
 
                                 toolWindow.activate(() ->
-                                log.info("Content of tool window with ID '" + toolWindowId + "' was update"));
+                                        log.info("Content of tool window with ID '" + toolWindowId + "' was update"));
 
                                 var infoMsg = "Generate Smart suggestion successful";
 
                                 log.info(infoMsg);
                                 MidPointUtils.publishNotification(
-                                    project,
-                                    "midpointSmartSuggestion",
-                                    TITLE,
-                                    infoMsg,
-                                    NotificationType.INFORMATION
+                                        project,
+                                        "midpointSmartSuggestion",
+                                        TITLE,
+                                        infoMsg,
+                                        NotificationType.INFORMATION
                                 );
                             } else {
                                 JLabel errorLabel = new JLabel("Suggestion not found");
                                 errorLabel.setForeground(JBColor.RED);
                                 errorLabel.setBorder(JBUI.Borders.empty(10, 15));
                                 contentManager.addContent(ContentFactory.getInstance().createContent(
-                                errorLabel, "Smart Suggestion", false));
+                                        errorLabel, "Smart Suggestion", false));
                                 log.warn(errorLabel.getText());
                             }
                         }
@@ -265,18 +291,18 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
     private CompletableFuture<List<SmartSuggestionObject<T>>> generateSuggestions(
             MidPointClient client,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) throws SchemaException, AuthenticationException, IOException {
 
         CompletableFuture<List<SmartSuggestionObject<T>>> future =
                 new CompletableFuture<>();
 
-        if (model.getResourceOid() == null || model.getObjectClass() == null) {
+        if (dataModel.getResourceOid() == null || dataModel.getObjectClass() == null) {
             future.complete(List.of());
             return future;
         }
 
-        String token = submitOperation(client, model);
+        String token = submitOperation(client, dataModel);
 
         if (token == null) {
             future.completeExceptionally(
@@ -298,7 +324,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                 }
 
                 if (statusInfo.getStatus().equals(OperationResultStatusType.SUCCESS)) {
-                    future.complete(getResultSuggestions(statusInfo.getResult(), model));
+                    future.complete(getResultSuggestions(statusInfo.getResult(), dataModel));
                     scheduler.shutdown();
                 }
 
@@ -318,14 +344,14 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
         return future;
     }
 
-    protected ResourceType getResources(GenerateSuggestionDataModel generateSuggestionDataModel) {
-        return generateSuggestionDataModel.getResources().stream()
-                .filter(o -> o.getOid().equals(generateSuggestionDataModel.getResourceOid()))
+    protected ResourceType getResources(GenerateSuggestionDataModel dataModel) {
+        return dataModel.getResources().stream()
+                .filter(o -> o.getOid().equals(dataModel.getResourceOid()))
                 .filter(ResourceType.class::isInstance)
                 .map(ResourceType.class::cast)
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Object ResourceType with oid '" +
-                        generateSuggestionDataModel.getResourceOid() + "' not found"));
+                        dataModel.getResourceOid() + "' not found"));
     }
 
     private JPanel createTablePanel(SmartSuggestionTableModel<?> model) {
