@@ -8,6 +8,8 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
+import com.evolveum.midpoint.studio.client.RPCOperation;
+import com.evolveum.midpoint.studio.client.ServiceContext;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
@@ -19,10 +21,12 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+import okhttp3.RequestBody;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Dominik.
@@ -90,9 +94,26 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
             MidPointClient client,
             GenerateSuggestionDataModel model
     ) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationSuggestionObjectType(
-                model.getResourceOid(),
-                model.getObjectClass().getObjectClassName()
+
+        var objectTypesSuggestionWorkDefinitionType = new ObjectTypesSuggestionWorkDefinitionType();
+
+        ObjectReferenceType resourceRef = new ObjectReferenceType();
+        resourceRef.setOid(model.getResourceOid());
+        objectTypesSuggestionWorkDefinitionType.setResourceRef(resourceRef);
+
+        objectTypesSuggestionWorkDefinitionType.setObjectclass(model.getObjectClass().getObjectClassName());
+
+        for(DataAccessPermissionType item : DataAccessPermissionType.values()) {
+            objectTypesSuggestionWorkDefinitionType.permissions(item);
+        }
+
+        objectTypesSuggestionWorkDefinitionType.previousDelineation(null);
+
+        String requestBodyContent = client.serialize(objectTypesSuggestionWorkDefinitionType);
+
+        return client.submitOperationSmartIntegration(
+                RPCOperation.RPC_SUGGEST_OBJECT_TYPES,
+                requestBodyContent
         );
     }
 
@@ -101,7 +122,11 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
             MidPointClient client,
             String token
     ) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoSuggestionObjectType(token);
+
+        return client.getStatusInfoSmartIntegration(
+                RPCOperation.RPC_SUGGEST_OBJECT_TYPES,
+                token
+        );
     }
 
     @Override

@@ -8,6 +8,7 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
+import com.evolveum.midpoint.studio.client.RPCOperation;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
@@ -95,10 +96,27 @@ public class CorrelationRuleSuggestionAction extends SmartSuggestionAction<Items
             MidPointClient client,
             GenerateSuggestionDataModel model
     ) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationSuggestionCorrelation(
-                model.getResourceOid(),
-                model.getObjectType().getKind().value(),
-                model.getObjectType().getIntent()
+
+        var correlationSuggestionWorkDefinitionType = new CorrelationSuggestionWorkDefinitionType();
+
+        ObjectReferenceType resourceRef = new ObjectReferenceType();
+        resourceRef.setOid(model.getResourceOid());
+        correlationSuggestionWorkDefinitionType.setResourceRef(resourceRef);
+
+        ResourceObjectTypeIdentificationType resourceObjectTypeIdentificationType = new ResourceObjectTypeIdentificationType();
+        resourceObjectTypeIdentificationType.setKind(model.getObjectType().getKind());
+        resourceObjectTypeIdentificationType.setIntent(model.getObjectType().getIntent());
+        correlationSuggestionWorkDefinitionType.setObjectType(resourceObjectTypeIdentificationType);
+
+        for(DataAccessPermissionType item : DataAccessPermissionType.values()) {
+            correlationSuggestionWorkDefinitionType.permissions(item);
+        }
+
+        String requestBodyContent = client.serialize(correlationSuggestionWorkDefinitionType);
+
+        return client.submitOperationSmartIntegration(
+                RPCOperation.RPC_SUGGEST_CORRELATIONS,
+                requestBodyContent
         );
     }
 
@@ -107,7 +125,11 @@ public class CorrelationRuleSuggestionAction extends SmartSuggestionAction<Items
             MidPointClient client,
             String token
     ) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoSuggestionCorrelation(token);
+
+        return client.getStatusInfoSmartIntegration(
+                RPCOperation.RPC_SUGGEST_CORRELATIONS,
+                token
+        );
     }
 
     @Override

@@ -7,6 +7,7 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.step.connection
 
 import com.evolveum.midpoint.prism.path.ItemName
+import com.evolveum.midpoint.studio.client.RPCOperation
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
 import com.evolveum.midpoint.studio.ui.connector.generator.component.AlertPanel
@@ -118,12 +119,17 @@ class BaseUrlSpecificationStep(
 
         submitOperation(
             {
-                client.submitOperationDiscoverBasicInformation(
-                    dataModel.connectorDevelopment.oid
+                client.submitOperationConnGenerator(
+                    RPCOperation.RPC_DISCOVER_BASIC_INFORMATION,
+                    mapOf("oid" to dataModel.connectorDevelopment.oid),
+                    null
                 )
             },
             { token ->
-                client.getStatusInfoDiscoverBasicInformation(token)
+                client.getStatusInfoConnGenerator(
+                    RPCOperation.RPC_DISCOVER_BASIC_INFORMATION,
+                    token
+                )
             },
             client.project,
             "Discover Basic Information submit operation",

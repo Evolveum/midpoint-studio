@@ -8,6 +8,7 @@ import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
+import com.evolveum.midpoint.smart.api.info.AiInfo;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
@@ -21,6 +22,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import okhttp3.RequestBody;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
@@ -505,41 +507,68 @@ public class MidPointClient {
         this.suppressNotifications = suppressNotifications;
     }
 
-    public String submitOperationSuggestionObjectType(String oid, QName objectClassName) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationSuggestionObjectType(oid, objectClassName);
+    public <C> C submitOperationSmartIntegration(
+            RPCOperation rpcOperation,
+            String requestBodyContent
+    ) throws SchemaException, AuthenticationException, IOException {
+
+        return client.submitOperationSmartIntegration(
+                rpcOperation,
+                Map.of(),
+                requestBodyContent
+        );
     }
 
-    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionObjectType(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoSuggestionObjectType(token);
+    public <C> C getStatusInfoSmartIntegration(
+            RPCOperation rpcOperation,
+            String token
+    ) throws SchemaException, AuthenticationException, IOException {
+
+        return client.getStatusInfoSmartIntegration(
+                rpcOperation,
+                Map.of("token", token)
+        );
     }
 
-    public String submitOperationSuggestionCorrelation(String oid, String kind, String intent) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationSuggestionCorrelation(oid, kind, intent);
+    public <C> C submitOperationConnGenerator(
+            RPCOperation rpcOperation,
+            Map<String, Object> params,
+            String requestBodyContent
+    ) throws SchemaException, AuthenticationException, IOException {
+
+        return client.submitOperationSmartIntegration(
+                rpcOperation,
+                params,
+                requestBodyContent
+        );
     }
 
-    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionCorrelation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoSuggestionCorrelation(token);
-    }
+    public <C> C getStatusInfoConnGenerator(
+            RPCOperation rpcOperation,
+            String token
+    ) throws SchemaException, AuthenticationException, IOException {
 
-    public String submitOperationSuggestionMapping(String oid, String kind, String intent, boolean isInbound) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationSuggestionMapping(oid, kind, intent, isInbound);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionMapping(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoSuggestionMapping(token);
-    }
-
-    public String submitOperationSuggestionAssociation(String oid) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationSuggestionAssociation(oid);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoSuggestionAssociation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoSuggestionAssociation(token);
+        return client.getStatusInfoConnGenerator(
+                rpcOperation,
+                Map.of("token", token)
+        );
     }
 
     public File downloadConnector(String bundleName) {
+
         try {
             return client.downloadConnector(bundleName);
+        } catch (Exception ex) {
+            handleGenericException("Error", ex);
+        }
+
+        return null;
+    }
+
+    public AiInfoType getAiInfo() {
+
+        try {
+            return client.getAiInfo();
         } catch (Exception ex) {
             handleGenericException("Error", ex);
         }
@@ -555,92 +584,21 @@ public class MidPointClient {
         var containerDefinition = connectorDevelopmentTypeDefinition.findContainerDefinition(ItemPath.create(ConnectorDevelopmentType.F_APPLICATION));
         var container = containerDefinition.instantiate();
         container.add(pcv);
+
         String xml = serializer.serialize(container);
 
-        return client.startFromNew(xml);
+        return client.submitOperationConnGenerator(
+                RPCOperation.RPC_START_FROM_NEW,
+                Map.of(),
+                xml
+        );
     }
 
     public ConnectorDevelopmentType continueFrom(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.continueFrom(token);
-    }
 
-    public String submitOperationCreateConnector(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationCreateConnector(connectorDevelopmentOid);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoCreateConnector(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoCreateConnector(token);
-    }
-
-    public String submitOperationDiscoverBasicInformation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationDiscoverBasicInformation(connectorDevelopmentOid);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverBasicInformation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoDiscoverBasicInformation(token);
-    }
-
-    public String submitOperationDiscoverDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationDiscoverDocumentation(connectorDevelopmentOid);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoDiscoverDocumentation(token);
-    }
-
-    public String submitOperationProcessDocumentation(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationProcessDocumentation(connectorDevelopmentOid);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoProcessDocumentation(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoProcessDocumentation(token);
-    }
-
-    public String submitOperationGenerateAuthenticationScript(String connectorDevelopmentOid, boolean retry) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationGenerateAuthenticationScript(connectorDevelopmentOid, retry);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoGenerateArtifact(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoGenerateArtifact(token);
-    }
-
-    public String submitOperationDiscoverConnectivityEndpoint(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationDiscoverConnectivityEndpoint(connectorDevelopmentOid);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverConnectivityEndpoint(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoDiscoverConnectivityEndpoint(token);
-    }
-
-    public String submitOperationDiscoverObjectClasses(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationDiscoverObjectClasses(connectorDevelopmentOid);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClasses(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoDiscoverObjectClasses(token);
-    }
-
-    public String submitOperationDiscoverObjectClassAttributes(String connectorDevelopmentOid, String objectClass) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationDiscoverObjectClassAttributes(connectorDevelopmentOid, objectClass);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassAttributes(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoDiscoverObjectClassAttributes(token);
-    }
-
-    public String submitOperationDiscoverObjectClassEndpoints(String connectorDevelopmentOid, String objectClass) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationDiscoverObjectClassEndpoints(connectorDevelopmentOid, objectClass);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getStatusInfoDiscoverObjectClassEndpoints(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoDiscoverObjectClassEndpoints(token);
-    }
-
-    public String submitRefreshSchema(String connectorDevelopmentOid) throws SchemaException, AuthenticationException, IOException {
-        return client.submitRefreshSchema(connectorDevelopmentOid);
-    }
-
-    public SmartIntegrationOperationStatusInfoType getRefreshSchemaStatus(String token) throws SchemaException, AuthenticationException, IOException {
-        return client.getRefreshSchemaStatus(token);
+        return client.getStatusInfoConnGenerator(
+                RPCOperation.RPC_CONTINUE_FROM,
+                Map.of("token", token)
+        );
     }
 }

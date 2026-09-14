@@ -9,6 +9,7 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.util.ResourceTypeUtil;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
+import com.evolveum.midpoint.studio.client.RPCOperation;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
@@ -130,8 +131,18 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
             MidPointClient client,
             GenerateSuggestionDataModel model
     ) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationSuggestionAssociation(
-                model.getResourceOid()
+
+        var associationSuggestionWorkDefinitionType = new AssociationSuggestionWorkDefinitionType();
+
+        ObjectReferenceType resourceRef = new ObjectReferenceType();
+        resourceRef.setOid(model.getResourceOid());
+        associationSuggestionWorkDefinitionType.setResourceRef(resourceRef);
+
+        String requestBodyContent = client.serialize(associationSuggestionWorkDefinitionType);
+
+        return client.submitOperationSmartIntegration(
+                RPCOperation.RPC_SUGGEST_ASSOCIATION_TYPE,
+                requestBodyContent
         );
     }
 
@@ -140,7 +151,11 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
             MidPointClient client,
             String token
     ) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoSuggestionAssociation(token);
+
+        return client.getStatusInfoSmartIntegration(
+                RPCOperation.RPC_SUGGEST_ASSOCIATION_TYPE,
+                token
+        );
     }
 
     @Override

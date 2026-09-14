@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.PrismProperty
 import com.evolveum.midpoint.prism.path.ItemName
 import com.evolveum.midpoint.prism.path.ItemPath
 import com.evolveum.midpoint.schema.constants.SchemaConstants
+import com.evolveum.midpoint.studio.client.RPCOperation
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
 import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge
@@ -130,12 +131,17 @@ class TestConnectionStep(
 
         submitOperation(
             {
-                client.submitOperationDiscoverConnectivityEndpoint(
-                    dataModel.connectorDevelopment.oid
+                client.submitOperationConnGenerator(
+                    RPCOperation.RPC_DISCOVER_CONNECTIVITY_ENDPOINT,
+                    mapOf("oid" to dataModel.connectorDevelopment.oid),
+                    null
                 )
             },
             { token ->
-                client.getStatusInfoDiscoverConnectivityEndpoint(token)
+                client.getStatusInfoConnGenerator(
+                    RPCOperation.RPC_DISCOVER_CONNECTIVITY_ENDPOINT,
+                    token,
+                )
             },
             client.project,
             "Discover Connectivity Endpoints submit operation",
@@ -199,12 +205,17 @@ class TestConnectionStep(
 
         submitOperation(
             {
-                client.submitRefreshSchema(
-                    dataModel.connectorDevelopment.oid
+                client.submitOperationConnGenerator(
+                    RPCOperation.RPC_REFRESH_SCHEMA,
+                    mapOf("oid" to dataModel.connectorDevelopment.oid),
+                    null
                 )
             },
             { token ->
-                client.getStatusInfoDiscoverConnectivityEndpoint(token)
+                client.getStatusInfoConnGenerator(
+                    RPCOperation.RPC_DISCOVER_CONNECTIVITY_ENDPOINT,
+                    token
+                )
             },
             client.project,
             "Refresh Schema submit operation",

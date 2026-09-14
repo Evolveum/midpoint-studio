@@ -7,7 +7,9 @@
 package com.evolveum.midpoint.studio.action.smart.suggestion;
 
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.schema.processor.ResourceObjectTypeIdentification;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
+import com.evolveum.midpoint.studio.client.RPCOperation;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
@@ -86,11 +88,31 @@ public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMapp
             MidPointClient client,
             GenerateSuggestionDataModel model
     ) throws SchemaException, AuthenticationException, IOException {
-        return client.submitOperationSuggestionMapping(
-                model.getResourceOid(),
-                model.getObjectType().getKind().value(),
-                model.getObjectType().getIntent(),
-                model.getDirection().equals(GenerateSuggestionDataModel.Direction.INBOUND)
+
+        var mappingsSuggestionWorkDefinitionType = new MappingsSuggestionWorkDefinitionType();
+
+        ObjectReferenceType resourceRef = new ObjectReferenceType();
+        resourceRef.setOid(model.getResourceOid());
+        mappingsSuggestionWorkDefinitionType.setResourceRef(resourceRef);
+
+        ResourceObjectTypeIdentificationType resourceObjectTypeIdentificationType = new ResourceObjectTypeIdentificationType();
+        resourceObjectTypeIdentificationType.setKind(model.getObjectType().getKind());
+        resourceObjectTypeIdentificationType.setIntent(model.getObjectType().getIntent());
+        mappingsSuggestionWorkDefinitionType.setObjectType(resourceObjectTypeIdentificationType);
+
+        mappingsSuggestionWorkDefinitionType.setInbound(model.getDirection().equals(GenerateSuggestionDataModel.Direction.INBOUND));
+
+        for(DataAccessPermissionType item : DataAccessPermissionType.values()) {
+            mappingsSuggestionWorkDefinitionType.permissions(item);
+        }
+
+        mappingsSuggestionWorkDefinitionType.setForceRecomputeSchemaMatch(false);
+
+        String requestBodyContent = client.serialize(mappingsSuggestionWorkDefinitionType);
+
+        return client.submitOperationSmartIntegration(
+                RPCOperation.RPC_SUGGEST_MAPPINGS,
+                requestBodyContent
         );
     }
 
@@ -99,7 +121,11 @@ public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMapp
             MidPointClient client,
             String token
     ) throws SchemaException, AuthenticationException, IOException {
-        return client.getStatusInfoSuggestionMapping(token);
+
+        return client.getStatusInfoSmartIntegration(
+                RPCOperation.RPC_SUGGEST_MAPPINGS,
+                token
+        );
     }
 
     @Override

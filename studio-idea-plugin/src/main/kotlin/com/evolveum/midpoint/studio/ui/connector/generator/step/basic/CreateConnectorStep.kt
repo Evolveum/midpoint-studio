@@ -10,6 +10,7 @@ import com.amazon.ion.NullValueException
 import com.evolveum.midpoint.prism.PrismConstants
 import com.evolveum.midpoint.prism.PrismContext
 import com.evolveum.midpoint.studio.client.AuthenticationException
+import com.evolveum.midpoint.studio.client.RPCOperation
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.impl.UploadResponse
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
@@ -64,12 +65,17 @@ class CreateConnectorStep (
 
         submitOperation(
             {
-                client.submitOperationCreateConnector(
-                    dataModel.connectorDevelopment.oid
+                client.submitOperationConnGenerator(
+                    RPCOperation.RPC_CREATE_CONNECTOR,
+                    mapOf("oid" to dataModel.connectorDevelopment.oid),
+                    null
                 )
             },
             { token ->
-                client.getStatusInfoCreateConnector(token)
+                client.getStatusInfoConnGenerator(
+                    RPCOperation.RPC_CREATE_CONNECTOR,
+                    token
+                )
             },
             client.project,
             "Create Connector submit operation",

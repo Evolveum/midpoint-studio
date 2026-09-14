@@ -7,6 +7,7 @@
 package com.evolveum.midpoint.studio.ui.connector.generator.step.basic
 
 import com.evolveum.midpoint.schema.util.SmartMetadataUtil
+import com.evolveum.midpoint.studio.client.RPCOperation
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
 import com.evolveum.midpoint.studio.ui.connector.generator.component.AlertPanel
@@ -149,12 +150,17 @@ class DiscoverDocumentationStep(
 
         submitOperation(
             {
-                client.submitOperationDiscoverDocumentation(
-                    dataModel.connectorDevelopment.oid
+                client.submitOperationConnGenerator(
+                    RPCOperation.RPC_DISCOVER_DOCUMENTATION,
+                    mapOf("oid" to dataModel.connectorDevelopment.oid),
+                    null
                 )
             },
             { token ->
-                client.getStatusInfoDiscoverDocumentation(token)
+                client.getStatusInfoConnGenerator(
+                    RPCOperation.RPC_DISCOVER_DOCUMENTATION,
+                    token
+                )
             },
             client.project,
             "Discover Documentation submit operation",

@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.studio.ui.connector.generator.step.connection
 
+import com.evolveum.midpoint.studio.client.RPCOperation
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.generator.ConnectorGeneratorWizard
 import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge
@@ -96,13 +97,20 @@ class AuthScriptsConnectorStep(
 
         submitOperation(
             {
-                client.submitOperationGenerateAuthenticationScript(
-                    dataModel.connectorDevelopment.oid,
-                    false
+                client.submitOperationConnGenerator(
+                    RPCOperation.RPC_GENERATE_AUTHENTICATION_SCRIPT,
+                    mapOf(
+                        "oid" to dataModel.connectorDevelopment.oid,
+                        "retry" to false
+                    ),
+                    null
                 )
             },
             { token ->
-                client.getStatusInfoGenerateArtifact(token)
+                client.getStatusInfoConnGenerator(
+                    RPCOperation.RPC_GENERATE_AUTHENTICATION_SCRIPT,
+                    token
+                )
             },
             client.project,
             "Generate Auth Script connector",

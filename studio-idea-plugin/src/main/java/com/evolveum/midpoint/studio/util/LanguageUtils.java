@@ -84,18 +84,4 @@ public class LanguageUtils {
 
         return text.substring(i);
     }
-
-    public static boolean isResourceObject(@NotNull PsiFile psiFile) {
-        if (psiFile instanceof XmlFile xmlFile) {
-            XmlTag rootTag = xmlFile.getRootTag();
-            return rootTag != null && "resource".equals(rootTag.getName());
-        } else if (psiFile instanceof JsonFile jsonFile) {
-            JsonObject jsonObject = (JsonObject) jsonFile.getTopLevelValue();
-            if (jsonObject == null || jsonObject.getPropertyList().isEmpty()) return false;
-            JsonProperty first = jsonObject.getPropertyList().get(0);
-            return "resource".equals(first.getName());
-        }
-
-        return false;
-    }
 }

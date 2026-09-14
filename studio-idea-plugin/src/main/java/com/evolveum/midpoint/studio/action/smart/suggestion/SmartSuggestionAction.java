@@ -10,10 +10,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
-import com.evolveum.midpoint.studio.impl.Environment;
-import com.evolveum.midpoint.studio.impl.EnvironmentService;
-import com.evolveum.midpoint.studio.impl.MidPointClient;
-import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionWizard;
@@ -39,6 +36,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SearchTextField;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
@@ -55,6 +53,8 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public abstract class SmartSuggestionAction<T> extends AnAction {
+
+    public final LocalizationService localizationService = new LocalizationService();
 
     private final String TITLE = "Midpoint Smart suggestion";
 
@@ -102,6 +102,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
+
         var project = anActionEvent.getProject();
         EnvironmentService em = EnvironmentService.getInstance(Objects.requireNonNull(project));
         Environment env = em.getSelected();
@@ -115,18 +116,21 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
 
                 {
                     setTitle("Upload (Full Processing)");
+                    setSize(600, 50);
                     init();
                 }
 
                 @Override
                 protected JComponent createCenterPanel() {
 
-                    JPanel panel = new JPanel(new BorderLayout(0, 10));
-                    JLabel description = new JLabel("""
-                            The local resource configuration (OID: %s) will be uploaded to midPoint to generate AI suggestions based on the most recent data.
-                            """.formatted(resourceOid)
+                    JBLabel description = new JBLabel(
+                            "<html>" +
+                                    "The local resource configuration (OID: %s) ".formatted(resourceOid) +
+                                    "will be uploaded to midPoint to generate AI suggestions based on the most recent data." +
+                                    "</html>"
                     );
 
+                    JPanel panel = new JPanel(new BorderLayout(0, 10));
                     panel.add(description, BorderLayout.NORTH);
 
                     return panel;
@@ -178,16 +182,22 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
         var prismContext = StudioPrismContextService.getPrismContext(project);
 
         @Deprecated
-        var foundResources = client.list(ObjectTypes.RESOURCE.getClassDefinition(), prismContext.queryFactory().createQuery(), true);
+        var foundResources = client.list(
+                ObjectTypes.RESOURCE.getClassDefinition(),
+                prismContext.queryFactory().createQuery(),
+                true
+        );
 
         GenerateSuggestionDataModel dataModel = new GenerateSuggestionDataModel();
         dataModel.setMode(getModeDialogContext());
         dataModel.setResources(foundResources);
         dataModel.setResourceOid(uploadedResourceOid);
+        dataModel.setAiInfo(client.getAiInfo());
 
         new GenerateSuggestionWizard(
             project,
             TITLE + " - " + getTemplatePresentation().getText(),
+            localizationService,
             dataModel,
             () -> {
                 String toolWindowId = "SmartSuggestionToolWindow";
@@ -317,23 +327,25 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
             try {
                 var statusInfo = getStatusInfo(client, token);
 
-                if (statusInfo.getStatus().equals(OperationResultStatusType.IN_PROGRESS) ||
-                        statusInfo.getStatus().equals(OperationResultStatusType.UNKNOWN)
-                ) {
+
+                if (OperationResultStatusType.IN_PROGRESS.equals(statusInfo.getStatus())) {
                     return;
                 }
 
-                if (statusInfo.getStatus().equals(OperationResultStatusType.SUCCESS)) {
-                    future.complete(getResultSuggestions(statusInfo.getResult(), dataModel));
-                    scheduler.shutdown();
+                if (OperationResultStatusType.SUCCESS.equals(statusInfo.getStatus())) {
+                    future.complete(
+                            getResultSuggestions(statusInfo.getResult(), dataModel)
+                    );
+                } else {
+                    future.completeExceptionally(
+                            new RuntimeException(
+                                    "Task finished with status: " + statusInfo
+                            )
+                    );
                 }
 
-                if (!statusInfo.getStatus().equals(OperationResultStatusType.UNKNOWN)) {
-                    future.completeExceptionally(
-                        new RuntimeException("Task finished with status: " + statusInfo)
-                    );
-                    scheduler.shutdown();
-                }
+                scheduler.shutdown();
+
             } catch (Exception e) {
                 getLogger().error(e);
                 future.completeExceptionally(e);

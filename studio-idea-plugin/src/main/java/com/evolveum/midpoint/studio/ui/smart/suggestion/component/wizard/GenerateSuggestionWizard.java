@@ -8,6 +8,8 @@
 
 package com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard;
 
+import com.evolveum.midpoint.studio.impl.LocalizationService;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.step.PermissionStep;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.step.SmartSuggestionStep;
 import com.intellij.ide.wizard.AbstractWizard;
 import com.intellij.ide.wizard.Step;
@@ -15,23 +17,29 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-
 public class GenerateSuggestionWizard extends AbstractWizard<Step> {
 
     private final GenerateSuggestionDataModel dataModel;
     private final Runnable onFinish;
 
+    private final LocalizationService localizationService;
+
     public GenerateSuggestionWizard(
             Project project,
             String title,
+            LocalizationService localizationService,
             GenerateSuggestionDataModel dataModel,
             Runnable onFinish
     ) {
         super(title, project);
+
+        this.localizationService = localizationService;
         this.dataModel = dataModel;
         this.onFinish = onFinish;
-        addStep(new SmartSuggestionStep(this, dataModel));
+
+        addStep(new SmartSuggestionStep(this, dataModel, localizationService));
+        addStep(new PermissionStep(this, dataModel, localizationService));
+
         getHelpButton().setVisible(false);
         setSize(800, 600);
         init();
@@ -52,13 +60,19 @@ public class GenerateSuggestionWizard extends AbstractWizard<Step> {
     protected void updateStep() {
         super.updateStep();
 
-        getNextButton().setText("Allow and continue");
-        setEnabledFinishButton(dataModel.getResourceOid() != null && dataModel.getObjectClass() != null);
+        if (mySteps.get(getCurrentStep()) instanceof PermissionStep) {
+            getNextButton().setText(localizationService.translate("SmartSuggestConfirmationPanel.allowAndContinue"));
+        } else {
+            getNextButton().setText(localizationService.translate("ResourceGeneratingSuggestionObjectClassWizardPanel.continue"));
+        }
     }
 
-    public void setEnabledFinishButton(boolean enabled) {
-        if (isLastStep()) {
-            getNextButton().setEnabled(enabled);
-        }
+    public void setEnabledNextButton(boolean enabled) {
+        getNextButton().setEnabled(enabled);
+    }
+
+    @Override
+    protected boolean canGoNext() {
+        return dataModel.getResourceOid() != null && dataModel.getObjectClass() != null;
     }
 }

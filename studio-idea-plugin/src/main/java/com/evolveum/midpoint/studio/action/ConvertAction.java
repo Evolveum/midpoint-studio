@@ -72,9 +72,9 @@ public class ConvertAction extends AnAction {
             if (ext != null) {
                 ext = ext.toLowerCase();
                 enabled =
-                        ext.equals(XMLLanguage.INSTANCE.getID()) ||
-                        ext.equals(JsonLanguage.INSTANCE.getID()) ||
-                        ext.equals(YAMLLanguage.INSTANCE.getID()) ||
+                        ext.equals(XMLLanguage.INSTANCE.getID().toLowerCase()) ||
+                        ext.equals(JsonLanguage.INSTANCE.getID().toLowerCase()) ||
+                        ext.equals(YAMLLanguage.INSTANCE.getID().toLowerCase()) ||
                         ext.equals("yml");
             }
         }

@@ -27,10 +27,13 @@ public final class LocalizationService {
 
     private static final String SCHEMA_PROPERTIES = "localization/schema.properties";
 
+    private static final String MIDPOINT_PROPERTIES = "localization/Midpoint.properties";
+
     private final Properties properties = new Properties();
 
     public LocalizationService() {
         loadProperties(SCHEMA_PROPERTIES);
+        loadProperties(MIDPOINT_PROPERTIES);
     }
 
     public static @NotNull LocalizationService get() {

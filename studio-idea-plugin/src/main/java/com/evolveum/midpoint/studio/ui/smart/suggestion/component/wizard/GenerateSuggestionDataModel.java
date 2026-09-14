@@ -10,8 +10,15 @@ package com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard;
 
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
+import com.evolveum.midpoint.smart.api.info.AiInfo;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.AiInfoType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.DataAccessPermissionType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceObjectTypeDefinitionType;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class GenerateSuggestionDataModel {
 
@@ -22,6 +29,7 @@ public class GenerateSuggestionDataModel {
 
     public enum ResourceDialogContextMode {
         OBJECT_TYPE,
+        FOCUS_TYPE,
         CORRELATION,
         MAPPING,
         ASSOCIATION
@@ -38,6 +46,10 @@ public class GenerateSuggestionDataModel {
     ResourceObjectClassDefinition objectClass;
 
     ResourceObjectTypeDefinitionType objectType;
+
+    List<DataAccessPermissionType> dataAccessPermissions = new ArrayList<>();
+
+    AiInfoType aiInfo;
 
     public SearchResultList<ObjectType> getResources() {
         return resources;
@@ -85,5 +97,21 @@ public class GenerateSuggestionDataModel {
 
     public void setDirection(Direction direction) {
         this.direction = direction;
+    }
+
+    public List<DataAccessPermissionType> getDataAccessPermissions() {
+        return dataAccessPermissions;
+    }
+
+    public void setDataAccessPermissions(List<DataAccessPermissionType> dataAccessPermissions) {
+        this.dataAccessPermissions = dataAccessPermissions;
+    }
+
+    public AiInfoType getAiInfo() {
+        return aiInfo;
+    }
+
+    public void setAiInfo(AiInfoType aiInfo) {
+        this.aiInfo = aiInfo;
     }
 }
