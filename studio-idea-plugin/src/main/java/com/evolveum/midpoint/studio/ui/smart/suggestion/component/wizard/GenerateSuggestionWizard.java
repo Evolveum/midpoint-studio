@@ -22,23 +22,21 @@ public class GenerateSuggestionWizard extends AbstractWizard<Step> {
     private final GenerateSuggestionDataModel dataModel;
     private final Runnable onFinish;
 
-    private final LocalizationService localizationService;
+    private final LocalizationService localizationService = LocalizationService.get();
 
     public GenerateSuggestionWizard(
             Project project,
             String title,
-            LocalizationService localizationService,
             GenerateSuggestionDataModel dataModel,
             Runnable onFinish
     ) {
         super(title, project);
 
-        this.localizationService = localizationService;
         this.dataModel = dataModel;
         this.onFinish = onFinish;
 
-        addStep(new SmartSuggestionStep(this, dataModel, localizationService));
-        addStep(new PermissionStep(this, dataModel, localizationService));
+        addStep(new SmartSuggestionStep(this, dataModel));
+        addStep(new PermissionStep(this, dataModel));
 
         getHelpButton().setVisible(false);
         setSize(800, 600);

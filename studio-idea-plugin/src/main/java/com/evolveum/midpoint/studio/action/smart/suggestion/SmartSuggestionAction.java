@@ -197,7 +197,6 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
         new GenerateSuggestionWizard(
             project,
             TITLE + " - " + getTemplatePresentation().getText(),
-            localizationService,
             dataModel,
             () -> {
                 String toolWindowId = "SmartSuggestionToolWindow";

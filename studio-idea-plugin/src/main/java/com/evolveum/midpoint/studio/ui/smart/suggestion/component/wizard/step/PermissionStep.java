@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.step;
 
+import com.evolveum.midpoint.studio.impl.LocalizationService;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionWizard;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.DataAccessPermissionType;
@@ -174,7 +175,8 @@ public class PermissionStep extends StepAdapter {
                 boolean selected = checkbox.isSelected();
 
                 if (selected) {
-                    dataModel.getDataAccessPermissions().add(permission);
+                    // todo fix
+//                    dataModel.getDataAccessPermissions().add(permission);
 
                     item.setBorder(
                             BorderFactory.createCompoundBorder(

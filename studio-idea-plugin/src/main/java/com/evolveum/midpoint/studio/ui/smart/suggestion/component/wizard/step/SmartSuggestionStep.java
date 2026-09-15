@@ -49,16 +49,14 @@ public class SmartSuggestionStep extends StepAdapter {
     private final GenerateSuggestionWizard wizard;
     private final GenerateSuggestionDataModel dataModel;
 
-    private final LocalizationService localizationService;
+    private final LocalizationService localizationService = LocalizationService.get();
 
     public SmartSuggestionStep(
             GenerateSuggestionWizard wizard,
-            GenerateSuggestionDataModel dataModel,
-            LocalizationService localizationService
+            GenerateSuggestionDataModel dataModel
     ) {
         this.wizard = wizard;
         this.dataModel = dataModel;
-        this.localizationService = localizationService;
     }
 
     @Override
