@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 public class DownloadConnectorDevelopmentTask extends SimpleBackgroundableTask {
 
-    private final Logger log = Logger.getInstance(this.getClass());
+    private final Logger log = Logger.getInstance(DownloadConnectorDevelopmentTask.class);
 
     public static String TITLE = "Download Connector Development task";
 

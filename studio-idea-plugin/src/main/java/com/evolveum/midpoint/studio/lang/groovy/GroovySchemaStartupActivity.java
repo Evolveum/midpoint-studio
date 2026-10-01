@@ -1,6 +1,8 @@
 package com.evolveum.midpoint.studio.lang.groovy;
 
 import com.evolveum.midpoint.studio.impl.cache.OpenApiTypeMappingCacheService;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
@@ -21,42 +23,72 @@ import java.util.List;
 public class GroovySchemaStartupActivity implements ProjectActivity {
 
     @Override
-    public @Nullable Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
-        // Project indexing complete, can use PSI
+    public @Nullable Object execute(
+            @NotNull Project project,
+            @NotNull Continuation<? super Unit> continuation
+    ) {
         DumbService.getInstance(project).runWhenSmart(() -> {
-            storeOpenApiTypeMappingEnum(project);
+            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+                storeOpenApiTypeMappingEnum(project);
+            });
         });
 
         return null;
     }
 
     private void storeOpenApiTypeMappingEnum(Project project) {
-        List<OpenApiTypeConstant> openApiTypeConstants = new ArrayList<>();
+        List<OpenApiTypeConstant> openApiTypeConstants =
+                ReadAction.compute(() -> {
+                    List<OpenApiTypeConstant> result = new ArrayList<>();
 
-        PsiClass enumClass = JavaPsiFacade.getInstance(project)
-                .findClass(OpenApiTypeConstant.OPEN_API_TYPE_MAPPING_ENUM, GlobalSearchScope.projectScope(project));
+                    PsiClass enumClass = JavaPsiFacade.getInstance(project)
+                            .findClass(
+                                    OpenApiTypeConstant.OPEN_API_TYPE_MAPPING_ENUM,
+                                    GlobalSearchScope.projectScope(project)
+                            );
 
-        if (enumClass != null && enumClass.isEnum()) {
-            for (PsiField field : enumClass.getFields()) {
-                if (field instanceof PsiEnumConstant enumConst) {
+                    if (enumClass != null && enumClass.isEnum()) {
+                        for (PsiField field : enumClass.getFields()) {
+                            if (field instanceof PsiEnumConstant enumConst) {
 
-                    // TODO append to OpenApiTypeConstant record other arguments (availableWireTypes, connidClass)
-//                    PsiExpressionList argList = enumConst.getArgumentList();
-//                    if (argList != null) {
-//                        PsiExpression[] args = argList.getExpressions();
-//                        for (int i = 0; i < args.length; i++) {
-//                            String argText = args[i].getText();
-//                            System.out.println("  Arg " + i + ": " + argText);
-//                        }
-//                    }
+                                // TODO append to OpenApiTypeConstant record other arguments
+                                // (availableWireTypes, connidClass)
 
-                    openApiTypeConstants.add(new OpenApiTypeConstant(enumConst.getName(), enumClass.getText(), null, null));
+                                /*
+                                PsiExpressionList argList = enumConst.getArgumentList();
+                                if (argList != null) {
+                                    PsiExpression[] args = argList.getExpressions();
 
-                    // Cache OpenApiType constants for completions/validation
-                    OpenApiTypeMappingCacheService cacheService = project.getService(OpenApiTypeMappingCacheService.class);
-                    cacheService.put(OpenApiTypeConstant.OPEN_API_TYPE_MAPPING_ENUM, openApiTypeConstants);
-                }
-            }
-        }
+                                    for (int i = 0; i < args.length; i++) {
+                                        String argText = args[i].getText();
+                                        System.out.println("Arg " + i + ": " + argText);
+                                    }
+                                }
+                                */
+
+                                result.add(
+                                        new OpenApiTypeConstant(
+                                                enumConst.getName(),
+                                                enumClass.getText(),
+                                                null,
+                                                null
+                                        )
+                                );
+                            }
+                        }
+                    }
+
+                    return result;
+                });
+
+        // No PSI access here.
+        // This happens after the read action has finished.
+        OpenApiTypeMappingCacheService cacheService =
+                project.getService(OpenApiTypeMappingCacheService.class);
+
+        cacheService.put(
+                OpenApiTypeConstant.OPEN_API_TYPE_MAPPING_ENUM,
+                openApiTypeConstants
+        );
     }
 }

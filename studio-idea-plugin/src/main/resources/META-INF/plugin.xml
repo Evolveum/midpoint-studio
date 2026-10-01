@@ -577,6 +577,14 @@
                 description="The AI identifies potential group or entitlement structures and suggests corresponding association definitions. It detects likely membership or role-related attributes and proposes appropriate association mappings. This helps administrators quickly model entitlements and access relationships without deep manual schema analysis.">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt A"/>
         </action>
+        <action id="MidPoint.Action.Suggestion.FocusType"
+                class="com.evolveum.midpoint.studio.action.smart.suggestion.FocusTypeSuggestionAction"
+                text="Focus Types"
+                internal="true"
+                description="The AI analyzes the resource schema and available attributes to suggest appropriate focus types for representing objects in midPoint. It identifies whether the data is best modeled as users, organizations, roles, services, or other supported focus object types. This helps administrators choose the appropriate object model and accelerates configuration while reducing errors in resource integration.">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt F"/>
+        </action>
+
 
         <!-- generate connector development -->
         <action id="MidPoint.Action.ConnectorGenerator"

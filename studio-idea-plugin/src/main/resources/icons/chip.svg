@@ -1,0 +1,42 @@
+<!--
+  - Copyright (C) 2010-2026 Evolveum and contributors
+  -
+  - Licensed under the EUPL-1.2 or later.
+  -->
+
+<svg width="32" height="32" viewBox="0 0 32 32"
+     xmlns="http://www.w3.org/2000/svg">
+
+    <g fill="none"
+       stroke="#6C707E"
+       stroke-width="2.5"
+       stroke-linecap="round"
+       stroke-linejoin="round">
+
+        <rect x="9" y="9"
+              width="14"
+              height="14"
+              rx="2"/>
+
+        <rect x="13" y="13"
+              width="6"
+              height="6"
+              rx="0.5"/>
+
+        <line x1="5" y1="12" x2="9" y2="12"/>
+        <line x1="5" y1="16" x2="9" y2="16"/>
+        <line x1="5" y1="20" x2="9" y2="20"/>
+
+        <line x1="23" y1="12" x2="27" y2="12"/>
+        <line x1="23" y1="16" x2="27" y2="16"/>
+        <line x1="23" y1="20" x2="27" y2="20"/>
+
+        <line x1="12" y1="5" x2="12" y2="9"/>
+        <line x1="16" y1="5" x2="16" y2="9"/>
+        <line x1="20" y1="5" x2="20" y2="9"/>
+
+        <line x1="12" y1="23" x2="12" y2="27"/>
+        <line x1="16" y1="23" x2="16" y2="27"/>
+        <line x1="20" y1="23" x2="20" y2="27"/>
+    </g>
+</svg>

@@ -44,11 +44,15 @@ public class DocumentationDialog extends DialogWrapper {
     }
 
     private void initLayout(Project project) {
-        sourceDirectory.addBrowseFolderListener("Select source folder", "Folder where MidPoint object xml files are stored", project,
-                FileChooserDescriptorFactory.createSingleFolderDescriptor());
 
-        output.addBrowseFolderListener("Select output file", null, project,
-                FileChooserDescriptorFactory.createSingleLocalFileDescriptor());
+        var folderDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
+        folderDescriptor.setTitle("Select source folder");
+        folderDescriptor.setDescription("Folder where MidPoint object xml files are stored");
+        sourceDirectory.addBrowseFolderListener(project, folderDescriptor);
+
+        var fileDescriptor = FileChooserDescriptorFactory.createSingleLocalFileDescriptor();
+        fileDescriptor.setTitle("Select output file");
+        sourceDirectory.addBrowseFolderListener(project, fileDescriptor);
     }
 
     @Nullable

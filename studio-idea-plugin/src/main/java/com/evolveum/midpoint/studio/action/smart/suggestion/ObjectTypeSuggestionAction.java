@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceObjectTypeDefinitionType> {
 
-    private final Logger log = Logger.getInstance(this.getClass());
+    private final Logger log = Logger.getInstance(ObjectTypeSuggestionAction.class);
 
     @Override
     boolean isLockable() {
@@ -92,22 +92,17 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
     @Override
     String submitOperation(
             MidPointClient client,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) throws SchemaException, AuthenticationException, IOException {
 
-        var objectTypesSuggestionWorkDefinitionType = new ObjectTypesSuggestionWorkDefinitionType();
-
         ObjectReferenceType resourceRef = new ObjectReferenceType();
-        resourceRef.setOid(model.getResourceOid());
+        resourceRef.setOid(dataModel.getResourceOid());
+
+        var objectTypesSuggestionWorkDefinitionType = new ObjectTypesSuggestionWorkDefinitionType();
         objectTypesSuggestionWorkDefinitionType.setResourceRef(resourceRef);
-
-        objectTypesSuggestionWorkDefinitionType.setObjectclass(model.getObjectClass().getObjectClassName());
-
-        for(DataAccessPermissionType item : DataAccessPermissionType.values()) {
-            objectTypesSuggestionWorkDefinitionType.permissions(item);
-        }
-
-        objectTypesSuggestionWorkDefinitionType.previousDelineation(null);
+        objectTypesSuggestionWorkDefinitionType.setObjectclass(dataModel.getObjectClass().getObjectClassName());
+        objectTypesSuggestionWorkDefinitionType.previousDelineation(dataModel.getObjectType());
+        dataModel.getDataAccessPermissions().forEach(objectTypesSuggestionWorkDefinitionType::permissions);
 
         String requestBodyContent = client.serialize(objectTypesSuggestionWorkDefinitionType);
 
@@ -132,12 +127,12 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
     @Override
     List<SmartSuggestionObject<ResourceObjectTypeDefinitionType>> getResultSuggestions(
             AbstractSmartIntegrationOperationResultType result,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) {
 
         return result.getObjectTypesSuggestion().getObjectType().stream()
                 .map(object ->
-                        new SmartSuggestionObject<>(object, getResources(model))
+                        new SmartSuggestionObject<>(object, getResources(dataModel))
                 ).toList();
     }
 }

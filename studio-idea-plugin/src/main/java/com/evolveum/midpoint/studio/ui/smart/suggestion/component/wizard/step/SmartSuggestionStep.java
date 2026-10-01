@@ -5,7 +5,6 @@ import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinition;
 import com.evolveum.midpoint.schema.processor.ResourceObjectClassDefinitionImpl;
 import com.evolveum.midpoint.schema.processor.ResourceSchema;
 import com.evolveum.midpoint.schema.processor.ResourceSchemaFactory;
-import com.evolveum.midpoint.studio.impl.LocalizationService;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.DialogWizardTableModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionWizard;
@@ -48,8 +47,6 @@ public class SmartSuggestionStep extends StepAdapter {
 
     private final GenerateSuggestionWizard wizard;
     private final GenerateSuggestionDataModel dataModel;
-
-    private final LocalizationService localizationService = LocalizationService.get();
 
     public SmartSuggestionStep(
             GenerateSuggestionWizard wizard,

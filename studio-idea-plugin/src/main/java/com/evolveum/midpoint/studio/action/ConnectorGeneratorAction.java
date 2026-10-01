@@ -27,7 +27,7 @@ import java.io.IOException;
 
 public class ConnectorGeneratorAction extends AnAction {
 
-    private final Logger log = Logger.getInstance(this.getClass());
+    private final Logger log = Logger.getInstance(ConnectorGeneratorAction.class);
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {

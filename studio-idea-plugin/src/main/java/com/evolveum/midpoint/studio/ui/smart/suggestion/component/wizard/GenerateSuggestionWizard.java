@@ -8,21 +8,21 @@
 
 package com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard;
 
-import com.evolveum.midpoint.studio.impl.LocalizationService;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.step.PermissionStep;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.step.SmartSuggestionStep;
 import com.intellij.ide.wizard.AbstractWizard;
 import com.intellij.ide.wizard.Step;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
 
 public class GenerateSuggestionWizard extends AbstractWizard<Step> {
 
     private final GenerateSuggestionDataModel dataModel;
     private final Runnable onFinish;
-
-    private final LocalizationService localizationService = LocalizationService.get();
 
     public GenerateSuggestionWizard(
             Project project,
@@ -36,7 +36,7 @@ public class GenerateSuggestionWizard extends AbstractWizard<Step> {
         this.onFinish = onFinish;
 
         addStep(new SmartSuggestionStep(this, dataModel));
-        addStep(new PermissionStep(this, dataModel));
+        addStep(new PermissionStep(dataModel));
 
         getHelpButton().setVisible(false);
         setSize(800, 600);
@@ -59,9 +59,9 @@ public class GenerateSuggestionWizard extends AbstractWizard<Step> {
         super.updateStep();
 
         if (mySteps.get(getCurrentStep()) instanceof PermissionStep) {
-            getNextButton().setText(localizationService.translate("SmartSuggestConfirmationPanel.allowAndContinue"));
+            getNextButton().setText("Allow and continue");
         } else {
-            getNextButton().setText(localizationService.translate("ResourceGeneratingSuggestionObjectClassWizardPanel.continue"));
+            getNextButton().setText("Continue");
         }
     }
 
@@ -72,5 +72,12 @@ public class GenerateSuggestionWizard extends AbstractWizard<Step> {
     @Override
     protected boolean canGoNext() {
         return dataModel.getResourceOid() != null && dataModel.getObjectClass() != null;
+    }
+
+
+    public static final class Icons {
+
+        public static final Icon Chip =
+                IconLoader.getIcon("/icons/chip.svg", Icons.class);
     }
 }

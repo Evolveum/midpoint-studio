@@ -29,7 +29,7 @@ import java.util.List;
 
 public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMappingsSuggestionType> {
 
-    private final Logger log = Logger.getInstance(this.getClass());
+    private final Logger log = Logger.getInstance(MappingSuggestionAction.class);
 
     @Override
     boolean isLockable() {
@@ -86,27 +86,21 @@ public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMapp
     @Override
     String submitOperation(
             MidPointClient client,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) throws SchemaException, AuthenticationException, IOException {
 
-        var mappingsSuggestionWorkDefinitionType = new MappingsSuggestionWorkDefinitionType();
-
         ObjectReferenceType resourceRef = new ObjectReferenceType();
-        resourceRef.setOid(model.getResourceOid());
+        resourceRef.setOid(dataModel.getResourceOid());
+
+        var mappingsSuggestionWorkDefinitionType = new MappingsSuggestionWorkDefinitionType();
         mappingsSuggestionWorkDefinitionType.setResourceRef(resourceRef);
-
         ResourceObjectTypeIdentificationType resourceObjectTypeIdentificationType = new ResourceObjectTypeIdentificationType();
-        resourceObjectTypeIdentificationType.setKind(model.getObjectType().getKind());
-        resourceObjectTypeIdentificationType.setIntent(model.getObjectType().getIntent());
+        resourceObjectTypeIdentificationType.setKind(dataModel.getObjectType().getKind());
+        resourceObjectTypeIdentificationType.setIntent(dataModel.getObjectType().getIntent());
         mappingsSuggestionWorkDefinitionType.setObjectType(resourceObjectTypeIdentificationType);
-
-        mappingsSuggestionWorkDefinitionType.setInbound(model.getDirection().equals(GenerateSuggestionDataModel.Direction.INBOUND));
-
-        for(DataAccessPermissionType item : DataAccessPermissionType.values()) {
-            mappingsSuggestionWorkDefinitionType.permissions(item);
-        }
-
+        mappingsSuggestionWorkDefinitionType.setInbound(dataModel.getDirection().equals(GenerateSuggestionDataModel.Direction.INBOUND));
         mappingsSuggestionWorkDefinitionType.setForceRecomputeSchemaMatch(false);
+        dataModel.getDataAccessPermissions().forEach(mappingsSuggestionWorkDefinitionType::permissions);
 
         String requestBodyContent = client.serialize(mappingsSuggestionWorkDefinitionType);
 
@@ -131,15 +125,15 @@ public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMapp
     @Override
     List<SmartSuggestionObject<AttributeMappingsSuggestionType>> getResultSuggestions(
             AbstractSmartIntegrationOperationResultType result,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) {
 
         return result.getMappingsSuggestion().getAttributeMappings().stream()
                 .map(o -> new SmartSuggestionObject<>(
                         o,
                         null,
-                        getResources(model),
-                        model.getObjectType()
+                        getResources(dataModel),
+                        dataModel.getObjectType()
                 ))
                 .toList();
     }

@@ -54,9 +54,7 @@ import java.util.concurrent.*;
 
 public abstract class SmartSuggestionAction<T> extends AnAction {
 
-    public final LocalizationService localizationService = new LocalizationService();
-
-    private final String TITLE = "Midpoint Smart suggestion";
+    private final String TITLE = "Midpoint Smart Integration";
 
     private String resourceOid;
 
@@ -192,9 +190,8 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
         dataModel.setMode(getModeDialogContext());
         dataModel.setResources(foundResources);
         dataModel.setResourceOid(uploadedResourceOid);
-        dataModel.setAiInfo(client.getAiInfo());
 
-        new GenerateSuggestionWizard(
+        var generateSuggestionWizard = new GenerateSuggestionWizard(
             project,
             TITLE + " - " + getTemplatePresentation().getText(),
             dataModel,
@@ -225,8 +222,6 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                             });
 
                             try {
-
-                                // FIXME check if action down if scheduler stoped????
                                 generateSuggestions(client, dataModel).whenComplete((
                                         result, ex
                                 ) -> {
@@ -250,7 +245,7 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                                     project,
                                     "midpointSmartSuggestion",
                                     TITLE,
-                                    e.getMessage(),
+                                    e.getMessage() + " - Failed to retrieve AI info: Health endpoint returned non-success",
                                     NotificationType.ERROR
                                 );
                             }
@@ -295,7 +290,23 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                     log.error("Tool window with ID '" + toolWindowId + "' not found!");
                 }
             }
-        ).show();
+        );
+
+        try {
+            dataModel.setAiInfo(client.getAiInfo());
+            generateSuggestionWizard.show();
+        } catch (Exception e) {
+
+            log.error(e);
+
+            MidPointUtils.publishNotification(
+                    project,
+                    "midpointSmartSuggestion",
+                    TITLE,
+                    e.getMessage(),
+                    NotificationType.ERROR
+            );
+        }
     }
 
     private CompletableFuture<List<SmartSuggestionObject<T>>> generateSuggestions(

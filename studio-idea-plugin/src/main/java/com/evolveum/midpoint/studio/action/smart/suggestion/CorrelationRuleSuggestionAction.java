@@ -28,7 +28,7 @@ import java.util.List;
 
 public class CorrelationRuleSuggestionAction extends SmartSuggestionAction<ItemsSubCorrelatorType> {
 
-    private final Logger log = Logger.getInstance(this.getClass());
+    private final Logger log = Logger.getInstance(CorrelationRuleSuggestionAction.class);
 
     @Override
     boolean isLockable() {
@@ -94,23 +94,20 @@ public class CorrelationRuleSuggestionAction extends SmartSuggestionAction<Items
     @Override
     String submitOperation(
             MidPointClient client,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) throws SchemaException, AuthenticationException, IOException {
 
-        var correlationSuggestionWorkDefinitionType = new CorrelationSuggestionWorkDefinitionType();
-
         ObjectReferenceType resourceRef = new ObjectReferenceType();
-        resourceRef.setOid(model.getResourceOid());
+        resourceRef.setOid(dataModel.getResourceOid());
+
+        var correlationSuggestionWorkDefinitionType = new CorrelationSuggestionWorkDefinitionType();
         correlationSuggestionWorkDefinitionType.setResourceRef(resourceRef);
-
         ResourceObjectTypeIdentificationType resourceObjectTypeIdentificationType = new ResourceObjectTypeIdentificationType();
-        resourceObjectTypeIdentificationType.setKind(model.getObjectType().getKind());
-        resourceObjectTypeIdentificationType.setIntent(model.getObjectType().getIntent());
+        resourceObjectTypeIdentificationType.setKind(dataModel.getObjectType().getKind());
+        resourceObjectTypeIdentificationType.setIntent(dataModel.getObjectType().getIntent());
         correlationSuggestionWorkDefinitionType.setObjectType(resourceObjectTypeIdentificationType);
-
-        for(DataAccessPermissionType item : DataAccessPermissionType.values()) {
-            correlationSuggestionWorkDefinitionType.permissions(item);
-        }
+        correlationSuggestionWorkDefinitionType.setForceRecomputeSchemaMatch(false);
+        dataModel.getDataAccessPermissions().forEach(correlationSuggestionWorkDefinitionType::permissions);
 
         String requestBodyContent = client.serialize(correlationSuggestionWorkDefinitionType);
 
@@ -135,7 +132,7 @@ public class CorrelationRuleSuggestionAction extends SmartSuggestionAction<Items
     @Override
     List<SmartSuggestionObject<ItemsSubCorrelatorType>> getResultSuggestions(
             AbstractSmartIntegrationOperationResultType result,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) {
 
         return result.getCorrelationSuggestions().getSuggestion().stream()
@@ -148,8 +145,8 @@ public class CorrelationRuleSuggestionAction extends SmartSuggestionAction<Items
                                      new SmartSuggestionObject<>(
                                              object,
                                              correlationSuggestionType,
-                                             getResources(model),
-                                             model.getObjectType()
+                                             getResources(dataModel),
+                                             dataModel.getObjectType()
                                      )
                                 )
                 )

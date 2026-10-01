@@ -37,7 +37,7 @@ import java.util.List;
 
 public class AssociationSuggestionAction extends SmartSuggestionAction<AssociationSuggestionType> {
 
-    private final Logger log = Logger.getInstance(this.getClass());
+    private final Logger log = Logger.getInstance(AssociationSuggestionAction.class);
 
     @Override
     boolean isLockable() {
@@ -129,13 +129,13 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
     @Override
     String submitOperation(
             MidPointClient client,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) throws SchemaException, AuthenticationException, IOException {
 
-        var associationSuggestionWorkDefinitionType = new AssociationSuggestionWorkDefinitionType();
-
         ObjectReferenceType resourceRef = new ObjectReferenceType();
-        resourceRef.setOid(model.getResourceOid());
+        resourceRef.setOid(dataModel.getResourceOid());
+
+        var associationSuggestionWorkDefinitionType = new AssociationSuggestionWorkDefinitionType();
         associationSuggestionWorkDefinitionType.setResourceRef(resourceRef);
 
         String requestBodyContent = client.serialize(associationSuggestionWorkDefinitionType);
@@ -161,12 +161,12 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
     @Override
     List<SmartSuggestionObject<AssociationSuggestionType>> getResultSuggestions(
             AbstractSmartIntegrationOperationResultType result,
-            GenerateSuggestionDataModel model
+            GenerateSuggestionDataModel dataModel
     ) {
 
         return result.getAssociationsSuggestionType().getAssociation().stream()
                 .map(object ->
-                        new SmartSuggestionObject<>(object, getResources(model)))
+                        new SmartSuggestionObject<>(object, getResources(dataModel)))
                 .toList();
     }
 

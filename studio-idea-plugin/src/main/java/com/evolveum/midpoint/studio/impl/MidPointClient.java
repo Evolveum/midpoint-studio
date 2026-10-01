@@ -565,19 +565,13 @@ public class MidPointClient {
         return null;
     }
 
-    public AiInfoType getAiInfo() {
-
-        try {
-            return client.getAiInfo();
-        } catch (Exception ex) {
-            handleGenericException("Error", ex);
-        }
-
-        return null;
+    public AiInfoType getAiInfo() throws SchemaException, AuthenticationException, IOException {
+        return client.getAiInfo();
     }
 
-    public ConnectorDevelopmentType startFromNew(ConnDevApplicationInfoType connDevApplicationInfoType) throws SchemaException, AuthenticationException, IOException {
-        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML);
+    public ConnectorDevelopmentType startFromNew(
+            ConnDevApplicationInfoType connDevApplicationInfoType
+    ) throws SchemaException, AuthenticationException, IOException {
 
         PrismContainerValue<Containerable> pcv = connDevApplicationInfoType.asPrismContainerValue();
         var connectorDevelopmentTypeDefinition = getPrismContext().getSchemaRegistry().findContainerDefinitionByType(ConnectorDevelopmentType.COMPLEX_TYPE);
@@ -585,7 +579,7 @@ public class MidPointClient {
         var container = containerDefinition.instantiate();
         container.add(pcv);
 
-        String xml = serializer.serialize(container);
+        String xml = serialize(container);
 
         return client.submitOperationConnGenerator(
                 RPCOperation.RPC_START_FROM_NEW,
@@ -594,7 +588,9 @@ public class MidPointClient {
         );
     }
 
-    public ConnectorDevelopmentType continueFrom(String token) throws SchemaException, AuthenticationException, IOException {
+    public ConnectorDevelopmentType continueFrom(
+            String token
+    ) throws SchemaException, AuthenticationException, IOException {
 
         return client.getStatusInfoConnGenerator(
                 RPCOperation.RPC_CONTINUE_FROM,

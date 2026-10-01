@@ -88,8 +88,12 @@ public class EnvironmentEditorDialog extends DialogWrapper {
             testConnection.setBackground(background);
         }
 
-        properties.addBrowseFolderListener("Select source folder", "Properties file where MidPoint object xml file parameters are stored", project,
-                FileChooserDescriptorFactory.createSingleFileDescriptor("properties"));
+        var descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("properties");
+        descriptor.setTitle("Select source folder");
+        descriptor.setDescription(
+                "Properties file where MidPoint object xml file parameters are stored"
+        );
+        properties.addBrowseFolderListener(project, descriptor);
 
         if (environment == null) {
             environment = new Selectable<>(new Environment());
