@@ -2,8 +2,11 @@ package com.evolveum.midpoint.studio.lang.mel.impl;
 
 import org.junit.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -69,7 +72,7 @@ public class MelExtensionRegistryTest {
         var strftime = REGISTRY.functionsForNamespace("format").stream()
                 .filter(f -> f.name().equals("strftime"))
                 .findFirst().orElseThrow();
-        var overload = strftime.overloads().get(0);
+        var overload = strftime.overloads().getFirst();
         assertEquals(List.of("timestamp", "string"), overload.parameterTypes());
         assertEquals("string", overload.returnType());
         assertNotNull(overload.documentation());
@@ -106,16 +109,16 @@ public class MelExtensionRegistryTest {
                         String.join(",", o.parameterTypes()),
                         o.returnType())))
                 .sorted()
-                .collect(java.util.stream.Collectors.joining("\n", "", "\n"));
+                .collect(Collectors.joining("\n", "", "\n"));
 
-        java.nio.file.Path resource = java.nio.file.Path.of("src/test/resources/mel-extensions-golden.txt");
-        java.nio.file.Path actualOut = java.nio.file.Path.of("build/mel-extensions-golden-actual.txt");
-        java.nio.file.Files.createDirectories(actualOut.getParent());
-        java.nio.file.Files.writeString(actualOut, actual);
+        Path resource = Path.of("src/test/resources/mel-extensions-golden.txt");
+        Path actualOut = Path.of("build/mel-extensions-golden-actual.txt");
+        Files.createDirectories(actualOut.getParent());
+        Files.writeString(actualOut, actual);
 
         assertTrue("golden file missing; generated functions written to " + actualOut.toAbsolutePath(),
-                java.nio.file.Files.exists(resource));
-        String expected = java.nio.file.Files.readString(resource);
+                Files.exists(resource));
+        String expected = Files.readString(resource);
         assertEquals("MEL functions changed (midpoint upgrade?); actual written to " + actualOut.toAbsolutePath(),
                 expected, actual);
     }

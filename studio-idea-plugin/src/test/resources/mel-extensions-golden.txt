@@ -10,6 +10,7 @@ capitalize|member|(string)|string
 charAt|member|(polystring,int)|string
 charAt|member|(string,int)|string
 connectorConfiguration|member|(prismObject,any)|list
+containingObject|member|(prismContainerValue)|prismObject
 containsIgnoreCase|global|(any,any)|bool
 containsIgnoreCase|member|(list,any)|bool
 containsIgnoreCase|member|(polystring,string)|bool
@@ -21,6 +22,7 @@ debugDump|global|(any)|string
 decrypt|member|(protectedString)|string
 default|global|(dyn,V)|V
 distinct|member|(list)|list
+effectiveMarkRefs|member|(prismContainerValue)|list
 encrypt|member|(polystring)|protectedString
 encrypt|member|(string)|protectedString
 endsWith|member|(polystring,string)|bool
@@ -36,6 +38,7 @@ findItemDelta|member|(objectDelta,any)|itemDelta
 findItem|member|(prismObject,string)|any
 flatten|member|(list)|list
 flatten|member|(list,int)|list
+format.certificationOutcome|global|(string)|string
 format.concatName|global|(list)|string
 format.formatDateTime|global|(timestamp,string)|string
 format.parseAdditionalName|global|(any)|string
@@ -45,6 +48,7 @@ format.parseGivenName|global|(any)|string
 format.parseHonorificPrefix|global|(any)|string
 format.parseHonorificSuffix|global|(any)|string
 format.parseNickName|global|(any)|string
+format.reference|global|(objectReference)|string
 format.strftime|global|(timestamp,string)|string
 format.strptime|global|(string,string)|timestamp
 formatDateTime|member|(timestamp,string)|string
@@ -150,6 +154,7 @@ math.sqrt|global|(double)|double
 math.sqrt|global|(int)|double
 math.sqrt|global|(uint)|double
 math.trunc|global|(double)|double
+midpoint.getDefaultNameForResourceRelatedTask|global|(string,prismContainerValue)|string
 midpoint.getLinkedShadows|global|(prismObject,string)|list
 midpoint.getLinkedShadows|global|(prismObject,string,bool)|list
 midpoint.getLinkedShadow|global|(prismObject,string)|prismObject
@@ -161,9 +166,13 @@ midpoint.getManagersOids|global|(prismObject)|list
 midpoint.getObjectsInConflictOnPropertyValue|global|(prismObject,string,any,bool)|list
 midpoint.getObject|global|(qName,string)|prismObject
 midpoint.getObject|global|(string,string)|prismObject
+midpoint.getObject|global|(string,string,string)|prismObject
 midpoint.getOrgByName|global|(string)|prismObject
+midpoint.getPrincipalRef|global|()|objectReference
 midpoint.hasLinkedObjectOnResource|global|(string,string,string)|bool
 midpoint.hello|global|(string)|string
+midpoint.isCurrentProjectionActivated|global|()|bool
+midpoint.isCurrentProjectionDeactivated|global|()|bool
 midpoint.isFocusActivated|global|()|bool
 midpoint.isFocusDeactivated|global|()|bool
 midpoint.isFocusDeleted|global|()|bool
@@ -173,9 +182,13 @@ midpoint.resolveReferenceIfExists|global|(objectReference)|prismObject
 midpoint.resolveReference|global|(objectReference)|prismObject
 midpoint.searchObjects|global|(qName,string)|list
 midpoint.searchObjects|global|(string,string)|list
+midpoint.searchObjects|global|(string,string,string)|list
 midpoint.searchShadowOwner|global|(string)|prismObject
+midpoint.selectIdentityItemValues|global|(dyn,prismContainerValue,itemPath)|list
+midpoint.translateKeyInCurrentLocale|global|(string)|string
 nil|global|()|dyn
 norm|global|(any)|string
+objectReference|global|(string,qName)|objectReference
 parseAdditionalName|member|(any)|polystring
 parseAdditionalName|member|(any)|string
 parseDateTime|member|(string,string)|timestamp
@@ -214,6 +227,8 @@ regex.extractAll|global|(string,string)|list
 regex.extract|global|(string,string)|optional_type
 regex.replace|global|(string,string,string)|string
 regex.replace|global|(string,string,string,int)|string
+relatedAssignment|member|(processedObjectItemDelta)|prismContainerValue
+relatedAssignment|member|(processedObjectItemDelta,prismCelValue)|prismContainerValue
 replace|member|(polystring,string,string)|string
 replace|member|(polystring,string,string,int)|string
 replace|member|(string,string,string)|string
@@ -228,6 +243,8 @@ secret.resolveString|global|(string,string)|string
 sets.contains|global|(list,list)|bool
 sets.equivalent|global|(list,list)|bool
 sets.intersects|global|(list,list)|bool
+simulation.itemDeltas|global|(prismContainerValue,any,any,bool)|list
+simulation.metrics|global|(prismContainerValue,bool,bool)|list
 single|global|(any)|dyn
 size|global|(itemPath)|int
 size|global|(polystring)|int
@@ -247,6 +264,7 @@ string|global|(itemPath)|string
 string|global|(polystring)|string
 string|global|(qName)|string
 strptime|member|(string,string)|timestamp
+structuralArchetype|member|(prismObject)|prismObject
 str|global|(any)|string
 substring|global|(any,int)|string
 substring|global|(any,int,int)|string
@@ -273,3 +291,4 @@ uc|member|(polystring)|string
 uc|member|(string)|string
 upperAscii|member|(polystring)|string
 upperAscii|member|(string)|string
+valueMetadata|member|(objectReference)|list

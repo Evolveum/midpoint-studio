@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.lang.mel.impl;
 
 import com.evolveum.midpoint.model.common.expression.script.mel.extension.MidPointCelExtensionManager;
 import com.evolveum.midpoint.model.common.expression.script.mel.value.PolyStringCelValue;
+import com.evolveum.midpoint.schema.expression.ScriptLanguageExpressionProfile;
 import dev.cel.checker.CelStandardDeclarations;
 import dev.cel.common.CelFunctionDecl;
 import dev.cel.common.CelOverloadDecl;
@@ -27,6 +28,11 @@ class MelCelIntrospector {
      */
     private static final Pattern DECL_NAME =
             Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*");
+
+    /**
+     * Introspection must see every library, so no expression profile restrictions apply.
+     */
+    private static final ScriptLanguageExpressionProfile FULL_PROFILE = ScriptLanguageExpressionProfile.full();
 
     record Result(
             Map<String, Map<String, MelExtensionRegistry.ExtensionFunction>> namespaced,
@@ -138,8 +144,8 @@ class MelCelIntrospector {
         // Insertion order kept so that overload order is stable across runs when two
         // libraries declare the same function name (HashSet order varies per JVM).
         Set<CelExtensionLibrary.FeatureSet> libraries = new LinkedHashSet<>();
-        libraries.addAll(filterLibraries(manager.getCompilerLibraries(null)));
-        libraries.addAll(filterLibraries(manager.getRuntimeLibraries(null)));
+        libraries.addAll(filterLibraries(manager.getCompilerLibraries(FULL_PROFILE)));
+        libraries.addAll(filterLibraries(manager.getRuntimeLibraries(FULL_PROFILE)));
 
         return libraries;
     }
