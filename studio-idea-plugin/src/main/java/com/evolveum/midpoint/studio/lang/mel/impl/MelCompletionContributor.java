@@ -124,7 +124,7 @@ public class MelCompletionContributor extends CompletionContributor {
          * call form being completed (member vs global); other overloads of that form are
          * indicated by a "(+N)" marker.
          */
-        private String formatParams(MelExtensionRegistry.ExtensionFunction fn, boolean memberCall) {
+        private String formatParams(MelExtensionFunction fn, boolean memberCall) {
             var overloads = fn.overloads().stream()
                     .filter(o -> o.member() == memberCall)
                     .toList();
@@ -151,7 +151,7 @@ public class MelCompletionContributor extends CompletionContributor {
          * Returns " - <first sentence of documentation>" for use as additional, grayed-out
          * tail text in the completion popup, or an empty string if no documentation is available.
          */
-        private String tailDescription(MelExtensionRegistry.ExtensionFunction fn) {
+        private String tailDescription(MelExtensionFunction fn) {
             String doc = fn.documentation();
             if (doc == null || doc.isBlank()) return "";
 

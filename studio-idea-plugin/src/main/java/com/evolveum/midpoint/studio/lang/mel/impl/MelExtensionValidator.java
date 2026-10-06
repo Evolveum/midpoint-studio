@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class MelExtensionValidator extends MELBaseVisitor<Void> {
 
-    static final MelExtensionRegistry REGISTRY = new MelExtensionRegistry();
+    static final MelExtensionRegistry REGISTRY = MelExtensionRegistry.create();
 
     // MEL variables - namespace identifiers are derived from the registry so that a new
     // namespace in midPoint automatically allows its bare use as a receiver.

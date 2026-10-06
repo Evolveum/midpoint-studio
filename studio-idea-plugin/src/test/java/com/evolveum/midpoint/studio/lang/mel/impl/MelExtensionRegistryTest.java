@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.lang.mel.impl;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.file.Files;
@@ -16,7 +17,16 @@ import static org.junit.Assert.*;
  */
 public class MelExtensionRegistryTest {
 
-    private static final MelExtensionRegistry REGISTRY = new MelExtensionRegistry();
+    private static MelExtensionRegistry REGISTRY;
+
+    /**
+     * Bypasses MelExtensionRegistry.create() on purpose - an introspection failure must fail
+     * the whole class with real cause.
+     */
+    @BeforeClass
+    public static void introspect() {
+        REGISTRY = new MelExtensionRegistry(MelCelIntrospector.introspect());
+    }
 
     @Test
     public void allLibrariesIntrospected() {

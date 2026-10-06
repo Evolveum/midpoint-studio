@@ -35,8 +35,8 @@ class MelCelIntrospector {
     private static final ScriptLanguageExpressionProfile FULL_PROFILE = ScriptLanguageExpressionProfile.full();
 
     record Result(
-            Map<String, Map<String, MelExtensionRegistry.ExtensionFunction>> namespaced,
-            Map<String, MelExtensionRegistry.ExtensionFunction> bare,
+            Map<String, Map<String, MelExtensionFunction>> namespaced,
+            Map<String, MelExtensionFunction> bare,
             Set<String> macroFunctions,
             Set<String> standardFunctions) {
     }
@@ -45,7 +45,7 @@ class MelCelIntrospector {
         Iterable<? extends CelExtensionLibrary.FeatureSet> featureSets = loadFeatureSets();
 
         // decl full name -> collected overloads, sorted for determinism
-        Map<String, List<MelExtensionRegistry.Overload>> byDeclName = new TreeMap<>();
+        Map<String, List<MelOverload>> byDeclName = new TreeMap<>();
         Set<String> macros = new TreeSet<>();
 
         for (CelExtensionLibrary.FeatureSet featureSet : featureSets) {
@@ -53,7 +53,7 @@ class MelCelIntrospector {
                 if (!DECL_NAME.matcher(decl.name()).matches()) {
                     continue; // operator overloads such as "_+_"
                 }
-                List<MelExtensionRegistry.Overload> overloads =
+                List<MelOverload> overloads =
                         byDeclName.computeIfAbsent(decl.name(), k -> new ArrayList<>());
                 for (CelOverloadDecl overload : decl.overloads()) {
                     overloads.add(toOverload(overload));
@@ -67,8 +67,8 @@ class MelCelIntrospector {
             macros.add(macro.getFunction());
         }
 
-        Map<String, Map<String, MelExtensionRegistry.ExtensionFunction>> namespaced = new TreeMap<>();
-        Map<String, MelExtensionRegistry.ExtensionFunction> bare = new TreeMap<>();
+        Map<String, Map<String, MelExtensionFunction>> namespaced = new TreeMap<>();
+        Map<String, MelExtensionFunction> bare = new TreeMap<>();
         for (var entry : byDeclName.entrySet()) {
             String declName = entry.getKey();
             int dot = declName.lastIndexOf('.');
@@ -76,10 +76,10 @@ class MelCelIntrospector {
                 String namespace = declName.substring(0, dot);
                 String name = declName.substring(dot + 1);
                 namespaced.computeIfAbsent(namespace, k -> new LinkedHashMap<>())
-                        .put(name, new MelExtensionRegistry.ExtensionFunction(
+                        .put(name, new MelExtensionFunction(
                                 namespace, name, List.copyOf(entry.getValue())));
             } else {
-                bare.put(declName, new MelExtensionRegistry.ExtensionFunction(
+                bare.put(declName, new MelExtensionFunction(
                         null, declName, List.copyOf(entry.getValue())));
             }
         }
@@ -95,11 +95,11 @@ class MelCelIntrospector {
                 Collections.unmodifiableSet(standard));
     }
 
-    private static MelExtensionRegistry.Overload toOverload(CelOverloadDecl overload) {
+    private static MelOverload toOverload(CelOverloadDecl overload) {
         List<String> parameterTypes = overload.parameterTypes().stream()
                 .map(MelCelIntrospector::displayType)
                 .toList();
-        return new MelExtensionRegistry.Overload(
+        return new MelOverload(
                 overload.isInstanceFunction(),
                 parameterTypes,
                 displayType(overload.resultType()),

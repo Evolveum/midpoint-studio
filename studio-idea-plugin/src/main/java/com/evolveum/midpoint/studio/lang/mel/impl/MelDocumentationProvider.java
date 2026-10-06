@@ -39,7 +39,7 @@ public class MelDocumentationProvider extends AbstractDocumentationProvider {
         // Overloads may carry different documentation (e.g. the global form of a function
         // documents its null behavior); show each distinct text once.
         var docs = fn.overloads().stream()
-                .map(MelExtensionRegistry.Overload::documentation)
+                .map(MelOverload::documentation)
                 .filter(d -> d != null && !d.isBlank())
                 .distinct()
                 .toList();
@@ -63,7 +63,7 @@ public class MelDocumentationProvider extends AbstractDocumentationProvider {
      * ("string.isBlank(): bool"), global overloads call-style ("isBlank(string): bool"),
      * so variants that would otherwise render identically stay distinguishable.
      */
-    private String signatures(MelExtensionRegistry.ExtensionFunction fn) {
+    private String signatures(MelExtensionFunction fn) {
         var lines = new java.util.LinkedHashSet<String>();
         for (var overload : fn.overloads()) {
             lines.add(signature(fn, overload));
@@ -71,7 +71,7 @@ public class MelDocumentationProvider extends AbstractDocumentationProvider {
         return String.join("<br/>", lines);
     }
 
-    private String signature(MelExtensionRegistry.ExtensionFunction fn, MelExtensionRegistry.Overload overload) {
+    private String signature(MelExtensionFunction fn, MelOverload overload) {
         var sb = new StringBuilder();
         var params = overload.parameterTypes();
         int start = 0;
@@ -91,7 +91,7 @@ public class MelDocumentationProvider extends AbstractDocumentationProvider {
         return sb.toString();
     }
 
-    private MelExtensionRegistry.ExtensionFunction resolveFunction(PsiElement element) {
+    private MelExtensionFunction resolveFunction(PsiElement element) {
         if (element == null) return null;
 
         String name = element.getText();
