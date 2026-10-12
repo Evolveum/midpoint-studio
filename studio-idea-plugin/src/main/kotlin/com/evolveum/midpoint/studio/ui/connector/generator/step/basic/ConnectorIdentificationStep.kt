@@ -35,7 +35,7 @@ class ConnectorIdentificationStep(
             connector.groupId = connector.groupId?: "com.evolveum.polygon.community"
             connector.artifactId = connector.artifactId
                 ?: dataModel.connectorDevelopment.application.applicationName.getNorm()
-            connector.version = connector.version?: "1.0"
+            connector.version = connector.version?: "1.0-SNAPSHOT"
 
             row {
                 cell(JBLabel("Set Basic Information About the Connector").apply {

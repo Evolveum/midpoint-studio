@@ -84,13 +84,21 @@ public interface Service {
 
     Map<SchemaFileType, String> getExtensionSchemas() throws IOException, SchemaException, AuthenticationException, ClientException;
 
-    <C> C submitOperationSmartIntegration(RPCOperation rpcOperation, Map<String, Object> params, String requestBodyContent) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationSmartIntegration(RPCOperation rpcOperation, Map<String, Object> params, String requestBodyContent) throws SchemaException, AuthenticationException, IOException;
 
     <C> C getStatusInfoSmartIntegration(RPCOperation rpcOperation, Map<String, Object> params) throws SchemaException, AuthenticationException, IOException;
 
-    <C> C submitOperationConnGenerator(RPCOperation rpcOperation, Map<String, Object> params, String requestBodyContent) throws SchemaException, AuthenticationException, IOException;
+    String submitOperationConnGenerator(RPCOperation rpcOperation, Map<String, Object> params, String requestBodyContent) throws SchemaException, AuthenticationException, IOException;
 
     <C> C getStatusInfoConnGenerator(RPCOperation rpcOperation, Map<String, Object> params) throws SchemaException, AuthenticationException, IOException;
+
+    ConnectorDevelopmentType startFromNew(String xmlConnDevApplicationInfoObj) throws SchemaException, AuthenticationException, IOException;
+
+    ConnectorDevelopmentType startFromExisting(String oid) throws SchemaException, AuthenticationException, IOException;
+
+    ConnectorDevelopmentType continueFrom(String oid) throws SchemaException, AuthenticationException, IOException;
+
+    boolean isManifestBasedConnector(String oid) throws SchemaException, AuthenticationException, IOException;
 
     AiInfoType getAiInfo() throws ClientException, SchemaException, AuthenticationException, IOException;
 

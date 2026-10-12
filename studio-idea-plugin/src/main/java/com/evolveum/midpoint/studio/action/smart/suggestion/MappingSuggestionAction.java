@@ -12,6 +12,8 @@ import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.client.RPCOperation;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
@@ -23,7 +25,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
 import java.io.IOException;
 import java.util.List;
 
@@ -79,6 +86,39 @@ public class MappingSuggestionAction extends SmartSuggestionAction<AttributeMapp
                     return null;
                 }),
                 new DefaultColumnInfo<>("Activities") {
+
+                    @Override
+                    public @org.jspecify.annotations.Nullable Object valueOf(MutableTreeNode node) {
+
+                        if (node instanceof DefaultMutableTreeNode defaultNode) {
+                            Object userObject = defaultNode.getUserObject();
+                            if (userObject instanceof SmartSuggestionObject<?> suggestion) {
+                                return suggestion;
+                            }
+                        }
+
+                        return null;
+                    }
+
+                    @Override
+                    public boolean isCellEditable(MutableTreeNode mutableTreeNode) {
+                        return true;
+                    }
+
+                    @Override
+                    public TableCellRenderer getCustomizedRenderer(MutableTreeNode o, TableCellRenderer renderer) {
+                        return new ActionsRenderer();
+                    }
+
+                    @Override
+                    public @Nullable TableCellRenderer getRenderer(MutableTreeNode mutableTreeNode) {
+                        return new ActionsRenderer();
+                    }
+
+                    @Override
+                    public @Nullable TableCellEditor getEditor(MutableTreeNode mutableTreeNode) {
+                        return new ActionsEditor(project, prismContext);
+                    }
                 }
         ));
     }

@@ -34,7 +34,7 @@ public class ConnectorGeneratorAction extends AnAction {
         var project = anActionEvent.getProject();
 
         if (project == null) {
-            log.error("Project is null");
+            log.error("Project null");
             return;
         }
 
@@ -123,6 +123,7 @@ public class ConnectorGeneratorAction extends AnAction {
 
             ApplicationManager.getApplication().executeOnPooledThread(() -> {
                 try {
+
                     ConnectorDevelopmentType connectorDevelopment = oid != null
                             ? client.continueFrom(oid)
                             : null;

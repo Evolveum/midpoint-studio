@@ -277,18 +277,12 @@ abstract class ConnectorGeneratorWizard(
 
     private fun configureNavigationList() {
 
-        stepNavigationItems.border =
-            JBUI.Borders.empty()
-
-        stepNavigationItems.selectionMode =
-            ListSelectionModel.SINGLE_SELECTION
-
+        stepNavigationItems.border = JBUI.Borders.empty()
+        stepNavigationItems.selectionMode = ListSelectionModel.SINGLE_SELECTION
         stepNavigationItems.setSelectionBackground(
             UIUtil.TRANSPARENT_COLOR
         )
-
-        stepNavigationItems.fixedCellHeight =
-            -1
+        stepNavigationItems.fixedCellHeight = -1
     }
 
     private fun configureNavigationListener() {

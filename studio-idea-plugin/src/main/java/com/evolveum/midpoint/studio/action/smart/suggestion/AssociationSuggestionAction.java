@@ -32,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
 import java.io.IOException;
 import java.util.List;
 
@@ -122,6 +123,39 @@ public class AssociationSuggestionAction extends SmartSuggestionAction<Associati
                     return null;
                 }),
                 new DefaultColumnInfo<>("Activities") {
+
+                    @Override
+                    public @org.jspecify.annotations.Nullable Object valueOf(MutableTreeNode node) {
+
+                        if (node instanceof DefaultMutableTreeNode defaultNode) {
+                            Object userObject = defaultNode.getUserObject();
+                            if (userObject instanceof SmartSuggestionObject<?> suggestion) {
+                                return suggestion;
+                            }
+                        }
+
+                        return null;
+                    }
+
+                    @Override
+                    public boolean isCellEditable(MutableTreeNode mutableTreeNode) {
+                        return true;
+                    }
+
+                    @Override
+                    public TableCellRenderer getCustomizedRenderer(MutableTreeNode o, TableCellRenderer renderer) {
+                        return new ActionsRenderer();
+                    }
+
+                    @Override
+                    public @Nullable TableCellRenderer getRenderer(MutableTreeNode mutableTreeNode) {
+                        return new ActionsRenderer();
+                    }
+
+                    @Override
+                    public @Nullable TableCellEditor getEditor(MutableTreeNode mutableTreeNode) {
+                        return new ActionsEditor(project, prismContext);
+                    }
                 }
         ));
     }

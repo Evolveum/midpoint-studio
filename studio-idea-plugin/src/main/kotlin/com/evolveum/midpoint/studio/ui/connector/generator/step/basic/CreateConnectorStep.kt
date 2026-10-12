@@ -140,13 +140,14 @@ class CreateConnectorStep (
             EdtExecutorService.getInstance()
         ).whenCompleteAsync(
             { _, throwable ->
+
                 if (throwable != null) {
                     statusPanel.status = StatusPanel.Status.ERROR
                     replaceContent(
                         getAlertComponent(
                             statusPanel,
                             statusPanel.status?.name ?: "",
-                            throwable.localizedMessage
+                            getExceptionMessage(throwable)
                         )
                     )
 

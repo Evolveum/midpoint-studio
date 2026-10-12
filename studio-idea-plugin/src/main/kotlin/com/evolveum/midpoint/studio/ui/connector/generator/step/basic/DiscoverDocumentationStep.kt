@@ -167,7 +167,7 @@ class DiscoverDocumentationStep(
             true
         ).thenAcceptAsync(
             { statusInfo ->
-                if (statusInfo.status.equals(OperationResultStatusType.SUCCESS)) {
+                if (statusInfo.status == OperationResultStatusType.SUCCESS) {
                     dynamicPanel.removeAll()
                     dynamicPanel.add(
                         createPanel(

@@ -2,6 +2,8 @@ package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
 import com.evolveum.midpoint.model.api.util.SmartIntegrationConstants;
+import com.evolveum.midpoint.prism.Containerable;
+import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -39,6 +41,9 @@ import java.util.*;
  * Created by Viliam Repan (lazyman).
  */
 public class ServiceImpl implements Service {
+
+    private static final String SMART_INTEGRATION_PREFIX = "/ws/smart-integration";
+    private static final String CONNECTOR_GENERATOR_PREFIX = "/ws/connector-generator";
 
     private ServiceContext context;
 
@@ -607,6 +612,47 @@ public class ServiceImpl implements Service {
         return result;
     }
 
+    @Override
+    public ConnectorDevelopmentType startFromNew(String xmlConnDevApplicationInfoObj) throws SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(
+                CONNECTOR_GENERATOR_PREFIX,
+                ConnectorGeneratorConstants.RPC_START_FROM_NEW,
+                Map.of()
+        ).post(RequestBody.create(xmlConnDevApplicationInfoObj, ServiceContext.APPLICATION_XML));
+
+        return executeRequest(builder.build(), ConnectorDevelopmentType.class);
+    }
+
+    @Override
+    public ConnectorDevelopmentType startFromExisting(String oid) throws SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
+                ConnectorGeneratorConstants.RPC_START_FROM_EXISTING,
+                Map.of("oid", oid)
+        ).get();
+
+        return executeRequest(builder.build(), ConnectorDevelopmentType.class);
+    }
+
+    @Override
+    public ConnectorDevelopmentType continueFrom(
+            String oid
+    ) throws SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
+                ConnectorGeneratorConstants.RPC_CONTINUE_FROM,
+                Map.of("oid", oid)
+        ).get();
+
+        return executeRequest(builder.build(), ConnectorDevelopmentType.class);
+    }
+
+    @Override
+    public boolean isManifestBasedConnector(String oid) throws SchemaException {
+        return false;
+    }
+
     private SchemaFilesType getSchemaFiles() throws IOException, SchemaException, AuthenticationException, ClientException {
         Request.Builder builder = context.build("/ws/schema", "", null)
                 .get();
@@ -617,7 +663,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public <C> C submitOperationSmartIntegration(
+    public String submitOperationSmartIntegration(
             RPCOperation rpcOperation,
             Map<String, Object> params,
             String requestBodyContent
@@ -625,8 +671,10 @@ public class ServiceImpl implements Service {
         return submitOperation(
                 rpcOperation,
                 params,
-                RequestBody.create(requestBodyContent, ServiceContext.APPLICATION_XML),
-                "/ws/smart-integration"
+                requestBodyContent != null
+                        ? RequestBody.create(requestBodyContent, ServiceContext.APPLICATION_XML)
+                        : RequestBody.EMPTY,
+                SMART_INTEGRATION_PREFIX
         );
     }
 
@@ -635,20 +683,23 @@ public class ServiceImpl implements Service {
             RPCOperation rpcOperation,
             Map<String, Object> params
     ) throws SchemaException, AuthenticationException, IOException {
-        return getStatusInfo(rpcOperation, params, "/ws/smart-integration");
+        return getStatusInfo(rpcOperation, params, SMART_INTEGRATION_PREFIX);
     }
 
     @Override
-    public <C> C submitOperationConnGenerator(
+    public String submitOperationConnGenerator(
             RPCOperation rpcOperation,
             Map<String, Object> params,
             String requestBodyContent
     ) throws SchemaException, AuthenticationException, IOException {
+
         return submitOperation(
                 rpcOperation,
                 params,
-                RequestBody.create(requestBodyContent, ServiceContext.APPLICATION_XML),
-                "/ws/connector-generator"
+                requestBodyContent != null
+                        ? RequestBody.create(requestBodyContent, ServiceContext.APPLICATION_XML)
+                        : RequestBody.EMPTY,
+                CONNECTOR_GENERATOR_PREFIX
         );
     }
 
@@ -657,10 +708,10 @@ public class ServiceImpl implements Service {
             RPCOperation rpcOperation,
             Map<String, Object> params
     ) throws SchemaException, AuthenticationException, IOException {
-        return getStatusInfo(rpcOperation, params, "/ws/connector-generator");
+        return getStatusInfo(rpcOperation, params, CONNECTOR_GENERATOR_PREFIX);
     }
 
-    private <C> C submitOperation(
+    private String submitOperation(
             RPCOperation rpcOperation,
             Map<String, Object> params,
             RequestBody requestBody,
@@ -673,10 +724,7 @@ public class ServiceImpl implements Service {
                 params
         ).post(requestBody);
 
-        @SuppressWarnings("unchecked")
-        Class<C> genericType = (Class<C>) rpcOperation.getResponseType();
-
-        return executeRequest(builder.build(), genericType);
+        return executeRequest(builder.build(), String.class);
     }
 
     private <C> C getStatusInfo(
@@ -700,7 +748,7 @@ public class ServiceImpl implements Service {
     @Override
     public AiInfoType getAiInfo() throws SchemaException, AuthenticationException, IOException {
 
-        Request.Builder builder = context.build("/ws/smart-integration",
+        Request.Builder builder = context.build(SMART_INTEGRATION_PREFIX,
                 SmartIntegrationConstants.RPC_GET_AI_INFO,
                 Map.of()
         ).get();
@@ -710,7 +758,7 @@ public class ServiceImpl implements Service {
 
     @Override
     public File downloadConnector(@NotNull String bundleName) throws ClientException, IOException {
-        Request.Builder builder = context.build("/ws/connector-generator",
+        Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
                 ConnectorGeneratorConstants.RPC_DOWNLOAD_CONNECTOR,
                 Map.of("name", bundleName)
         ).get();

@@ -134,7 +134,6 @@ class ApplicationIdentificationStep(
             dataModel.connectorDevelopment.application = dataModel.connectorDevelopment.beginApplication()
         }
 
-        // FIXME found out why this is necessary (otherwise testing is null without initialization)
         dataModel.connectorDevelopment.testing
 
         originalConnectorDevelopmentType = dataModel.connectorDevelopment.clone()
@@ -156,16 +155,15 @@ class ApplicationIdentificationStep(
             .requireNotBlank("Integration Type")
 
         dataModel.connectorDevelopment.name =
-            dataModel.connectorDevelopment.name
-                ?: dataModel.connectorDevelopment.application.applicationName
+            dataModel.connectorDevelopment.application.applicationName
 
         if ((state ==  GenerateConnectorBadge.State.IN_PROGRESS ||
             state == GenerateConnectorBadge.State.EDITED) &&
             !wizardContext.isLeavingStepByPreviousTouch
         ) {
             dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
-            dataModel.connectorDevelopment =
-                upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
+            val resultObject = upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
+            dataModel.connectorDevelopment = resultObject.clone()
 
             state = GenerateConnectorBadge.State.COMPLETE
         }

@@ -14,8 +14,8 @@ import com.evolveum.midpoint.studio.ui.connector.generator.component.AlertPanel
 import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateConnectorBadge
 import com.evolveum.midpoint.studio.ui.connector.generator.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevIntegrationType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
-import com.intellij.ide.wizard.CommitStepException
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.components.JBLabel
@@ -35,12 +35,14 @@ class BaseUrlSpecificationStep(
 
     override val dialogPanel: DialogPanel by lazy {
         createDialogPanel(
-            "Base URL Specification"
+            "Identifying"
         ) { }
     }
 
     override fun _init() {
         super._init()
+
+        continueFrom()
 
         if (!existConnDev()) return
 
@@ -68,6 +70,7 @@ class BaseUrlSpecificationStep(
     }
 
     private fun createPanel(): JPanel = panel {
+
         row {
             cell(JBLabel("Set Base API URL").apply {
                 font = JBFont.label().deriveFont(16f)
@@ -136,16 +139,18 @@ class BaseUrlSpecificationStep(
             true
         ).thenAcceptAsync(
             { statusInfo ->
-                if (statusInfo.status.equals(OperationResultStatusType.SUCCESS)) {
+                if (statusInfo.status == OperationResultStatusType.SUCCESS) {
 
-                    if (isScim() == true) SCIM_BASE_URL_ITEM_NAME else BASE_ADDRESS_ITEM_NAME
-
-                    statusInfo.result.connDevDiscoverGlobalInformationResult
+                    if (dataModel.connectorDevelopment.connector?.integrationType == ConnDevIntegrationType.SCIM)
+                        SCIM_BASE_URL_ITEM_NAME else BASE_ADDRESS_ITEM_NAME
 
                     dynamicPanel.removeAll()
                     dynamicPanel.add(createPanel())
                     dynamicPanel.revalidate()
                     dynamicPanel.repaint()
+
+                    dialogPanel.name = "Base URL Specification"
+                    wizardContext.updateNavigationMenuByLiveStates()
 
                     canGoNext = true
                 } else {
@@ -170,7 +175,7 @@ class BaseUrlSpecificationStep(
                         getAlertComponent(
                             statusPanel,
                             statusPanel.status?.name?: "",
-                            throwable.localizedMessage
+                            getExceptionMessage(throwable)
                         )
                     )
                     statusPanel.elapsedLabel?.stop()

@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
+import com.evolveum.midpoint.model.api.util.SmartIntegrationConstants;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -507,7 +509,7 @@ public class MidPointClient {
         this.suppressNotifications = suppressNotifications;
     }
 
-    public <C> C submitOperationSmartIntegration(
+    public String submitOperationSmartIntegration(
             RPCOperation rpcOperation,
             String requestBodyContent
     ) throws SchemaException, AuthenticationException, IOException {
@@ -530,13 +532,13 @@ public class MidPointClient {
         );
     }
 
-    public <C> C submitOperationConnGenerator(
+    public String submitOperationConnGenerator(
             RPCOperation rpcOperation,
             Map<String, Object> params,
             String requestBodyContent
     ) throws SchemaException, AuthenticationException, IOException {
 
-        return client.submitOperationSmartIntegration(
+        return client.submitOperationConnGenerator(
                 rpcOperation,
                 params,
                 requestBodyContent
@@ -554,6 +556,48 @@ public class MidPointClient {
         );
     }
 
+    public ConnectorDevelopmentType startFromNew(
+            ConnDevApplicationInfoType connDevApplicationInfoType
+    ) throws SchemaException, AuthenticationException, IOException {
+
+        PrismContainerValue<Containerable> pcv = connDevApplicationInfoType.asPrismContainerValue();
+        var connectorDevelopmentTypeDefinition = getPrismContext().getSchemaRegistry().findContainerDefinitionByType(ConnectorDevelopmentType.COMPLEX_TYPE);
+        var containerDefinition = connectorDevelopmentTypeDefinition.findContainerDefinition(ItemPath.create(ConnectorDevelopmentType.F_APPLICATION));
+        var container = containerDefinition.instantiate();
+        container.add(pcv);
+
+        String xml = serialize(container);
+
+        return client.startFromNew(xml);
+    }
+
+    public ConnectorDevelopmentType startFromExisting(
+            String oid
+    ) throws SchemaException, AuthenticationException, IOException {
+
+        return client.startFromExisting(
+                oid
+        );
+    }
+
+    public ConnectorDevelopmentType continueFrom(
+            String oid
+    ) throws SchemaException, AuthenticationException, IOException {
+
+        return client.continueFrom(
+                oid
+        );
+    }
+
+    public boolean isManifestBasedConnector(
+            String oid
+    ) throws SchemaException, AuthenticationException, IOException {
+
+        return client.isManifestBasedConnector(
+                oid
+        );
+    }
+
     public File downloadConnector(String bundleName) {
 
         try {
@@ -567,34 +611,5 @@ public class MidPointClient {
 
     public AiInfoType getAiInfo() throws SchemaException, AuthenticationException, IOException {
         return client.getAiInfo();
-    }
-
-    public ConnectorDevelopmentType startFromNew(
-            ConnDevApplicationInfoType connDevApplicationInfoType
-    ) throws SchemaException, AuthenticationException, IOException {
-
-        PrismContainerValue<Containerable> pcv = connDevApplicationInfoType.asPrismContainerValue();
-        var connectorDevelopmentTypeDefinition = getPrismContext().getSchemaRegistry().findContainerDefinitionByType(ConnectorDevelopmentType.COMPLEX_TYPE);
-        var containerDefinition = connectorDevelopmentTypeDefinition.findContainerDefinition(ItemPath.create(ConnectorDevelopmentType.F_APPLICATION));
-        var container = containerDefinition.instantiate();
-        container.add(pcv);
-
-        String xml = serialize(container);
-
-        return client.submitOperationConnGenerator(
-                RPCOperation.RPC_START_FROM_NEW,
-                Map.of(),
-                xml
-        );
-    }
-
-    public ConnectorDevelopmentType continueFrom(
-            String token
-    ) throws SchemaException, AuthenticationException, IOException {
-
-        return client.getStatusInfoConnGenerator(
-                RPCOperation.RPC_CONTINUE_FROM,
-                Map.of("token", token)
-        );
     }
 }

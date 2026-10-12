@@ -56,7 +56,7 @@ public class DownloadConnectorDevelopmentTask extends SimpleBackgroundableTask {
 
         try {
             if (myProject == null) {
-                throw new NullPointerException("Project is null");
+                throw new NullPointerException("Project null");
             }
 
             indicator.setIndeterminate(true);

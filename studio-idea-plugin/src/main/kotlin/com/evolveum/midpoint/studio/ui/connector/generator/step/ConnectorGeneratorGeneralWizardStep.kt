@@ -19,6 +19,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.*
 import com.intellij.ide.wizard.CommitStepException
 import com.intellij.ide.wizard.StepAdapter
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task.Backgroundable
@@ -30,6 +31,7 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
+import org.jetbrains.annotations.NotNull
 import java.awt.BorderLayout
 import java.io.IOException
 import java.util.concurrent.CompletableFuture
@@ -81,9 +83,6 @@ abstract class ConnectorGeneratorGeneralWizardStep(
         }
     }
 
-    open fun beforeProceedingToNextStep() {
-    }
-
     override fun getComponent(): JComponent? {
         return if (state != GenerateConnectorBadge.State.NONE) {
             dialogPanel
@@ -96,18 +95,19 @@ abstract class ConnectorGeneratorGeneralWizardStep(
     ): DialogPanel =
         panel {
             content()
+
             row {
                 cell(dynamicPanel)
                     .align(Align.FILL)
                     .resizableColumn()
             }
-        }.apply {
-            name = dialogTitle
+        }.also {
+            it.name = dialogTitle
         }
 
     @Throws(RuntimeException::class, SchemaException::class, AuthenticationException::class, IOException::class)
     protected fun upsertConnectorDevelopmentType(
-        connDevConnectorType: ConnectorDevelopmentType
+        @NotNull connDevConnectorType: ConnectorDevelopmentType
     ): ConnectorDevelopmentType {
         try {
             return client.upsert(connDevConnectorType.asPrismObject(), null)
@@ -118,10 +118,19 @@ abstract class ConnectorGeneratorGeneralWizardStep(
         }
     }
 
-    protected fun continueFrom(
+    protected fun startFromExistingConnectorDevelopment(
         oid: String
     ): ConnectorDevelopmentType {
-        return client.continueFrom(oid)
+        return client.startFromExisting(oid)
+    }
+
+    @Throws(IOException::class, SchemaException::class, AuthenticationException::class)
+    protected fun continueFrom(): ConnectorDevelopmentType {
+        val oid = dataModel.connectorDevelopment.oid
+        val updated = client.continueFrom(oid)
+
+        dataModel.connectorDevelopment = updated
+        return updated
     }
 
     protected fun submitOperation(
@@ -139,59 +148,85 @@ abstract class ConnectorGeneratorGeneralWizardStep(
             project, title, canBeCancelled
         ) {
             override fun run(progressIndicator: ProgressIndicator) {
+                log.info("Starting initialization operation: title='$title'")
+                progressIndicator.text = "Submitting initialization operation - $title"
+
                 try {
-                    progressIndicator.text = "Submitting initialization operation - $title"
+                    log.info("Submitting initialization operation: title='$title'")
 
                     val retrievedToken = submitOperationCall()
 
                     if (retrievedToken.isBlank()) {
+                        log.error("Failed to obtain a valid tracking token from the server for operation: title='$title'")
+
                         finalFuture.completeExceptionally(
                             IllegalStateException("Failed to obtain a valid tracking token from the server."))
                         return
                     }
+
+                    log.info("Successfully obtained tracking token for operation: title='$title'")
 
                     var scheduledTask: ScheduledFuture<*>? = null
 
                     scheduledTask = scheduler.scheduleWithFixedDelay({
                         try {
                             if (progressIndicator.isCanceled) {
+                                log.info("Initialization operation was canceled: title='$title'")
+
                                 finalFuture.cancel(true)
                                 scheduledTask?.cancel(false)
                                 scheduler.shutdown()
                                 return@scheduleWithFixedDelay
                             }
 
+                            log.info("Checking operation status: title='$title'")
+
                             val statusInfo = statusInfoCall(retrievedToken)
 
                             if (statusInfo == null) {
+                                log.error("Received an empty status response payload: title='$title'")
+
                                 finalFuture.completeExceptionally(
                                     NullPointerException("Received an empty status response payload."))
                                 scheduledTask?.cancel(false)
                                 scheduler.shutdown()
                             } else {
-                                if (!statusInfo.status.equals(OperationResultStatusType.IN_PROGRESS)
-                                        && !statusInfo.status.equals(OperationResultStatusType.UNKNOWN)
+                                log.info("Received operation status: title='$title', status='${statusInfo.status}'")
+
+                                if (statusInfo.status != OperationResultStatusType.IN_PROGRESS &&
+                                    statusInfo.status != OperationResultStatusType.UNKNOWN
                                 ) {
+                                    log.info("Initialization operation completed: " + "title='$title', status='${statusInfo.status}'")
+
                                     finalFuture.complete(statusInfo)
                                     scheduledTask?.cancel(false)
                                     scheduler.shutdown()
                                 }
                             }
                         } catch (e: Exception) {
+                            log.error(e)
                             finalFuture.completeExceptionally(e)
                             scheduledTask?.cancel(false)
                             scheduler.shutdown()
                         }
                     }, 0, 1, TimeUnit.SECONDS)
 
+                    log.info("Scheduled operation status polling: title='$title', interval='1 second'")
+
                     finalFuture.join()
+
+                    log.info("Initialization operation finished successfully: title='$title'")
                 } catch (e: Exception) {
+                    log.error(e)
                     finalFuture.completeExceptionally(e)
                     scheduler.shutdown()
                 } finally {
                     if (!scheduler.isShutdown) {
+                        log.info("Shutting down scheduler: title='$title'")
                         scheduler.shutdown()
                     }
+
+                    log.info("Initialization operation ended: title='$title'")
                 }
             }
         })
@@ -219,10 +254,6 @@ abstract class ConnectorGeneratorGeneralWizardStep(
             JBUI.Borders.customLine(JBColor(0xE0E0E0, 0x3F4143), 1),
             JBUI.Borders.empty(12, 16)
         )
-    }
-
-    protected fun isScim(): Boolean? {
-        return dataModel.connectorDevelopment.connector?.integrationType?.equals(ConnDevIntegrationType.SCIM)
     }
 
     protected fun getLoadingComponent(
@@ -327,5 +358,10 @@ abstract class ConnectorGeneratorGeneralWizardStep(
         if (isNullOrBlank()) {
             throw CommitStepException("Field $fieldName is required")
         }
+    }
+
+    protected fun getExceptionMessage(throwable: Throwable): String {
+        val cause = throwable.cause ?: throwable
+        return cause.message ?: "Unknown error"
     }
 }

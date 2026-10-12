@@ -104,6 +104,8 @@ class CredentialsConnectorStep(
     override fun _init() {
         super._init()
 
+        continueFrom()
+
         credentialDynamicallyPanel.add(panel {
             row {
                 text("""
@@ -132,6 +134,10 @@ class CredentialsConnectorStep(
             ) {
                 dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
                 state = GenerateConnectorBadge.State.COMPLETE
+            }
+
+            if (state == GenerateConnectorBadge.State.COMPLETE) {
+                upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
             }
         } catch (e : Exception) {
             throw CommitStepException(e.message)
@@ -240,7 +246,7 @@ class CredentialsConnectorStep(
 
     private fun credentialsSectionForm(authInfo : ConnDevAuthInfoType): JComponent {
 
-        if (authInfo.type.equals(ConnDevHttpAuthTypeType.BASIC)) {
+        if (authInfo.type == ConnDevHttpAuthTypeType.BASIC) {
 
             val tokenField = JBPasswordField().apply {
                 text = tokenValue

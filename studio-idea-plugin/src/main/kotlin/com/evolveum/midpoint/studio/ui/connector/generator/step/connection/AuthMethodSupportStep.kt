@@ -71,6 +71,8 @@ class AuthMethodSupportStep(
     override fun _init() {
         super._init()
 
+        continueFrom()
+
         dataModel.connectorDevelopment.connector.auth.forEach {
             item -> dataModel.connectorDevelopment.application.auth.add(item.clone()) }
 
@@ -79,6 +81,7 @@ class AuthMethodSupportStep(
         expandToggleBtn.border = JBUI.Borders.empty()
         expandToggleBtn.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
         expandToggleBtn.addActionListener { _: ActionEvent? -> refreshAuthOptions() }
+
 
         originalConnectorDevelopmentType = dataModel.connectorDevelopment.clone()
         canGoNext = true

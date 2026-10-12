@@ -57,18 +57,6 @@ public enum RPCOperation {
     /**
      * RPC operations for Connector Generator service.
      */
-    RPC_START_FROM_NEW(
-            null,
-            ConnectorGeneratorConstants.RPC_START_FROM_NEW,
-            ConnectorDevelopmentType.class
-    ),
-
-    RPC_CONTINUE_FROM(
-            ConnectorGeneratorConstants.RPC_CONTINUE_FROM,
-            null,
-            ConnectorDevelopmentType.class
-    ),
-
     RPC_CREATE_CONNECTOR(
             ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_SUBMIT_OPERATION,
             ConnectorGeneratorConstants.RPC_CREATE_CONNECTOR_STATUS_INFO,
@@ -145,19 +133,25 @@ public enum RPCOperation {
             ConnectorGeneratorConstants.RPC_GENERATE_AUTHENTICATION_SCRIPT_SUBMIT_OPERATION,
             ConnectorGeneratorConstants.RPC_GENERATE_ARTIFACT_STATUS_INFO,
             SmartIntegrationOperationStatusInfoType.class
+    ),
+
+    RPC_COPY_CONNECTOR(
+            ConnectorGeneratorConstants.RPC_COPY_CONNECTOR_SUBMIT_OPERATION,
+            ConnectorGeneratorConstants.RPC_COPY_CONNECTOR_STATUS_INFO,
+            SmartIntegrationOperationStatusInfoType.class
     );
 
-    private final String statusInfoConstant;
     private final String submitOperationConstant;
+    private final String statusInfoConstant;
     private final Class<?> responseType;
 
     RPCOperation(
-            String statusInfoConstant,
             String submitOperationConstant,
+            String statusInfoConstant,
             Class<?> responseType
     ) {
-        this.statusInfoConstant = statusInfoConstant;
         this.submitOperationConstant = submitOperationConstant;
+        this.statusInfoConstant = statusInfoConstant;
         this.responseType = responseType;
     }
 

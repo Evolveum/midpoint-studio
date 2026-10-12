@@ -9,8 +9,9 @@ package com.evolveum.midpoint.studio.action.smart.suggestion;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
 import com.evolveum.midpoint.studio.client.RPCOperation;
-import com.evolveum.midpoint.studio.client.ServiceContext;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsEditor;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.action.ActionsRenderer;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
@@ -21,12 +22,15 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
-import okhttp3.RequestBody;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Dominik.
@@ -85,6 +89,39 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
                     return null;
                 }),
                 new DefaultColumnInfo<>("Activities") {
+
+                    @Override
+                    public @org.jspecify.annotations.Nullable Object valueOf(MutableTreeNode node) {
+
+                        if (node instanceof DefaultMutableTreeNode defaultNode) {
+                            Object userObject = defaultNode.getUserObject();
+                            if (userObject instanceof SmartSuggestionObject<?> suggestion) {
+                               return suggestion;
+                            }
+                        }
+
+                        return null;
+                    }
+
+                    @Override
+                    public boolean isCellEditable(MutableTreeNode mutableTreeNode) {
+                        return true;
+                    }
+
+                    @Override
+                    public TableCellRenderer getCustomizedRenderer(MutableTreeNode o, TableCellRenderer renderer) {
+                        return new ActionsRenderer();
+                    }
+
+                    @Override
+                    public @Nullable TableCellRenderer getRenderer(MutableTreeNode mutableTreeNode) {
+                        return new ActionsRenderer();
+                    }
+
+                    @Override
+                    public @Nullable TableCellEditor getEditor(MutableTreeNode mutableTreeNode) {
+                        return new ActionsEditor(project, prismContext);
+                    }
                 }
         ));
     }
@@ -101,7 +138,9 @@ public class ObjectTypeSuggestionAction extends SmartSuggestionAction<ResourceOb
         var objectTypesSuggestionWorkDefinitionType = new ObjectTypesSuggestionWorkDefinitionType();
         objectTypesSuggestionWorkDefinitionType.setResourceRef(resourceRef);
         objectTypesSuggestionWorkDefinitionType.setObjectclass(dataModel.getObjectClass().getObjectClassName());
-        objectTypesSuggestionWorkDefinitionType.previousDelineation(dataModel.getObjectType());
+        // FIXME add real data for previousDelineation()
+        objectTypesSuggestionWorkDefinitionType.createPreviousDelineationList();
+//        objectTypesSuggestionWorkDefinitionType.previousDelineation();
         dataModel.getDataAccessPermissions().forEach(objectTypesSuggestionWorkDefinitionType::permissions);
 
         String requestBodyContent = client.serialize(objectTypesSuggestionWorkDefinitionType);

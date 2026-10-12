@@ -13,9 +13,7 @@ import com.evolveum.midpoint.studio.ui.connector.generator.component.GenerateCon
 import com.evolveum.midpoint.studio.ui.connector.generator.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.generator.step.ConnectorGeneratorGeneralWizardStep
 import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.Align
@@ -26,6 +24,7 @@ import com.intellij.util.concurrency.EdtExecutorService
 import com.intellij.util.ui.JBFont
 import org.jetbrains.plugins.groovy.GroovyLanguage
 import javax.swing.JPanel
+
 
 class AuthScriptsConnectorStep(
     wizardContext : ConnectorGeneratorWizard,
@@ -43,13 +42,14 @@ class AuthScriptsConnectorStep(
     override fun _init() {
         super._init()
 
+        continueFrom()
+
         if (!wizardContext.isLeavingStepByPreviousTouch) {
             submitOperation()
         }
     }
 
     override fun _commit(finishChosen: Boolean) {
-        super._commit(finishChosen)
 
         if (state == GenerateConnectorBadge.State.IN_PROGRESS ||
             state == GenerateConnectorBadge.State.EDITED
@@ -57,6 +57,8 @@ class AuthScriptsConnectorStep(
             dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
             state = GenerateConnectorBadge.State.COMPLETE
         }
+
+        super._commit(finishChosen)
     }
 
     fun createPanel(content: String): JPanel = panel {
@@ -121,6 +123,7 @@ class AuthScriptsConnectorStep(
                 statusPanel.elapsedLabel?.stop()
 
                 if (statusInfo.status == OperationResultStatusType.SUCCESS) {
+
                     val content = statusInfo.result?.connDevGenerateArtifactResult?.artifact?.content?: run {
                         statusPanel.status = StatusPanel.Status.ERROR
                         replaceContent(
@@ -140,7 +143,6 @@ class AuthScriptsConnectorStep(
                     dynamicPanel.repaint()
 
                     canGoNext = true
-
                 } else {
                     statusPanel.status = StatusPanel.Status.ERROR
                     replaceContent(
@@ -161,7 +163,7 @@ class AuthScriptsConnectorStep(
                         getAlertComponent(
                             statusPanel,
                             statusPanel.status?.name?: "",
-                            throwable.localizedMessage
+                            getExceptionMessage(throwable)
                         )
                     )
                     statusPanel.elapsedLabel?.stop()

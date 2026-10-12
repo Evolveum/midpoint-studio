@@ -85,6 +85,8 @@ class TestConnectionStep(
     override fun _init() {
         super._init()
 
+        continueFrom()
+
         if (!wizardContext.isLeavingStepByPreviousTouch && dataModel.occurredChanges) {
             submitOperationDiscoverConnectivityEndpoint()
         }
@@ -150,7 +152,7 @@ class TestConnectionStep(
             { statusInfo ->
                 statusPanel.elapsedLabel?.stop()
 
-                if (statusInfo.status.equals(OperationResultStatusType.SUCCESS)) {
+                if (statusInfo.status == OperationResultStatusType.SUCCESS) {
                     dynamicPanel.removeAll()
                     dynamicPanel.revalidate()
                     dynamicPanel.repaint()
@@ -180,7 +182,7 @@ class TestConnectionStep(
                         getAlertComponent(
                             statusPanel,
                             statusPanel.status?.name ?: "",
-                            throwable.localizedMessage
+                            getExceptionMessage(throwable)
                         )
                     )
 
@@ -223,7 +225,7 @@ class TestConnectionStep(
         ).thenAcceptAsync(
             { statusInfo ->
                 statusPanel.elapsedLabel?.stop()
-                if (statusInfo.status.equals(OperationResultStatusType.SUCCESS)) {
+                if (statusInfo.status == OperationResultStatusType.SUCCESS) {
                     canGoNext = true
                 } else {
                     statusPanel.status = StatusPanel.Status.ERROR
@@ -245,7 +247,7 @@ class TestConnectionStep(
                         getAlertComponent(
                             statusPanel,
                             statusPanel.status?.name ?: "",
-                            throwable.localizedMessage
+                            getExceptionMessage(throwable)
                         )
                     )
 
@@ -268,7 +270,7 @@ class TestConnectionStep(
 
                 listHttpEndpointType.forEach { item ->
                     if (item != null) {
-                        val isSelect = item.uri.equals(currentRestTextEndpoint)
+                        val isSelect = item.uri == currentRestTextEndpoint
                         if (!hasMatch) hasMatch = isSelect
 
                         add(createCardComponent(
