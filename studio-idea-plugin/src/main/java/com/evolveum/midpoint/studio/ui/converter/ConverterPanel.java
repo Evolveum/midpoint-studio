@@ -6,12 +6,15 @@ import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent;
 import com.evolveum.midpoint.studio.util.LanguageUtils;
+import com.intellij.json.JsonLanguage;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.OnePixelSplitter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.YAMLLanguage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,11 +36,21 @@ public class ConverterPanel extends SimpleToolWindowPanel {
     private void initLayout() {
         SmartEditorComponent leftEditor = new SmartEditorComponent(project, PlainTextLanguage.INSTANCE, "");
         SmartEditorComponent rightEditor = new SmartEditorComponent(project, PlainTextLanguage.INSTANCE, "");
-        LanguageSelectorPanel targetLangSelector = new LanguageSelectorPanel("Target language");
+        LanguageSelectorPanel targetLangSelector = new LanguageSelectorPanel(
+                "Target language",
+                new String[]{
+                    XMLLanguage.INSTANCE.getID(),
+                    JsonLanguage.INSTANCE.getID(),
+                    YAMLLanguage.INSTANCE.getID()
+                }
+        );
 
-        targetLangSelector.onLanguageChange(e -> {
-            rightEditor.switchLanguage(LanguageUtils.findLanguageByID(targetLangSelector.getSelectedLanguage()), rightEditor.getText());
-        });
+        targetLangSelector.onLanguageChange(e ->
+                rightEditor.switchLanguage(
+                        LanguageUtils.findLanguageByID(targetLangSelector.getSelectedLanguage()),
+                        rightEditor.getText()
+                )
+        );
 
         JPanel leftContainer = new JPanel(new BorderLayout());
         leftContainer.add(leftEditor, BorderLayout.CENTER);
@@ -56,10 +69,10 @@ public class ConverterPanel extends SimpleToolWindowPanel {
 
         JButton button = new JButton("Convert");
         button.setPreferredSize(new Dimension(150, 30));
-        button.addActionListener(e -> {
-            rightEditor.switchLanguage(LanguageUtils.findLanguageByID(targetLangSelector.getSelectedLanguage()),
-                    convert(project, leftEditor.getText(), targetLangSelector.getSelectedLanguage()));
-        });
+        button.addActionListener(e ->
+                rightEditor.switchLanguage(LanguageUtils.findLanguageByID(targetLangSelector.getSelectedLanguage()),
+                convert(project, leftEditor.getText(), targetLangSelector.getSelectedLanguage()))
+        );
         banner.add(button, BorderLayout.CENTER);
         add(banner, BorderLayout.SOUTH);
 

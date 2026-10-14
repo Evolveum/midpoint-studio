@@ -147,9 +147,8 @@ public class ActionsEditor extends AbstractCellEditor implements TableCellEditor
         }
 
         var smartEditor = new SmartEditorComponent(project, XMLLanguage.INSTANCE, "");
-        WriteCommandAction.runWriteCommandAction(project, () -> {
-            smartEditor.setText(rawXml != null ? rawXml : "");
-        });
+        WriteCommandAction.runWriteCommandAction(project, () ->
+                smartEditor.setText(rawXml != null ? rawXml : ""));
 
         Rectangle rect = table.getCellRect(row, 0, true);
         Point point = new Point(rect.x, rect.y + rect.height);

@@ -57,6 +57,8 @@ class DiscoverDocumentationStep(
 
         if (!existConnDev()) return
 
+        originalConnectorDevelopmentType = dataModel.connectorDevelopment.clone()
+
         if (!wizardContext.isLeavingStepByPreviousTouch && dataModel.occurredChanges) {
             submitOperation()
         }
@@ -67,6 +69,8 @@ class DiscoverDocumentationStep(
         if (state == GenerateConnectorBadge.State.IN_PROGRESS ||
             state == GenerateConnectorBadge.State.EDITED
         ) {
+            dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
+            updateConnectorDevelopment()
             state = GenerateConnectorBadge.State.COMPLETE
         }
 

@@ -100,9 +100,6 @@ class CreateConnectorStep (
 
                         dataModel.connectorDevelopment.testing.testingResource = resourceRef
                         dataModel.connectorDevelopment.connector.connectorRef = connectorRef
-
-                        upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
-
                         statusPanel.status = StatusPanel.Status.SUCCESS
                         replaceContent(
                             getAlertComponent(

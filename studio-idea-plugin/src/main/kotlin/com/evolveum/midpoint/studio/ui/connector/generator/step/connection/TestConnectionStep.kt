@@ -85,8 +85,6 @@ class TestConnectionStep(
     override fun _init() {
         super._init()
 
-        continueFrom()
-
         if (!wizardContext.isLeavingStepByPreviousTouch && dataModel.occurredChanges) {
             submitOperationDiscoverConnectivityEndpoint()
         }

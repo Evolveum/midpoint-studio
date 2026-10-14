@@ -71,8 +71,6 @@ class AuthMethodSupportStep(
     override fun _init() {
         super._init()
 
-        continueFrom()
-
         dataModel.connectorDevelopment.connector.auth.forEach {
             item -> dataModel.connectorDevelopment.application.auth.add(item.clone()) }
 
@@ -97,6 +95,7 @@ class AuthMethodSupportStep(
             state == GenerateConnectorBadge.State.EDITED
         ) {
             dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
+            updateConnectorDevelopment()
             state = GenerateConnectorBadge.State.COMPLETE
         }
 

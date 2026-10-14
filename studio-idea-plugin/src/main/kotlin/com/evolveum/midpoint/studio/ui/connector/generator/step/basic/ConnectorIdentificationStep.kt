@@ -124,6 +124,7 @@ class ConnectorIdentificationStep(
         super._init()
 
         originalConnectorDevelopmentType = dataModel.connectorDevelopment.clone()
+
         canGoNext = true
     }
 
@@ -150,8 +151,7 @@ class ConnectorIdentificationStep(
             state == GenerateConnectorBadge.State.EDITED
         ) {
             dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
-            dataModel.connectorDevelopment =
-                upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
+            updateConnectorDevelopment()
             state = GenerateConnectorBadge.State.COMPLETE
         }
 

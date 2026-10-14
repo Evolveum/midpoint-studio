@@ -85,6 +85,10 @@ public class SmartEditorComponent extends LanguageTextField {
         return editor;
     }
 
+    public void switchLanguage(@NotNull Language language) {
+        switchLanguage(language, super.getText());
+    }
+
     public void switchLanguage(@NotNull Language language, @NotNull String text) {
         ApplicationManager.getApplication().invokeLater(() -> {
             if (project.isDisposed()) {

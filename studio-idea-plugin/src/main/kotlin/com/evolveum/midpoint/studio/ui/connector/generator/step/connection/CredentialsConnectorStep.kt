@@ -104,8 +104,6 @@ class CredentialsConnectorStep(
     override fun _init() {
         super._init()
 
-        continueFrom()
-
         credentialDynamicallyPanel.add(panel {
             row {
                 text("""
@@ -133,12 +131,10 @@ class CredentialsConnectorStep(
                 state == GenerateConnectorBadge.State.EDITED
             ) {
                 dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
+                updateConnectorDevelopment()
                 state = GenerateConnectorBadge.State.COMPLETE
             }
 
-            if (state == GenerateConnectorBadge.State.COMPLETE) {
-                upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
-            }
         } catch (e : Exception) {
             throw CommitStepException(e.message)
         }

@@ -42,8 +42,6 @@ class BaseUrlSpecificationStep(
     override fun _init() {
         super._init()
 
-        continueFrom()
-
         if (!existConnDev()) return
 
         if (!wizardContext.isLeavingStepByPreviousTouch) {
@@ -63,6 +61,7 @@ class BaseUrlSpecificationStep(
             state == GenerateConnectorBadge.State.EDITED
         ) {
             dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
+            updateConnectorDevelopment()
             state = GenerateConnectorBadge.State.COMPLETE
         }
 
@@ -143,6 +142,8 @@ class BaseUrlSpecificationStep(
 
                     if (dataModel.connectorDevelopment.connector?.integrationType == ConnDevIntegrationType.SCIM)
                         SCIM_BASE_URL_ITEM_NAME else BASE_ADDRESS_ITEM_NAME
+
+                    continueFrom()
 
                     dynamicPanel.removeAll()
                     dynamicPanel.add(createPanel())

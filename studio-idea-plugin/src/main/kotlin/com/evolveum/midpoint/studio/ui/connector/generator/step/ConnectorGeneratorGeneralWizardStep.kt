@@ -19,7 +19,6 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.*
 import com.intellij.ide.wizard.CommitStepException
 import com.intellij.ide.wizard.StepAdapter
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task.Backgroundable
@@ -104,6 +103,14 @@ abstract class ConnectorGeneratorGeneralWizardStep(
         }.also {
             it.name = dialogTitle
         }
+
+    @Throws(RuntimeException::class, SchemaException::class, AuthenticationException::class, IOException::class)
+    protected fun updateConnectorDevelopment() {
+        dataModel.occurredChanges.takeIf { it }?.let {
+            dataModel.connectorDevelopment =
+                upsertConnectorDevelopmentType(dataModel.connectorDevelopment).clone()
+        }
+    }
 
     @Throws(RuntimeException::class, SchemaException::class, AuthenticationException::class, IOException::class)
     protected fun upsertConnectorDevelopmentType(
@@ -312,7 +319,7 @@ abstract class ConnectorGeneratorGeneralWizardStep(
 
     protected fun existConnDev(): Boolean {
 
-        dataModel.connectorDevelopment?.oid?: run {
+        dataModel.connectorDevelopment.oid ?: run {
             statusPanel.status = StatusPanel.Status.ERROR
             replaceContent(getAlertComponent(
                 statusPanel,
@@ -351,8 +358,8 @@ abstract class ConnectorGeneratorGeneralWizardStep(
             .parse()
     }
 
-    protected fun hasChanges(originalDataModel: ConnectorDevelopmentType?): Boolean =
-        originalDataModel != dataModel.connectorDevelopment
+    protected fun hasChanges(originalConnectorDevelopment: ConnectorDevelopmentType?): Boolean =
+        originalConnectorDevelopment != dataModel.connectorDevelopment
 
     protected fun String?.requireNotBlank(fieldName: String) {
         if (isNullOrBlank()) {

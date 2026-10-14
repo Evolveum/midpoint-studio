@@ -162,9 +162,7 @@ class ApplicationIdentificationStep(
             !wizardContext.isLeavingStepByPreviousTouch
         ) {
             dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
-            val resultObject = upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
-            dataModel.connectorDevelopment = resultObject.clone()
-
+            updateConnectorDevelopment()
             state = GenerateConnectorBadge.State.COMPLETE
         }
 
