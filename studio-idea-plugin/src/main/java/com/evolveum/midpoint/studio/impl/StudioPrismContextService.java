@@ -78,7 +78,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
                 if (key == null || key.projectId == null) {
                     if (key == null || !key.useDefaultPrismContext) {
-                        LOG.warn(
+                        LOG.debug(
                                 "No project set for PrismService override supplier (empty thread local), " +
                                         "returning default prism context instance");
                     }
