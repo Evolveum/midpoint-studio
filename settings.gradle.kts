@@ -22,8 +22,8 @@ dependencyResolutionManagement {
             version("cyclonedx", "3.2.4")
 
             // versions of midpoint libraries
-            version("midpoint", "4.11-SNAPSHOT")
-            version("midscribe", "4.11-SNAPSHOT")
+            version("midpoint", "4.11.0-SNAPSHOT")
+            version("midscribe", "4.11.0-SNAPSHOT")
 
             // versions of third-party libraries
             version("annotations", "24.1.0")
