@@ -7,6 +7,7 @@ base64.decode|global|(string)|bytes
 base64.encode|global|(bytes)|string
 capitalize|member|(polystring)|string
 capitalize|member|(string)|string
+certificationCasesDecidedPercentage|member|(prismObject)|double
 charAt|member|(polystring,int)|string
 charAt|member|(string,int)|string
 connectorConfiguration|member|(prismObject,any)|list
@@ -18,6 +19,7 @@ containsIgnoreCase|member|(string,string)|bool
 contains|global|(any,string)|bool
 contains|member|(list,any)|bool
 contains|member|(polystring,string)|bool
+currentPrincipalRef|global|()|objectReference
 debugDump|global|(any)|string
 decrypt|member|(protectedString)|string
 default|global|(dyn,V)|V
@@ -40,6 +42,9 @@ flatten|member|(list)|list
 flatten|member|(list,int)|list
 format.certificationOutcome|global|(string)|string
 format.concatName|global|(list)|string
+format.defaultNameForResourceRelatedTask|global|(string,prismContainerValue)|string
+format.formatAuditDelta|global|(list)|list
+format.formatAuditDelta|global|(objectDeltaOperation)|list
 format.formatDateTime|global|(timestamp,string)|string
 format.parseAdditionalName|global|(any)|string
 format.parseDateTime|global|(string,string)|timestamp
@@ -51,6 +56,7 @@ format.parseNickName|global|(any)|string
 format.reference|global|(objectReference)|string
 format.strftime|global|(timestamp,string)|string
 format.strptime|global|(string,string)|timestamp
+format.translateKeyInCurrentLocale|global|(string)|string
 formatDateTime|member|(timestamp,string)|string
 format|global|(string,any)|string
 format|member|(string,any)|string
@@ -154,7 +160,6 @@ math.sqrt|global|(double)|double
 math.sqrt|global|(int)|double
 math.sqrt|global|(uint)|double
 math.trunc|global|(double)|double
-midpoint.getDefaultNameForResourceRelatedTask|global|(string,prismContainerValue)|string
 midpoint.getLinkedShadows|global|(prismObject,string)|list
 midpoint.getLinkedShadows|global|(prismObject,string,bool)|list
 midpoint.getLinkedShadow|global|(prismObject,string)|prismObject
@@ -168,7 +173,6 @@ midpoint.getObject|global|(qName,string)|prismObject
 midpoint.getObject|global|(string,string)|prismObject
 midpoint.getObject|global|(string,string,string)|prismObject
 midpoint.getOrgByName|global|(string)|prismObject
-midpoint.getPrincipalRef|global|()|objectReference
 midpoint.hasLinkedObjectOnResource|global|(string,string,string)|bool
 midpoint.hello|global|(string)|string
 midpoint.isCurrentProjectionActivated|global|()|bool
@@ -185,7 +189,6 @@ midpoint.searchObjects|global|(string,string)|list
 midpoint.searchObjects|global|(string,string,string)|list
 midpoint.searchShadowOwner|global|(string)|prismObject
 midpoint.selectIdentityItemValues|global|(dyn,prismContainerValue,itemPath)|list
-midpoint.translateKeyInCurrentLocale|global|(string)|string
 nil|global|()|dyn
 norm|global|(any)|string
 objectReference|global|(string,qName)|objectReference
