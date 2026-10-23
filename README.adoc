@@ -1,7 +1,7 @@
 = MidPoint Studio
 :sectnums:
 :toc:
-:toclevels: 4
+:toclevels: 2
 :toc-title: Table of Contents
 
 == Overview
@@ -33,6 +33,10 @@ Documentation is available https://docs.evolveum.com/midpoint/studio/[here].
 == Installation
 
 It's available in JetBrains Marketplace https://plugins.jetbrains.com/plugin/13809-midpoint-studio[here].
+Supported versions of Intellij Idea changes with each version of plugin.
+Usual case is current version of IDE + two or three previous ones.
+You can check whether your IDE is supported directly on plugin page in Marketplace _Versions_ tab.
+
 Installation steps:
 
 . Start Intellij Idea (Community/Ultimate)
@@ -85,5 +89,5 @@ Logging settings can be changed during runtime via top menu `Help/Debug Log Sett
 
 == License
 
-Project is licensed under Apache Licence 2.0.
+Project is licensed under Apache License 2.0.
 See LICENSE file for more details.
