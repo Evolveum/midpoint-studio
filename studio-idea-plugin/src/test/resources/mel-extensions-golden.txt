@@ -11,6 +11,7 @@ certificationCasesDecidedPercentage|member|(prismObject)|double
 charAt|member|(polystring,int)|string
 charAt|member|(string,int)|string
 connectorConfiguration|member|(prismObject,any)|list
+containerValueMetadata|member|(prismContainerValue)|list
 containingObject|member|(prismContainerValue)|prismObject
 containsIgnoreCase|global|(any,any)|bool
 containsIgnoreCase|member|(list,any)|bool
