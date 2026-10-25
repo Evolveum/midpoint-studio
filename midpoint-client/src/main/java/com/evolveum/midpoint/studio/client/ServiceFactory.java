@@ -1,9 +1,6 @@
 package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.schema.MidPointPrismContextFactory;
-import com.evolveum.midpoint.util.DOMUtilSettings;
-import com.evolveum.midpoint.util.MiscUtil;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -28,33 +25,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class ServiceFactory {
 
-    @Deprecated
-    public static final PrismContext DEFAULT_PRISM_CONTEXT;
-
-    static {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-        try {
-            Thread.currentThread().setContextClassLoader(ServiceFactory.class.getClassLoader());
-
-            // just to initialize MiscUtil class with correct classloader
-            MiscUtil.emptyIfNull("");
-
-            DOMUtilSettings.setAddTransformerFactorySystemProperty(false);
-            // todo create web client just to obtain extension schemas!
-
-            MidPointPrismContextFactory factory = new MidPointPrismContextFactory();
-            PrismContext prismContext = factory.createPrismContext();
-            prismContext.initialize();
-
-            DEFAULT_PRISM_CONTEXT = prismContext;
-        } catch (Exception ex) {
-            throw new IllegalStateException("Couldn't initialize prism context", ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
-    }
-
     private String url;
 
     private String username;
@@ -78,6 +48,8 @@ public class ServiceFactory {
     private int responseTimeout = 60;
 
     private boolean useHttp2 = false;
+
+    private PrismContext prismContext;
 
     public ServiceFactory url(final String url) {
         this.url = url;
@@ -139,7 +111,19 @@ public class ServiceFactory {
         return this;
     }
 
+    /**
+     * Prism context used by the created service to parse responses and serialize requests. Required.
+     */
+    public ServiceFactory prismContext(final PrismContext prismContext) {
+        this.prismContext = prismContext;
+        return this;
+    }
+
     public Service create() throws Exception {
+        if (prismContext == null) {
+            throw new IllegalStateException("Prism context not set, use ServiceFactory.prismContext(...)");
+        }
+
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.followSslRedirects(false);
         builder.followRedirects(false);
@@ -186,7 +170,7 @@ public class ServiceFactory {
 
         setupLogging(builder);
 
-        ServiceContext context = new ServiceContext(url, DEFAULT_PRISM_CONTEXT, builder.build());
+        ServiceContext context = new ServiceContext(url, prismContext, builder.build());
 
         return new ServiceImpl(context);
     }

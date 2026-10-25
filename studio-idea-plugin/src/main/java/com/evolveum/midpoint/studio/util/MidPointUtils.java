@@ -10,7 +10,6 @@ import com.evolveum.midpoint.schema.util.ObjectTypeUtil;
 import com.evolveum.midpoint.studio.client.ClientException;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
-import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
@@ -135,7 +134,7 @@ public class MidPointUtils {
     private static final Random RANDOM = new Random();
 
     @Deprecated
-    public static final PrismContext DEFAULT_PRISM_CONTEXT = ServiceFactory.DEFAULT_PRISM_CONTEXT;
+    public static final PrismContext DEFAULT_PRISM_CONTEXT = StudioPrismContextService.DEFAULT_PRISM_CONTEXT;
 
     private static final Pattern FILE_PATH_PATTERN = Pattern.compile("\\$(t|T|s|e|n|o)");
 

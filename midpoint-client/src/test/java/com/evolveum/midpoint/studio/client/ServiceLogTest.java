@@ -28,6 +28,7 @@ public class ServiceLogTest {
 
         service = new ServiceFactory()
                 .url(server.url("/").toString().replaceAll("/$", ""))
+                .prismContext(TestPrismContexts.inert())
                 .create();
     }
 

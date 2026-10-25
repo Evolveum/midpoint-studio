@@ -110,7 +110,10 @@ public class MidPointClient {
                     .proxyPassword(environment.getProxyPassword())
                     .ignoreSSLErrors(environment.isIgnoreSslErrors())
                     .useHttp2(environment.isUseHttp2())
-                    .responseTimeout(settings.getRestResponseTimeout());
+                    .responseTimeout(settings.getRestResponseTimeout())
+                    .prismContext(project != null ?
+                            StudioPrismContextService.getPrismContext(project) :
+                            StudioPrismContextService.DEFAULT_PRISM_CONTEXT);
 
             if (!suppressConsole) {
                 factory.messageListener((message) -> {
