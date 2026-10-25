@@ -11,6 +11,7 @@ import com.evolveum.midpoint.studio.client.ServiceFactory;
 import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
 import com.evolveum.midpoint.studio.impl.cache.ExtensionSchemaCache;
 import com.evolveum.midpoint.studio.impl.cache.ObjectCache;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DOMUtilSettings;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -20,10 +21,10 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaType;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.util.messages.MessageBus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
@@ -58,6 +59,65 @@ public final class StudioPrismContextService implements ProjectManagerListener {
      */
     public static final PrismContext DEFAULT_PRISM_CONTEXT;
 
+    /**
+     * Number of times the supplier fell back to the default context because no project was bound
+     * to the current thread. The fallback is a normal case for UI/PSI threads, so it is not
+     * logged per occurrence. A flood of fallbacks usually means a code path that should run
+     * with a project context (run*WithProject wrapper) doesn't.
+     */
+    private static final AtomicLong DEFAULT_CONTEXT_FALLBACK_COUNT = new AtomicLong();
+
+    @VisibleForTesting
+    static final long FALLBACK_LOG_INTERVAL = 1000;
+
+    /**
+     * Prism service routing context access to the project bound to the current thread,
+     * or to the default context when no project is bound.
+     */
+    private static final PrismService.Mutable PRISM_SERVICE = new PrismService.Mutable() {
+
+        @Override
+        public PrismContext prismContext() {
+            ContextKey key = PRISM_SERVICE_PROJECT.get();
+
+            if (key == null || key.project == null) {
+                if (key == null || !key.useDefaultPrismContext) {
+                    reportDefaultContextFallback();
+                }
+                return DEFAULT_PRISM_CONTEXT;
+            }
+
+            Project project = key.project;
+            if (project.isDisposed()) {
+                LOG.debug("Project " + project.getName() + " is disposed, returning default prism context instance");
+                return DEFAULT_PRISM_CONTEXT;
+            }
+
+            return StudioPrismContextService.getPrismContext(project);
+        }
+
+        @Override
+        public void prismContext(PrismContext prismContext) {
+            LOG.debug("PrismService override supplier: prism context set to " + prismContext);
+
+            ContextKey key = PRISM_SERVICE_PROJECT.get();
+            if (key == null || key.project == null) {
+                LOG.debug(
+                        "No project set for PrismService override supplier (empty thread local), " +
+                                "ignoring prism context set");
+                return;
+            }
+
+            Project project = key.project;
+            if (project.isDisposed()) {
+                LOG.debug("Project " + project.getName() + " is disposed, ignoring prism context set");
+                return;
+            }
+
+            StudioPrismContextService.get(project).setPrismContext(prismContext);
+        }
+    };
+
     static {
         LOG.info("Creating default prism context");
         try {
@@ -70,46 +130,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         LOG.info("Default prism context created");
 
         LOG.info("Attaching PrismService override supplier");
-        PrismService.overrideSupplier(() -> new PrismService.Mutable() {
-
-            @Override
-            public PrismContext prismContext() {
-                ContextKey key = PRISM_SERVICE_PROJECT.get();
-
-                if (key == null || key.projectId == null) {
-                    if (key == null || !key.useDefaultPrismContext) {
-                        LOG.debug(
-                                "No project set for PrismService override supplier (empty thread local), " +
-                                        "returning default prism context instance");
-                    }
-                    return DEFAULT_PRISM_CONTEXT;
-                }
-
-                Project project = getProject(key.projectId);
-
-                return StudioPrismContextService.getPrismContext(project);
-            }
-
-            @Override
-            public void prismContext(PrismContext prismContext) {
-                LOG.debug("PrismService override supplier: prism context set to " + prismContext);
-
-                ContextKey key = PRISM_SERVICE_PROJECT.get();
-                if (key == null || key.projectId == null) {
-                    if (key == null || !key.useDefaultPrismContext) {
-                        LOG.warn(
-                                "No project set for PrismService override supplier (empty thread local), " +
-                                        "ignoring prism context set");
-                    }
-
-                    return;
-                }
-
-                Project project = getProject(key.projectId);
-
-                StudioPrismContextService.get(project).setPrismContext(prismContext);
-            }
-        });
+        PrismService.overrideSupplier(() -> PRISM_SERVICE);
     }
 
     private final @NotNull Project project;
@@ -166,9 +187,9 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         LOG.info("Creating prism context for project: " + project.getName());
 
         var previousContext = prismContext != null ? prismContext : DEFAULT_PRISM_CONTEXT;
-        try {
-            PRISM_SERVICE_PROJECT.set(new ContextKey(this.project));
 
+        ContextKey previousKey = bindKey(new ContextKey(this.project));
+        try {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
             try {
@@ -178,6 +199,11 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
                 prismContext.reload();
             } catch (Exception ex) {
+                // cancellation (e.g. indexer read action cancelled by a write action) must propagate,
+                // and prismContext must stay as it was: on first load it stays null so the next
+                // access retries instead of being pinned to the default context
+                RunnableUtils.rethrowIfCancellation(ex);
+
                 LOG.error("Couldn't initialize prism context", ex);
 
                 prismContext = previousContext;
@@ -187,10 +213,10 @@ public final class StudioPrismContextService implements ProjectManagerListener {
                 LOG.info("Prism context created for project: " + project.getName());
             }
         } finally {
-            PRISM_SERVICE_PROJECT.remove();
+            restoreKey(previousKey);
         }
 
-        long elapsed  = System.currentTimeMillis() - now;
+        long elapsed = System.currentTimeMillis() - now;
         long count = reloadCount.incrementAndGet();
         long totalMs = totalReloadTimeMs.addAndGet(elapsed);
 
@@ -290,59 +316,97 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     }
 
     public static void runWithProject(@NotNull Project project, @NotNull Runnable runnable) {
+        ContextKey previousKey = bindKey(new ContextKey(project));
         try {
-            PRISM_SERVICE_PROJECT.set(new ContextKey(project));
-
             runnable.run();
         } finally {
-            PRISM_SERVICE_PROJECT.remove();
+            restoreKey(previousKey);
         }
     }
 
     public static <T> T runSupplierWithProject(@NotNull Project project, @NotNull Supplier<T> supplier) {
+        ContextKey previousKey = bindKey(new ContextKey(project));
         try {
-            PRISM_SERVICE_PROJECT.set(new ContextKey(project));
-
             return supplier.get();
         } finally {
-            PRISM_SERVICE_PROJECT.remove();
+            restoreKey(previousKey);
         }
     }
 
     public static <T> T runCallableWithDefaultContext(@NotNull Callable<T> callable) throws Exception {
+        ContextKey previousKey = bindKey(new ContextKey());
         try {
-            PRISM_SERVICE_PROJECT.set(new ContextKey());
-
             return callable.call();
         } finally {
-            PRISM_SERVICE_PROJECT.remove();
+            restoreKey(previousKey);
         }
     }
 
     public static <T> T runCallableWithProject(@NotNull Project project, @NotNull Callable<T> callable) throws Exception {
+        ContextKey previousKey = bindKey(new ContextKey(project));
         try {
-            PRISM_SERVICE_PROJECT.set(new ContextKey(project));
-
             return callable.call();
         } finally {
+            restoreKey(previousKey);
+        }
+    }
+
+    /**
+     * Binds the key to the current thread and returns the previously bound one (may be null).
+     * Wrappers nest (e.g. InitialObjectsCache.createReloadQuery inside EnvironmentCacheManager.reload,
+     * or a context reload triggered from the supplier), so the previous key must be restored
+     * with {@link #restoreKey(ContextKey)} instead of removing the thread local unconditionally.
+     * Otherwise the outer context is lost for the rest of the outer wrapper's execution.
+     */
+    private static ContextKey bindKey(@NotNull ContextKey key) {
+        ContextKey previous = PRISM_SERVICE_PROJECT.get();
+        PRISM_SERVICE_PROJECT.set(key);
+
+        return previous;
+    }
+
+    private static void restoreKey(ContextKey previous) {
+        if (previous != null) {
+            PRISM_SERVICE_PROJECT.set(previous);
+        } else {
             PRISM_SERVICE_PROJECT.remove();
         }
     }
 
-    private static Project getProject(@NotNull String projectId) {
-        return ProjectManager.getInstance().findOpenProjectByHash(projectId);
+    /**
+     * Counts a fallback to the default context and logs a warning with a stack trace of the
+     * caller when the fallback happens too often.
+     */
+    @VisibleForTesting
+    static void reportDefaultContextFallback() {
+        long count = DEFAULT_CONTEXT_FALLBACK_COUNT.incrementAndGet();
+
+        if (count >= FALLBACK_LOG_INTERVAL && DEFAULT_CONTEXT_FALLBACK_COUNT.compareAndSet(count, 0)) {
+            LOG.warn(
+                    "No project set for PrismService override supplier (empty thread local), " +
+                            "returning default prism context instance. This has happened " + count +
+                            " times since the last report, the call site is likely missing a run*WithProject wrapper:",
+                    new Exception());
+        }
+    }
+
+    @VisibleForTesting
+    static long getDefaultContextFallbackCount() {
+        return DEFAULT_CONTEXT_FALLBACK_COUNT.get();
+    }
+
+    @VisibleForTesting
+    static void resetDefaultContextFallbackCount() {
+        DEFAULT_CONTEXT_FALLBACK_COUNT.set(0);
     }
 
     /**
      * Key for prism context service thread local.
-     *
-     * @param projectId              project identifier
-     * @param useDefaultPrismContext whether to use default prism if project identifier is not set
      */
-    private record ContextKey(String projectId, boolean useDefaultPrismContext) {
+    private record ContextKey(Project project, boolean useDefaultPrismContext) {
 
         public ContextKey(@NotNull Project project) {
-            this(project.getLocationHash(), false);
+            this(project, false);
         }
 
         public ContextKey() {

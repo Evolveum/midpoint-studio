@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.MetadataType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.diagnostic.Logger;
@@ -41,6 +42,8 @@ public class InitialObjectsCache extends ObjectCache<ObjectType> {
                             .getPrismContext())
             );
         } catch (Exception ex) {
+            RunnableUtils.rethrowIfCancellation(ex);
+
             LOG.error("Couldn't create initial objects cache reload query", ex);
         }
 

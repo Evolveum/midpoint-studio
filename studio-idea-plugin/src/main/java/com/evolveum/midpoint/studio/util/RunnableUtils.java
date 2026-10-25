@@ -4,10 +4,12 @@ import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.diagnostic.ControlFlowException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.concurrency.CancellablePromise;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -51,6 +53,24 @@ public abstract class RunnableUtils {
         }
 
         public abstract R callWithPluginClassLoader() throws Exception;
+    }
+
+    /**
+     * Rethrows cancellation (control flow) exceptions, e.g. ProcessCanceledException or
+     * CannotReadException. Use at the start of generic catch blocks: these exceptions must
+     * propagate and must never be logged, Logger.error on them makes the platform report
+     * "Control-flow exceptions should never be logged" instead of the original problem.
+     */
+    public static void rethrowIfCancellation(Throwable ex) {
+        if (ex instanceof ControlFlowException || ex instanceof CancellationException) {
+            if (ex instanceof RuntimeException re) {
+                throw re;
+            }
+            if (ex instanceof Error err) {
+                throw err;
+            }
+            throw new RuntimeException(ex);
+        }
     }
 
     public static void runReadAction(Runnable runnable) {
