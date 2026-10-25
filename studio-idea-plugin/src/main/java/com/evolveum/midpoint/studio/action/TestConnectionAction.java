@@ -5,6 +5,7 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
 import com.evolveum.midpoint.studio.impl.ShowExceptionNotificationAction;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager;
 import com.evolveum.midpoint.studio.ui.StudioAction;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
@@ -18,6 +19,8 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -32,8 +35,9 @@ public class TestConnectionAction extends StudioAction {
             return false;
         }
 
+        // isEnvironmentSelected doesn't decrypt credentials, getSelected does (slow, runs in action update)
         EnvironmentService em = EnvironmentService.getInstance(e.getProject());
-        return em.getSelected() != null;
+        return em.isEnvironmentSelected();
     }
 
     @Override
@@ -51,7 +55,13 @@ public class TestConnectionAction extends StudioAction {
 
                     @Override
                     public void runWithPluginClassLoader() {
-                        testConnection(project, selected);
+                        TestConnectionResult result = testConnection(project, selected);
+
+                        handleResult(project, selected, result, () -> {
+                            indicator.setText("Reloading caches for '" + selected.getName() + "'");
+
+                            EnvironmentCacheManager.get(project).reload(false, false);
+                        });
                     }
                 }.run();
             }
@@ -60,33 +70,48 @@ public class TestConnectionAction extends StudioAction {
                 .runProcessWithProgressAsynchronously(task, new BackgroundableProcessIndicator(task));
     }
 
-    private void testConnection(Project project, Environment environment) {
+    private @Nullable TestConnectionResult testConnection(Project project, Environment environment) {
         try {
             MidPointClient client = new MidPointClient(project, environment);
-            TestConnectionResult result = client.testConnection();
 
-            String status = result.success() ? "was successful" : "failed";
-            NotificationType type = result.success() ? NotificationType.INFORMATION : NotificationType.ERROR;
-
-            String versionInfo = "";
-            if (result.success()) {
-                versionInfo = " Version: " + result.version() + ", build: " + result.revision() + ".";
-
-                EnvironmentCacheManager ecm = EnvironmentCacheManager.get(project);
-                ecm.reload(false, false);
-            }
-
-            NotificationAction action = null;
-            if (result.exception() != null) {
-                action = new ShowExceptionNotificationAction("Connection test exception for '" + environment.getName() + "'",
-                        result.exception(), TestConnectionAction.class, environment);
-            }
-
-            MidPointUtils.publishNotification(project, NOTIFICATION_KEY, "Test connection",
-                    "Connection test for '" + environment.getName() + "' " + status + "." + versionInfo, type, action);
+            return StudioPrismContextService.runSupplierWithProject(project, client::testConnection);
         } catch (Exception ex) {
+            RunnableUtils.rethrowIfCancellation(ex);
+
             MidPointUtils.publishExceptionNotification(project, environment, TestConnectionAction.class,
                     NOTIFICATION_KEY, "Connection test for '" + environment.getName() + "' failed with exception", ex);
+
+            return null;
+        }
+    }
+
+    /**
+     * Publishes the result notification first, the cache reload (slow, many REST calls and prism
+     * context rebuild) runs only afterward and only for a successful test.
+     */
+    @VisibleForTesting
+    static void handleResult(Project project, Environment environment, @Nullable TestConnectionResult result, Runnable reloadCaches) {
+        if (result == null) {
+            return;
+        }
+
+        String status = result.success() ? "was successful" : "failed";
+        NotificationType type = result.success() ? NotificationType.INFORMATION : NotificationType.ERROR;
+
+        String versionInfo = result.success() ?
+                " Version: " + result.version() + ", build: " + result.revision() + "." : "";
+
+        NotificationAction action = null;
+        if (result.exception() != null) {
+            action = new ShowExceptionNotificationAction("Connection test exception for '" + environment.getName() + "'",
+                    result.exception(), TestConnectionAction.class, environment);
+        }
+
+        MidPointUtils.publishNotification(project, NOTIFICATION_KEY, "Test connection",
+                "Connection test for '" + environment.getName() + "' " + status + "." + versionInfo, type, action);
+
+        if (result.success()) {
+            reloadCaches.run();
         }
     }
 }
