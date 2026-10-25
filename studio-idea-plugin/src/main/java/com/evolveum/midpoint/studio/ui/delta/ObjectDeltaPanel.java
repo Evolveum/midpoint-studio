@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.impl.xml.DiffObjectType;
 import com.evolveum.midpoint.studio.impl.xml.DiffType;
@@ -85,7 +86,7 @@ public class ObjectDeltaPanel extends BorderLayoutPanel implements Disposable {
 
             @Override
             public void runWithPluginClassLoader() {
-                PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+                PrismContext prismContext = StudioPrismContextService.getPrismContext(project);
 
                 DiffStrategy strategy = ObjectDeltaPanel.this.strategyCombo.getSelected();
                 ParameterizedEquivalenceStrategy pes = strategy != null ? strategy.getStrategy() : ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION;

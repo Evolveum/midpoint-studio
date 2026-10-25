@@ -2,8 +2,8 @@ package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceType;
 import com.intellij.openapi.diagnostic.Logger;
@@ -26,7 +26,11 @@ public class OpTraceRawPanel extends BorderLayoutPanel {
 
     private JBTextArea text;
 
+    private final Project project;
+
     public OpTraceRawPanel(@NotNull Project project) {
+        this.project = project;
+
         initLayout();
 
         MessageBus bus = project.getMessageBus();
@@ -63,7 +67,7 @@ public class OpTraceRawPanel extends BorderLayoutPanel {
 
     private String dump(TraceType trace) {
         try {
-            PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+            PrismContext ctx = StudioPrismContextService.getPrismContext(project);
             return ctx.xmlSerializer().serializeRealValue(trace, new QName("trace"));
         } catch (Exception ex) {
             LOG.error("Couldn't serialize value", ex);

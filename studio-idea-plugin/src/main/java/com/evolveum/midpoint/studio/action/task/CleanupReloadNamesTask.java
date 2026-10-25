@@ -137,7 +137,7 @@ public class CleanupReloadNamesTask extends SimpleBackgroundableTask {
             Class<? extends ObjectType> type = ObjectType.class;
 
             List<String> oids = chunk.keySet().stream().map(AbstractReferencable::getOid).toList();
-            ObjectQuery query = MidPointUtils.DEFAULT_PRISM_CONTEXT.queryFor(type)
+            ObjectQuery query = client.getPrismContext().queryFor(type)
                     .id(oids.toArray(new String[0]))
                     .build();
 

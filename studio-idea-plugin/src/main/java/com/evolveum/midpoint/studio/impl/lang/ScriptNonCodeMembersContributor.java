@@ -14,6 +14,7 @@ import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.scope.PsiScopeProcessor;
 import com.intellij.psi.xml.XmlTag;
@@ -172,7 +173,7 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
 
             Class type = Object.class;
             if (!namePath.isEmpty()) {
-                type = getSourceVariableType(namePath);
+                type = getSourceVariableType(aClass.getProject(), namePath);
             }
 
             PsiVariable var = new GrDynamicImplicitProperty(psiManager, name, type.getName(), aClass.getQualifiedName());
@@ -230,12 +231,12 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
         return clazz != null ? clazz : Object.class;
     }
 
-    private Class getSourceVariableType(List<QName> names) {
+    private Class getSourceVariableType(Project project, List<QName> names) {
         if (names == null || names.isEmpty()) {
             return Object.class;
         }
 
-        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+        PrismContext ctx = StudioPrismContextService.getPrismContext(project);
         SchemaRegistry registry = ctx.getSchemaRegistry();
 
         List<ItemDefinition> results = new ArrayList<>();

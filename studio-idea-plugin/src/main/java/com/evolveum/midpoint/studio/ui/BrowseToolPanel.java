@@ -433,7 +433,7 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         QueryType query = new QueryType();
         query.setFilter(filter);
 
-        PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+        PrismContext ctx = StudioPrismContextService.getPrismContext(project);
         QueryFactory qf = ctx.queryFactory();
         ObjectPaging paging = qf.createPaging(this.paging.getFrom(), this.paging.getPageSize(),
                 ctx.path(ObjectType.F_NAME), OrderDirection.ASCENDING);

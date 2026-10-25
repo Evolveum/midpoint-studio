@@ -3,7 +3,6 @@ package com.evolveum.midpoint.studio.ui.trace.entry;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.studio.ui.trace.TraceUtils;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -66,7 +65,7 @@ public class PrismValueNode extends Node<PrismValue> {
             Referencable referencable = (Referencable) realValue;
             return create(string, referencable.asReferenceValue(), parent);
         } else if (realValue != null) {
-            ItemFactory itemFactory = MidPointUtils.DEFAULT_PRISM_CONTEXT.itemFactory();
+            ItemFactory itemFactory = PrismContext.get().itemFactory();
             return create(string, itemFactory.createPropertyValue(realValue), parent);
         } else {
             return create(string, null, parent);

@@ -48,7 +48,11 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
 
     private OpNode currentOpNode;
 
+    private final Project project;
+
     public AbstractOpTreePanel(@NotNull Project project) {
+        this.project = project;
+
         initLayout();
         updateModel(null);
         MessageBus bus = project.getMessageBus();
@@ -74,7 +78,7 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
             variablesValue.setText(null);
         } else {
             Format format = variablesDisplayAs.getFormat();
-            String text = format.format(obj.getObject(), new FormattingContext(currentOpNode));
+            String text = format.format(obj.getObject(), new FormattingContext(project, currentOpNode));
             variablesValue.setText(text);
             variablesValue.setCaretPosition(0);
         }

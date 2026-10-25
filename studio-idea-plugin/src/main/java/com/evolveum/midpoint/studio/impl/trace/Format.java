@@ -1,10 +1,10 @@
 package com.evolveum.midpoint.studio.impl.trace;
 
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.schema.traces.OpNode;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -153,7 +153,7 @@ public enum Format {
             return String.valueOf(obj);
         }
         try {
-            PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT; // todo fix
+            PrismContext prismContext = StudioPrismContextService.getPrismContext(ctx.getProject());
             PrismSerializer<?> serializer = dom ? prismContext.domSerializer() : prismContext.serializerFor(language);
             if (obj instanceof Item) {
                 Item<?, ?> item = (Item<?, ?>) obj;

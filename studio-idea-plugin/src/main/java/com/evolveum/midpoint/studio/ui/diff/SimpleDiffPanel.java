@@ -1,7 +1,9 @@
 package com.evolveum.midpoint.studio.ui.diff;
 
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.ui.CustomComboBoxAction;
 import com.evolveum.midpoint.studio.ui.delta.ObjectDeltaEditor;
@@ -83,6 +85,8 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
             String leftContent = "";
             String rightContent = "";
 
+            PrismContext prismContext = StudioPrismContextService.getPrismContext(project);
+
             // left should always be not null (read from file used to fetch right one from remote location)
             if (right != null) {
                 ObjectDelta<O> delta = left.diff(right, strategyAction.getSelected().getStrategy());
@@ -92,10 +96,10 @@ public class SimpleDiffPanel<O extends ObjectType> extends BorderLayoutPanel imp
 
                 delta.applyTo(o2);
 
-                leftContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, o1);
-                rightContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, o2);
+                leftContent = ClientUtils.serialize(prismContext, o1);
+                rightContent = ClientUtils.serialize(prismContext, o2);
             } else {
-                leftContent = ClientUtils.serialize(MidPointUtils.DEFAULT_PRISM_CONTEXT, left);
+                leftContent = ClientUtils.serialize(prismContext, left);
             }
 
 

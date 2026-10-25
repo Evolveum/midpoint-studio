@@ -12,6 +12,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.TraceDictionaryType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.TracingOutputType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
+import com.intellij.openapi.project.Project;
 
 import javax.xml.namespace.QName;
 
@@ -20,12 +21,18 @@ import javax.xml.namespace.QName;
  */
 public class FormattingContext {
 
+    private final Project project;
     private final OpNode currentOpNode;
     private final NameResolver resolver;
 
-    public FormattingContext(OpNode currentOpNode) {
+    public FormattingContext(Project project, OpNode currentOpNode) {
+        this.project = project;
         this.currentOpNode = currentOpNode;
         this.resolver = createNameResolver();
+    }
+
+    public Project getProject() {
+        return project;
     }
 
     private NameResolver createNameResolver() {

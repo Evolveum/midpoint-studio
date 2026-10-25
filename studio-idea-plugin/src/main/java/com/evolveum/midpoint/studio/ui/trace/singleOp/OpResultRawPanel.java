@@ -2,9 +2,9 @@ package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.ui.SimpleCheckboxAction;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
@@ -34,7 +34,11 @@ public class OpResultRawPanel extends BorderLayoutPanel {
     private OpNode currentNode;
     private boolean loaded;
 
+    private final Project project;
+
     public OpResultRawPanel(@NotNull Project project) {
+        this.project = project;
+
         initLayout();
 
         MessageBus bus = project.getMessageBus();
@@ -106,7 +110,7 @@ public class OpResultRawPanel extends BorderLayoutPanel {
             } else {
                 resultToShow = copyWithoutChildren(operationResult);
             }
-            PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+            PrismContext ctx = StudioPrismContextService.getPrismContext(project);
             String xml = ctx.xmlSerializer().serializeRealValue(resultToShow, new QName("operationResult"));
             LOG.info("Raw OpNode serialized in " + (System.currentTimeMillis() - start) + " ms; children = " + showChildren.isSelected());
             return xml;

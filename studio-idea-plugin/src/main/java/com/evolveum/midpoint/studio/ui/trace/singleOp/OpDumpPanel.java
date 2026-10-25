@@ -2,8 +2,8 @@ package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
-import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
@@ -32,7 +32,11 @@ public class OpDumpPanel extends BorderLayoutPanel {
 
     private JBTextArea text;
 
+    private final Project project;
+
     public OpDumpPanel(@NotNull Project project) {
+        this.project = project;
+
         initLayout();
 
         MessageBus bus = project.getMessageBus();
@@ -97,7 +101,7 @@ public class OpDumpPanel extends BorderLayoutPanel {
             texts = new ArrayList<>();
             texts.add(((MappingEvaluationTraceType) trace).getTextTrace());
             try {
-                PrismContext ctx = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+                PrismContext ctx = StudioPrismContextService.getPrismContext(project);
                 String xml = ctx.xmlSerializer().serializeRealValue(((MappingEvaluationTraceType) trace).getMapping(), new QName("mapping"));
 
                 texts.add(xml);

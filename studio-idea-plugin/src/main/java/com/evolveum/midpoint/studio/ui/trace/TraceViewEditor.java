@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.OpNodeTreeBuilder;
 import com.evolveum.midpoint.schema.traces.TraceParser;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.StudioNameResolver;
@@ -69,7 +70,7 @@ public class TraceViewEditor implements FileEditor, UserDataHolder, PossiblyDumb
             String extension = file.getExtension();
             boolean isZip = extension != null && extension.equalsIgnoreCase("zip");
 
-            PrismContext prismContext = MidPointUtils.DEFAULT_PRISM_CONTEXT;
+            PrismContext prismContext = StudioPrismContextService.getPrismContext(project);
             TraceParser parser = new TraceParser(prismContext);
             TracingOutputType tracingOutput = parser.parse(is, isZip, file.getCanonicalPath());
             LOG.info("Initializing TraceViewEditor - parsed tracing output: " + (System.currentTimeMillis() - start) + " ms");
