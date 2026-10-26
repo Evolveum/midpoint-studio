@@ -89,6 +89,9 @@ public class OpTreePanel extends JPanel {
 
         traceTreeTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         traceTreeTable.getTree().setRootVisible(false);
+        // set explicitly, the look and feel default differs (Aqua hides the handles) and without
+        // handles the tree keeps the top level operation open on collapse all
+        traceTreeTable.getTree().setShowsRootHandles(true);
         traceTreeTable.getTree().addTreeSelectionListener(this::traceTreeTableSelectionChanged);
 
         // Capture all TableColumn objects keyed by the TraceTreeViewColumn enum value

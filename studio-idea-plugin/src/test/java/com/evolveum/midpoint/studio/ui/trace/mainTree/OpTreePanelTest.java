@@ -9,7 +9,7 @@ import com.intellij.ui.components.panels.Wrapper;
 /**
  * Guards the expand all / collapse all behaviour of the trace tree: expand all makes every
  * operation node a visible row (the implementation expands in bulk, so the number of rows is
- * the only observable), collapse all keeps the root operation open one level, as it always did.
+ * the only observable), collapse all leaves only the root operation.
  */
 public class OpTreePanelTest extends BasePlatformTestCase {
 
@@ -49,7 +49,7 @@ public class OpTreePanelTest extends BasePlatformTestCase {
             assertEquals("root, a, a1, b", 4, panel.getRowCount());
 
             panel.collapseAll();
-            assertEquals("root with its direct children a and b", 3, panel.getRowCount());
+            assertEquals("root only", 1, panel.getRowCount());
 
             panel.expandAll();
             assertEquals("expanding again after collapse", 4, panel.getRowCount());
