@@ -24,11 +24,13 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.table.TableColumn;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.*;
@@ -344,13 +346,41 @@ public class OpTreePanel extends JPanel {
         return filterGroup;
     }
 
-    private void expandAll() {
-        for (int i = 0; i < traceTreeTable.getRowCount(); i++) {
-            traceTreeTable.getTree().expandRow(i);
+    /**
+     * Expands in one bulk call: expanding row by row fires an expansion event per node and the
+     * tree UI recomputes the expanded descendants on each, which is quadratic and freezes the
+     * EDT for seconds on large traces.
+     */
+    @VisibleForTesting
+    void expandAll() {
+        TreeModel model = traceTreeTable.getTree().getModel();
+
+        List<TreePath> paths = new ArrayList<>();
+        collectExpandablePaths(model, new TreePath(model.getRoot()), paths);
+
+        traceTreeTable.getTree().expandPaths(paths);
+    }
+
+    private static void collectExpandablePaths(TreeModel model, TreePath path, List<TreePath> paths) {
+        Object node = path.getLastPathComponent();
+        int count = model.getChildCount(node);
+        if (count == 0) {
+            return;
+        }
+
+        paths.add(path);
+        for (int i = 0; i < count; i++) {
+            collectExpandablePaths(model, path.pathByAddingChild(model.getChild(node, i)), paths);
         }
     }
 
-    private void collapseAll() {
+    @VisibleForTesting
+    int getRowCount() {
+        return traceTreeTable.getRowCount();
+    }
+
+    @VisibleForTesting
+    void collapseAll() {
         for (int i = traceTreeTable.getRowCount() - 1; i >= 0; i--) {
             traceTreeTable.getTree().collapseRow(i);
         }
