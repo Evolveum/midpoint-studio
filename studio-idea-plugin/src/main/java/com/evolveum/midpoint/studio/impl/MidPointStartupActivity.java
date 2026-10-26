@@ -57,6 +57,9 @@ public class MidPointStartupActivity implements ProjectActivity {
     @Nullable
     @Override
     public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
+        // kick off the default prism context build early, every consumer waits for it in the background
+        DefaultPrismContext.getInstance().ensureStarted();
+
         if (MidPointUtils.hasMidPointFacet(project)) {
             // listen for maven project refresh event (after import) and check whether facet is there
             MavenProjectsManager mpm = MavenProjectsManager.getInstance(project);

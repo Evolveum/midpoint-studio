@@ -32,7 +32,7 @@ public class StudioPrismContextServiceTest {
     public void testReturnsDefaultContextWhenNoProjectBound() {
         PrismContext context = PrismService.get().prismContext();
 
-        assertSame(StudioPrismContextService.DEFAULT_PRISM_CONTEXT, context);
+        assertSame(StudioPrismContextService.getDefaultPrismContext(), context);
         assertEquals(1, StudioPrismContextService.getDefaultContextFallbackCount());
     }
 
@@ -41,7 +41,7 @@ public class StudioPrismContextServiceTest {
         PrismContext context = StudioPrismContextService.runCallableWithDefaultContext(
                 () -> PrismService.get().prismContext());
 
-        assertSame(StudioPrismContextService.DEFAULT_PRISM_CONTEXT, context);
+        assertSame(StudioPrismContextService.getDefaultPrismContext(), context);
         assertEquals(0, StudioPrismContextService.getDefaultContextFallbackCount());
     }
 
@@ -58,11 +58,11 @@ public class StudioPrismContextServiceTest {
 
     @Test
     public void testContextSetIsIgnoredWhenNoProjectBound() {
-        PrismService.get().prismContext(StudioPrismContextService.DEFAULT_PRISM_CONTEXT);
+        PrismService.get().prismContext(StudioPrismContextService.getDefaultPrismContext());
 
         PrismContext context = PrismService.get().prismContext();
 
-        assertSame(StudioPrismContextService.DEFAULT_PRISM_CONTEXT, context);
+        assertSame(StudioPrismContextService.getDefaultPrismContext(), context);
         assertEquals(1, StudioPrismContextService.getDefaultContextFallbackCount());
     }
 

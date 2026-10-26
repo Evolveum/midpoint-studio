@@ -55,11 +55,6 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     private static final ThreadLocal<ContextKey> PRISM_SERVICE_PROJECT = new ThreadLocal<>();
 
     /**
-     * Default prism context initialized when class is loaded, will not change throughout the application lifecycle.
-     */
-    public static final PrismContext DEFAULT_PRISM_CONTEXT;
-
-    /**
      * Number of times the supplier fell back to the default context because no project was bound
      * to the current thread. The fallback is a normal case for UI/PSI threads, so it is not
      * logged per occurrence. A flood of fallbacks usually means a code path that should run
@@ -84,13 +79,13 @@ public final class StudioPrismContextService implements ProjectManagerListener {
                 if (key == null || !key.useDefaultPrismContext) {
                     reportDefaultContextFallback();
                 }
-                return DEFAULT_PRISM_CONTEXT;
+                return DefaultPrismContext.getInstance().getUnlessBuilding();
             }
 
             Project project = key.project;
             if (project.isDisposed()) {
                 LOG.debug("Project " + project.getName() + " is disposed, returning default prism context instance");
-                return DEFAULT_PRISM_CONTEXT;
+                return getDefaultPrismContext();
             }
 
             return StudioPrismContextService.getPrismContext(project);
@@ -99,6 +94,10 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         @Override
         public void prismContext(PrismContext prismContext) {
             LOG.debug("PrismService override supplier: prism context set to " + prismContext);
+
+            if (DefaultPrismContext.getInstance().acceptUnderConstruction(prismContext)) {
+                return;
+            }
 
             ContextKey key = PRISM_SERVICE_PROJECT.get();
             if (key == null || key.project == null) {
@@ -119,18 +118,29 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     };
 
     static {
-        LOG.info("Creating default prism context");
-        try {
-            DEFAULT_PRISM_CONTEXT = createPrismContext(null);
-        } catch (Exception ex) {
-            LOG.error("Couldn't initialize empty prism context", ex);
-
-            throw new IllegalStateException("Couldn't initialize prism context", ex);
-        }
-        LOG.info("Default prism context created");
-
+        // cheap and must happen before any prism context is built, the default context itself
+        // is built lazily in the background by DefaultPrismContext
         LOG.info("Attaching PrismService override supplier");
         PrismService.overrideSupplier(() -> PRISM_SERVICE);
+    }
+
+    /**
+     * Default prism context (no project, no extension schemas). Waits for the background build
+     * on first access, see {@link DefaultPrismContext#get()}.
+     */
+    public static @NotNull PrismContext getDefaultPrismContext() {
+        return DefaultPrismContext.getInstance().get();
+    }
+
+    static PrismContext createDefaultPrismContext() {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        try {
+            return runCallableWithDefaultContext(() -> createPrismContext(null));
+        } catch (Exception ex) {
+            throw new IllegalStateException("Couldn't create default prism context: " + ex.getMessage(), ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
     }
 
     private final @NotNull Project project;
@@ -186,7 +196,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
         LOG.info("Creating prism context for project: " + project.getName());
 
-        var previousContext = prismContext != null ? prismContext : DEFAULT_PRISM_CONTEXT;
+        var previousContext = prismContext != null ? prismContext : getDefaultPrismContext();
 
         ContextKey previousKey = bindKey(new ContextKey(this.project));
         try {

@@ -47,7 +47,7 @@ public class InitialObjectsCache extends ObjectCache<ObjectType> {
             LOG.error("Couldn't create initial objects cache reload query", ex);
         }
 
-        return createInitialObjectsQuery(StudioPrismContextService.DEFAULT_PRISM_CONTEXT);
+        return createInitialObjectsQuery(StudioPrismContextService.getDefaultPrismContext());
     }
 
     private ObjectQuery createInitialObjectsQuery(PrismContext ctx) {

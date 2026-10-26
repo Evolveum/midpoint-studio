@@ -113,7 +113,7 @@ public class MidPointClient {
                     .responseTimeout(settings.getRestResponseTimeout())
                     .prismContext(project != null ?
                             StudioPrismContextService.getPrismContext(project) :
-                            StudioPrismContextService.DEFAULT_PRISM_CONTEXT);
+                            StudioPrismContextService.getDefaultPrismContext());
 
             if (!suppressConsole) {
                 factory.messageListener((message) -> {

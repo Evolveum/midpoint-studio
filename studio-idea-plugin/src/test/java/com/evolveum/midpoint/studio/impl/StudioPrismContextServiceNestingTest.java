@@ -87,7 +87,7 @@ public class StudioPrismContextServiceNestingTest extends BasePlatformTestCase {
         // no key is bound anymore, so this call counts as a fallback to the default context
         PrismContext context = PrismService.get().prismContext();
 
-        assertSame(StudioPrismContextService.DEFAULT_PRISM_CONTEXT, context);
+        assertSame(StudioPrismContextService.getDefaultPrismContext(), context);
         assertEquals(1, StudioPrismContextService.getDefaultContextFallbackCount());
     }
 }
