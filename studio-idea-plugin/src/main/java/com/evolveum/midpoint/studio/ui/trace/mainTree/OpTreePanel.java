@@ -4,6 +4,7 @@ import com.evolveum.midpoint.schema.traces.OpNode;
 import com.evolveum.midpoint.schema.traces.OpType;
 import com.evolveum.midpoint.schema.traces.PerformanceCategory;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.trace.Options;
 import com.evolveum.midpoint.studio.impl.trace.TraceService;
 import com.evolveum.midpoint.studio.ui.trace.lens.TraceTreeViewColumn;
@@ -415,22 +416,22 @@ public class OpTreePanel extends JPanel {
     }
 
     public void selectedTraceNodeChange(TreePath path) {
+        OpNode selected = null;
         if (path != null) {
             AbstractOpTreeTableNode node = (AbstractOpTreeTableNode) path.getLastPathComponent();
-            notifier.selectedTraceNodeChange(node != null ? node.getUserObject() : null);
-        } else {
-            notifier.selectedTraceNodeChange(null);
+            selected = node != null ? node.getUserObject() : null;
         }
+
+        // subscribers serialize and format prism values of the selected node on this thread,
+        // prism internals resolve definitions through PrismContext.get(), so bind the project here
+        OpNode opNode = selected;
+        StudioPrismContextService.runWithProject(project, () -> notifier.selectedTraceNodeChange(opNode));
     }
 
     public void selectNotify() {
         int index = traceTreeTable.getSelectionModel().getLeadSelectionIndex();
-        if (index >= 0) {
-            TreePath path = traceTreeTable.getTree().getPathForRow(index);
-            selectedTraceNodeChange(path);
-        } else {
-            notifier.selectedTraceNodeChange(null);
-        }
+        TreePath path = index >= 0 ? traceTreeTable.getTree().getPathForRow(index) : null;
+        selectedTraceNodeChange(path);
     }
 
     public void deselectNotify() {

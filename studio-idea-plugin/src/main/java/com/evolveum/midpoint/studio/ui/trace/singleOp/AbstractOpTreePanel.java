@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.ui.trace.singleOp;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.MidPointProjectNotifier;
 import com.evolveum.midpoint.studio.impl.trace.Format;
 import com.evolveum.midpoint.studio.impl.trace.FormattingContext;
@@ -78,7 +79,8 @@ public abstract class AbstractOpTreePanel extends BorderLayoutPanel {
             variablesValue.setText(null);
         } else {
             Format format = variablesDisplayAs.getFormat();
-            String text = format.format(obj.getObject(), new FormattingContext(project, currentOpNode));
+            String text = StudioPrismContextService.runSupplierWithProject(project,
+                    () -> format.format(obj.getObject(), new FormattingContext(project, currentOpNode)));
             variablesValue.setText(text);
             variablesValue.setCaretPosition(0);
         }

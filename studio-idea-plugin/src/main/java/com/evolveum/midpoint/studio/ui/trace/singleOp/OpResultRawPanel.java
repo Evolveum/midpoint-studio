@@ -92,7 +92,8 @@ public class OpResultRawPanel extends BorderLayoutPanel {
             this.text.setText(null);
         } else {
             if (loadAutomatically.isSelected() || forceLoad) {
-                this.text.setText(dump(node.getResult()));
+                var text = StudioPrismContextService.runSupplierWithProject(project, () -> dump(node.getResult()));
+                this.text.setText(text);
                 this.text.setCaretPosition(0);
                 loaded = true;
             } else {
