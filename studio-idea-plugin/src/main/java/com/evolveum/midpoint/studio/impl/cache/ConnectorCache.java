@@ -53,7 +53,10 @@ public class ConnectorCache extends ObjectCache<ConnectorType> {
 
     }
 
-    private final Map<String, CacheValue> schemaCache = new HashMap<>();
+    /**
+     * Replaced as a whole by a reload, never mutated, so readers need no lock.
+     */
+    private volatile Map<String, CacheValue> schemaCache = new HashMap<>();
 
     public ConnectorCache(@NotNull Project project) {
         super(project, ConnectorType.class);
@@ -61,28 +64,29 @@ public class ConnectorCache extends ObjectCache<ConnectorType> {
 
     @Override
     void clear() {
-        schemaCache.clear();
+        schemaCache = new HashMap<>();
 
         super.clear();
     }
 
     @Override
     protected void cacheObjects(Collection<MidPointObject> objects) {
-        schemaCache.clear();
-
         super.cacheObjects(objects);
 
+        Map<String, CacheValue> loaded = new HashMap<>();
         for (ConnectorType connector : list()) {
             GlobalDynamicNamespacePrefixMapper.registerPrefixGlobal(
                     connector.getNamespace(), SchemaConstants.CONNECTOR_CONFIGURATION_PREFIX);
 
             try {
                 String xml = ClientUtils.serialize(PrismContext.get(), connector);
-                schemaCache.put(connector.getOid(), new CacheValue(connector, buildIcfSchema(connector.getOid(), xml), buildConnectorSchema(connector.getOid(), xml)));
+                loaded.put(connector.getOid(), new CacheValue(connector, buildIcfSchema(connector.getOid(), xml), buildConnectorSchema(connector.getOid(), xml)));
             } catch (SchemaException ex) {
                 LOG.error("Couldn't serialize connector to xml", ex);
             }
         }
+
+        schemaCache = loaded;
     }
 
     private XmlFile buildIcfSchema(String oid, String connector) {

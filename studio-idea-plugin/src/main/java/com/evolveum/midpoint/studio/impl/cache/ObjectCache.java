@@ -31,9 +31,10 @@ public class ObjectCache<O extends ObjectType> extends Cache {
 
     private final Class<O> type;
 
-    private final Map<String, O> cache = new HashMap<>();
-
-    private long lastReloadTime;
+    /**
+     * Replaced as a whole by a reload, never mutated, so readers need no lock.
+     */
+    private volatile Map<String, O> cache = new HashMap<>();
 
     public ObjectCache(@NotNull Project project, @NotNull Class<O> type) {
         super(project);
@@ -41,18 +42,14 @@ public class ObjectCache<O extends ObjectType> extends Cache {
         this.type = type;
     }
 
-    public synchronized O get(String oid) {
-        if (System.currentTimeMillis() - lastReloadTime > getTtl() * 1000) {
-            reload();
-        }
+    public O get(String oid) {
+        refreshIfStale();
 
         return cache.get(oid);
     }
 
-    public synchronized Collection<O> list() {
-        if (System.currentTimeMillis() - lastReloadTime > getTtl() * 1000) {
-            reload();
-        }
+    public Collection<O> list() {
+        refreshIfStale();
 
         return cache.values();
     }
@@ -61,15 +58,26 @@ public class ObjectCache<O extends ObjectType> extends Cache {
     void clear() {
         LOG.debug("Clearing cache for {}: ", getClass().getSimpleName(), type.getSimpleName());
 
-        cache.clear();
+        cache = new HashMap<>();
 
         LOG.debug("Cache cleared for {}: {}", getClass().getSimpleName(), type.getSimpleName());
     }
 
-    public synchronized void reload() {
+    @Override
+    public void reload() {
         LOG.debug("Reloading cache for {}: {}", getClass().getSimpleName(), type.getSimpleName());
         long time = System.currentTimeMillis();
 
+        cacheObjects(loadObjects());
+
+        LOG.debug("Cache reloaded for {}: {}, size: {} in {}ms",
+                getClass().getSimpleName(), type.getSimpleName(), cache.size(), (System.currentTimeMillis() - time));
+    }
+
+    /**
+     * Fetches the objects from the environment. Overridden in tests to supply objects without a server.
+     */
+    protected Collection<MidPointObject> loadObjects() {
         MidPointClient client = new MidPointClient(null, getEnvironment(), true, true);
 
         Collection<SelectorOptions<GetOperationOptions>> options = new ArrayList<>();
@@ -79,12 +87,7 @@ public class ObjectCache<O extends ObjectType> extends Cache {
         }
 
         SearchResult result = client.search(type, createReloadQuery(), options);
-        cacheObjects(result.getObjects());
-
-        lastReloadTime = System.currentTimeMillis();
-
-        LOG.debug("Cache reloaded for {}: {}, size: {} in {}ms",
-                getClass().getSimpleName(), type.getSimpleName(), cache.size(), (System.currentTimeMillis() - time));
+        return result.getObjects();
     }
 
     protected ObjectQuery createReloadQuery() {
@@ -92,23 +95,23 @@ public class ObjectCache<O extends ObjectType> extends Cache {
     }
 
     protected void cacheObjects(Collection<MidPointObject> objects) {
-        cache.clear();
-
+        Map<String, O> loaded = new HashMap<>();
         for (MidPointObject object : objects) {
-            cacheObject(object);
+            cacheObject(loaded, object);
         }
 
-        lastReloadTime = System.currentTimeMillis();
+        cache = loaded;
+        markReloaded();
     }
 
-    protected void cacheObject(MidPointObject object) {
+    private void cacheObject(Map<String, O> target, MidPointObject object) {
         try {
             PrismParser parser = ClientUtils.createParser(PrismContext.get(), object.getContent());
 
             PrismObject<?> prismObject = parser.parse();
             O obj = (O) prismObject.asObjectable();
 
-            cache.put(obj.getOid(), obj);
+            target.put(obj.getOid(), obj);
         } catch (Exception ex) {
             if (ex instanceof ProcessCanceledException) {
                 throw (ProcessCanceledException) ex;
