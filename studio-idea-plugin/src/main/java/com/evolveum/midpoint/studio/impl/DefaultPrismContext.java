@@ -6,9 +6,7 @@ import com.intellij.codeInsight.hints.ParameterHintsPassFactory;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +35,10 @@ public final class DefaultPrismContext {
 
     private final Supplier<PrismContext> builder;
 
+    private final BackgroundReload build =
+            new BackgroundReload("default prism context", this::buildOnce)
+                    .withProgressTitle("Loading midPoint schemas");
+
     private final AtomicBoolean edtWaitReported = new AtomicBoolean();
 
     private volatile CompletableFuture<PrismContext> future;
@@ -60,18 +62,16 @@ public final class DefaultPrismContext {
      * task on another thread while the caller waits, and that thread calls back into this holder.
      */
     public void ensureStarted() {
-        CompletableFuture<PrismContext> created;
         synchronized (this) {
             CompletableFuture<PrismContext> current = future;
             if (current != null && !current.isCompletedExceptionally()) {
                 return;
             }
 
-            created = new CompletableFuture<>();
-            future = created;
+            future = new CompletableFuture<>();
         }
 
-        start(created);
+        build.request();
     }
 
     /**
@@ -151,40 +151,25 @@ public final class DefaultPrismContext {
         return current.getNow(null);
     }
 
-    private void start(CompletableFuture<PrismContext> result) {
-        Runnable build = () -> {
-            long start = System.currentTimeMillis();
-            LOG.info("Creating default prism context");
-            buildingThread = Thread.currentThread();
-            try {
-                PrismContext context = builder.get();
-                LOG.info("Default prism context created in " + (System.currentTimeMillis() - start) + " ms");
+    private void buildOnce() {
+        CompletableFuture<PrismContext> result = future;
 
-                result.complete(context);
-                restartHighlighting();
-            } catch (Throwable ex) {
-                LOG.warn("Couldn't create default prism context, the next access retries", ex);
+        long start = System.currentTimeMillis();
+        LOG.info("Creating default prism context");
+        buildingThread = Thread.currentThread();
+        try {
+            PrismContext context = builder.get();
+            LOG.info("Default prism context created in " + (System.currentTimeMillis() - start) + " ms");
 
-                result.completeExceptionally(ex);
-            } finally {
-                underConstruction = null;
-                buildingThread = null;
-            }
-        };
+            result.complete(context);
+            restartHighlighting();
+        } catch (Throwable ex) {
+            LOG.warn("Couldn't create default prism context, the next access retries", ex);
 
-        Application application = ApplicationManager.getApplication();
-        if (application == null) {
-            Thread thread = new Thread(build, "default prism context");
-            thread.setDaemon(true);
-            thread.start();
-        } else {
-            ProgressManager.getInstance().run(new Task.Backgroundable(null, "Loading midPoint schemas", false) {
-
-                @Override
-                public void run(@NotNull ProgressIndicator indicator) {
-                    build.run();
-                }
-            });
+            result.completeExceptionally(ex);
+        } finally {
+            underConstruction = null;
+            buildingThread = null;
         }
     }
 

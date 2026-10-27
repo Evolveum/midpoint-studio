@@ -29,6 +29,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
@@ -113,7 +114,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
                 return;
             }
 
-            StudioPrismContextService.get(project).setPrismContext(prismContext);
+            StudioPrismContextService.get(project).acceptFromPrismService(prismContext);
         }
     };
 
@@ -148,7 +149,20 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     /**
      * Prism context specific for each project.
      */
-    private PrismContext prismContext;
+    private volatile PrismContext prismContext;
+
+    /**
+     * Background build of the project context, see {@link #getPrismContext()}.
+     */
+    private final BackgroundReload reload;
+
+    /**
+     * The build thread and the instance it is assembling. Only that thread sees the instance
+     * before it is complete: prism asks PrismContext.get() for it during initialize() and reload().
+     */
+    private volatile Thread buildingThread;
+
+    private volatile PrismContext underConstruction;
 
     private final AtomicLong reloadCount = new AtomicLong();
 
@@ -157,6 +171,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     @SuppressWarnings("unused")
     public StudioPrismContextService(@NotNull Project project) {
         this.project = project;
+        this.reload = BackgroundReload.forProject(project, "prism context for " + project.getName(), this::reloadPrismContext);
 
         initialize();
     }
@@ -171,7 +186,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
             @Override
             public void environmentCacheManagerReloaded() {
-                prismContext = reloadPrismContext();
+                reload.request();
             }
         });
     }
@@ -180,15 +195,53 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         return project.getService(StudioPrismContextService.class).getPrismContext();
     }
 
-    public synchronized @NotNull PrismContext getPrismContext() {
-        if (prismContext == null) {
-            reloadPrismContext();
+    /**
+     * Never builds on the caller's thread: the first access answers with the default context and
+     * schedules the project context build in the background, later accesses return the last built
+     * context. Rebuilds are driven by the environment cache reload.
+     */
+    public @NotNull PrismContext getPrismContext() {
+        if (Thread.currentThread() == buildingThread) {
+            PrismContext building = underConstruction;
+            if (building != null) {
+                return building;
+            }
         }
-        return prismContext;
+
+        PrismContext current = prismContext;
+        if (current != null) {
+            return current;
+        }
+
+        // a running build already produces a context, only an idle service needs a new one
+        if (!reload.isRunning()) {
+            reload.request();
+        }
+
+        return getDefaultPrismContext();
     }
 
-    private synchronized void setPrismContext(@NotNull PrismContext prismContext) {
-        this.prismContext = prismContext;
+    @VisibleForTesting
+    void waitForReload() throws Exception {
+        reload.waitForIdle(Duration.ofSeconds(60));
+    }
+
+    @VisibleForTesting
+    long getReloadCount() {
+        return reloadCount.get();
+    }
+
+    /**
+     * PrismContextImpl registers itself through PrismService in its constructor. Accepted only from
+     * the build running in this service, a stray registration must never replace the project context.
+     */
+    void acceptFromPrismService(@NotNull PrismContext prismContext) {
+        if (Thread.currentThread() != buildingThread) {
+            LOG.debug("Ignoring prism context set outside of a build for project " + project.getName());
+            return;
+        }
+
+        underConstruction = prismContext;
     }
 
     private synchronized PrismContext reloadPrismContext() {
@@ -196,33 +249,37 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
         LOG.info("Creating prism context for project: " + project.getName());
 
-        var previousContext = prismContext != null ? prismContext : getDefaultPrismContext();
-
         ContextKey previousKey = bindKey(new ContextKey(this.project));
+        buildingThread = Thread.currentThread();
         try {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
             try {
-                prismContext = createPrismContext(r -> registerExtensionSchemas(project, r));
-                registerResourceSchemas(prismContext, () -> EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_RESOURCE));
-                registerSchemaObjects(project, prismContext.getSchemaRegistry());
+                PrismContext context = createPrismContext(r -> registerExtensionSchemas(project, r));
+                underConstruction = context;
 
-                prismContext.reload();
+                registerResourceSchemas(context, () -> EnvironmentCacheManager.getCache(project, EnvironmentCacheManager.KEY_RESOURCE));
+                registerSchemaObjects(project, context.getSchemaRegistry());
+
+                context.reload();
+
+                // published only now, readers on other threads got the previous context so far
+                prismContext = context;
             } catch (Exception ex) {
-                // cancellation (e.g. indexer read action cancelled by a write action) must propagate,
-                // and prismContext must stay as it was: on first load it stays null so the next
-                // access retries instead of being pinned to the default context
+                // cancellation must propagate, and prismContext stays as it was: on first load it
+                // stays null so the next access schedules a new build instead of being pinned to
+                // the default context
                 RunnableUtils.rethrowIfCancellation(ex);
 
                 LOG.error("Couldn't initialize prism context", ex);
-
-                prismContext = previousContext;
             } finally {
                 Thread.currentThread().setContextClassLoader(cl);
 
                 LOG.info("Prism context created for project: " + project.getName());
             }
         } finally {
+            underConstruction = null;
+            buildingThread = null;
             restoreKey(previousKey);
         }
 

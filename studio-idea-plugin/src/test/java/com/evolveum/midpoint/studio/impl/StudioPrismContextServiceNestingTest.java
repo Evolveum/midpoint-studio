@@ -28,15 +28,21 @@ public class StudioPrismContextServiceNestingTest extends BasePlatformTestCase {
         Project project = getProject();
 
         StudioPrismContextService.runWithProject(project, () -> {
-            // first access: the service context may be null, so the supplier triggers
-            // a context reload on this thread
+            // first access: the service context may be null, so the supplier answers with the
+            // default context and schedules the project context build in the background
             PrismService.get().prismContext();
+            try {
+                StudioPrismContextService.get(project).waitForReload();
+            } catch (Exception ex) {
+                throw new AssertionError(ex);
+            }
 
-            // the nested reload must not remove the outer runWithProject key,
-            // so this call must not fall back to the default prism context
+            // the outer runWithProject key must still be bound, so this call is routed to the
+            // project context and must not fall back to the default prism context
             PrismContext context = PrismService.get().prismContext();
 
             assertSame(StudioPrismContextService.get(project).getPrismContext(), context);
+            assertNotSame(StudioPrismContextService.getDefaultPrismContext(), context);
             assertEquals(0, StudioPrismContextService.getDefaultContextFallbackCount());
         });
     }
