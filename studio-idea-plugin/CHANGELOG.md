@@ -4,6 +4,7 @@
 ### Added
 - Support for Intellij Idea 2026.1, 2026.2, 2026.3
 - Basic MEL support - syntax highlighting, autocompletion, inlays, documentation
+- Plugin exceptions and freezes can be reported to JetBrains Marketplace from the IDE error dialog
 
 ### Changed
 - Updated MidPoint libraries to version 4.11

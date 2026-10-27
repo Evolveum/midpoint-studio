@@ -13,6 +13,9 @@
     <resource-bundle>messages.MidPointStudio</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- Sends uncaught exceptions and freezes attributed to this plugin to JetBrains Marketplace -->
+        <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
+
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.ConsoleService"/>
 
         <projectService serviceImplementation="com.evolveum.midpoint.studio.impl.cache.EnvironmentCacheManager"/>
