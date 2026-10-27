@@ -20,6 +20,8 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.SchemaType;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.util.messages.MessageBus;
@@ -32,6 +34,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -171,7 +174,8 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     @SuppressWarnings("unused")
     public StudioPrismContextService(@NotNull Project project) {
         this.project = project;
-        this.reload = BackgroundReload.forProject(project, "prism context for " + project.getName(), this::reloadPrismContext);
+        this.reload = BackgroundReload.forProject(project, "prism context for " + project.getName(), this::reloadPrismContext)
+                .withProgressTitle("Building prism context");
 
         initialize();
     }
@@ -219,6 +223,29 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         }
 
         return getDefaultPrismContext();
+    }
+
+    /**
+     * Waits for the running or pending project context build, checking the indicator between
+     * short waits. Cancelling the indicator stops the wait, never the build.
+     */
+    public void awaitReload(@NotNull ProgressIndicator indicator) {
+        while (true) {
+            indicator.checkCanceled();
+            try {
+                reload.waitForIdle(Duration.ofMillis(200));
+                return;
+            } catch (TimeoutException ex) {
+                // check cancellation and wait again
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new ProcessCanceledException(ex);
+            }
+        }
+    }
+
+    public boolean isReloading() {
+        return reload.isRunning();
     }
 
     @VisibleForTesting

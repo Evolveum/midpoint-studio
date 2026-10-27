@@ -1,6 +1,8 @@
 package com.evolveum.midpoint.studio.impl;
 
 import com.evolveum.midpoint.prism.PrismContext;
+import com.intellij.openapi.progress.EmptyProgressIndicator;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 import java.lang.reflect.Proxy;
@@ -67,6 +69,34 @@ public class StudioPrismContextServiceReloadTest extends BasePlatformTestCase {
         StudioPrismContextService.runWithProject(getProject(), () -> service.acceptFromPrismService(stray));
 
         assertSame("stray set ignored", built, service.getPrismContext());
+    }
+
+    public void testAwaitReloadReturnsOnceTheBuildLanded() throws Exception {
+        StudioPrismContextService service = new StudioPrismContextService(getProject());
+
+        PrismContext first = service.getPrismContext();
+        service.awaitReload(new EmptyProgressIndicator());
+
+        assertNotSame("project context landed", first, service.getPrismContext());
+        assertFalse(service.isReloading());
+    }
+
+    public void testAwaitReloadStopsWaitingWhenCancelledButTheBuildCompletes() throws Exception {
+        StudioPrismContextService service = new StudioPrismContextService(getProject());
+        service.getPrismContext();
+
+        EmptyProgressIndicator cancelled = new EmptyProgressIndicator();
+        cancelled.cancel();
+        try {
+            service.awaitReload(cancelled);
+            fail("cancelled indicator must stop the wait");
+        } catch (ProcessCanceledException expected) {
+            // the wait stops, the build does not
+        }
+
+        service.waitForReload();
+        assertEquals(1, service.getReloadCount());
+        assertNotSame(StudioPrismContextService.getDefaultPrismContext(), service.getPrismContext());
     }
 
     public void testEnvironmentCacheReloadRebuildsProjectContext() throws Exception {

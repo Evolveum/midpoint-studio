@@ -2,7 +2,7 @@
 
 ## [4.11.0]
 ### Added
-- Support for Intellij Idea 2026.1
+- Support for Intellij Idea 2026.1, 2026.2, 2026.3
 - Basic MEL support - syntax highlighting, autocompletion, inlays, documentation
 
 ### Changed
@@ -12,6 +12,7 @@
 ### Fixed
 - MID-11215 Fixed NPE in documentation generator.
 - MID-11199 Fixed issue when trying to upload whole directory containing objects.
+- Plugin (IDE) freezes when prism context is loading.
 
 ## [4.10.0]
 ### Added
