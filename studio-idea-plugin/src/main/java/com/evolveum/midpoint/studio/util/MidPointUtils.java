@@ -12,11 +12,9 @@ import com.evolveum.midpoint.studio.client.ClientUtils;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.studio.impl.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
-import com.evolveum.midpoint.studio.ui.TreeTableColumnDefinition;
 import com.evolveum.midpoint.studio.ui.ToolbarAction;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
-import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -74,17 +72,11 @@ import com.intellij.util.messages.MessageBus;
 import com.intellij.util.ui.ColorIcon;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.swingx.JXTreeTable;
-import org.jdesktop.swingx.table.DefaultTableColumnModelExt;
-import org.jdesktop.swingx.table.TableColumnExt;
-import org.jdesktop.swingx.table.TableColumnModelExt;
-import org.jdesktop.swingx.treetable.TreeTableModel;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
-import javax.swing.table.TableColumn;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
@@ -385,76 +377,6 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
         };
     }
 
-    /**
-     * @deprecated user {@link com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable}
-     */
-    @Deprecated
-    public static <R> JXTreeTable createTable(TreeTableModel model, List<TreeTableColumnDefinition<R, ?>> columns) {
-        JXTreeTable table = new JXTreeTable();
-        table.setRootVisible(false);
-        table.setEditable(false);
-        table.setDragEnabled(false);
-        table.setHorizontalScrollEnabled(true);
-        table.setTreeTableModel(model);
-        table.setLeafIcon(null);
-        table.setClosedIcon(null);
-        table.setOpenIcon(null);
-
-        if (columns != null) {
-            applyColumnDefinitions(columns, table);
-        }
-
-        table.packAll();
-
-        return table;
-    }
-
-    /**
-     * @deprecated user {@link com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable}
-     */
-    @Deprecated
-    @Experimental
-    public static JXTreeTable createTable2(TreeTableModel model, TableColumnModelExt columnModel, boolean disableHack) {
-
-        JXTreeTable table = new JXTreeTable(model) {
-            @Override
-            protected void resetDefaultTableCellRendererColors(Component renderer, int row, int column) {
-                if (!disableHack) {
-                    super.resetDefaultTableCellRendererColors(renderer, row, column);
-                }
-            }
-        };
-        table.setAutoCreateColumnsFromModel(false);
-        table.setColumnModel(columnModel);
-        table.setRootVisible(false);
-        table.setEditable(false);
-        table.setDragEnabled(false);
-        table.setHorizontalScrollEnabled(true);
-        table.setSelectionModel(table.getSelectionModel());        // todo fix
-        table.setLeafIcon(null);
-        table.setClosedIcon(null);
-        table.setOpenIcon(null);
-
-        table.packAll();
-
-        return table;
-    }
-
-    private static <R> void applyColumnDefinitions(List<TreeTableColumnDefinition<R, ?>> columnDefinitions, JXTreeTable table) {
-        for (int i = 0; i < columnDefinitions.size(); i++) {
-            TreeTableColumnDefinition<R, ?> columnDef = columnDefinitions.get(i);
-
-            TableColumn column = table.getColumnModel().getColumn(i);
-            column.setPreferredWidth(columnDef.getSize());
-            if (columnDef.getMinimalSize() != null) {
-                column.setMinWidth(columnDef.getMinimalSize());
-            }
-            if (columnDef.getTableCellRenderer() != null) {
-                column.setCellRenderer(columnDef.getTableCellRenderer());
-            }
-        }
-    }
-
     public static String getName(PrismObject obj) {
         return obj != null ? getOrigFromPolyString(obj.getName()) : null;
     }
@@ -680,23 +602,6 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
         }
 
         return new QName(namespace, localPart);
-    }
-
-    public static <R> TableColumnModelExt createTableColumnModel(List<TreeTableColumnDefinition<R, ?>> columnDefinitions) {
-        TableColumnModelExt model = new DefaultTableColumnModelExt();
-        int index = 0;
-        for (TreeTableColumnDefinition<R, ?> columnDefinition : columnDefinitions) {
-            TableColumnExt column = new TableColumnExt(index++, columnDefinition.getSize(),
-                    columnDefinition.getTableCellRenderer(), null);
-            column.setIdentifier(columnDefinition.getHeader());
-            column.setEditable(false);
-            column.setTitle(columnDefinition.getHeader());
-            if (columnDefinition.getMinimalSize() != null) {
-                column.setMinWidth(columnDefinition.getMinimalSize());
-            }
-            model.addColumn(column);
-        }
-        return model;
     }
 
     public static boolean isObjectTypeElement(XmlTag tag) {

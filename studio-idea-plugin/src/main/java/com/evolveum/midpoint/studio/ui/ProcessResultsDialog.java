@@ -8,7 +8,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectType;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.wm.IdeFocusManager;
-import org.jdesktop.swingx.combobox.ListComboBoxModel;
+import com.intellij.ui.CollectionComboBoxModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -95,7 +95,7 @@ public class ProcessResultsDialog extends DialogWrapper {
 
         execution.setSelectedItem(options.getExecution());
 
-        generate.setModel(new ListComboBoxModel<Generator>(GENERATORS));
+        generate.setModel(new CollectionComboBoxModel<>(GENERATORS));
         generate.getModel().setSelectedItem(options.getGenerator());
         generate.setRenderer(new DefaultListCellRenderer() {
 

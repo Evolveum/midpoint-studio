@@ -5,8 +5,8 @@ import com.evolveum.midpoint.studio.impl.Environment;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.ui.CollectionComboBoxModel;
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -88,7 +88,7 @@ public class EncryptedPropertyEditorDialog extends DialogWrapper {
         list.add(null);
         list.addAll(environments);
 
-        ComboBoxModel model = new ListComboBoxModel(list);
+        ComboBoxModel model = new CollectionComboBoxModel(list);
         environment.setModel(model);
 
         key.setText(property.getKey());

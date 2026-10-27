@@ -23,9 +23,9 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.wm.IdeFocusManager;
+import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.util.ui.JBUI;
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -101,7 +101,7 @@ public class EnvironmentEditorDialog extends DialogWrapper {
         }
         this.selectable = environment;
 
-        this.proxyType.setModel(new ListComboBoxModel(Arrays.asList(ProxyType.values())));
+        this.proxyType.setModel(new CollectionComboBoxModel(Arrays.asList(ProxyType.values())));
 
         fillInFields();
 

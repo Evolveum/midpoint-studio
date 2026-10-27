@@ -2,9 +2,9 @@ package com.evolveum.midpoint.studio.ui;
 
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.components.BorderLayoutPanel;
-import org.jdesktop.swingx.combobox.ListComboBoxModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +31,7 @@ public class MatchEnvironmentPanel extends BorderLayoutPanel {
         if (environments != null) {
             environmentList.addAll(environments);
         }
-        this.environments.setModel(new ListComboBoxModel(environmentList));
+        this.environments.setModel(new CollectionComboBoxModel(environmentList));
     }
 
     public Environment getEnvironment() {

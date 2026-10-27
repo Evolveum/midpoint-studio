@@ -11,7 +11,6 @@ import com.intellij.openapi.actionSystem.ActionPopupMenu;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.ui.TreeTableSpeedSearch;
 import org.apache.commons.lang3.StringUtils;
-import org.jdesktop.swingx.UIAction;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +37,7 @@ public class ObjectsTreeTable extends DefaultTreeTable<List<ObjectType>, Objects
 
         setupSpeedSearch();
 
-        getActionMap().put("copy", new UIAction("copy") {
+        getActionMap().put("copy", new AbstractAction("copy") {
 
             @Override
             public void actionPerformed(ActionEvent e) {
