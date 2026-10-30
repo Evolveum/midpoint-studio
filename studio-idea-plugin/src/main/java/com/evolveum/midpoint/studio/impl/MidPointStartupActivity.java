@@ -199,6 +199,9 @@ public class MidPointStartupActivity implements ProjectActivity {
     private void validateCredentialsConfiguration(Module module) {
         Project project = module.getProject();
 
+        // load credentials database early on background thread, so later calls from EDT use the cache
+        EncryptionService.getInstance(project).ensureLoaded();
+
         MidPointService ms = MidPointService.get(project);
         boolean ask = ms.getSettings().isAskToValidateEnvironmentCredentials();
         if (!ask) {

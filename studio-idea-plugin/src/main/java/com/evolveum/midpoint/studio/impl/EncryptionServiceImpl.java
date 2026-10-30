@@ -3,9 +3,17 @@ package com.evolveum.midpoint.studio.impl;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
+import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.newvfs.BulkFileListener;
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import de.slackspace.openkeepass.KeePassDatabase;
 import de.slackspace.openkeepass.domain.*;
 import org.apache.commons.lang3.StringUtils;
@@ -19,9 +27,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Viliam Repan (lazyman).
+ * Keeps the decrypted credentials database in memory. Master password (read from keychain) and the
+ * database are loaded once and cached together with the computed status. The cache is invalidated
+ * when the credentials file changes on disk (VFS event or modification time check) or when the master
+ * password changes.
+ *
+ * Reading keychain and opening the database are slow. Loading therefore never blocks EDT or a read
+ * action: in those contexts a background load is scheduled and the current (possibly empty) cache
+ * is returned. On other threads the load runs synchronously.
  */
-public class EncryptionServiceImpl implements EncryptionService {
+public class EncryptionServiceImpl implements EncryptionService, Disposable {
 
     private static final Logger LOG = Logger.getInstance(EncryptionServiceImpl.class);
 
@@ -29,14 +44,54 @@ public class EncryptionServiceImpl implements EncryptionService {
 
     private static final String DATABASE_NAME = "Credentials";
 
-    private Project project;
+    private static final long FILE_CHECK_INTERVAL = 1000L;
+
+    private final Project project;
+
+    private final Object lock = new Object();
+
+    // all fields below are guarded by lock
 
     private KeePassFile database;
+
+    private String masterPassword;
+
+    private boolean passwordLoaded;
+
+    private boolean loaded;
+
+    private boolean loading;
+
+    private StatusMessage status = new StatusMessage(Status.UNKNOWN, "Credentials not loaded yet.");
+
+    private long fileModified;
+
+    private long fileLength;
+
+    private long lastFileCheck;
 
     public EncryptionServiceImpl(@NotNull Project project) {
         this.project = project;
 
         LOG.info("Initializing " + getClass().getSimpleName());
+
+        project.getMessageBus().connect(this).subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
+
+            @Override
+            public void after(@NotNull List<? extends VFileEvent> events) {
+                String path = FileUtil.toSystemIndependentName(getDatabaseFile().getAbsolutePath());
+                for (VFileEvent event : events) {
+                    if (FileUtil.pathsEqual(path, event.getPath())) {
+                        fileChangedOnDisk();
+                        return;
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void dispose() {
     }
 
     @Override
@@ -47,22 +102,24 @@ public class EncryptionServiceImpl implements EncryptionService {
             return;
         }
 
-        MidPointConfiguration settings = MidPointService.get(project).getSettings();
-        if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
+        String projectId = getProjectId();
+        if (projectId == null) {
             return;
         }
 
-        MidPointUtils.setPassword(settings.getProjectId(), masterPassword);
+        MidPointUtils.setPassword(projectId, masterPassword);
 
-        refresh(true, true);
+        setCachedPassword(masterPassword);
+
+        load(true, true, false);
     }
 
     @Override
     public void changeMasterPassword(String oldPassword, String newPassword) {
         LOG.info("Changing master password");
 
-        MidPointConfiguration settings = MidPointService.get(project).getSettings();
-        if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
+        String projectId = getProjectId();
+        if (projectId == null) {
             throw new IllegalStateException("Midpoint setting unavailable");
         }
 
@@ -71,19 +128,21 @@ public class EncryptionServiceImpl implements EncryptionService {
         }
 
         File dbFile = getDatabaseFile();
-        if (!dbFile.exists()) {
-            this.database = createKeePassBuilder(null).build();
 
-            writeDatabase(newPassword);
+        KeePassFile db;
+        if (!dbFile.exists()) {
+            db = createKeePassBuilder(null).build();
         } else {
             String pwd = oldPassword != null ? oldPassword : newPassword;
-            this.database = KeePassDatabase.getInstance(dbFile).openDatabase(pwd);
-            writeDatabase(newPassword);
+            db = KeePassDatabase.getInstance(dbFile).openDatabase(pwd);
         }
+        writeFile(db, newPassword);
 
-        MidPointUtils.setPassword(settings.getProjectId(), newPassword);
+        MidPointUtils.setPassword(projectId, newPassword);
 
-        refresh(true, true);
+        setCachedPassword(newPassword);
+
+        load(true, true, false);
     }
 
     @Override
@@ -94,59 +153,32 @@ public class EncryptionServiceImpl implements EncryptionService {
     @NotNull
     @Override
     public StatusMessage getStatus() {
-        File dbFile = getDatabaseFile();
-        if (!dbFile.exists()) {
-            return new StatusMessage(Status.MISSING_FILE, "Credentials file doesn't exist.");
-        }
+        ensureLoaded();
 
-        String masterPassword = getMasterPassword();
-        if (StringUtils.isEmpty(masterPassword)) {
-            return new StatusMessage(Status.PASSWORD_NOT_SET, "Master password not set.");
+        synchronized (lock) {
+            return status;
         }
-
-        try {
-            KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
-        } catch (Exception ex) {
-            return new StatusMessage(
-                    Status.PASSWORD_INCORRECT,
-                    "Couldn't open credentials file, reason: " + ex.getMessage() + ".");
-        }
-
-        return new StatusMessage(Status.OK, "Credentials service is configured correctly.");
     }
 
     @Override
-    public synchronized void refresh() {
-        refresh(true, true);
+    public void refresh() {
+        load(true, true, true);
     }
 
-    private void refresh(boolean create, boolean notificationIfFailure) {
-        LOG.debug("Refreshing credentials create: " + create + ", notificationIfFailure: " + notificationIfFailure);
+    @Override
+    public void ensureLoaded() {
+        checkFileChanged(false);
 
-        String masterPassword = getMasterPassword();
-        if (StringUtils.isEmpty(masterPassword)) {
-            if (notificationIfFailure) {
-                MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
-                        "Credentials file", "Master password not set. All encrypted values will be forgotten after " +
-                                "restart, e.g. environment usernames/passwords, encrypted properties. ", NotificationType.WARNING,
-                        new UpdateMasterPasswordNotificationAction(false));
+        synchronized (lock) {
+            if (loaded) {
+                return;
             }
-            return;
         }
 
-        File dbFile = getDatabaseFile();
-        if (!dbFile.exists() && create) {
-            this.database = createKeePassBuilder(null).build();
-            writeDatabase();
-        }
-
-        if (dbFile.exists()) {
-            try {
-                database = KeePassDatabase.getInstance(dbFile).openDatabase(masterPassword);
-            } catch (Exception ex) {
-                MidPointUtils.publishExceptionNotification(project, null, EncryptionService.class, NOTIFICATION_KEY,
-                        "Couldn't open credentials database with master password", ex, new UpdateMasterPasswordNotificationAction(true));
-            }
+        if (canBlock()) {
+            load(false, false, false);
+        } else {
+            scheduleLoad();
         }
     }
 
@@ -156,101 +188,284 @@ public class EncryptionServiceImpl implements EncryptionService {
     }
 
     @Override
-    public synchronized <T extends EncryptedObject> List<T> list(@NotNull Class<T> type) {
+    public <T extends EncryptedObject> List<T> list(@NotNull Class<T> type) {
         LOG.debug("Listing entries, type: " + type);
 
-        Group group = getTopGroup();
-        if (group == null) {
-            return new ArrayList<>();
-        }
+        ensureLoaded();
 
-        List<T> list = new ArrayList<>();
-        for (Entry entry : group.getEntries()) {
-            EncryptedObject property = createCredentials(entry);
-            if (property.getClass().isAssignableFrom(type)) {
-                list.add((T) property);
+        synchronized (lock) {
+            Group group = getTopGroup();
+            if (group == null) {
+                return new ArrayList<>();
             }
-        }
 
-        return list;
+            List<T> list = new ArrayList<>();
+            for (Entry entry : group.getEntries()) {
+                EncryptedObject property = createCredentials(entry);
+                if (property.getClass().isAssignableFrom(type)) {
+                    list.add((T) property);
+                }
+            }
+
+            return list;
+        }
     }
 
     @Override
-    public synchronized String add(EncryptedObject credentials) {
+    public String add(EncryptedObject credentials) {
         LOG.debug("Adding credentials ", credentials);
 
-        Group group = getTopGroup();
-        if (group == null) {
-            return null;
+        ensureLoadedForWrite();
+
+        synchronized (lock) {
+            Group group = getTopGroup();
+            if (group == null) {
+                return null;
+            }
+
+            Entry entry = credentials.buildEntry().build();
+
+            Entry existing = group.getEntryByTitle(entry.getTitle());
+            if (existing != null) {
+                group.getEntries().remove(existing);
+            }
+
+            group.getEntries().add(entry);
+
+            writeDatabase();
+
+            return entry.getTitle();
         }
-
-        Entry entry = credentials.buildEntry().build();
-
-        Entry existing = group.getEntryByTitle(entry.getTitle());
-        if (existing != null) {
-            group.getEntries().remove(existing);
-        }
-
-        group.getEntries().add(entry);
-
-        writeDatabase();
-
-        return entry.getTitle();
     }
 
     @Override
-    public synchronized boolean delete(String key) {
+    public boolean delete(String key) {
         LOG.debug("Deleting credentials with key ", key);
 
-        Group group = getTopGroup();
-        if (group == null) {
-            return false;
+        ensureLoadedForWrite();
+
+        synchronized (lock) {
+            Group group = getTopGroup();
+            if (group == null) {
+                return false;
+            }
+
+            Entry entry = group.getEntryByTitle(key);
+            if (entry == null) {
+                return false;
+            }
+
+            boolean deleted = group.getEntries().remove(entry);
+            writeDatabase();
+
+            return deleted;
         }
-
-        Entry entry = group.getEntryByTitle(key);
-        if (entry == null) {
-            return false;
-        }
-
-        boolean deleted = group.getEntries().remove(entry);
-        writeDatabase();
-
-        return deleted;
     }
 
     @Override
     public <T extends EncryptedObject> T get(@NotNull String key, @NotNull Class<T> type) {
         LOG.debug("Getting encrypted key: " + key + ", type: " + type);
-        Group group = getTopGroup();
-        if (group == null) {
+
+        ensureLoaded();
+
+        synchronized (lock) {
+            Group group = getTopGroup();
+            if (group == null) {
+                return null;
+            }
+
+            Entry entry = group.getEntryByTitle(key);
+            if (entry == null) {
+                return null;
+            }
+
+            EncryptedObject property = createCredentials(entry);
+            if (property.getClass().isAssignableFrom(type)) {
+                return (T) property;
+            }
+
             return null;
         }
-
-        Entry entry = group.getEntryByTitle(key);
-        if (entry == null) {
-            return null;
-        }
-
-        EncryptedObject property = createCredentials(entry);
-        if (property.getClass().isAssignableFrom(type)) {
-            return (T) property;
-        }
-
-        return null;
     }
 
     @Override
-    public synchronized EncryptedObject get(@NotNull String key) {
+    public EncryptedObject get(@NotNull String key) {
         return get(key, EncryptedObject.class);
+    }
+
+    /**
+     * Writes always work with fresh data, otherwise an external change of the file would be overwritten.
+     * This may block on EDT, writes are rare user actions and master password is normally cached already.
+     */
+    private void ensureLoadedForWrite() {
+        checkFileChanged(true);
+
+        synchronized (lock) {
+            if (loaded) {
+                return;
+            }
+        }
+
+        load(false, false, false);
+    }
+
+    private boolean canBlock() {
+        Application app = ApplicationManager.getApplication();
+        return !app.isDispatchThread() && !app.isReadAccessAllowed();
+    }
+
+    private void scheduleLoad() {
+        synchronized (lock) {
+            if (loading) {
+                return;
+            }
+            loading = true;
+        }
+
+        LOG.debug("Scheduling credentials load in background");
+
+        RunnableUtils.executeOnPooledThread(() -> {
+            try {
+                load(false, false, false);
+            } finally {
+                synchronized (lock) {
+                    loading = false;
+                }
+            }
+        });
+    }
+
+    private void fileChangedOnDisk() {
+        File file = getDatabaseFile();
+        long modified = file.lastModified();
+        long length = file.length();
+
+        synchronized (lock) {
+            if (!loaded || (modified == fileModified && length == fileLength)) {
+                // not loaded yet or this is our own write
+                return;
+            }
+
+            LOG.info("Credentials file changed on disk, reloading");
+            loaded = false;
+        }
+
+        scheduleLoad();
+    }
+
+    private void checkFileChanged(boolean force) {
+        long now = System.currentTimeMillis();
+
+        synchronized (lock) {
+            if (!loaded || (!force && now - lastFileCheck < FILE_CHECK_INTERVAL)) {
+                return;
+            }
+            lastFileCheck = now;
+        }
+
+        File file = getDatabaseFile();
+        long modified = file.lastModified();
+        long length = file.length();
+
+        synchronized (lock) {
+            if (loaded && (modified != fileModified || length != fileLength)) {
+                LOG.info("Credentials file changed on disk, cache invalidated");
+                loaded = false;
+            }
+        }
+    }
+
+    /**
+     * Loads master password (if not cached or reloadPassword is set) and opens the database.
+     * Runs on the calling thread.
+     */
+    private void load(boolean create, boolean notificationIfFailure, boolean reloadPassword) {
+        LOG.debug("Loading credentials create: " + create + ", notificationIfFailure: " + notificationIfFailure
+                + ", reloadPassword: " + reloadPassword);
+
+        boolean readPassword;
+        String password;
+        synchronized (lock) {
+            readPassword = !passwordLoaded || reloadPassword;
+            password = masterPassword;
+        }
+
+        if (readPassword) {
+            password = readMasterPassword();
+        }
+
+        File dbFile = getDatabaseFile();
+
+        KeePassFile db = null;
+        StatusMessage newStatus;
+
+        if (StringUtils.isEmpty(password)) {
+            if (notificationIfFailure) {
+                MidPointUtils.publishNotification(project, NOTIFICATION_KEY,
+                        "Credentials file", "Master password not set. All encrypted values will be forgotten after " +
+                                "restart, e.g. environment usernames/passwords, encrypted properties. ", NotificationType.WARNING,
+                        new UpdateMasterPasswordNotificationAction(false));
+            }
+
+            newStatus = !dbFile.exists()
+                    ? new StatusMessage(Status.MISSING_FILE, "Credentials file doesn't exist.")
+                    : new StatusMessage(Status.PASSWORD_NOT_SET, "Master password not set.");
+        } else {
+            if (!dbFile.exists() && create) {
+                writeFile(createKeePassBuilder(null).build(), password);
+            }
+
+            if (!dbFile.exists()) {
+                newStatus = new StatusMessage(Status.MISSING_FILE, "Credentials file doesn't exist.");
+            } else {
+                try {
+                    db = KeePassDatabase.getInstance(dbFile).openDatabase(password);
+                    newStatus = new StatusMessage(Status.OK, "Credentials service is configured correctly.");
+                } catch (Exception ex) {
+                    RunnableUtils.rethrowIfCancellation(ex);
+
+                    newStatus = new StatusMessage(Status.PASSWORD_INCORRECT,
+                            "Couldn't open credentials file, reason: " + ex.getMessage() + ".");
+
+                    if (notificationIfFailure) {
+                        MidPointUtils.publishExceptionNotification(project, null, EncryptionService.class, NOTIFICATION_KEY,
+                                "Couldn't open credentials database with master password", ex,
+                                new UpdateMasterPasswordNotificationAction(true));
+                    }
+                }
+            }
+        }
+
+        long modified = dbFile.lastModified();
+        long length = dbFile.length();
+
+        synchronized (lock) {
+            if (readPassword) {
+                masterPassword = password;
+                passwordLoaded = true;
+            }
+            database = db;
+            status = newStatus;
+            loaded = true;
+            fileModified = modified;
+            fileLength = length;
+            lastFileCheck = System.currentTimeMillis();
+        }
+
+        LOG.debug("Credentials loaded, status: " + newStatus.getStatus());
+    }
+
+    private void setCachedPassword(String password) {
+        synchronized (lock) {
+            masterPassword = password;
+            passwordLoaded = true;
+            loaded = false;
+        }
     }
 
     private Group getTopGroup() {
         if (database == null) {
-            refresh(false, false);
-
-            if (database == null) {
-                return null;
-            }
+            return null;
         }
 
         return database.getGroupByName(DATABASE_NAME);
@@ -273,16 +488,25 @@ public class EncryptionServiceImpl implements EncryptionService {
         return new File(basePath, CREDENTIALS_FILE_NAME);
     }
 
-    private synchronized void writeDatabase() {
-        String masterPassword = getMasterPassword();
+    /**
+     * Writes in-memory database using cached master password and reloads it from disk. Called under lock.
+     */
+    private void writeDatabase() {
+        String password = masterPassword;
+        if (StringUtils.isEmpty(password)) {
+            password = readMasterPassword();
+            masterPassword = password;
+            passwordLoaded = true;
+        }
 
-        writeDatabase(masterPassword);
+        writeFile(database, password);
 
-        refresh(false, true);
+        loaded = false;
+        load(false, true, false);
     }
 
-    private synchronized void writeDatabase(String masterPassword) {
-        if (database == null) {
+    private void writeFile(KeePassFile db, String masterPassword) {
+        if (db == null) {
             LOG.debug("Database is null, nothing to write");
             return;
         }
@@ -290,21 +514,30 @@ public class EncryptionServiceImpl implements EncryptionService {
         File file = getDatabaseFile();
 
         try (OutputStream os = new FileOutputStream(file)) {
-            KeePassDatabase.write(database, masterPassword, os);
+            KeePassDatabase.write(db, masterPassword, os);
         } catch (IOException ex) {
             MidPointUtils.publishExceptionNotification(project, null, EncryptionService.class, NOTIFICATION_KEY,
                     "Couldn't write credentials", ex);
         }
     }
 
-    private String getMasterPassword() {
+    private String getProjectId() {
         MidPointConfiguration settings = MidPointService.get(project).getSettings();
         if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
             LOG.debug("MidPoint settings not available.");
             return null;
         }
 
-        return MidPointUtils.getPassword(settings.getProjectId());
+        return settings.getProjectId();
+    }
+
+    private String readMasterPassword() {
+        String projectId = getProjectId();
+        if (projectId == null) {
+            return null;
+        }
+
+        return MidPointUtils.getPassword(projectId);
     }
 
     private EncryptedObject createCredentials(Entry entry) {

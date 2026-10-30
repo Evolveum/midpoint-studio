@@ -62,6 +62,12 @@ public interface EncryptionService {
 
     void refresh();
 
+    /**
+     * Loads credentials if not loaded yet. Blocks on background threads.
+     * On EDT or inside read action only schedules background load.
+     */
+    void ensureLoaded();
+
     <T extends EncryptedObject> List<T> list(Class<T> type);
 
     List<EncryptedObject> list();

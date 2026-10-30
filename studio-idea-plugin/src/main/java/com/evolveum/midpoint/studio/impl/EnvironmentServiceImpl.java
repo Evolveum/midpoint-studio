@@ -45,6 +45,13 @@ public class EnvironmentServiceImpl extends ServiceBase<EnvironmentSettings> imp
     }
 
     @Override
+    protected void loadSettings(EnvironmentSettings settings) {
+        // no credentials lookup or notifications during state loading, it runs inside read action
+        // during service initialization and encryption service would access keychain there
+        super.setSettings(settings);
+    }
+
+    @Override
     public void setSettings(EnvironmentSettings settings) {
         LOG.debug("Setting new settings " + settings);
 

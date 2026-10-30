@@ -7,6 +7,8 @@ import com.evolveum.midpoint.studio.ui.util.BooleanPropertyPredicate
 import com.evolveum.midpoint.studio.util.MidPointUtils
 import com.evolveum.midpoint.studio.util.StudioLocalization.message
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
@@ -105,9 +107,20 @@ class CredentialsConfigurable(val project: Project) :
         updateVisibilityAndStatus()
     }
 
+    /**
+     * Status check reads keychain and opens credentials file, that must not run on EDT.
+     */
     private fun updateVisibilityAndStatus() {
-        val status = EncryptionService.getInstance(project).status
+        this.status.text = "Checking credentials..."
 
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val status = EncryptionService.getInstance(project).status
+
+            ApplicationManager.getApplication().invokeLater({ applyStatus(status) }, ModalityState.any())
+        }
+    }
+
+    private fun applyStatus(status: EncryptionService.StatusMessage) {
         this.status.text = status.message
 
         val oldVisible = status.status == EncryptionService.Status.OK
@@ -121,8 +134,6 @@ class CredentialsConfigurable(val project: Project) :
     }
 
     override fun createPanel(): DialogPanel {
-        updateVisibilityAndStatus()
-
         return panel {
             group(message("CredentialsConfigurable.credentials")) {
                 row("Old password:") {

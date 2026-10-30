@@ -49,6 +49,13 @@ public abstract class ServiceBase<T extends Serializable>
         T settings = createEmptySettings();
         XmlSerializerUtil.copyBean(state, settings);
 
+        loadSettings(settings);
+    }
+
+    /**
+     * Called from {@link #loadState}, runs during component initialization inside read action.
+     */
+    protected void loadSettings(T settings) {
         setSettings(settings);
     }
 

@@ -8,6 +8,7 @@ class BooleanPropertyPredicate(value: Boolean) : ComponentPredicate() {
     private val property: AtomicBooleanProperty = AtomicBooleanProperty(value)
 
     override fun addListener(listener: (Boolean) -> Unit) {
+        property.afterChange { listener(it) }
     }
 
     override fun invoke(): Boolean {
