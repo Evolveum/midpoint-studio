@@ -37,6 +37,11 @@ public abstract class Cache {
         this.reloader = BackgroundReload.forProject(project, getClass().getSimpleName(), this::reload);
     }
 
+    public Cache(@NotNull Project project, @NotNull String reloadName) {
+        this.project = project;
+        this.reloader = BackgroundReload.forProject(project, reloadName, this::reload);
+    }
+
     public Project getProject() {
         return project;
     }

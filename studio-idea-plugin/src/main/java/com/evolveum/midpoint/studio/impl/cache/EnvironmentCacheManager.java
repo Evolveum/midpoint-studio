@@ -174,7 +174,9 @@ public class EnvironmentCacheManager {
     }
 
     public void reloadInternal(boolean forceClear, boolean testConnection, @NotNull ProgressIndicator indicator) {
-        LOG.debug("Reloading caches (forceClear={}, testConnection={})", forceClear, testConnection);
+        String environmentName = environment != null ? environment.getName() : "none";
+        long start = System.currentTimeMillis();
+        LOG.info("Reloading environment {} (forceClear={}, testConnection={})", environmentName, forceClear, testConnection);
 
         int steps = (testConnection ? 1 : 0) + caches.size() + 1;
         int step = 0;
@@ -192,10 +194,10 @@ public class EnvironmentCacheManager {
 
             MidPointClient client = new MidPointClient(project, environment, true, true);
             TestConnectionResult result = StudioPrismContextService.runSupplierWithProject(project, client::testConnection);
-            LOG.debug("Test connection: {}", result.success() ? "success" : "failed");
+            LOG.info("Test connection to {}: {}", environmentName, result.success() ? "success" : "failed");
 
             if (!result.success()) {
-                LOG.debug("Skipping cache reload");
+                LOG.info("Skipping cache reload for {}, connection test failed", environmentName);
                 restartHighlightInEditors();
 
                 return;
@@ -212,14 +214,15 @@ public class EnvironmentCacheManager {
             indicator.setText(key.getName());
             indicator.setFraction((double) step++ / steps);
             try {
-                LOG.debug("Reloading cache: {}", cache.getClass().getSimpleName());
+                long cacheStart = System.currentTimeMillis();
                 StudioPrismContextService.runWithProject(project, cache::reload);
+                LOG.info("Reloaded {} for {} in {} ms", key.getName(), environmentName, System.currentTimeMillis() - cacheStart);
 
                 project.getMessageBus().syncPublisher(MidPointProjectNotifier.MIDPOINT_NOTIFIER_TOPIC).environmentCacheReloaded(key, cache);
             } catch (Exception ex) {
                 RunnableUtils.rethrowIfCancellation(ex);
 
-                LOG.error("Error reloading cache: {}", ex.getMessage(), ex);
+                LOG.error("Error reloading {} for {}: {}", key.getName(), environmentName, ex.getMessage(), ex);
             }
         }
 
@@ -229,9 +232,10 @@ public class EnvironmentCacheManager {
 
         indicator.setText("Prism context");
         indicator.setFraction((double) step / steps);
+        LOG.info("Waiting for the prism context rebuild for {}", environmentName);
         StudioPrismContextService.get(project).awaitReload(indicator);
 
-        LOG.debug("Caches reload finished");
+        LOG.info("Environment {} reloaded in {} ms", environmentName, System.currentTimeMillis() - start);
     }
 
     private void restartHighlightInEditors() {

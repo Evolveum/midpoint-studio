@@ -121,8 +121,11 @@ public final class BackgroundReload {
     private void runLoop() {
         try {
             while (requested.getAndSet(false)) {
+                long start = System.currentTimeMillis();
+                LOG.info("Background reload of " + name + " started");
                 try {
                     work.run();
+                    LOG.info("Background reload of " + name + " finished in " + (System.currentTimeMillis() - start) + " ms");
                 } catch (Throwable ex) {
                     if (ex instanceof ControlFlowException) {
                         LOG.debug("Background reload of " + name + " cancelled", ex);

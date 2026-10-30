@@ -174,8 +174,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     @SuppressWarnings("unused")
     public StudioPrismContextService(@NotNull Project project) {
         this.project = project;
-        this.reload = BackgroundReload.forProject(project, "prism context for " + project.getName(), this::reloadPrismContext)
-                .withProgressTitle("Building prism context");
+        this.reload = BackgroundReload.forProject(project, "prism context for " + project.getName(), this::reloadPrismContext);
 
         initialize();
     }
@@ -190,6 +189,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
             @Override
             public void environmentCacheManagerReloaded() {
+                LOG.info("Environment caches reloaded, rebuilding prism context for project: " + project.getName());
                 reload.request();
             }
         });
@@ -219,6 +219,7 @@ public final class StudioPrismContextService implements ProjectManagerListener {
 
         // a running build already produces a context, only an idle service needs a new one
         if (!reload.isRunning()) {
+            LOG.info("Prism context not built yet for project " + project.getName() + ", building in background, default context used meanwhile");
             reload.request();
         }
 

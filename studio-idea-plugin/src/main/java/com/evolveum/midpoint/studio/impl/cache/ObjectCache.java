@@ -37,7 +37,7 @@ public class ObjectCache<O extends ObjectType> extends Cache {
     private volatile Map<String, O> cache = new HashMap<>();
 
     public ObjectCache(@NotNull Project project, @NotNull Class<O> type) {
-        super(project);
+        super(project, "cache of " + type.getSimpleName());
 
         this.type = type;
     }
@@ -65,13 +65,13 @@ public class ObjectCache<O extends ObjectType> extends Cache {
 
     @Override
     public void reload() {
-        LOG.debug("Reloading cache for {}: {}", getClass().getSimpleName(), type.getSimpleName());
+        LOG.info("Reloading cache of {} from {}", type.getSimpleName(),
+                getEnvironment() != null ? getEnvironment().getName() : "no environment");
         long time = System.currentTimeMillis();
 
         cacheObjects(loadObjects());
 
-        LOG.debug("Cache reloaded for {}: {}, size: {} in {}ms",
-                getClass().getSimpleName(), type.getSimpleName(), cache.size(), (System.currentTimeMillis() - time));
+        LOG.info("Cache of {} reloaded, {} objects in {} ms", type.getSimpleName(), cache.size(), System.currentTimeMillis() - time);
     }
 
     /**
