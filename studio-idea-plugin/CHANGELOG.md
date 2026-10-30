@@ -2,6 +2,7 @@
 
 ## [4.11.0]
 ### Added
+- Credentials file (credentials.kdbx) is handled by KeePassJava2 library instead of unmaintained openkeepass, existing files are read as before and upgraded to KDBX 4 format on first write
 - Support for Intellij Idea 2026.1, 2026.2, 2026.3
 - Basic MEL support - syntax highlighting, autocompletion, inlays, documentation
 - Plugin exceptions and freezes can be reported to JetBrains Marketplace from the IDE error dialog

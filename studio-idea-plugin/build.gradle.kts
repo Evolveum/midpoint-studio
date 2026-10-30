@@ -202,9 +202,7 @@ dependencies {
         exclude("org.slf4j")
     }
 
-    implementation(libs.openkeepass) {
-        exclude("stax", "stax-api")
-    }
+    implementation(libs.keepassjava2)
     implementation(libs.commons.lang)
     implementation(libs.jackson.databind)
     implementation(libs.okhttp3)

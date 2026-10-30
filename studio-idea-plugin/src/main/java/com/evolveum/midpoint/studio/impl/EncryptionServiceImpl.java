@@ -14,15 +14,11 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
-import de.slackspace.openkeepass.KeePassDatabase;
-import de.slackspace.openkeepass.domain.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,8 +38,6 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
 
     private static final String CREDENTIALS_FILE_NAME = "credentials.kdbx";
 
-    private static final String DATABASE_NAME = "Credentials";
-
     private static final long FILE_CHECK_INTERVAL = 1000L;
 
     private final Project project;
@@ -52,7 +46,7 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
 
     // all fields below are guarded by lock
 
-    private KeePassFile database;
+    private CredentialsDatabase database;
 
     private String masterPassword;
 
@@ -129,12 +123,16 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
 
         File dbFile = getDatabaseFile();
 
-        KeePassFile db;
+        CredentialsDatabase db;
         if (!dbFile.exists()) {
-            db = createKeePassBuilder(null).build();
+            db = CredentialsDatabase.create();
         } else {
             String pwd = oldPassword != null ? oldPassword : newPassword;
-            db = KeePassDatabase.getInstance(dbFile).openDatabase(pwd);
+            try {
+                db = CredentialsDatabase.read(dbFile, pwd);
+            } catch (IOException ex) {
+                throw new IllegalStateException("Couldn't open credentials file, reason: " + ex.getMessage(), ex);
+            }
         }
         writeFile(db, newPassword);
 
@@ -194,14 +192,12 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
         ensureLoaded();
 
         synchronized (lock) {
-            Group group = getTopGroup();
-            if (group == null) {
+            if (database == null) {
                 return new ArrayList<>();
             }
 
             List<T> list = new ArrayList<>();
-            for (Entry entry : group.getEntries()) {
-                EncryptedObject property = createCredentials(entry);
+            for (EncryptedObject property : database.list()) {
                 if (property.getClass().isAssignableFrom(type)) {
                     list.add((T) property);
                 }
@@ -218,23 +214,15 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
         ensureLoadedForWrite();
 
         synchronized (lock) {
-            Group group = getTopGroup();
-            if (group == null) {
+            if (database == null) {
                 return null;
             }
 
-            Entry entry = credentials.buildEntry().build();
-
-            Entry existing = group.getEntryByTitle(entry.getTitle());
-            if (existing != null) {
-                group.getEntries().remove(existing);
-            }
-
-            group.getEntries().add(entry);
+            database.put(credentials);
 
             writeDatabase();
 
-            return entry.getTitle();
+            return credentials.getKey();
         }
     }
 
@@ -245,18 +233,14 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
         ensureLoadedForWrite();
 
         synchronized (lock) {
-            Group group = getTopGroup();
-            if (group == null) {
+            if (database == null) {
                 return false;
             }
 
-            Entry entry = group.getEntryByTitle(key);
-            if (entry == null) {
-                return false;
+            boolean deleted = database.remove(key);
+            if (deleted) {
+                writeDatabase();
             }
-
-            boolean deleted = group.getEntries().remove(entry);
-            writeDatabase();
 
             return deleted;
         }
@@ -269,18 +253,12 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
         ensureLoaded();
 
         synchronized (lock) {
-            Group group = getTopGroup();
-            if (group == null) {
+            if (database == null) {
                 return null;
             }
 
-            Entry entry = group.getEntryByTitle(key);
-            if (entry == null) {
-                return null;
-            }
-
-            EncryptedObject property = createCredentials(entry);
-            if (property.getClass().isAssignableFrom(type)) {
+            EncryptedObject property = database.get(key);
+            if (property != null && property.getClass().isAssignableFrom(type)) {
                 return (T) property;
             }
 
@@ -396,7 +374,7 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
 
         File dbFile = getDatabaseFile();
 
-        KeePassFile db = null;
+        CredentialsDatabase db = null;
         StatusMessage newStatus;
 
         if (StringUtils.isEmpty(password)) {
@@ -412,14 +390,14 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
                     : new StatusMessage(Status.PASSWORD_NOT_SET, "Master password not set.");
         } else {
             if (!dbFile.exists() && create) {
-                writeFile(createKeePassBuilder(null).build(), password);
+                writeFile(CredentialsDatabase.create(), password);
             }
 
             if (!dbFile.exists()) {
                 newStatus = new StatusMessage(Status.MISSING_FILE, "Credentials file doesn't exist.");
             } else {
                 try {
-                    db = KeePassDatabase.getInstance(dbFile).openDatabase(password);
+                    db = CredentialsDatabase.read(dbFile, password);
                     newStatus = new StatusMessage(Status.OK, "Credentials service is configured correctly.");
                 } catch (Exception ex) {
                     RunnableUtils.rethrowIfCancellation(ex);
@@ -463,26 +441,6 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
         }
     }
 
-    private Group getTopGroup() {
-        if (database == null) {
-            return null;
-        }
-
-        return database.getGroupByName(DATABASE_NAME);
-    }
-
-    private KeePassFileBuilder createKeePassBuilder(Meta meta) {
-        if (meta == null) {
-            meta = new MetaBuilder(DATABASE_NAME).historyMaxItems(10).build();
-        }
-
-        KeePassFileBuilder builder = new KeePassFileBuilder(meta);
-        Group group = new GroupBuilder(DATABASE_NAME).build();
-        builder.addTopGroups(group);
-
-        return builder;
-    }
-
     private File getDatabaseFile() {
         String basePath = project.getBasePath();
         return new File(basePath, CREDENTIALS_FILE_NAME);
@@ -505,16 +463,14 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
         load(false, true, false);
     }
 
-    private void writeFile(KeePassFile db, String masterPassword) {
+    private void writeFile(CredentialsDatabase db, String masterPassword) {
         if (db == null) {
             LOG.debug("Database is null, nothing to write");
             return;
         }
 
-        File file = getDatabaseFile();
-
-        try (OutputStream os = new FileOutputStream(file)) {
-            KeePassDatabase.write(db, masterPassword, os);
+        try {
+            db.write(getDatabaseFile(), masterPassword);
         } catch (IOException ex) {
             MidPointUtils.publishExceptionNotification(project, null, EncryptionService.class, NOTIFICATION_KEY,
                     "Couldn't write credentials", ex);
@@ -538,29 +494,5 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
         }
 
         return MidPointUtils.getPassword(projectId);
-    }
-
-    private EncryptedObject createCredentials(Entry entry) {
-        try {
-            String title = entry.getTitle();
-            Class<? extends EncryptedObject> type;
-            if (title != null && title.matches("(?i)[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}")) {
-                // we'll guess default type as credentials when title contains UUID. This is just for backwards compatibility
-                type = EncryptedCredentials.class;
-            } else {
-                type = EncryptedProperty.class;
-            }
-
-            List<String> tags = entry.getTags();
-            if (tags != null && tags.size() > 0) {
-                String t = tags.get(0);
-
-                type = (Class) getClass().getClassLoader().loadClass(t);
-            }
-
-            return type.getConstructor(Entry.class).newInstance(entry);
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
-        }
     }
 }

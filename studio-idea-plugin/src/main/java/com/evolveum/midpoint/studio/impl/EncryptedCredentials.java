@@ -1,8 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
-import de.slackspace.openkeepass.domain.Entry;
-import de.slackspace.openkeepass.domain.EntryBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.linguafranca.pwdb.Entry;
 
 import java.util.Objects;
 
@@ -65,10 +64,9 @@ public class EncryptedCredentials extends EncryptedProperty {
     }
 
     @Override
-    public EntryBuilder buildEntry() {
-        EntryBuilder builder = super.buildEntry();
-        builder.username(username);
+    public void fillEntry(Entry entry) {
+        super.fillEntry(entry);
 
-        return builder;
+        entry.setUsername(StringUtils.defaultString(username));
     }
 }

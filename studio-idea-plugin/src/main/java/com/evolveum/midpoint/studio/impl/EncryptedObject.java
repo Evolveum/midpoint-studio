@@ -1,11 +1,9 @@
 package com.evolveum.midpoint.studio.impl;
 
-import de.slackspace.openkeepass.domain.Entry;
-import de.slackspace.openkeepass.domain.EntryBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.linguafranca.pwdb.Entry;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -83,11 +81,17 @@ public abstract class EncryptedObject implements Serializable {
         return result;
     }
 
-    public EntryBuilder buildEntry() {
-        return new EntryBuilder()
-                .title(key)
-                .url(environment)
-                .notes(description)
-                .tags(Arrays.asList(getClass().getName()));
+    /**
+     * Copies this object into database entry.
+     */
+    public void fillEntry(Entry entry) {
+        entry.setTitle(StringUtils.defaultString(key));
+        entry.setUrl(StringUtils.defaultString(environment));
+        entry.setNotes(StringUtils.defaultString(description));
+    }
+
+    protected static void setProperty(Entry entry, String name, String value) {
+        entry.setPropertyValue(name, entry.getDatabase().getPropertyValueStrategy().getFactoryFor(name)
+                .of(StringUtils.defaultString(value)));
     }
 }

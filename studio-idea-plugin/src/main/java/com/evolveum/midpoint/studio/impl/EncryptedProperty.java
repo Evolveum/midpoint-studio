@@ -1,8 +1,7 @@
 package com.evolveum.midpoint.studio.impl;
 
-import de.slackspace.openkeepass.domain.Entry;
-import de.slackspace.openkeepass.domain.EntryBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.linguafranca.pwdb.Entry;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -17,8 +16,9 @@ public class EncryptedProperty extends EncryptedObject {
     public EncryptedProperty(Entry entry) {
         super(entry);
 
-        if (StringUtils.isNotEmpty(entry.getPassword())) {
-            value = entry.getPassword();
+        String password = entry.getProperty(Entry.STANDARD_PROPERTY_NAME_PASSWORD);
+        if (StringUtils.isNotEmpty(password)) {
+            value = password;
         }
     }
 
@@ -54,10 +54,10 @@ public class EncryptedProperty extends EncryptedObject {
         return result;
     }
 
-    public EntryBuilder buildEntry() {
-        EntryBuilder builder = super.buildEntry();
-        builder.password(value);
+    @Override
+    public void fillEntry(Entry entry) {
+        super.fillEntry(entry);
 
-        return builder;
+        setProperty(entry, Entry.STANDARD_PROPERTY_NAME_PASSWORD, value);
     }
 }
