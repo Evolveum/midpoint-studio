@@ -65,6 +65,17 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.json.psi.JsonFile;
+import com.intellij.json.psi.JsonObject;
+import com.intellij.json.psi.JsonProperty;
+import com.intellij.json.psi.JsonStringLiteral;
+import com.intellij.json.psi.JsonValue;
+import org.jetbrains.yaml.psi.YAMLDocument;
+import org.jetbrains.yaml.psi.YAMLFile;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
+import org.jetbrains.yaml.psi.YAMLScalar;
+import org.jetbrains.yaml.psi.YAMLValue;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.DisposeAwareRunnable;
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread;
@@ -130,6 +141,8 @@ public class MidPointUtils {
     private static final String[] NAMES;
 
     public static final Set<String> NAMESPACES;
+
+    private static final String JSON_NAMESPACE_KEY = "@ns";
 
     static {
         NAMESPACES = Set.of(
@@ -737,21 +750,79 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
         }
     }
 
+    /**
+     * PSI only check whether file is a midPoint file, used by extension points that run for
+     * every file in every project. Only the root element namespace is checked: XML root tag
+     * namespace, JSON and YAML "@ns" of the single top level value.
+     */
     public static boolean isMidpointFile(PsiFile file) {
         if (file == null) {
             return false;
         }
 
-        if (!(file instanceof XmlFile xmlFile)) {
+        if (file instanceof XmlFile xmlFile) {
+            if (xmlFile.getRootTag() == null) {
+                return false;
+            }
+
+            String namespace = xmlFile.getRootTag().getNamespace();
+            return NAMESPACES.contains(namespace);
+        }
+
+        if (file instanceof JsonFile jsonFile) {
+            return isMidpointJsonRoot(jsonFile.getTopLevelValue());
+        }
+
+        if (file instanceof YAMLFile yamlFile) {
+            List<YAMLDocument> documents = yamlFile.getDocuments();
+            if (documents.isEmpty()) {
+                return false;
+            }
+
+            return isMidpointYamlRoot(documents.get(0).getTopLevelValue());
+        }
+
+        return false;
+    }
+
+    private static boolean isMidpointJsonRoot(JsonValue root) {
+        if (!(root instanceof JsonObject object)) {
             return false;
         }
 
-        if (xmlFile.getRootTag() == null) {
+        List<JsonProperty> properties = object.getPropertyList();
+        if (properties.size() != 1) {
             return false;
         }
 
-        String namespace = xmlFile.getRootTag().getNamespace();
-        return NAMESPACES.contains(namespace);
+        if (!(properties.get(0).getValue() instanceof JsonObject value)) {
+            return false;
+        }
+
+        JsonProperty ns = value.findProperty(JSON_NAMESPACE_KEY);
+        return ns != null
+                && ns.getValue() instanceof JsonStringLiteral literal
+                && NAMESPACES.contains(literal.getValue());
+    }
+
+    private static boolean isMidpointYamlRoot(YAMLValue root) {
+        if (!(root instanceof YAMLMapping mapping)) {
+            return false;
+        }
+
+        Collection<YAMLKeyValue> keyValues = mapping.getKeyValues();
+        if (keyValues.size() != 1) {
+            return false;
+        }
+
+        if (!(keyValues.iterator().next().getValue() instanceof YAMLMapping value)) {
+            return false;
+        }
+
+        YAMLKeyValue ns = value.getKeyValueByKey(JSON_NAMESPACE_KEY);
+        return ns != null
+                && ns.getValue() instanceof YAMLScalar scalar
+                && NAMESPACES.contains(scalar.getTextValue());
     }
 
     public static boolean isMidpointObjectFileSelected(AnActionEvent evt) {

@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.lang.prism.PrismIntentionAction;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
 import com.intellij.json.JsonLanguage;
 import com.intellij.lang.Language;
@@ -36,6 +37,14 @@ public class PrismExternalAnnotator
             @NotNull PsiFile file,
             @NotNull Editor editor,
             boolean hasErrors) {
+
+        if (!MidPointUtils.hasMidPointFacet(file.getProject())) {
+            return null;
+        }
+
+        if (!MidPointUtils.isMidpointFile(file)) {
+            return null;
+        }
 
         PrismContext prismContext =
                 StudioPrismContextService.getPrismContext(file.getProject());
