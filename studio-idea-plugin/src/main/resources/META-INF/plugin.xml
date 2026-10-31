@@ -154,7 +154,7 @@
         <fileType
                 name="MPTrace"
                 fieldName="INSTANCE"
-                extensions="zip|xml|mptrace"
+                extensions="mptrace"
                 language=""
                 implementationClass="com.evolveum.midpoint.studio.impl.trace.MPTraceFileType"/>
 

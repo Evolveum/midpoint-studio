@@ -21,7 +21,7 @@ public class MPTraceFileType implements UIBasedFileType {
     @NotNull
     @Override
     public String getName() {
-        return "MPTrace";
+        return "MidPoint Trace";
     }
 
     @NotNull
