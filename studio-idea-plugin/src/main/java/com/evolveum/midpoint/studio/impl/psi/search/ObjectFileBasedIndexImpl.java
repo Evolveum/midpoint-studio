@@ -5,14 +5,18 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
+import com.intellij.framework.detection.FileContentPattern;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.*;
 import com.intellij.util.io.DataExternalizer;
@@ -29,7 +33,12 @@ import java.nio.file.Paths;
 import java.util.*;
 
 /**
- * Created by Viliam Repan (lazyman).
+ * Index of object OIDs found in midPoint xml files, used for OID references, completion and navigation.
+ * 
+ * The index is application wide and sees every local xml file in every open project. Files whose
+ * root element is outside the midPoint common namespace are skipped before prism is touched. In a
+ * project without the MidPoint facet the default prism context is used, so indexing never triggers
+ * the project prism context build (and with it the settings services).
  */
 public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, OidNameValue> {
 
@@ -37,6 +46,13 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
 
     @NonNls
     public static final ID<String, OidNameValue> NAME = ID.create("MidPointObjectsIndex");
+
+    /**
+     * Header only check (same as the facet framework detector), no full parse.
+     */
+    private static final ElementPattern<FileContent> MIDPOINT_OBJECT_FILE =
+            FileContentPattern.fileContent()
+                    .xmlWithRootTagNamespace(SchemaConstants.NS_C);
 
     private final KeyDescriptor<String> KEY_DESCRIPTOR = new KeyDescriptor<>() {
 
@@ -93,15 +109,27 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
     };
 
     private final DataIndexer<String, OidNameValue, FileContent> INDEXER = inputData -> {
+        if (!MIDPOINT_OBJECT_FILE.accepts(inputData)) {
+            return Collections.emptyMap();
+        }
+
         LOG.debug("Parsing " + inputData.getFileName());
 
         Map<String, OidNameValue> map = new HashMap<>();
+
+        // project prism context (extension schemas) only for projects with the MidPoint facet. The index
+        // needs just oid, name and type, the default context is enough everywhere else and requesting
+        // the project context would start its background build in unrelated projects.
+        Project project = inputData.getProject();
+        boolean useProjectContext = project != null && MidPointUtils.hasMidPointFacet(project);
 
         Runnable runnable = new RunnableUtils.PluginClasspathRunnable() {
 
             @Override
             public void runWithPluginClassLoader() {
-                PrismContext ctx = StudioPrismContextService.getPrismContext(inputData.getProject());
+                PrismContext ctx = useProjectContext ?
+                        StudioPrismContextService.getPrismContext(project) :
+                        StudioPrismContextService.getDefaultPrismContext();
 
                 ParsingContext parsingContext = ctx.createParsingContextForCompatibilityMode();
                 PrismParser parser = ctx.parserFor(new ByteArrayInputStream(inputData.getContent())).language(PrismContext.LANG_XML).context(parsingContext);
@@ -125,7 +153,11 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
             }
         };
 
-        StudioPrismContextService.runWithProject(inputData.getProject(), runnable);
+        if (useProjectContext) {
+            StudioPrismContextService.runWithProject(project, runnable);
+        } else {
+            StudioPrismContextService.runWithDefaultContext(runnable);
+        }
 
         return map;
     };
@@ -171,7 +203,7 @@ public class ObjectFileBasedIndexImpl extends FileBasedIndexExtension<String, Oi
 
     @Override
     public int getVersion() {
-        return 2;
+        return 3;
     }
 
     private static GlobalSearchScope createFilter(final Project project, boolean downloadFolderOnly) {

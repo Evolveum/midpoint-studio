@@ -428,6 +428,15 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         }
     }
 
+    public static void runWithDefaultContext(@NotNull Runnable runnable) {
+        ContextKey previousKey = bindKey(new ContextKey());
+        try {
+            runnable.run();
+        } finally {
+            restoreKey(previousKey);
+        }
+    }
+
     public static <T> T runCallableWithDefaultContext(@NotNull Callable<T> callable) throws Exception {
         ContextKey previousKey = bindKey(new ContextKey());
         try {
