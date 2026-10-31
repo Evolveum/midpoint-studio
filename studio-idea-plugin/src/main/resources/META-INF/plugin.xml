@@ -152,7 +152,7 @@
 <!--                          factoryClass="com.evolveum.midpoint.studio.ui.prototype.vaia.assistant.AssistantToolWindowFactory"/>-->
 
         <fileType
-                name="MPTrace"
+                name="MidPoint Trace"
                 fieldName="INSTANCE"
                 extensions="mptrace"
                 language=""
