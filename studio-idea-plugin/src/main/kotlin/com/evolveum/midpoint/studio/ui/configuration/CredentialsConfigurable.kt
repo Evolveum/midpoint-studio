@@ -165,7 +165,7 @@ class CredentialsConfigurable(val project: Project) :
         val password = oldPassword.password
 
         if (password.isNotEmpty()) {
-            val projectId = MidPointService.get(project).settings.projectId
+            val projectId = MidPointService.get(project).projectId
             val currentPwd = MidPointUtils.getPassword(projectId)
 
             if (StringUtils.isEmpty(currentPwd)) {
