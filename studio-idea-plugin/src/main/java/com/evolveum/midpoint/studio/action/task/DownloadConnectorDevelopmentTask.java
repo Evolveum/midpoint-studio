@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.JavaModuleType;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
@@ -15,6 +16,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.io.ZipUtil;
+import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -104,28 +106,45 @@ public class DownloadConnectorDevelopmentTask extends SimpleBackgroundableTask {
     private void setupModuleFromExtractedSources(@NotNull Project project, @NotNull File targetModuleDir, @NotNull String moduleName) {
         String imlPath = targetModuleDir.getAbsolutePath() + File.separator + moduleName + ".iml";
 
-        WriteAction.run(() -> {
-            Module newModule = ModuleManager.getInstance(project)
-                    .newModule(imlPath, JavaModuleType.getModuleType().getId());
+        var imlFile = new File(imlPath);
 
-            VirtualFile contentRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(targetModuleDir);
-            if (contentRoot == null) return;
+        if (imlFile.exists()) {
+            int result = Messages.showOkCancelDialog(
+                    project,
+                    "Module '%s' already exists. Do you want to replace it?".formatted(moduleName),
+                    "Module Already Exists",
+                    "OK",
+                    "Cancel",
+                    Messages.getWarningIcon()
+            );
 
-            ModuleRootManager rootManager = ModuleRootManager.getInstance(newModule);
-            ModifiableRootModel rootModel = rootManager.getModifiableModel();
+            if (result == Messages.OK) {
+                WriteAction.run(() -> {
+                    Module newModule = ModuleManager.getInstance(project)
+                            .newModule(imlPath, JavaModuleType.getModuleType().getId());
 
-            ContentEntry contentEntry = rootModel.addContentEntry(contentRoot);
+                    VirtualFile contentRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(targetModuleDir);
+                    if (contentRoot == null) return;
 
-            VirtualFile srcFolder = contentRoot.findChild("src");
+                    ModuleRootManager rootManager = ModuleRootManager.getInstance(newModule);
+                    ModifiableRootModel rootModel = rootManager.getModifiableModel();
 
-            if (srcFolder != null) {
-                contentEntry.addSourceFolder(srcFolder, false);
+                    ContentEntry contentEntry = rootModel.addContentEntry(contentRoot);
+
+                    VirtualFile srcFolder = contentRoot.findChild("src");
+
+                    if (srcFolder != null) {
+                        contentEntry.addSourceFolder(srcFolder, false);
+                    } else {
+                        contentEntry.addSourceFolder(contentRoot, false);
+                    }
+
+                    rootModel.inheritSdk();
+                    rootModel.commit();
+                });
             } else {
-                contentEntry.addSourceFolder(contentRoot, false);
+                throw new ProcessCanceledException();
             }
-
-            rootModel.inheritSdk();
-            rootModel.commit();
-        });
+        }
     }
 }

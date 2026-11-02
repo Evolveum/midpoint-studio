@@ -6,7 +6,6 @@ import com.evolveum.midpoint.schema.GetOperationOptions;
 import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.info.AiInfo;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -18,7 +17,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -97,6 +95,12 @@ public interface Service {
     ConnectorDevelopmentType startFromExisting(String oid) throws SchemaException, AuthenticationException, IOException;
 
     ConnectorDevelopmentType continueFrom(String oid) throws SchemaException, AuthenticationException, IOException;
+
+    boolean isOfflineConnectorDevelopmentService() throws SchemaException, AuthenticationException, IOException;
+
+    boolean isDisableConnectorDevelopmentService() throws SchemaException, AuthenticationException, IOException;
+
+    boolean isConnectorAlreadyPresent(String groupId, String artifactId, String version) throws SchemaException, AuthenticationException, IOException;
 
     boolean isManifestBasedConnector(String oid) throws SchemaException, AuthenticationException, IOException;
 

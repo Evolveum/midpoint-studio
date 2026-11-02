@@ -2,8 +2,6 @@ package com.evolveum.midpoint.studio.client;
 
 import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
 import com.evolveum.midpoint.model.api.util.SmartIntegrationConstants;
-import com.evolveum.midpoint.prism.Containerable;
-import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismParser;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -16,7 +14,6 @@ import com.evolveum.midpoint.schema.SearchResultList;
 import com.evolveum.midpoint.schema.SelectorOptions;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.info.AiInfo;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
@@ -305,6 +302,9 @@ public class ServiceImpl implements Service {
                 return (T) body;
             }
 
+            if (Boolean.class.equals(bodyType)) {
+                return (T) Boolean.valueOf(body);
+            }
             PrismParser parser = context.getParser(body);
 
             if (response.code() == 240 || response.code() == 250) {
@@ -649,8 +649,48 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public boolean isManifestBasedConnector(String oid) throws SchemaException {
-        return false;
+    public boolean isOfflineConnectorDevelopmentService() throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
+                ConnectorGeneratorConstants.RPC_IS_OFFLINE,
+                Map.of()
+        ).get();
+
+        return Boolean.TRUE.equals(executeRequest(builder.build(), Boolean.class));
+    }
+
+    @Override
+    public boolean isDisableConnectorDevelopmentService() throws SchemaException, AuthenticationException, IOException {
+
+        Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
+                ConnectorGeneratorConstants.RPC_IS_OFFLINE,
+                Map.of()
+        ).get();
+
+        return Boolean.TRUE.equals(executeRequest(builder.build(), Boolean.class));
+    }
+
+    @Override
+    public boolean isConnectorAlreadyPresent(String groupId, String artifactId, String version) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
+                ConnectorGeneratorConstants.RPC_IS_CONNECTOR_ALREADY_PRESENT,
+                Map.of(
+                        "groupId", groupId,
+                        "artifactId", artifactId,
+                        "version", version
+                )
+        ).get();
+
+        return Boolean.TRUE.equals(executeRequest(builder.build(), Boolean.class));
+    }
+
+    @Override
+    public boolean isManifestBasedConnector(String oid) throws SchemaException, AuthenticationException, IOException {
+        Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
+                ConnectorGeneratorConstants.RPC_IS_MANIFEST_BASED_CONNECTOR,
+                Map.of("oid", oid)
+        ).get();
+
+        return Boolean.TRUE.equals(executeRequest(builder.build(), Boolean.class));
     }
 
     private SchemaFilesType getSchemaFiles() throws IOException, SchemaException, AuthenticationException, ClientException {

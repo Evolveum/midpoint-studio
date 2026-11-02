@@ -1,7 +1,5 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.model.api.util.ConnectorGeneratorConstants;
-import com.evolveum.midpoint.model.api.util.SmartIntegrationConstants;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -10,24 +8,21 @@ import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.schema.*;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.schema.result.OperationResult;
-import com.evolveum.midpoint.smart.api.info.AiInfo;
 import com.evolveum.midpoint.studio.client.*;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
-import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.ObjectNotFoundException;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.util.exception.SecurityViolationException;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ExecuteScriptResponseType;
 import com.evolveum.midpoint.xml.ns._public.common.api_types_3.ObjectModificationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import okhttp3.RequestBody;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -589,6 +584,23 @@ public class MidPointClient {
 
         return client.continueFrom(
                 oid
+        );
+    }
+
+    public boolean isOfflineConnectorDevelopmentService() throws SchemaException, AuthenticationException, IOException {
+        return client.isOfflineConnectorDevelopmentService();
+    }
+
+    public boolean isConnectorAlreadyPresent(
+            String groupId,
+            String artifactId,
+            String version
+    ) throws SchemaException, AuthenticationException, IOException {
+
+        return client.isConnectorAlreadyPresent(
+                groupId,
+                artifactId,
+                version
         );
     }
 
