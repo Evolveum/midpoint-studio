@@ -52,10 +52,11 @@ public class ConnectorGeneratorAction extends AnAction {
             if (connection.success()) {
                 try {
 
-                    // FIXME find another way to determine whether the connector development service is enabled or disabled -> remove condition & isOfflineConnectorDevelopmentService request
-                    if (client.isOfflineConnectorDevelopmentService()) {
-                        return;
-                    }
+                    // Offline/disabled detection (isOffline RPC) exists only in midPoint 4.11.1+ (4.12 snapshots);
+                    // the plugin targets 4.11.0, so no such check is made here for now.
+//                    if (client.isOfflineConnectorDevelopmentService()) {
+//                        return;
+//                    }
 
                     SearchResult searchResult = client.search(
                             ConnectorDevelopmentType.class,
