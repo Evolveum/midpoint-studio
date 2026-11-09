@@ -6,7 +6,10 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -27,6 +30,20 @@ public class MidPointService extends ServiceBase<MidPointConfiguration> {
 
     public static MidPointService get(@NotNull Project project) {
         return project.getService(MidPointService.class);
+    }
+
+    /**
+     * Project id is the keychain key for the master password. It is created on first use and
+     * persisted right away, otherwise the keychain entry would be orphaned on next start.
+     */
+    public String getProjectId() {
+        MidPointConfiguration settings = getSettings();
+        if (StringUtils.isEmpty(settings.getProjectId())) {
+            settings.setProjectId(UUID.randomUUID().toString());
+            settingsUpdated();
+        }
+
+        return settings.getProjectId();
     }
 
     @Deprecated

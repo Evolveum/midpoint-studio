@@ -11,8 +11,6 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.codeInsight.template.TemplateManager;
 import com.intellij.codeInsight.template.impl.TemplateImpl;
-import com.intellij.ide.fileTemplates.FileTemplate;
-import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
@@ -20,6 +18,7 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.*;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbAwareRunnable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -28,6 +27,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -169,10 +169,7 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
 
         file = root.createChildData(this, GITIGNORE);
 
-        FileTemplateManager ftManager = FileTemplateManager.getInstance(project);
-        FileTemplate fileTemplate = ftManager.getTemplate(MidPointFileTemplateGroupFactory.MIDPOINT_GIT_IGNORE_TEMPLATE);
-
-        String text = fileTemplate.getText();
+        String text = MidPointFileTemplates.text(project, MidPointFileTemplateGroupFactory.MIDPOINT_GIT_IGNORE_TEMPLATE, null);
         VfsUtil.saveText(file, text);
     }
 
@@ -185,10 +182,7 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
 
         file = root.createChildData(this, MavenConstants.POM_XML);
 
-        FileTemplateManager ftManager = FileTemplateManager.getInstance(project);
-        FileTemplate fileTemplate = ftManager.getTemplate(MidPointFileTemplateGroupFactory.MIDPOINT_MAVEN_POM_TEMPLATE);
-
-        String text = fileTemplate.getText(properties);
+        String text = MidPointFileTemplates.text(project, MidPointFileTemplateGroupFactory.MIDPOINT_MAVEN_POM_TEMPLATE, properties);
         Pattern pattern = Pattern.compile("\\$\\$\\{(.*)\\}");
         Matcher matcher = pattern.matcher(text);
         StringBuilder builder = new StringBuilder();
@@ -235,10 +229,30 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
     public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
         MidPointService.get(project).setSettings(settings.getMidPointSettings());
 
-        EncryptionService.getInstance(project).init(settings.getMasterPassword());
+        initEncryptionService(project);
 
         EnvironmentService.getInstance(project).setSettings(settings.getEnvironmentSettings());
 
         return super.commitModule(project, model);
+    }
+
+    /**
+     * Stores master password in keychain and creates credentials file. Both are slow and this method
+     * is called on EDT, so the work runs on a pooled thread behind a modal progress. Environment
+     * settings are applied afterwards because they encrypt credentials with this master password.
+     */
+    private void initEncryptionService(@NotNull Project project) {
+        String masterPassword = settings.getMasterPassword();
+        if (StringUtils.isEmpty(masterPassword)) {
+            return;
+        }
+
+        EncryptionService service = EncryptionService.getInstance(project);
+
+        ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                () -> service.init(masterPassword),
+                StudioLocalization.message("midpoint.new.project.credentials"),
+                false,
+                project);
     }
 }

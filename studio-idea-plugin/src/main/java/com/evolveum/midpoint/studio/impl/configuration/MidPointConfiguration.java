@@ -12,7 +12,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * Created by Viliam Repan (lazyman).
@@ -361,7 +360,6 @@ public class MidPointConfiguration implements Serializable {
 
     public static MidPointConfiguration createDefaultSettings() {
         MidPointConfiguration settings = new MidPointConfiguration();
-        settings.setProjectId(UUID.randomUUID().toString());
 
         settings.setDowloadFilePattern("objects/$T/$n.xml");
         settings.setGeneratedFilePattern("scratches/gen/$n.xml");

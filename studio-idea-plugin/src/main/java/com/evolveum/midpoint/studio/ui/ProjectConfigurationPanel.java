@@ -105,7 +105,7 @@ public class ProjectConfigurationPanel extends JPanel {
         String oldPwd = oldPassword.getPassword() != null ? new String(oldPassword.getPassword()) : null;
         if (StringUtils.isNotEmpty(oldPwd)) {
             String projectId = settings.getMidPointSettings().getProjectId();
-            String currentPwd = MidPointUtils.getPassword(projectId);
+            String currentPwd = projectId != null ? MidPointUtils.getPassword(projectId) : null;
             if (!Objects.equals(oldPwd, currentPwd)) {
                 throw new ConfigurationException("Old password doesn't match one that is stored in keychain with id " + projectId);
             }

@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.studio.impl;
 
-import com.evolveum.midpoint.studio.impl.configuration.MidPointConfiguration;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -96,10 +95,7 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
             return;
         }
 
-        String projectId = getProjectId();
-        if (projectId == null) {
-            return;
-        }
+        String projectId = MidPointService.get(project).getProjectId();
 
         MidPointUtils.setPassword(projectId, masterPassword);
 
@@ -112,10 +108,7 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
     public void changeMasterPassword(String oldPassword, String newPassword) {
         LOG.info("Changing master password");
 
-        String projectId = getProjectId();
-        if (projectId == null) {
-            throw new IllegalStateException("Midpoint setting unavailable");
-        }
+        String projectId = MidPointService.get(project).getProjectId();
 
         if (StringUtils.isEmpty(newPassword)) {
             throw new IllegalArgumentException("New password must not be empty");
@@ -477,19 +470,11 @@ public class EncryptionServiceImpl implements EncryptionService, Disposable {
         }
     }
 
-    private String getProjectId() {
-        MidPointConfiguration settings = MidPointService.get(project).getSettings();
-        if (settings == null || StringUtils.isEmpty(settings.getProjectId())) {
-            LOG.debug("MidPoint settings not available.");
-            return null;
-        }
-
-        return settings.getProjectId();
-    }
-
     private String readMasterPassword() {
-        String projectId = getProjectId();
-        if (projectId == null) {
+        // read only, a project without id has no master password stored and must not get an id here
+        String projectId = MidPointService.get(project).getSettings().getProjectId();
+        if (StringUtils.isEmpty(projectId)) {
+            LOG.debug("MidPoint project id not available.");
             return null;
         }
 

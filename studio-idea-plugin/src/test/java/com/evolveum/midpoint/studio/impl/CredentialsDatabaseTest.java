@@ -169,6 +169,31 @@ public class CredentialsDatabaseTest {
         assertNull(reread.get("missing"));
     }
 
+    /**
+     * In IDE the thread context class loader doesn't see plugin libraries, KeePassJava2 locates woodstox
+     * through it and leaves XML output factory system property set for the whole JVM.
+     */
+    @Test
+    public void testReadWriteWithForeignContextClassLoader() throws IOException {
+        Thread thread = Thread.currentThread();
+        ClassLoader contextClassLoader = thread.getContextClassLoader();
+        String property = System.getProperty("javax.xml.stream.XMLOutputFactory");
+
+        thread.setContextClassLoader(ClassLoader.getPlatformClassLoader());
+        try {
+            CredentialsDatabase db = CredentialsDatabase.read(oldFile, PASSWORD);
+            File newFile = folder.newFile("new.kdbx");
+            db.write(newFile, PASSWORD);
+
+            assertOpenkeepassContent(CredentialsDatabase.read(newFile, PASSWORD));
+
+            assertEquals(property, System.getProperty("javax.xml.stream.XMLOutputFactory"));
+            assertSame(ClassLoader.getPlatformClassLoader(), thread.getContextClassLoader());
+        } finally {
+            thread.setContextClassLoader(contextClassLoader);
+        }
+    }
+
     private void assertOpenkeepassContent(CredentialsDatabase db) {
         List<EncryptedObject> list = db.list();
         assertEquals(6, list.size());
