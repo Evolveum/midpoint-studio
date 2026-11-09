@@ -8,9 +8,7 @@ package com.evolveum.midpoint.studio.ui.connector.development.wizard
 
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.development.ConnectorDevelopmentDataModel
-import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.ConnectorDevelopmentDisabledStep
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType
 
 class ConnectorDevelopmentContinueWizard(

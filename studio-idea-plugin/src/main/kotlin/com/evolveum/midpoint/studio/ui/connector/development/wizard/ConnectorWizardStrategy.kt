@@ -9,7 +9,7 @@ package com.evolveum.midpoint.studio.ui.connector.development.wizard
 import com.evolveum.midpoint.prism.path.ItemName
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.development.ConnectorDevelopmentDataModel
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.ConnectorDevelopmentWizardStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 
 /**
  * Connector-type-specific decisions used by the connector development wizard (REST, SCIM, SQL),

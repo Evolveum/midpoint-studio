@@ -7,16 +7,21 @@
 package com.evolveum.midpoint.studio.ui.prism.type.render
 
 import com.evolveum.midpoint.prism.PrismPropertyDefinition
-import com.evolveum.midpoint.studio.ui.PrismPropertyDefinitionRenderer
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Row
 
 class DefaultRenderer: PrismPropertyDefinitionRenderer<Any> {
 
     override fun render(
         row: Row,
-        propertyDefinition: PrismPropertyDefinition<Any>,
+        propertyDefinition: PrismPropertyDefinition<*>,
         value: Any?
     ) {
+        val itemName = propertyDefinition.itemName
+
+        row.label(itemName.localPart)
+            .align(AlignX.FILL)
+
         TODO("Not yet implemented")
     }
 }

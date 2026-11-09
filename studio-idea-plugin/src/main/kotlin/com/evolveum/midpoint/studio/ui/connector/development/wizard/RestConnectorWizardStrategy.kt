@@ -10,12 +10,30 @@ import com.evolveum.midpoint.prism.path.ItemName
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.development.ConnectorDevelopmentDataModel
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.ConnectorDevelopmentWizardStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.InitialContinueConnectorDevelopmentStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.connection.AuthMethodSupportStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.connection.AuthScriptsConnectorStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.connection.BaseUrlSpecificationStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.connection.CredentialsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.InitialContinueConnectorDevelopmentStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.AuthMethodSupportStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.AuthScriptsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.BaseUrlSpecificationStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.CredentialsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.ObjectClassSelectConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.create.CreateEndpointsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.create.CreateScriptConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.delete.DeleteEndpointsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.delete.DeleteScriptConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.schema.SchemaScriptConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.schema.ShowSchemaConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchAllEndpointsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchAllObjectsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchAllScriptConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchByIdEndpointsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchByIdObjectConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchByIdScriptConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchFilterEndpointsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchFilterObjectsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchFilterScriptConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.update.UpdateEndpointsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.update.UpdateScriptConnectorStep
 
 /**
  * Wizard strategy for classic (non-SCIM) REST connectors. SCIM is a specialization of REST
@@ -29,9 +47,9 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
         connectorDevelopmentDataModel: ConnectorDevelopmentDataModel
     ): List<ConnectorDevelopmentWizardStep> {
 
-        val connection = mutableListOf<ConnectorDevelopmentWizardStep>()
+        val connectionSteps = mutableListOf<ConnectorDevelopmentWizardStep>()
 
-        connection.add(
+        connectionSteps.add(
             InitialContinueConnectorDevelopmentStep(
                 wizardContext,
                 client,
@@ -40,7 +58,7 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
             )
         )
 
-        connection.add(
+        connectionSteps.add(
             BaseUrlSpecificationStep(
                 wizardContext,
                 client,
@@ -49,7 +67,7 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
             )
         )
 
-        connection.add(
+        connectionSteps.add(
             AuthMethodSupportStep(
                 wizardContext,
                 client,
@@ -58,7 +76,7 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
             )
         )
 
-        connection.add(
+        connectionSteps.add(
             AuthScriptsConnectorStep(
                 wizardContext,
                 client,
@@ -67,7 +85,7 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
             )
         )
 
-        connection.add(
+        connectionSteps.add(
             CredentialsConnectorStep(
                 wizardContext,
                 client,
@@ -76,7 +94,7 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
             )
         )
 
-        return connection
+        return connectionSteps
     }
 
     override fun initObjectClassSteps(
@@ -84,7 +102,91 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
         wizardContext: ConnectorDevelopmentWizard,
         connectorDevelopmentDataModel: ConnectorDevelopmentDataModel
     ): List<ConnectorDevelopmentWizardStep> {
-        TODO("Not yet implemented")
+
+        val objectClassSteps = mutableListOf<ConnectorDevelopmentWizardStep>()
+
+        objectClassSteps.add(
+            ObjectClassSelectConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        objectClassSteps.add(
+            SchemaScriptConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        objectClassSteps.add(
+            ShowSchemaConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        objectClassSteps.add(
+            SearchAllEndpointsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        objectClassSteps.add(
+            SearchAllScriptConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        objectClassSteps.add(
+            SearchAllObjectsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        objectClassSteps.add(
+            SearchByIdEndpointsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        objectClassSteps.add(
+            SearchByIdScriptConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        objectClassSteps.add(
+            SearchByIdObjectConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        return objectClassSteps
     }
 
     override fun searchAllObjectClassSteps(
@@ -92,7 +194,37 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
         wizardContext: ConnectorDevelopmentWizard,
         connectorDevelopmentDataModel: ConnectorDevelopmentDataModel
     ): List<ConnectorDevelopmentWizardStep> {
-        TODO("Not yet implemented")
+
+        val searchAllObjectClassSteps = mutableListOf<ConnectorDevelopmentWizardStep>()
+
+        searchAllObjectClassSteps.add(
+            SearchAllEndpointsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        searchAllObjectClassSteps.add(
+            SearchAllScriptConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        searchAllObjectClassSteps.add(
+            SearchAllObjectsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        return searchAllObjectClassSteps
     }
 
     override fun searchByIdObjectClassSteps(
@@ -100,7 +232,38 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
         wizardContext: ConnectorDevelopmentWizard,
         connectorDevelopmentDataModel: ConnectorDevelopmentDataModel
     ): List<ConnectorDevelopmentWizardStep> {
-        TODO("Not yet implemented")
+
+        val searchByIdObjectClassSteps = mutableListOf<ConnectorDevelopmentWizardStep>()
+
+        searchByIdObjectClassSteps.add(
+            SearchByIdEndpointsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        searchByIdObjectClassSteps.add(
+            SearchByIdScriptConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        searchByIdObjectClassSteps.add(
+            SearchByIdObjectConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        return searchByIdObjectClassSteps
+
     }
 
     override fun searchFilterObjectClassSteps(
@@ -108,7 +271,37 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
         wizardContext: ConnectorDevelopmentWizard,
         connectorDevelopmentDataModel: ConnectorDevelopmentDataModel
     ): List<ConnectorDevelopmentWizardStep> {
-        TODO("Not yet implemented")
+
+        val searchFilterObjectClassSteps = mutableListOf<ConnectorDevelopmentWizardStep>()
+
+        searchFilterObjectClassSteps.add(
+            SearchFilterEndpointsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        searchFilterObjectClassSteps.add(
+            SearchFilterScriptConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        searchFilterObjectClassSteps.add(
+            SearchFilterObjectsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        return searchFilterObjectClassSteps
     }
 
     override fun createObjectClassSteps(
@@ -116,7 +309,28 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
         wizardContext: ConnectorDevelopmentWizard,
         connectorDevelopmentDataModel: ConnectorDevelopmentDataModel
     ): List<ConnectorDevelopmentWizardStep> {
-        TODO("Not yet implemented")
+
+        val createObjectClassSteps = mutableListOf<ConnectorDevelopmentWizardStep>()
+
+        createObjectClassSteps.add(
+            CreateEndpointsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        createObjectClassSteps.add(
+            CreateScriptConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        return createObjectClassSteps
     }
 
     override fun updateObjectClassSteps(
@@ -124,7 +338,28 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
         wizardContext: ConnectorDevelopmentWizard,
         connectorDevelopmentDataModel: ConnectorDevelopmentDataModel
     ): List<ConnectorDevelopmentWizardStep> {
-        TODO("Not yet implemented")
+
+        val updateObjectClassSteps = mutableListOf<ConnectorDevelopmentWizardStep>()
+
+        updateObjectClassSteps.add(
+            UpdateEndpointsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        updateObjectClassSteps.add(
+            UpdateScriptConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        return updateObjectClassSteps
     }
 
     override fun deleteObjectClassSteps(
@@ -132,7 +367,28 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
         wizardContext: ConnectorDevelopmentWizard,
         connectorDevelopmentDataModel: ConnectorDevelopmentDataModel
     ): List<ConnectorDevelopmentWizardStep> {
-        TODO("Not yet implemented")
+
+        val deleteObjectClassSteps = mutableListOf<ConnectorDevelopmentWizardStep>()
+
+        deleteObjectClassSteps.add(
+            DeleteEndpointsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        deleteObjectClassSteps.add(
+            DeleteScriptConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        return deleteObjectClassSteps
     }
 
     override fun connectionUrlFieldName(): ItemName {

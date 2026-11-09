@@ -12,7 +12,7 @@ import com.evolveum.midpoint.studio.ui.connector.development.ConnectorDevelopmen
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.navigation.NavigationItem
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.navigation.NavigationNode
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.navigation.NavigationTree
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.ConnectorDevelopmentWizardStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.util.exception.SchemaException
 import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.ide.wizard.Step

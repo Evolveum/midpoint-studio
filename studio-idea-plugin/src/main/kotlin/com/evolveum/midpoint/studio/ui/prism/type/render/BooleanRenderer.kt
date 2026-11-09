@@ -7,19 +7,20 @@
 package com.evolveum.midpoint.studio.ui.prism.type.render
 
 import com.evolveum.midpoint.prism.PrismPropertyDefinition
-import com.evolveum.midpoint.studio.ui.PrismPropertyDefinitionRenderer
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Row
 
 class BooleanRenderer: PrismPropertyDefinitionRenderer<Boolean> {
 
     override fun render(
         row: Row,
-        propertyDefinition: PrismPropertyDefinition<Boolean>,
+        propertyDefinition: PrismPropertyDefinition<*>,
         value: Boolean?
     ) {
-        row.checkBox("")
+        row.checkBox(propertyDefinition.displayName)
+            .align(AlignX.FILL)
             .apply {
-                component.isSelected = value ?: false
+                component.isSelected = value == true
             }
     }
 }

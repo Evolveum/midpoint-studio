@@ -7,7 +7,7 @@
 package com.evolveum.midpoint.studio.ui.connector.development.wizard
 
 import com.evolveum.midpoint.prism.path.ItemName
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.connection.BaseUrlSpecificationStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.BaseUrlSpecificationStep
 
 class ScimConnectorWizardStrategy: RestConnectorWizardStrategy() {
 

@@ -1,0 +1,1418 @@
+<!--
+  ~ Copyright (C) 2010-2026 Evolveum and contributors
+  ~
+  ~ Licensed under the EUPL-1.2 or later.
+  -->
+
+<connector xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3" xmlns:icfs="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/resource-schema-3" xmlns:org="http://midpoint.evolveum.com/xml/ns/public/common/org-3" xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3" xmlns:ri="http://midpoint.evolveum.com/xml/ns/public/resource/instance-3" xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" oid="6e94188e-d3bf-420c-a362-7b7605c08bef" version="12">
+    <name>ConnId openproject Connector v1.0-SNAPSHOT</name>
+    <displayName>openproject Connector</displayName>
+    <framework>http://midpoint.evolveum.com/xml/ns/public/connector/icf-1</framework>
+    <connectorType>com.evolveum.polygon.scimrest.groovy.impl.ManifestBasedConnector</connectorType>
+    <connectorVersion>1.0-SNAPSHOT</connectorVersion>
+    <connectorBundle>com.evolveum.polygon.community.openproject</connectorBundle>
+    <namespace>http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/com.evolveum.polygon.community.openproject/com.evolveum.polygon.scimrest.groovy.impl.ManifestBasedConnector</namespace>
+    <schema>
+        <definition>
+            <xsd:schema xmlns:a="http://prism.evolveum.com/xml/ns/public/annotation-3" xmlns:icfc="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/connector-schema-3" xmlns:qn139="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/connector-schema-3" xmlns:tns="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/com.evolveum.polygon.community.openproject/com.evolveum.polygon.scimrest.groovy.impl.ManifestBasedConnector" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/bundle/com.evolveum.polygon.community.openproject/com.evolveum.polygon.scimrest.groovy.impl.ManifestBasedConnector">
+                <xsd:import namespace="http://midpoint.evolveum.com/xml/ns/public/connector/icf-1/connector-schema-3"/>
+                <xsd:import namespace="http://prism.evolveum.com/xml/ns/public/types-3"/>
+                <xsd:import namespace="http://prism.evolveum.com/xml/ns/public/annotation-3"/>
+                <xsd:complexType name="ConfigurationType">
+                    <xsd:sequence>
+                        <xsd:element minOccurs="0" ref="qn139:connectorPoolConfiguration">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:type>qn139:ConnectorPoolConfigurationType</a:type>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" ref="icfc:producerBufferSize"/>
+                        <xsd:element minOccurs="0" ref="icfc:timeouts">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:type>icfc:TimeoutsType</a:type>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" ref="icfc:resultsHandlerConfiguration">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:type>icfc:ResultsHandlerConfigurationType</a:type>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" ref="icfc:legacySchema"/>
+                        <xsd:element ref="icfc:configurationProperties">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:type>tns:ConfigurationPropertiesType</a:type>
+                                    <a:container/>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+                <xsd:complexType name="ConfigurationPropertiesType">
+                    <xsd:sequence>
+                        <xsd:element minOccurs="0" name="baseAddress" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Base Address</a:displayName>
+                                    <a:displayOrder>1</a:displayOrder>
+                                    <a:help>baseAddress.help</a:help>
+                                    <a:externalGroup>REST Service</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restTestEndpoint" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Test Endpoint</a:displayName>
+                                    <a:displayOrder>2</a:displayOrder>
+                                    <a:help>restTestEndpoint.help</a:help>
+                                    <a:externalGroup>REST Service</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimBaseUrl" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Base URL</a:displayName>
+                                    <a:displayOrder>3</a:displayOrder>
+                                    <a:help>scimBaseUrl.help</a:help>
+                                    <a:externalGroup>SCIM Service</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="trustAllCertificates" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Trust All Certificates</a:displayName>
+                                    <a:displayOrder>4</a:displayOrder>
+                                    <a:help>trustAllCertificates.help</a:help>
+                                    <a:externalGroup>TLS / SSL Configuration</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restUsername" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Username</a:displayName>
+                                    <a:displayOrder>5</a:displayOrder>
+                                    <a:help>restUsername.help</a:help>
+                                    <a:externalGroup>REST Basic Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restPassword" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Password</a:displayName>
+                                    <a:displayOrder>6</a:displayOrder>
+                                    <a:help>restPassword.help</a:help>
+                                    <a:externalGroup>REST Basic Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restTokenValue" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Token</a:displayName>
+                                    <a:displayOrder>7</a:displayOrder>
+                                    <a:help>Static bearer token sent in the Authorization header</a:help>
+                                    <a:externalGroup>REST Bearer Token Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimUsername" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Username</a:displayName>
+                                    <a:displayOrder>8</a:displayOrder>
+                                    <a:help>scimUsername.help</a:help>
+                                    <a:externalGroup>SCIM Basic Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimPassword" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Password</a:displayName>
+                                    <a:displayOrder>9</a:displayOrder>
+                                    <a:help>scimPassword.help</a:help>
+                                    <a:externalGroup>SCIM Basic Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimTokenValue" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Token</a:displayName>
+                                    <a:displayOrder>10</a:displayOrder>
+                                    <a:help>Static bearer token sent in the Authorization header</a:help>
+                                    <a:externalGroup>SCIM Bearer Token Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restJwtTokenName" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Token Name</a:displayName>
+                                    <a:displayOrder>11</a:displayOrder>
+                                    <a:help>restJwtTokenName.help</a:help>
+                                    <a:externalGroup>REST JWT Bearer Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restJwtAlgorithm" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Algorithm</a:displayName>
+                                    <a:displayOrder>12</a:displayOrder>
+                                    <a:help>restJwtAlgorithm.help</a:help>
+                                    <a:externalGroup>REST JWT Bearer Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>HS256</a:key>
+                                            <a:label>HS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>HS384</a:key>
+                                            <a:label>HS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>HS512</a:key>
+                                            <a:label>HS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS256</a:key>
+                                            <a:label>RS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS384</a:key>
+                                            <a:label>RS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS512</a:key>
+                                            <a:label>RS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS256</a:key>
+                                            <a:label>PS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS384</a:key>
+                                            <a:label>PS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS512</a:key>
+                                            <a:label>PS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES256</a:key>
+                                            <a:label>ES256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES384</a:key>
+                                            <a:label>ES384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES512</a:key>
+                                            <a:label>ES512</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restJwtSecret" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Secret</a:displayName>
+                                    <a:displayOrder>13</a:displayOrder>
+                                    <a:help>restJwtSecret.help</a:help>
+                                    <a:externalGroup>REST JWT Bearer Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restJwtSecretBase64Encoded" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Secret Base64 Encoded</a:displayName>
+                                    <a:displayOrder>14</a:displayOrder>
+                                    <a:help>restJwtSecretBase64Encoded.help</a:help>
+                                    <a:externalGroup>REST JWT Bearer Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restJwtPayload" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Payload</a:displayName>
+                                    <a:displayOrder>15</a:displayOrder>
+                                    <a:help>restJwtPayload.help</a:help>
+                                    <a:externalGroup>REST JWT Bearer Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restJwtLocation" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Token Location</a:displayName>
+                                    <a:displayOrder>16</a:displayOrder>
+                                    <a:help>restJwtLocation.help</a:help>
+                                    <a:externalGroup>REST JWT Bearer Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>header</a:key>
+                                            <a:label>header</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>query</a:key>
+                                            <a:label>query</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restApiKeyName" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>API Key Name</a:displayName>
+                                    <a:displayOrder>17</a:displayOrder>
+                                    <a:help>restApiKeyName.help</a:help>
+                                    <a:externalGroup>REST API Key Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restApiKey" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>API Key</a:displayName>
+                                    <a:displayOrder>18</a:displayOrder>
+                                    <a:help>restApiKey.help</a:help>
+                                    <a:externalGroup>REST API Key Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restApiKeyLocation" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>API Key Location</a:displayName>
+                                    <a:displayOrder>19</a:displayOrder>
+                                    <a:help>restApiKeyLocation.help</a:help>
+                                    <a:externalGroup>REST API Key Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>header</a:key>
+                                            <a:label>header</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>query</a:key>
+                                            <a:label>query</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restDigestUsername" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Username</a:displayName>
+                                    <a:displayOrder>20</a:displayOrder>
+                                    <a:help>Username for HTTP Digest authentication</a:help>
+                                    <a:externalGroup>REST Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restDigestPassword" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Password</a:displayName>
+                                    <a:displayOrder>21</a:displayOrder>
+                                    <a:help>Password for HTTP Digest authentication</a:help>
+                                    <a:externalGroup>REST Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restDigestAutoChallenge" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Auto Challenge</a:displayName>
+                                    <a:displayOrder>22</a:displayOrder>
+                                    <a:help>When enabled, the connector automatically handles 401 Digest challenges</a:help>
+                                    <a:externalGroup>REST Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restDigestPreemptiveAuth" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Preemptive Auth</a:displayName>
+                                    <a:displayOrder>23</a:displayOrder>
+                                    <a:help>Send Digest credentials on the first request without waiting for a 401 challenge</a:help>
+                                    <a:externalGroup>REST Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restDigestMaxRetries" type="xsd:int">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Max Retries</a:displayName>
+                                    <a:displayOrder>24</a:displayOrder>
+                                    <a:help>Maximum number of Digest challenge retries before failing</a:help>
+                                    <a:externalGroup>REST Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restDigestAlgorithmPreference" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Algorithm Preference</a:displayName>
+                                    <a:displayOrder>25</a:displayOrder>
+                                    <a:help>Preferred Digest algorithm (e.g. SHA-256, MD5)</a:help>
+                                    <a:externalGroup>REST Digest Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>MD5</a:key>
+                                            <a:label>MD5</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>MD5-sess</a:key>
+                                            <a:label>MD5-sess</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>SHA-256</a:key>
+                                            <a:label>SHA-256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>SHA-256-sess</a:key>
+                                            <a:label>SHA-256-sess</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>SHA-512-256</a:key>
+                                            <a:label>SHA-512-256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>SHA-512-256-sess</a:key>
+                                            <a:label>SHA-512-256-sess</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restDigestStateCacheEnabled" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>State Cache Enabled</a:displayName>
+                                    <a:displayOrder>26</a:displayOrder>
+                                    <a:help>Cache Digest nonce and opaque values across requests to reduce round-trips</a:help>
+                                    <a:externalGroup>REST Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2TokenUrl" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Token URL</a:displayName>
+                                    <a:displayOrder>27</a:displayOrder>
+                                    <a:help>URL of the OAuth2 authorization server token endpoint</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2ClientId" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Client ID</a:displayName>
+                                    <a:displayOrder>28</a:displayOrder>
+                                    <a:help>Client identifier issued by the authorization server</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2ClientAuthenticationScheme" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Client Authentication Scheme</a:displayName>
+                                    <a:displayOrder>29</a:displayOrder>
+                                    <a:help>How the client credentials are sent to the token endpoint: basic (default) or post</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>post</a:key>
+                                            <a:label>post</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>basic</a:key>
+                                            <a:label>basic</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2Scope" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Scope</a:displayName>
+                                    <a:displayOrder>30</a:displayOrder>
+                                    <a:help>Space-separated list of OAuth2 scopes to request</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2ClientSecret" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Client Secret</a:displayName>
+                                    <a:displayOrder>31</a:displayOrder>
+                                    <a:help>Client secret (required for client_credentials grant type)</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2Username" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Username</a:displayName>
+                                    <a:displayOrder>32</a:displayOrder>
+                                    <a:help>Resource owner username for the password grant type</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2Password" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Password</a:displayName>
+                                    <a:displayOrder>33</a:displayOrder>
+                                    <a:help>Resource owner password for the password grant type</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2PrivateKey" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Private Key</a:displayName>
+                                    <a:displayOrder>34</a:displayOrder>
+                                    <a:help>PEM-encoded PKCS#8 private key for JWT Bearer grant type (RFC 7523)</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2Issuer" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Issuer</a:displayName>
+                                    <a:displayOrder>35</a:displayOrder>
+                                    <a:help>Issuer identifier used as the iss claim in JWT assertions and as the SAML issuer</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2KeyId" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Key ID</a:displayName>
+                                    <a:displayOrder>36</a:displayOrder>
+                                    <a:help>Key ID (kid) included in the JWT header to identify the signing key</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2Algorithm" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Algorithm</a:displayName>
+                                    <a:displayOrder>37</a:displayOrder>
+                                    <a:help>JWT signing algorithm used for the assertion (e.g. RS256, ES256)</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>RS256</a:key>
+                                            <a:label>RS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS384</a:key>
+                                            <a:label>RS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS512</a:key>
+                                            <a:label>RS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS256</a:key>
+                                            <a:label>PS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS384</a:key>
+                                            <a:label>PS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS512</a:key>
+                                            <a:label>PS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES256</a:key>
+                                            <a:label>ES256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES384</a:key>
+                                            <a:label>ES384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES512</a:key>
+                                            <a:label>ES512</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restOAuth2Subject" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Subject</a:displayName>
+                                    <a:displayOrder>38</a:displayOrder>
+                                    <a:help>Subject (sub claim) of the JWT assertion; defaults to clientId if not set</a:help>
+                                    <a:externalGroup>REST OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restHawkId" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Hawk ID</a:displayName>
+                                    <a:displayOrder>39</a:displayOrder>
+                                    <a:help>Hawk credential ID issued by the server</a:help>
+                                    <a:externalGroup>REST Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restHawkKey" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Hawk Key</a:displayName>
+                                    <a:displayOrder>40</a:displayOrder>
+                                    <a:help>Shared secret used to compute the Hawk MAC signature</a:help>
+                                    <a:externalGroup>REST Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restHawkAlgorithm" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Algorithm</a:displayName>
+                                    <a:displayOrder>41</a:displayOrder>
+                                    <a:help>HMAC algorithm used for signing: sha256 (default) or sha512</a:help>
+                                    <a:externalGroup>REST Hawk Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>sha1</a:key>
+                                            <a:label>sha1</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>sha256</a:key>
+                                            <a:label>sha256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>sha384</a:key>
+                                            <a:label>sha384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>sha512</a:key>
+                                            <a:label>sha512</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restHawkIncludePayloadHash" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Include Payload Hash</a:displayName>
+                                    <a:displayOrder>42</a:displayOrder>
+                                    <a:help>Include a hash of the request payload in the Hawk Authorization header</a:help>
+                                    <a:externalGroup>REST Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restHawkOffset" type="xsd:int">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Timestamp Offset</a:displayName>
+                                    <a:displayOrder>43</a:displayOrder>
+                                    <a:help>Clock offset in seconds applied to the timestamp in the Hawk header</a:help>
+                                    <a:externalGroup>REST Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restHawkExt" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Ext</a:displayName>
+                                    <a:displayOrder>44</a:displayOrder>
+                                    <a:help>Application-specific data included in the Hawk ext attribute</a:help>
+                                    <a:externalGroup>REST Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restAwsAccessKey" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Access Key</a:displayName>
+                                    <a:displayOrder>45</a:displayOrder>
+                                    <a:help>AWS access key ID</a:help>
+                                    <a:externalGroup>REST AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restAwsSecretKey" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Secret Key</a:displayName>
+                                    <a:displayOrder>46</a:displayOrder>
+                                    <a:help>AWS secret access key</a:help>
+                                    <a:externalGroup>REST AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restAwsSessionToken" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Session Token</a:displayName>
+                                    <a:displayOrder>47</a:displayOrder>
+                                    <a:help>Temporary session token for assumed-role or federated credentials</a:help>
+                                    <a:externalGroup>REST AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restAwsRegion" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Region</a:displayName>
+                                    <a:displayOrder>48</a:displayOrder>
+                                    <a:help>AWS region of the target service (e.g. us-east-1)</a:help>
+                                    <a:externalGroup>REST AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restAwsService" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Service</a:displayName>
+                                    <a:displayOrder>49</a:displayOrder>
+                                    <a:help>AWS service name used in the Signature scope (e.g. execute-api, s3)</a:help>
+                                    <a:externalGroup>REST AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restNtlmUsername" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Username</a:displayName>
+                                    <a:displayOrder>50</a:displayOrder>
+                                    <a:help>Windows username for NTLM authentication</a:help>
+                                    <a:externalGroup>REST NTLM Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restNtlmPassword" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Password</a:displayName>
+                                    <a:displayOrder>51</a:displayOrder>
+                                    <a:help>Windows password for NTLM authentication</a:help>
+                                    <a:externalGroup>REST NTLM Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restNtlmDomain" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Domain</a:displayName>
+                                    <a:displayOrder>52</a:displayOrder>
+                                    <a:help>Windows domain or workgroup name</a:help>
+                                    <a:externalGroup>REST NTLM Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restNtlmWorkstation" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Workstation</a:displayName>
+                                    <a:displayOrder>53</a:displayOrder>
+                                    <a:help>Name of the client workstation sent in the NTLM negotiation</a:help>
+                                    <a:externalGroup>REST NTLM Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="restNtlmVersion" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>NTLM Version</a:displayName>
+                                    <a:displayOrder>54</a:displayOrder>
+                                    <a:help>NTLM protocol version: NTLMv1 or NTLMv2 (default)</a:help>
+                                    <a:externalGroup>REST NTLM Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>NTLMv1</a:key>
+                                            <a:label>NTLMv1</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>NTLMv2</a:key>
+                                            <a:label>NTLMv2</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimJwtTokenName" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Token Name</a:displayName>
+                                    <a:displayOrder>55</a:displayOrder>
+                                    <a:help>scimJwtTokenName.help</a:help>
+                                    <a:externalGroup>SCIM JWT Bearer Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimJwtAlgorithm" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Algorithm</a:displayName>
+                                    <a:displayOrder>56</a:displayOrder>
+                                    <a:help>scimJwtAlgorithm.help</a:help>
+                                    <a:externalGroup>SCIM JWT Bearer Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>HS256</a:key>
+                                            <a:label>HS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>HS384</a:key>
+                                            <a:label>HS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>HS512</a:key>
+                                            <a:label>HS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS256</a:key>
+                                            <a:label>RS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS384</a:key>
+                                            <a:label>RS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS512</a:key>
+                                            <a:label>RS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS256</a:key>
+                                            <a:label>PS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS384</a:key>
+                                            <a:label>PS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS512</a:key>
+                                            <a:label>PS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES256</a:key>
+                                            <a:label>ES256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES384</a:key>
+                                            <a:label>ES384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES512</a:key>
+                                            <a:label>ES512</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimJwtSecret" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Secret</a:displayName>
+                                    <a:displayOrder>57</a:displayOrder>
+                                    <a:help>scimJwtSecret.help</a:help>
+                                    <a:externalGroup>SCIM JWT Bearer Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimJwtSecretBase64Encoded" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Secret Base64 Encoded</a:displayName>
+                                    <a:displayOrder>58</a:displayOrder>
+                                    <a:help>scimJwtSecretBase64Encoded.help</a:help>
+                                    <a:externalGroup>SCIM JWT Bearer Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimJwtPayload" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Payload</a:displayName>
+                                    <a:displayOrder>59</a:displayOrder>
+                                    <a:help>scimJwtPayload.help</a:help>
+                                    <a:externalGroup>SCIM JWT Bearer Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimJwtLocation" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Token Location</a:displayName>
+                                    <a:displayOrder>60</a:displayOrder>
+                                    <a:help>scimJwtLocation.help</a:help>
+                                    <a:externalGroup>SCIM JWT Bearer Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>header</a:key>
+                                            <a:label>header</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>query</a:key>
+                                            <a:label>query</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimApiKeyName" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>API Key Name</a:displayName>
+                                    <a:displayOrder>61</a:displayOrder>
+                                    <a:help>scimApiKeyName.help</a:help>
+                                    <a:externalGroup>SCIM API Key Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimApiKey" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>API Key</a:displayName>
+                                    <a:displayOrder>62</a:displayOrder>
+                                    <a:help>scimApiKey.help</a:help>
+                                    <a:externalGroup>SCIM API Key Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimApiKeyLocation" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>API Key Location</a:displayName>
+                                    <a:displayOrder>63</a:displayOrder>
+                                    <a:help>scimApiKeyLocation.help</a:help>
+                                    <a:externalGroup>SCIM API Key Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>header</a:key>
+                                            <a:label>header</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>query</a:key>
+                                            <a:label>query</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimDigestUsername" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Username</a:displayName>
+                                    <a:displayOrder>64</a:displayOrder>
+                                    <a:help>Username for HTTP Digest authentication</a:help>
+                                    <a:externalGroup>SCIM Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimDigestPassword" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Password</a:displayName>
+                                    <a:displayOrder>65</a:displayOrder>
+                                    <a:help>Password for HTTP Digest authentication</a:help>
+                                    <a:externalGroup>SCIM Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimDigestAutoChallenge" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Auto Challenge</a:displayName>
+                                    <a:displayOrder>66</a:displayOrder>
+                                    <a:help>When enabled, the connector automatically handles 401 Digest challenges</a:help>
+                                    <a:externalGroup>SCIM Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimDigestPreemptiveAuth" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Preemptive Auth</a:displayName>
+                                    <a:displayOrder>67</a:displayOrder>
+                                    <a:help>Send Digest credentials on the first request without waiting for a 401 challenge</a:help>
+                                    <a:externalGroup>SCIM Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimDigestMaxRetries" type="xsd:int">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Max Retries</a:displayName>
+                                    <a:displayOrder>68</a:displayOrder>
+                                    <a:help>Maximum number of Digest challenge retries before failing</a:help>
+                                    <a:externalGroup>SCIM Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimDigestAlgorithmPreference" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Algorithm Preference</a:displayName>
+                                    <a:displayOrder>69</a:displayOrder>
+                                    <a:help>Preferred Digest algorithm (e.g. SHA-256, MD5)</a:help>
+                                    <a:externalGroup>SCIM Digest Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>MD5</a:key>
+                                            <a:label>MD5</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>MD5-sess</a:key>
+                                            <a:label>MD5-sess</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>SHA-256</a:key>
+                                            <a:label>SHA-256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>SHA-256-sess</a:key>
+                                            <a:label>SHA-256-sess</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>SHA-512-256</a:key>
+                                            <a:label>SHA-512-256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>SHA-512-256-sess</a:key>
+                                            <a:label>SHA-512-256-sess</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimDigestStateCacheEnabled" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>State Cache Enabled</a:displayName>
+                                    <a:displayOrder>70</a:displayOrder>
+                                    <a:help>Cache Digest nonce and opaque values across requests to reduce round-trips</a:help>
+                                    <a:externalGroup>SCIM Digest Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2TokenUrl" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Token URL</a:displayName>
+                                    <a:displayOrder>71</a:displayOrder>
+                                    <a:help>URL of the OAuth2 authorization server token endpoint</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2ClientId" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Client ID</a:displayName>
+                                    <a:displayOrder>72</a:displayOrder>
+                                    <a:help>Client identifier issued by the authorization server</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2ClientAuthenticationScheme" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Client Authentication Scheme</a:displayName>
+                                    <a:displayOrder>73</a:displayOrder>
+                                    <a:help>How the client credentials are sent to the token endpoint: basic (default) or post</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>post</a:key>
+                                            <a:label>post</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>basic</a:key>
+                                            <a:label>basic</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2Scope" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Scope</a:displayName>
+                                    <a:displayOrder>74</a:displayOrder>
+                                    <a:help>Space-separated list of OAuth2 scopes to request</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2ClientSecret" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Client Secret</a:displayName>
+                                    <a:displayOrder>75</a:displayOrder>
+                                    <a:help>Client secret (required for client_credentials grant type)</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2Username" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Username</a:displayName>
+                                    <a:displayOrder>76</a:displayOrder>
+                                    <a:help>Resource owner username for the password grant type</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2Password" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Password</a:displayName>
+                                    <a:displayOrder>77</a:displayOrder>
+                                    <a:help>Resource owner password for the password grant type</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2PrivateKey" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Private Key</a:displayName>
+                                    <a:displayOrder>78</a:displayOrder>
+                                    <a:help>PEM-encoded PKCS#8 private key for JWT Bearer grant type (RFC 7523)</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2Issuer" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Issuer</a:displayName>
+                                    <a:displayOrder>79</a:displayOrder>
+                                    <a:help>Issuer identifier used as the iss claim in JWT assertions and as the SAML issuer</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2KeyId" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Key ID</a:displayName>
+                                    <a:displayOrder>80</a:displayOrder>
+                                    <a:help>Key ID (kid) included in the JWT header to identify the signing key</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2Algorithm" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Algorithm</a:displayName>
+                                    <a:displayOrder>81</a:displayOrder>
+                                    <a:help>JWT signing algorithm used for the assertion (e.g. RS256, ES256)</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>RS256</a:key>
+                                            <a:label>RS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS384</a:key>
+                                            <a:label>RS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>RS512</a:key>
+                                            <a:label>RS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS256</a:key>
+                                            <a:label>PS256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS384</a:key>
+                                            <a:label>PS384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>PS512</a:key>
+                                            <a:label>PS512</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES256</a:key>
+                                            <a:label>ES256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES384</a:key>
+                                            <a:label>ES384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>ES512</a:key>
+                                            <a:label>ES512</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimOAuth2Subject" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Subject</a:displayName>
+                                    <a:displayOrder>82</a:displayOrder>
+                                    <a:help>Subject (sub claim) of the JWT assertion; defaults to clientId if not set</a:help>
+                                    <a:externalGroup>SCIM OAuth2 Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimHawkId" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Hawk ID</a:displayName>
+                                    <a:displayOrder>83</a:displayOrder>
+                                    <a:help>Hawk credential ID issued by the server</a:help>
+                                    <a:externalGroup>SCIM Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimHawkKey" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Hawk Key</a:displayName>
+                                    <a:displayOrder>84</a:displayOrder>
+                                    <a:help>Shared secret used to compute the Hawk MAC signature</a:help>
+                                    <a:externalGroup>SCIM Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimHawkAlgorithm" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Algorithm</a:displayName>
+                                    <a:displayOrder>85</a:displayOrder>
+                                    <a:help>HMAC algorithm used for signing: sha256 (default) or sha512</a:help>
+                                    <a:externalGroup>SCIM Hawk Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>sha1</a:key>
+                                            <a:label>sha1</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>sha256</a:key>
+                                            <a:label>sha256</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>sha384</a:key>
+                                            <a:label>sha384</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>sha512</a:key>
+                                            <a:label>sha512</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimHawkIncludePayloadHash" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Include Payload Hash</a:displayName>
+                                    <a:displayOrder>86</a:displayOrder>
+                                    <a:help>Include a hash of the request payload in the Hawk Authorization header</a:help>
+                                    <a:externalGroup>SCIM Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimHawkOffset" type="xsd:int">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Timestamp Offset</a:displayName>
+                                    <a:displayOrder>87</a:displayOrder>
+                                    <a:help>Clock offset in seconds applied to the timestamp in the Hawk header</a:help>
+                                    <a:externalGroup>SCIM Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimHawkExt" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Ext</a:displayName>
+                                    <a:displayOrder>88</a:displayOrder>
+                                    <a:help>Application-specific data included in the Hawk ext attribute</a:help>
+                                    <a:externalGroup>SCIM Hawk Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimAwsAccessKey" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Access Key</a:displayName>
+                                    <a:displayOrder>89</a:displayOrder>
+                                    <a:help>AWS access key ID</a:help>
+                                    <a:externalGroup>SCIM AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimAwsSecretKey" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Secret Key</a:displayName>
+                                    <a:displayOrder>90</a:displayOrder>
+                                    <a:help>AWS secret access key</a:help>
+                                    <a:externalGroup>SCIM AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimAwsSessionToken" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Session Token</a:displayName>
+                                    <a:displayOrder>91</a:displayOrder>
+                                    <a:help>Temporary session token for assumed-role or federated credentials</a:help>
+                                    <a:externalGroup>SCIM AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimAwsRegion" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Region</a:displayName>
+                                    <a:displayOrder>92</a:displayOrder>
+                                    <a:help>AWS region of the target service (e.g. us-east-1)</a:help>
+                                    <a:externalGroup>SCIM AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimAwsService" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Service</a:displayName>
+                                    <a:displayOrder>93</a:displayOrder>
+                                    <a:help>AWS service name used in the Signature scope (e.g. execute-api, s3)</a:help>
+                                    <a:externalGroup>SCIM AWS Signature Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimNtlmUsername" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Username</a:displayName>
+                                    <a:displayOrder>94</a:displayOrder>
+                                    <a:help>Windows username for NTLM authentication</a:help>
+                                    <a:externalGroup>SCIM NTLM Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimNtlmPassword" type="t:ProtectedStringType">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Password</a:displayName>
+                                    <a:displayOrder>95</a:displayOrder>
+                                    <a:help>Windows password for NTLM authentication</a:help>
+                                    <a:externalGroup>SCIM NTLM Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimNtlmDomain" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Domain</a:displayName>
+                                    <a:displayOrder>96</a:displayOrder>
+                                    <a:help>Windows domain or workgroup name</a:help>
+                                    <a:externalGroup>SCIM NTLM Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimNtlmWorkstation" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>Workstation</a:displayName>
+                                    <a:displayOrder>97</a:displayOrder>
+                                    <a:help>Name of the client workstation sent in the NTLM negotiation</a:help>
+                                    <a:externalGroup>SCIM NTLM Authorization</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="scimNtlmVersion" type="xsd:string">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>NTLM Version</a:displayName>
+                                    <a:displayOrder>98</a:displayOrder>
+                                    <a:help>NTLM protocol version: NTLMv1 or NTLMv2 (default)</a:help>
+                                    <a:externalGroup>SCIM NTLM Authorization</a:externalGroup>
+                                    <a:allowedValues>
+                                        <a:value>
+                                            <a:key>NTLMv1</a:key>
+                                            <a:label>NTLMv1</a:label>
+                                        </a:value>
+                                        <a:value>
+                                            <a:key>NTLMv2</a:key>
+                                            <a:label>NTLMv2</a:label>
+                                        </a:value>
+                                    </a:allowedValues>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                        <xsd:element minOccurs="0" name="developmentMode" type="xsd:boolean">
+                            <xsd:annotation>
+                                <xsd:appinfo>
+                                    <a:displayName>developmentMode.display</a:displayName>
+                                    <a:displayOrder>99</a:displayOrder>
+                                    <a:help>developmentMode.help</a:help>
+                                    <a:externalGroup>Development Mode</a:externalGroup>
+                                </xsd:appinfo>
+                            </xsd:annotation>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+                <xsd:element name="connectorConfiguration" type="tns:ConfigurationType">
+                    <xsd:annotation>
+                        <xsd:appinfo>
+                            <a:container/>
+                        </xsd:appinfo>
+                    </xsd:annotation>
+                </xsd:element>
+            </xsd:schema>
+        </definition>
+    </schema>
+    <available>true</available>
+    <discoveryTimestamp>
+        <t:encryptedData>
+            <t:encryptionMethod>
+                <t:algorithm>http://www.w3.org/2001/04/xmlenc#aes256-cbc</t:algorithm>
+            </t:encryptionMethod>
+            <t:keyInfo>
+                <t:keyName>vjgzRv89DFPq6frJSC7jk6bPVAM=</t:keyName>
+            </t:keyInfo>
+            <t:cipherData>
+                <t:cipherValue>8JpRr9U3L6GahmXo2N4dzSGO0gQRnAiVQihHtnKjHic=</t:cipherValue>
+            </t:cipherData>
+        </t:encryptedData>
+    </discoveryTimestamp>
+</connector>

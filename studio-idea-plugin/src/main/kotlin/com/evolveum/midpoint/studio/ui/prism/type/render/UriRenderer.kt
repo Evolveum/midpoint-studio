@@ -7,7 +7,7 @@
 package com.evolveum.midpoint.studio.ui.prism.type.render
 
 import com.evolveum.midpoint.prism.PrismPropertyDefinition
-import com.evolveum.midpoint.studio.ui.PrismPropertyDefinitionRenderer
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Row
 import java.net.URI
 
@@ -15,9 +15,12 @@ class UriRenderer: PrismPropertyDefinitionRenderer<URI> {
 
     override fun render(
         row: Row,
-        propertyDefinition: PrismPropertyDefinition<URI>,
+        propertyDefinition: PrismPropertyDefinition<*>,
         value: URI?
     ) {
+        row.label(propertyDefinition.displayName)
+            .align(AlignX.FILL)
+
         TODO("Not yet implemented")
     }
 }

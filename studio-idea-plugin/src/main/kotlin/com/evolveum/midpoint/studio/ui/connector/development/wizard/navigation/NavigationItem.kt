@@ -7,7 +7,7 @@
 package com.evolveum.midpoint.studio.ui.connector.development.wizard.navigation
 
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.ConnectorDevelopmentWizardStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 
 sealed class NavigationItem {
 

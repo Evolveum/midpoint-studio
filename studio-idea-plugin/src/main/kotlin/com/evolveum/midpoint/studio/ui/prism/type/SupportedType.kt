@@ -6,7 +6,7 @@
 
 package com.evolveum.midpoint.studio.ui.prism.type
 
-import com.evolveum.midpoint.studio.ui.PrismPropertyDefinitionRenderer
+import com.evolveum.midpoint.studio.ui.prism.type.render.PrismPropertyDefinitionRenderer
 import com.evolveum.midpoint.studio.ui.prism.type.render.BooleanRenderer
 import com.evolveum.midpoint.studio.ui.prism.type.render.DateTimeRenderer
 import com.evolveum.midpoint.studio.ui.prism.type.render.DefaultRenderer
@@ -24,6 +24,7 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.util.Date
+import javax.activation.UnsupportedDataTypeException
 
 object SupportedType {
 
@@ -31,12 +32,12 @@ object SupportedType {
      * Supported types for connector configuration properties.
      */
     enum class ConnectorConfiguration(
-        clazz: Class<*>,
-        rendererFactory: () -> PrismPropertyDefinitionRenderer<*>
+        val clazz: Class<*>,
+        val renderer: () -> PrismPropertyDefinitionRenderer<*>
     ) {
         // Basic scalar types
         STRING(
-            String::class.java,
+            java.lang.String::class.java,
             { StringRenderer() }
         ),
 
@@ -46,17 +47,17 @@ object SupportedType {
         ),
 
         LONG(
-            Long::class.java,
+            java.lang.Long::class.java,
             { NumberRenderer() }
         ),
 
         DOUBLE(
-            Double::class.java,
+            java.lang.Double::class.java,
             { NumberRenderer() }
         ),
 
         FLOAT(
-            Float::class.java,
+            java.lang.Float::class.java,
             { NumberRenderer() }
         ),
 
@@ -66,7 +67,7 @@ object SupportedType {
         ),
 
         BOOLEAN(
-            Boolean::class.java,
+            java.lang.Boolean::class.java,
             { BooleanRenderer() }
         ),
 
@@ -141,12 +142,8 @@ object SupportedType {
 
         companion object {
             fun getConnectorConfiguration(clazz: Class<*>): ConnectorConfiguration {
-                return when {
-                    clazz.isEnum -> ENUM
-                    else -> entries.firstOrNull {
-                        it != ENUM && it != OBJECT && it.javaClass == clazz
-                    } ?: OBJECT
-                }
+                return entries.firstOrNull { it.clazz == clazz }
+                    ?: throw UnsupportedDataTypeException("Unsupported type: $clazz") as Throwable
             }
         }
     }

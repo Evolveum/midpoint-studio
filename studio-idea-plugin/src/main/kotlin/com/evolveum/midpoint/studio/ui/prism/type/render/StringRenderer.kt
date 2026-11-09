@@ -7,7 +7,6 @@
 package com.evolveum.midpoint.studio.ui.prism.type.render
 
 import com.evolveum.midpoint.prism.PrismPropertyDefinition
-import com.evolveum.midpoint.studio.ui.PrismPropertyDefinitionRenderer
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Row
 
@@ -15,9 +14,12 @@ class StringRenderer: PrismPropertyDefinitionRenderer<String> {
 
     override fun render(
         row: Row,
-        propertyDefinition: PrismPropertyDefinition<String>,
+        propertyDefinition: PrismPropertyDefinition<*>,
         value: String?
     ) {
+        row.label(propertyDefinition.displayName)
+            .align(AlignX.FILL)
+
         row.textField()
             .align(AlignX.FILL)
             .apply {

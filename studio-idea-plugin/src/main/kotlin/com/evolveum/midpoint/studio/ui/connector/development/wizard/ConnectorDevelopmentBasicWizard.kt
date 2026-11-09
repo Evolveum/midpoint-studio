@@ -10,16 +10,14 @@ import com.evolveum.midpoint.prism.Containerable
 import com.evolveum.midpoint.prism.PrismContainer
 import com.evolveum.midpoint.prism.PrismContainerDefinition
 import com.evolveum.midpoint.prism.PrismObject
-import com.evolveum.midpoint.studio.impl.EncryptionService
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.ConnectorDevelopmentDataModel
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.basic.ApplicationIdentificationStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.basic.ConnectorIdentificationStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.basic.CreateConnectorStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.step.basic.DiscoverDocumentationStep
-import com.evolveum.midpoint.studio.util.MidPointUtils
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.basic.ApplicationIdentificationStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.basic.ConnectorIdentificationStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.basic.CreateConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.basic.DiscoverDocumentationStep
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -27,7 +25,6 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.Messages
-import org.jetbrains.annotations.NotNull
 
 class ConnectorDevelopmentBasicWizard(
     private val client: MidPointClient
@@ -90,6 +87,9 @@ class ConnectorDevelopmentBasicWizard(
     override fun doOKAction() {
 
         try {
+
+            client.upsert(dataModel.connectorDevelopment.asPrismObject(), null)
+
             ConnectorDevelopmentWizardUtil.downloadConnectorDevelopment(
                 client,
                 dataModel.connectorDevelopment,
