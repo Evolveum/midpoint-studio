@@ -11,8 +11,6 @@ import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.codeInsight.template.TemplateManager;
 import com.intellij.codeInsight.template.impl.TemplateImpl;
-import com.intellij.ide.fileTemplates.FileTemplate;
-import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
@@ -169,10 +167,7 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
 
         file = root.createChildData(this, GITIGNORE);
 
-        FileTemplateManager ftManager = FileTemplateManager.getInstance(project);
-        FileTemplate fileTemplate = ftManager.getTemplate(MidPointFileTemplateGroupFactory.MIDPOINT_GIT_IGNORE_TEMPLATE);
-
-        String text = fileTemplate.getText();
+        String text = MidPointFileTemplates.text(project, MidPointFileTemplateGroupFactory.MIDPOINT_GIT_IGNORE_TEMPLATE, null);
         VfsUtil.saveText(file, text);
     }
 
@@ -185,10 +180,7 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
 
         file = root.createChildData(this, MavenConstants.POM_XML);
 
-        FileTemplateManager ftManager = FileTemplateManager.getInstance(project);
-        FileTemplate fileTemplate = ftManager.getTemplate(MidPointFileTemplateGroupFactory.MIDPOINT_MAVEN_POM_TEMPLATE);
-
-        String text = fileTemplate.getText(properties);
+        String text = MidPointFileTemplates.text(project, MidPointFileTemplateGroupFactory.MIDPOINT_MAVEN_POM_TEMPLATE, properties);
         Pattern pattern = Pattern.compile("\\$\\$\\{(.*)\\}");
         Matcher matcher = pattern.matcher(text);
         StringBuilder builder = new StringBuilder();
