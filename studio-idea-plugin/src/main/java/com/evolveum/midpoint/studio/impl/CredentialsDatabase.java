@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.util.RunnableUtils.PluginClassCallable;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,8 @@ public class CredentialsDatabase {
 
     private static final String UUID_PATTERN = "(?i)[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}";
 
+    private static final String XML_OUTPUT_FACTORY_PROPERTY = "javax.xml.stream.XMLOutputFactory";
+
     static {
         KdbxSerializableDatabase.FAIL_ON_UNKNOWN_PROPERTIES = false;
     }
@@ -55,14 +58,19 @@ public class CredentialsDatabase {
     public static CredentialsDatabase read(@NotNull File file, @NotNull String password) throws IOException {
         byte[] key = password.getBytes(StandardCharsets.UTF_8);
 
-        KdbxDatabase database;
-        try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
-            database = KdbxDatabase.read(new KdbxCredentials(key), is);
-        } catch (IllegalStateException ex) {
-            try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
-                database = readLegacy(key, is);
+        KdbxDatabase database = call(new PluginClassCallable<>() {
+
+            @Override
+            public KdbxDatabase callWithPluginClassLoader() throws Exception {
+                try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
+                    return KdbxDatabase.read(new KdbxCredentials(key), is);
+                } catch (IllegalStateException ex) {
+                    try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
+                        return readLegacy(key, is);
+                    }
+                }
             }
-        }
+        });
 
         return new CredentialsDatabase(database);
     }
@@ -91,8 +99,34 @@ public class CredentialsDatabase {
     public void write(@NotNull File file, @NotNull String password) throws IOException {
         byte[] key = password.getBytes(StandardCharsets.UTF_8);
 
-        try (OutputStream os = new BufferedOutputStream(new FileOutputStream(file))) {
-            database.write(new KdbxStreamFormat(new KdbxHeader(4)), new KdbxCredentials(key), os);
+        call(new PluginClassCallable<Void>() {
+
+            @Override
+            public Void callWithPluginClassLoader() throws Exception {
+                try (OutputStream os = new BufferedOutputStream(new FileOutputStream(file))) {
+                    database.write(new KdbxStreamFormat(new KdbxHeader(4)), new KdbxCredentials(key), os);
+                }
+                return null;
+            }
+        });
+    }
+
+    private static <T> T call(PluginClassCallable<T> callable) throws IOException {
+        // KdbxSerializableDatabase.write sets this property to woodstox class and never restores it,
+        // which would break XML output factory lookup everywhere else in the IDE
+        String outputFactory = System.getProperty(XML_OUTPUT_FACTORY_PROPERTY);
+        try {
+            return callable.call();
+        } catch (IOException | RuntimeException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        } finally {
+            if (outputFactory == null) {
+                System.clearProperty(XML_OUTPUT_FACTORY_PROPERTY);
+            } else {
+                System.setProperty(XML_OUTPUT_FACTORY_PROPERTY, outputFactory);
+            }
         }
     }
 
