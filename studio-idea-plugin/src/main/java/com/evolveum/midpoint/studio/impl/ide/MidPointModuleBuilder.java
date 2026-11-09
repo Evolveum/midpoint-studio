@@ -18,6 +18,7 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.*;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbAwareRunnable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -26,6 +27,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -227,10 +229,30 @@ public class MidPointModuleBuilder extends AbstractMavenModuleBuilder {
     public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
         MidPointService.get(project).setSettings(settings.getMidPointSettings());
 
-        EncryptionService.getInstance(project).init(settings.getMasterPassword());
+        initEncryptionService(project);
 
         EnvironmentService.getInstance(project).setSettings(settings.getEnvironmentSettings());
 
         return super.commitModule(project, model);
+    }
+
+    /**
+     * Stores master password in keychain and creates credentials file. Both are slow and this method
+     * is called on EDT, so the work runs on a pooled thread behind a modal progress. Environment
+     * settings are applied afterwards because they encrypt credentials with this master password.
+     */
+    private void initEncryptionService(@NotNull Project project) {
+        String masterPassword = settings.getMasterPassword();
+        if (StringUtils.isEmpty(masterPassword)) {
+            return;
+        }
+
+        EncryptionService service = EncryptionService.getInstance(project);
+
+        ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                () -> service.init(masterPassword),
+                StudioLocalization.message("midpoint.new.project.credentials"),
+                false,
+                project);
     }
 }
