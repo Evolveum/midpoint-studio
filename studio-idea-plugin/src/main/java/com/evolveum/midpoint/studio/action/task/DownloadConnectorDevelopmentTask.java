@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.action.task;
 
 import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.util.Holder;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
@@ -20,6 +21,7 @@ import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Arrays;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,8 +89,14 @@ public class DownloadConnectorDevelopmentTask extends SimpleBackgroundableTask {
         String basePath = project.getBasePath();
         if (basePath == null) return;
 
+        File targetModuleDir = new File(basePath + ROOT_DIR_CONNID_CONNECTORS, moduleName);
+        File imlFile = new File(targetModuleDir, moduleName + ".iml");
+
+        if (imlFile.exists() && !confirmModuleReplace(project, moduleName)) {
+            throw new ProcessCanceledException();
+        }
+
         try {
-            File targetModuleDir = new File(basePath + ROOT_DIR_CONNID_CONNECTORS, moduleName);
             if (!targetModuleDir.exists()) {
                 targetModuleDir.mkdirs();
             }
@@ -103,48 +111,57 @@ public class DownloadConnectorDevelopmentTask extends SimpleBackgroundableTask {
         }
     }
 
+    private boolean confirmModuleReplace(@NotNull Project project, @NotNull String moduleName) {
+        Holder<Integer> result = new Holder<>();
+
+        ApplicationManager.getApplication().invokeAndWait(() ->
+                result.setValue(Messages.showOkCancelDialog(
+                        project,
+                        "Module '%s' already exists. Do you want to replace it?".formatted(moduleName),
+                        "Module Already Exists",
+                        "OK",
+                        "Cancel",
+                        Messages.getWarningIcon()
+                )));
+
+        return result.getValue() != null && result.getValue() == Messages.OK;
+    }
+
     private void setupModuleFromExtractedSources(@NotNull Project project, @NotNull File targetModuleDir, @NotNull String moduleName) {
         String imlPath = targetModuleDir.getAbsolutePath() + File.separator + moduleName + ".iml";
 
-        var imlFile = new File(imlPath);
-
-        if (imlFile.exists()) {
-            int result = Messages.showOkCancelDialog(
-                    project,
-                    "Module '%s' already exists. Do you want to replace it?".formatted(moduleName),
-                    "Module Already Exists",
-                    "OK",
-                    "Cancel",
-                    Messages.getWarningIcon()
-            );
-
-            if (result == Messages.OK) {
-                WriteAction.run(() -> {
-                    Module newModule = ModuleManager.getInstance(project)
-                            .newModule(imlPath, JavaModuleType.getModuleType().getId());
-
-                    VirtualFile contentRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(targetModuleDir);
-                    if (contentRoot == null) return;
-
-                    ModuleRootManager rootManager = ModuleRootManager.getInstance(newModule);
-                    ModifiableRootModel rootModel = rootManager.getModifiableModel();
-
-                    ContentEntry contentEntry = rootModel.addContentEntry(contentRoot);
-
-                    VirtualFile srcFolder = contentRoot.findChild("src");
-
-                    if (srcFolder != null) {
-                        contentEntry.addSourceFolder(srcFolder, false);
-                    } else {
-                        contentEntry.addSourceFolder(contentRoot, false);
-                    }
-
-                    rootModel.inheritSdk();
-                    rootModel.commit();
-                });
-            } else {
-                throw new ProcessCanceledException();
+        WriteAction.run(() -> {
+            ModuleManager moduleManager = ModuleManager.getInstance(project);
+            Module module = moduleManager.findModuleByName(moduleName);
+            if (module == null) {
+                module = moduleManager.newModule(imlPath, JavaModuleType.getModuleType().getId());
             }
-        }
+
+            VirtualFile contentRoot = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(targetModuleDir);
+            if (contentRoot == null) return;
+
+            ModifiableRootModel rootModel = ModuleRootManager.getInstance(module).getModifiableModel();
+
+            boolean alreadyRegistered = Arrays.stream(rootModel.getContentEntries())
+                    .anyMatch(entry -> contentRoot.equals(entry.getFile()));
+
+            if (alreadyRegistered) {
+                rootModel.dispose();
+                return;
+            }
+
+            ContentEntry contentEntry = rootModel.addContentEntry(contentRoot);
+
+            VirtualFile srcFolder = contentRoot.findChild("src");
+
+            if (srcFolder != null) {
+                contentEntry.addSourceFolder(srcFolder, false);
+            } else {
+                contentEntry.addSourceFolder(contentRoot, false);
+            }
+
+            rootModel.inheritSdk();
+            rootModel.commit();
+        });
     }
 }
