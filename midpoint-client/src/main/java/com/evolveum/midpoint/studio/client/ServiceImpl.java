@@ -42,6 +42,10 @@ public class ServiceImpl implements Service {
     private static final String SMART_INTEGRATION_PREFIX = "/ws/smart-integration";
     private static final String CONNECTOR_GENERATOR_PREFIX = "/ws/connector-generator";
 
+    // RPC paths available only in midPoint 4.11.1+, not present in ConnectorGeneratorConstants of 4.11.0
+    private static final String RPC_IS_OFFLINE = "/rpc/isOffline";
+    private static final String RPC_IS_CONNECTOR_ALREADY_PRESENT = "/rpc/isConnectorAlreadyPresent";
+
     private ServiceContext context;
 
     public ServiceImpl(ServiceContext context) {
@@ -651,7 +655,7 @@ public class ServiceImpl implements Service {
     @Override
     public boolean isOfflineConnectorDevelopmentService() throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
-                ConnectorGeneratorConstants.RPC_IS_OFFLINE,
+                RPC_IS_OFFLINE,
                 Map.of()
         ).get();
 
@@ -662,7 +666,7 @@ public class ServiceImpl implements Service {
     public boolean isDisableConnectorDevelopmentService() throws SchemaException, AuthenticationException, IOException {
 
         Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
-                ConnectorGeneratorConstants.RPC_IS_OFFLINE,
+                RPC_IS_OFFLINE,
                 Map.of()
         ).get();
 
@@ -672,7 +676,7 @@ public class ServiceImpl implements Service {
     @Override
     public boolean isConnectorAlreadyPresent(String groupId, String artifactId, String version) throws SchemaException, AuthenticationException, IOException {
         Request.Builder builder = context.build(CONNECTOR_GENERATOR_PREFIX,
-                ConnectorGeneratorConstants.RPC_IS_CONNECTOR_ALREADY_PRESENT,
+                RPC_IS_CONNECTOR_ALREADY_PRESENT,
                 Map.of(
                         "groupId", groupId,
                         "artifactId", artifactId,
