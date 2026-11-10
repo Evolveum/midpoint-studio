@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.impl.lang.prism.validator;
 
+import com.evolveum.concepts.ValidationLog;
 import com.evolveum.midpoint.studio.impl.MidPointFacetType;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.intellij.facet.FacetType;
@@ -10,6 +11,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * The external annotator is registered for every XML, JSON and YAML file in every project.
@@ -66,6 +69,26 @@ public class PrismExternalAnnotatorTest extends BasePlatformTestCase {
         PsiFile file = myFixture.configureByText("administrator.xml", USER_XML);
 
         assertNotNull(collectInformation(file));
+    }
+
+    /**
+     * doAnnotate runs on a platform thread that has no project bound. Prism internals resolve
+     * type classes through the static PrismContext.get() during the parse, which must reach
+     * the project context instead of falling back to the default one.
+     */
+    public void testDoAnnotateBindsProjectContext() {
+        addMidPointFacet();
+        PsiFile file = myFixture.configureByText("administrator.xml", USER_XML);
+        PrismExternalAnnotator.PrismAnnotationInfo info = collectInformation(file);
+        assertNotNull(info);
+
+        StudioPrismContextService.resetDefaultContextFallbackCount();
+
+        List<ValidationLog> result = new PrismExternalAnnotator().doAnnotate(info);
+
+        assertNotNull(result);
+        assertEquals("parse fell back to the default prism context",
+                0, StudioPrismContextService.getDefaultContextFallbackCount());
     }
 
     private PrismExternalAnnotator.PrismAnnotationInfo collectInformation(PsiFile file) {

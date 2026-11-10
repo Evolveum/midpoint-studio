@@ -495,12 +495,12 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     }
 
     @VisibleForTesting
-    static long getDefaultContextFallbackCount() {
+    public static long getDefaultContextFallbackCount() {
         return DEFAULT_CONTEXT_FALLBACK_COUNT.get();
     }
 
     @VisibleForTesting
-    static void resetDefaultContextFallbackCount() {
+    public static void resetDefaultContextFallbackCount() {
         DEFAULT_CONTEXT_FALLBACK_COUNT.set(0);
     }
 

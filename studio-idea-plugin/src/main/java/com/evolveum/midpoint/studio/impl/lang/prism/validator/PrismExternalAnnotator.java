@@ -14,6 +14,7 @@ import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +27,7 @@ public class PrismExternalAnnotator
         extends ExternalAnnotator<PrismExternalAnnotator.PrismAnnotationInfo, List<ValidationLog>> {
 
     public record PrismAnnotationInfo(
+            Project project,
             PrismContext prismContext,
             Language language,
             String text
@@ -50,16 +52,30 @@ public class PrismExternalAnnotator
                 StudioPrismContextService.getPrismContext(file.getProject());
 
         return new PrismAnnotationInfo(
+                file.getProject(),
                 prismContext,
                 file.getLanguage(),
                 editor.getDocument().getText()
         );
     }
 
+    /**
+     * Runs on a platform thread with no project bound. Prism resolves definitions through the
+     * static PrismContext.get() during the parse, so the project is bound around it.
+     */
     @Override
     public @Nullable List<ValidationLog> doAnnotate(
             PrismAnnotationInfo info) {
 
+        Project project = info.project();
+        if (project.isDisposed()) {
+            return null;
+        }
+
+        return StudioPrismContextService.runSupplierWithProject(project, () -> annotate(info));
+    }
+
+    private List<ValidationLog> annotate(PrismAnnotationInfo info) {
         var parsingCtx = info.prismContext()
                 .createParsingContextForCompatibilityMode()
                 .validation();
