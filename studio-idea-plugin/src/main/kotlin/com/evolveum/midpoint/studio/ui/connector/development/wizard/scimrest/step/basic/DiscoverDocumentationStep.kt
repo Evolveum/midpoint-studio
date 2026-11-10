@@ -111,7 +111,7 @@ class DiscoverDocumentationStep(
 
                 add(JButton("+ Add URL").apply {
                     addActionListener {
-                        // TODO: impl action
+                        addDocumentationUrl()
                     }
                 })
 
@@ -210,6 +210,17 @@ class DiscoverDocumentationStep(
             },
             EdtExecutorService.getInstance()
         )
+    }
+
+    private fun addDocumentationUrl() {
+        val source = AddDocumentationUrlDialog(client.project).showAndGetSource() ?: return
+
+        // manually added sources are selected right away, same as in the web GUI
+        dataModel.connectorDevelopment.documentationSource.add(source)
+
+        cardsContainer.add(createCardComponent(source), 0)
+        cardsContainer.revalidate()
+        cardsContainer.repaint()
     }
 
     private fun toggleAllCardsSelection(shouldSelectAll: Boolean) {
