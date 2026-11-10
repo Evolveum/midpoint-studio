@@ -6,7 +6,6 @@
 
 package com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.basic
 
-import com.evolveum.midpoint.studio.ui.configuration.validateNotBlank
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDocumentationSourceType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
@@ -25,29 +24,33 @@ class AddDocumentationUrlDialog(project: Project) : DialogWrapper(project) {
 
     private val source = ConnDevDocumentationSourceType()
 
+    // IntelliJ guidelines: required fields are not marked, optional ones carry an "Optional" placeholder,
+    // empty required fields are reported when OK is pressed
     private val panel: DialogPanel = panel {
         row("Name:") {
             textField()
                 .columns(COLUMNS_LARGE)
                 .bindText({ source.name.orEmpty() }, { source.name = it.trim() })
-                .validationOnApply(::validateNotBlank)
+                .validationOnApply { if (it.text.isBlank()) error("Specify the name") else null }
                 .focused()
         }
         row("Description:") {
             textField()
                 .columns(COLUMNS_LARGE)
+                .applyToComponent { emptyText.text = OPTIONAL }
                 .bindText({ source.description.orEmpty() }, { source.description = it.trim().ifEmpty { null } })
         }
         row("Content type:") {
             textField()
                 .columns(COLUMNS_LARGE)
+                .applyToComponent { emptyText.text = OPTIONAL }
                 .bindText({ source.contentType.orEmpty() }, { source.contentType = it.trim().ifEmpty { null } })
         }
         row("URI:") {
             textField()
                 .columns(COLUMNS_LARGE)
                 .bindText({ source.uri.orEmpty() }, { source.uri = it.trim() })
-                .validationOnApply(::validateNotBlank)
+                .validationOnApply { if (it.text.isBlank()) error("Specify the URI") else null }
         }
     }
 
@@ -66,4 +69,8 @@ class AddDocumentationUrlDialog(project: Project) : DialogWrapper(project) {
     }
 
     fun showAndGetSource(): ConnDevDocumentationSourceType? = if (showAndGet()) source else null
+
+    companion object {
+        private const val OPTIONAL = "Optional"
+    }
 }
