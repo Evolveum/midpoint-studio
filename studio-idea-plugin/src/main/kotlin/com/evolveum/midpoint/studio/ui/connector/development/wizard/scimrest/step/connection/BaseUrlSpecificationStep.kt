@@ -16,14 +16,12 @@ import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPan
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.*
 import com.intellij.util.concurrency.EdtExecutorService
 import com.intellij.util.ui.JBFont
 import java.awt.BorderLayout
 import javax.swing.JPanel
-import javax.swing.event.DocumentEvent
 
 class BaseUrlSpecificationStep(
     wizardContext : ConnectorDevelopmentWizard,
@@ -83,28 +81,27 @@ class BaseUrlSpecificationStep(
             .align(AlignX.FILL)
         }.bottomGap(BottomGap.MEDIUM)
 
-        row {
-            cell(AlertPanel(
-                BorderLayout(), 15, "Endpoints identified",
-                """
-                A likely URLs for the test purposes from your documentation were detected.
-                """.trimIndent()
-            )).align(Align.FILL)
-        }.bottomGap(BottomGap.MEDIUM)
+        if (!dataModel.connectorDevelopment.application?.baseApiEndpoint.isNullOrBlank()) {
+            row {
+                cell(AlertPanel(
+                    BorderLayout(), 15, "Endpoints identified",
+                    """
+                    A likely URLs for the test purposes from your documentation were detected.
+                    """.trimIndent()
+                )).align(Align.FILL)
+            }.bottomGap(BottomGap.MEDIUM)
+        }
 
         row("REST Base Address *") {
             textField()
                 .align(AlignX.FILL)
-                .bindText({ dataModel.connectorDevelopment.application.baseApiEndpoint },
-                    { dataModel.connectorDevelopment.application.baseApiEndpoint = it })
-                .component.apply {
-                    document.addDocumentListener(object : DocumentAdapter() {
-                        override fun textChanged(e: DocumentEvent) {
-                            dataModel.connectorDevelopment.application.baseApiEndpoint = text
-                        }
-                    })
-                }
-
+                .bindText(
+                    { dataModel.connectorDevelopment.application?.baseApiEndpoint.orEmpty() },
+                    { value ->
+                        dataModel.connectorDevelopment.application.baseApiEndpoint =
+                            value.takeIf { it.isNotBlank() }
+                    }
+                )
         }
     }
 
@@ -140,6 +137,9 @@ class BaseUrlSpecificationStep(
         ).thenAcceptAsync(
             { statusInfo ->
                 if (statusInfo.status == OperationResultStatusType.SUCCESS) {
+
+                    // discovery writes into the server-side object; reload it before rendering
+                    continueFrom()
 
                     dynamicPanel.removeAll()
                     dynamicPanel.add(createPanel())

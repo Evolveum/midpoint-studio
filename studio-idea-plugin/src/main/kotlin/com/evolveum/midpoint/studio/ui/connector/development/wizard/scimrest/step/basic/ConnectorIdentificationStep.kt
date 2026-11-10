@@ -15,15 +15,13 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevIntegrationTy
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType
 import com.intellij.ide.wizard.CommitStepException
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.util.ui.JBFont
-import javax.swing.BorderFactory
-import javax.swing.JLabel
-import javax.swing.ListCellRenderer
 
 class ConnectorIdentificationStep(
     wizardContext : ConnectorDevelopmentWizard,
@@ -121,19 +119,7 @@ class ConnectorIdentificationStep(
             row("Integration Type *") {
                 comboBox(
                     listOf(null) + ConnDevIntegrationType.entries,
-                    ListCellRenderer<ConnDevIntegrationType?> { list, value, _, isSelected, _ ->
-                        JLabel(
-                            when (value) {
-                                null -> ApplicationIdentificationStep.COMBO_BOX_ITEM_UNDEFINED
-                                else -> "${value.name} - ${value.description()}"
-                            }
-                        ).apply {
-                            isOpaque = true
-                            background = if (isSelected) list.selectionBackground else list.background
-                            foreground = if (isSelected) list.selectionForeground else list.foreground
-                            border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
-                        }
-                    }
+                    textListCellRenderer(COMBO_BOX_ITEM_UNDEFINED) { "${it.name} - ${it.description()}" }
                 ).bindItem(
                     {
                         dataModel.connectorDevelopment.application
@@ -148,19 +134,7 @@ class ConnectorIdentificationStep(
             row("Intent") {
                 comboBox(
                     listOf(null) + ConnDevConnectorIntentType.entries,
-                    ListCellRenderer<ConnDevConnectorIntentType?> { list, value, _, isSelected, _ ->
-                        JLabel(
-                            when (value) {
-                                null -> ApplicationIdentificationStep.COMBO_BOX_ITEM_UNDEFINED
-                                else -> "${value.name} - ${value.description()}"
-                            }
-                        ).apply {
-                            isOpaque = true
-                            background = if (isSelected) list.selectionBackground else list.background
-                            foreground = if (isSelected) list.selectionForeground else list.foreground
-                            border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
-                        }
-                    }
+                    textListCellRenderer(COMBO_BOX_ITEM_UNDEFINED) { "${it.name} - ${it.description()}" }
                 ).bindItem(
                     {
                         dataModel.connectorDevelopment.connector?.intent

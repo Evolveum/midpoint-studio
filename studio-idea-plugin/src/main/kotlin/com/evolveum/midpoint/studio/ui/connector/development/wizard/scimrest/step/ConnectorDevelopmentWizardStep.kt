@@ -391,4 +391,8 @@ abstract class ConnectorDevelopmentWizardStep(
             ConnDevConnectorIntentType.MANAGEMENT_ITSM ->
                 "Identity Management & Governance and IT Service Management"
         }
+
+    companion object {
+        protected const val COMBO_BOX_ITEM_UNDEFINED = "Undefined"
+    }
 }

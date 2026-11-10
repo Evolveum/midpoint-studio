@@ -15,12 +15,10 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevDeploymentTyp
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevIntegrationType
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.*
 import com.intellij.util.ui.JBFont
-import javax.swing.BorderFactory
-import javax.swing.JLabel
-import javax.swing.ListCellRenderer
 
 open class ApplicationIdentificationStep(
     wizardContext : ConnectorDevelopmentWizard,
@@ -92,19 +90,7 @@ open class ApplicationIdentificationStep(
             row("Integration Type *") {
                 comboBox(
                     listOf(null) + ConnDevIntegrationType.entries,
-                    ListCellRenderer<ConnDevIntegrationType?> { list, value, _, isSelected, _ ->
-                        JLabel(
-                            when (value) {
-                                null -> COMBO_BOX_ITEM_UNDEFINED
-                                else -> "${value.name} - ${value.description()}"
-                            }
-                        ).apply {
-                            isOpaque = true
-                            background = if (isSelected) list.selectionBackground else list.background
-                            foreground = if (isSelected) list.selectionForeground else list.foreground
-                            border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
-                        }
-                    }
+                    textListCellRenderer(COMBO_BOX_ITEM_UNDEFINED) { "${it.name} - ${it.description()}" }
                 ).bindItem(
                     {
                         dataModel.connectorDevelopment.application
@@ -118,20 +104,15 @@ open class ApplicationIdentificationStep(
 
             row("Deployment type") {
                 comboBox(
-                    listOf(COMBO_BOX_ITEM_UNDEFINED) + ConnDevDeploymentType.entries.map {
-                        it.value().replaceFirstChar { char -> char.titlecase() }
-                    }
+                    listOf(null) + ConnDevDeploymentType.entries,
+                    textListCellRenderer(COMBO_BOX_ITEM_UNDEFINED) { it.value().replaceFirstChar { char -> char.titlecase() } }
                 ).bindItem(
                     {
                         dataModel.connectorDevelopment.application
                             ?.deploymentType
-                            ?.name
-                            ?: COMBO_BOX_ITEM_UNDEFINED
                     },
                     { value ->
-                        dataModel.connectorDevelopment.application.deploymentType =
-                            value.takeUnless { it == COMBO_BOX_ITEM_UNDEFINED }
-                                ?.let { ConnDevDeploymentType.valueOf(it) }
+                        dataModel.connectorDevelopment.application.deploymentType = value
                     }
                 )
             }
@@ -170,11 +151,10 @@ open class ApplicationIdentificationStep(
         dataModel.connectorDevelopment.application
             ?.applicationName
             ?.orig
-            .requireNotBlank("Integration Type")
+            .requireNotBlank("Application name")
 
         dataModel.connectorDevelopment.application
             ?.integrationType?.value()
-            ?.takeUnless { it == COMBO_BOX_ITEM_UNDEFINED }
             .requireNotBlank("Integration Type")
 
         dataModel.connectorDevelopment.name =
@@ -190,9 +170,5 @@ open class ApplicationIdentificationStep(
         }
 
         super._commit(finishChosen)
-    }
-
-    companion object {
-        const val COMBO_BOX_ITEM_UNDEFINED = "Undefined"
     }
 }
