@@ -2,6 +2,7 @@ package com.evolveum.midpoint.studio.impl.lang.codeInsight;
 
 import com.evolveum.midpoint.schema.SchemaConstantsGenerated;
 import com.evolveum.midpoint.studio.lang.properties.SPropertiesCompletionProvider;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.prism.xml.ns._public.query_3.FilterClauseType;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -104,6 +105,8 @@ public class MidPointCompletionContributor extends DefaultCompletionContributor 
             return;
         }
 
-        super.fillCompletionVariants(parameters, result);
+        // providers resolve definitions in the project prism context, prism reaches it through
+        // the static PrismContext.get()
+        StudioPrismContextService.runWithProject(project, () -> super.fillCompletionVariants(parameters, result));
     }
 }

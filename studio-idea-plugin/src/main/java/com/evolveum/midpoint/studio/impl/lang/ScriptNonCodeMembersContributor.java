@@ -75,8 +75,12 @@ public class ScriptNonCodeMembersContributor extends NonCodeMembersContributor {
             }
         }
 
-        addMappingSources(qualifierType, aClass, processor, place, state);
-        addFunctionParameters(qualifierType, aClass, processor, place, state);
+        // variable types are resolved in the project prism context, which prism reaches through
+        // the static PrismContext.get()
+        StudioPrismContextService.runWithProject(aClass.getProject(), () -> {
+            addMappingSources(qualifierType, aClass, processor, place, state);
+            addFunctionParameters(qualifierType, aClass, processor, place, state);
+        });
     }
 
     private Class getVariableType(MidPointExpressionVariables var) {

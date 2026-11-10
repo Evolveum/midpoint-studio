@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.studio.lang;
 
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -24,6 +25,8 @@ public class CompletionContributorBase extends DefaultCompletionContributor {
             return;
         }
 
-        super.fillCompletionVariants(parameters, result);
+        // providers resolve definitions in the project prism context, prism reaches it through
+        // the static PrismContext.get()
+        StudioPrismContextService.runWithProject(project, () -> super.fillCompletionVariants(parameters, result));
     }
 }

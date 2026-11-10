@@ -12,7 +12,6 @@ import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.schema.constants.SchemaConstants;
 import com.evolveum.midpoint.schema.result.OperationResult;
 import com.evolveum.midpoint.studio.client.LocalizationServiceImpl;
-import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.PsiUtils;
@@ -56,9 +55,7 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
                     public void addCompletions(@NotNull CompletionParameters parameters,
                                                @NotNull ProcessingContext context,
                                                @NotNull CompletionResultSet resultSet) {
-                        StudioPrismContextService.runWithProject(
-                                parameters.getPosition().getProject(),
-                                () -> AxiomQueryCompletionContributor.this.addCompletions(parameters, resultSet));
+                        AxiomQueryCompletionContributor.this.addCompletions(parameters, resultSet);
                     }
                 }
         );
@@ -213,7 +210,7 @@ public class AxiomQueryCompletionContributor extends CompletionContributorBase i
     }
 
     private void addSuggestionsFromEditorHint(Editor editor, String content, int cursorPosition, CompletionResultSet resultSet) {
-        ItemDefinition<?> def = getObjectDefinitionFromHint(editor);
+        ItemDefinition<?> def = getObjectDefinitionFromHint(editor, PrismContext.get());
         addSuggestions(def, content, cursorPosition, resultSet);
     }
 

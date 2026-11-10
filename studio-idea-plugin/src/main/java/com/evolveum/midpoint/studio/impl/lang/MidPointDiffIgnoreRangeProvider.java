@@ -99,28 +99,34 @@ public class MidPointDiffIgnoreRangeProvider implements DiffIgnoredRangeProvider
     @Override
     public List<TextRange> getIgnoredRanges(@Nullable Project project, @NotNull CharSequence text, @NotNull DiffContent content) {
         return ReadAction.compute(() -> {
-            List<TextRange> result = new ArrayList<>();
-            if (project == null) {
-                return result;
+            if (project == null || project.isDisposed()) {
+                return new ArrayList<>();
             }
 
-            PsiFile psiFile = PsiFileFactory.getInstance(project).createFileFromText("", XMLLanguage.INSTANCE, text);
-
-            psiFile.accept(new PsiElementVisitor() {
-
-                @Override
-                public void visitElement(@NotNull PsiElement element) {
-                    if (element.getTextLength() == 0) return;
-
-                    if (isIgnored(element)) {
-                        result.add(element.getTextRange());
-                    } else {
-                        element.acceptChildren(this);
-                    }
-                }
-            });
-            return result;
+            // diff runs on a pooled thread, definitions below are resolved through the static PrismContext.get()
+            return StudioPrismContextService.runSupplierWithProject(project, () -> collectIgnoredRanges(project, text));
         });
+    }
+
+    private static List<TextRange> collectIgnoredRanges(@NotNull Project project, @NotNull CharSequence text) {
+        List<TextRange> result = new ArrayList<>();
+
+        PsiFile psiFile = PsiFileFactory.getInstance(project).createFileFromText("", XMLLanguage.INSTANCE, text);
+
+        psiFile.accept(new PsiElementVisitor() {
+
+            @Override
+            public void visitElement(@NotNull PsiElement element) {
+                if (element.getTextLength() == 0) return;
+
+                if (isIgnored(element)) {
+                    result.add(element.getTextRange());
+                } else {
+                    element.acceptChildren(this);
+                }
+            }
+        });
+        return result;
     }
 
     private static boolean isIgnored(@NotNull PsiElement element) {

@@ -5,9 +5,7 @@ import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistImpl;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
-import com.evolveum.midpoint.studio.client.LocalizationServiceImpl;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
-import com.evolveum.midpoint.util.LocalizableMessage;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.lang.annotation.HighlightSeverity;
@@ -20,8 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.function.Function;
 
 /**
  * Created by Dominik.
@@ -40,12 +36,21 @@ public class AxiomQueryValidationExternalAnnotator
     @Override
     public List<AxiomQueryError> doAnnotate(final PsiFile file) {
         Project project = file.getProject();
+        if (project.isDisposed()) {
+            return null;
+        }
 
+        // runs on a platform thread with no project bound, prism resolves definitions through
+        // the static PrismContext.get()
+        return StudioPrismContextService.runSupplierWithProject(project, () -> validate(project, file));
+    }
+
+    private List<AxiomQueryError> validate(Project project, PsiFile file) {
         PsiDocumentManager documentManager = PsiDocumentManager.getInstance(project);
         Document doc = documentManager.getDocument(file);
 
         PrismContext ctx = StudioPrismContextService.getPrismContext(project);
-        ItemDefinition<?> def = getItemDefinitionFromHint(doc,ctx);
+        ItemDefinition<?> def = getItemDefinitionFromHint(doc, ctx);
         AxiomQueryContentAssist axiomQueryContentAssist = new AxiomQueryContentAssistImpl(ctx);
         return axiomQueryContentAssist.process(def, file.getText()).validate();
     }
