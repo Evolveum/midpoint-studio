@@ -10,6 +10,7 @@ import com.evolveum.midpoint.prism.PrismObject
 import com.evolveum.midpoint.studio.client.AuthenticationException
 import com.evolveum.midpoint.studio.client.ClientException
 import com.evolveum.midpoint.studio.impl.MidPointClient
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService
 import com.evolveum.midpoint.studio.impl.SearchOptions
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
@@ -162,7 +163,7 @@ abstract class ConnectorDevelopmentWizardStep(
                 try {
                     log.info("Submitting initialization operation: title='$title'")
 
-                    val retrievedToken = submitOperationCall()
+                    val retrievedToken = StudioPrismContextService.runSupplierWithProject(project) { submitOperationCall() }
 
                     if (retrievedToken.isBlank()) {
                         log.error("Failed to obtain a valid tracking token from the server for operation: title='$title'")
@@ -189,7 +190,7 @@ abstract class ConnectorDevelopmentWizardStep(
 
                             log.info("Checking operation status: title='$title'")
 
-                            val statusInfo = statusInfoCall(retrievedToken)
+                            val statusInfo = StudioPrismContextService.runSupplierWithProject(project) { statusInfoCall(retrievedToken) }
 
                             if (statusInfo == null) {
                                 log.error("Received an empty status response payload: title='$title'")

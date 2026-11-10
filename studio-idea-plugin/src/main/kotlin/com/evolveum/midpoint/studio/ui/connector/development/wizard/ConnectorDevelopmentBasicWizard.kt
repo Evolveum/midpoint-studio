@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.PrismContainer
 import com.evolveum.midpoint.prism.PrismContainerDefinition
 import com.evolveum.midpoint.prism.PrismObject
 import com.evolveum.midpoint.studio.impl.MidPointClient
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.ConnectorDevelopmentDataModel
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
@@ -157,10 +158,12 @@ class ConnectorDevelopmentBasicWizard(
             override fun actionPerformed(e: AnActionEvent) {
                 ApplicationManager.getApplication()
                     .invokeLater(Runnable {
-                        ConnectorDevelopmentContinueWizard(
-                            client,
-                            dataModel.connectorDevelopment
-                        ).show()
+                        StudioPrismContextService.runWithProject(client.project) {
+                            ConnectorDevelopmentContinueWizard(
+                                client,
+                                dataModel.connectorDevelopment
+                            ).show()
+                        }
                     })
                 notification.expire()
             }

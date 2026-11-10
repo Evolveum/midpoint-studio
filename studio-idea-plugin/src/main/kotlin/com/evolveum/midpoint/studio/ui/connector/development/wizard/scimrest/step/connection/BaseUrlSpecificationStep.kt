@@ -21,7 +21,6 @@ import com.intellij.ui.dsl.builder.*
 import com.intellij.util.concurrency.EdtExecutorService
 import com.intellij.util.ui.JBFont
 import java.awt.BorderLayout
-import javax.swing.JPanel
 
 class BaseUrlSpecificationStep(
     wizardContext : ConnectorDevelopmentWizard,
@@ -36,6 +35,9 @@ class BaseUrlSpecificationStep(
         ) { }
     }
 
+    // panel with the bound field lives inside dynamicPanel, so it has to be applied separately
+    private var contentPanel: DialogPanel? = null
+
     override fun _init() {
         super._init()
 
@@ -49,7 +51,7 @@ class BaseUrlSpecificationStep(
     }
 
     override fun _commit(finishChosen: Boolean) {
-        dialogPanel.apply()
+        contentPanel?.apply()
 
         dataModel.connectorDevelopment.application.baseApiEndpoint
             .requireNotBlank("REST Base Address")
@@ -66,7 +68,7 @@ class BaseUrlSpecificationStep(
         super._commit(finishChosen)
     }
 
-    private fun createPanel(): JPanel = panel {
+    private fun createPanel(): DialogPanel = panel {
 
         row {
             cell(JBLabel("Set Base API URL").apply {
@@ -141,8 +143,10 @@ class BaseUrlSpecificationStep(
                     // discovery writes into the server-side object; reload it before rendering
                     continueFrom()
 
+                    contentPanel = createPanel()
+
                     dynamicPanel.removeAll()
-                    dynamicPanel.add(createPanel())
+                    dynamicPanel.add(contentPanel)
                     dynamicPanel.revalidate()
                     dynamicPanel.repaint()
 

@@ -10,6 +10,7 @@ import com.evolveum.midpoint.studio.client.SearchResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil;
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentBasicWizard;
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentContinueWizard;
@@ -45,7 +46,7 @@ public class ConnectorGeneratorAction extends AnAction {
         // FIXME: Waiting for the default prism context on the EDT, the caller should run in the background
         var client = new MidPointClient(project, env);
 
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        ApplicationManager.getApplication().executeOnPooledThread(() -> StudioPrismContextService.runWithProject(project, () -> {
 
             var connection = client.testConnection();
 
@@ -74,7 +75,8 @@ public class ConnectorGeneratorAction extends AnAction {
 
                     if (searchResult == null || searchResult.getObjects().isEmpty()) {
                         ApplicationManager.getApplication().invokeLater(() ->
-                                new ConnectorDevelopmentBasicWizard(client).show());
+                                StudioPrismContextService.runWithProject(project, () ->
+                                        new ConnectorDevelopmentBasicWizard(client).show()));
                     } else {
                         searchResult.getObjects().stream()
                                 .map(dev -> new HoverableRowAction(
@@ -125,7 +127,7 @@ public class ConnectorGeneratorAction extends AnAction {
                         env
                 );
             }
-        });
+        }));
     }
 
     private static class HoverableRowAction extends AnAction {
@@ -144,7 +146,7 @@ public class ConnectorGeneratorAction extends AnAction {
         @Override
         public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
 
-            ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            ApplicationManager.getApplication().executeOnPooledThread(() -> StudioPrismContextService.runWithProject(client.getProject(), () -> {
                 try {
                     ConnectorDevelopmentType connectorDevelopment =
                             oid != null ? client.continueFrom(oid) : null;
@@ -154,16 +156,16 @@ public class ConnectorGeneratorAction extends AnAction {
                                 client,
                                 connectorDevelopment,
                                 () -> ApplicationManager.getApplication().invokeLater(() ->
-                                        new ConnectorDevelopmentContinueWizard(
-                                                client,
-                                                connectorDevelopment
-                                        ).show()
-                                )
+                                        StudioPrismContextService.runWithProject(client.getProject(), () ->
+                                                new ConnectorDevelopmentContinueWizard(
+                                                        client,
+                                                        connectorDevelopment
+                                                ).show()))
                         );
                     } else {
                         ApplicationManager.getApplication().invokeLater(() ->
-                                new ConnectorDevelopmentBasicWizard(client).show()
-                        );
+                                StudioPrismContextService.runWithProject(client.getProject(), () ->
+                                        new ConnectorDevelopmentBasicWizard(client).show()));
                     }
                 } catch (Exception e) {
                     log.error("Failed to continue connector development", e);
@@ -176,7 +178,7 @@ public class ConnectorGeneratorAction extends AnAction {
                             )
                     );
                 }
-            });
+            }));
         }
     }
 
