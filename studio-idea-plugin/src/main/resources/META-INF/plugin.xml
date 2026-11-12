@@ -84,9 +84,6 @@
 
         <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.MidPointStartupActivity"/>
 
-<!--        Prototyping for VAIA -->
-<!--        <postStartupActivity implementation="com.evolveum.midpoint.studio.impl.vaia.assistant.assistant.ConnectorAssistantActivity"/>-->
-
         <facetType implementation="com.evolveum.midpoint.studio.impl.MidPointFacetType"/>
 
         <framework.detector implementation="com.evolveum.midpoint.studio.impl.ide.MidPointFacetFrameworkDetector"/>
@@ -143,14 +140,6 @@
                           anchor="right"
                           icon="/icons/toolwindow_midpoint.svg"/>
         
-            <!--        Prototyping for VAIA-->
-<!--        <facet.toolWindow id="ConnectorAssistant"-->
-<!--                          facetIdList="MidPointFacet"-->
-<!--                          anchor="right"-->
-<!--                          order="last"-->
-<!--                          icon="/icons/toolwindow_midpoint.svg"-->
-<!--                          factoryClass="com.evolveum.midpoint.studio.ui.prototype.vaia.assistant.AssistantToolWindowFactory"/>-->
-
         <fileType
                 name="MidPoint Trace"
                 fieldName="INSTANCE"
@@ -838,13 +827,6 @@
             <add-to-group anchor="last" group-id="StructureViewPopupMenu"/>
         </group>
 
-<!--        Prototype for VAIA experiments -->
-<!--        <action id="WizardAction"-->
-<!--                class="com.evolveum.midpoint.studio.ui.prototype.vaia.wizard.LaunchWizardAction"-->
-<!--                text="Run Wizard"-->
-<!--                description="Launches the custom wizard">-->
-<!--            <add-to-group group-id="ToolsMenu" anchor="last"/>-->
-<!--        </action>-->
     </actions>
 
     <projectListeners>
