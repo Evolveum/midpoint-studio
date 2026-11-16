@@ -17,11 +17,13 @@ class DefaultRenderer: PrismPropertyDefinitionRenderer<Any> {
         propertyDefinition: PrismPropertyDefinition<*>,
         value: Any?
     ) {
-        val itemName = propertyDefinition.itemName
-
-        row.label(itemName.localPart)
+        row.label(propertyDefinition.displayName)
             .align(AlignX.FILL)
 
-        TODO("Not yet implemented")
+        row.textField()
+            .align(AlignX.FILL)
+            .apply {
+                component.text = value?.toString() ?: ""
+            }
     }
 }

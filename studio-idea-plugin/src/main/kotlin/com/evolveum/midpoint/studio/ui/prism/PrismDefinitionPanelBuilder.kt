@@ -23,7 +23,6 @@ import com.intellij.util.ui.JBUI
 import java.awt.Dimension
 import java.util.Collections
 import java.util.IdentityHashMap
-import javax.activation.UnsupportedDataTypeException
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
@@ -81,8 +80,10 @@ class PrismDefinitionPanelBuilder {
                 IdentityHashMap<PrismContainerDefinition<*>, Boolean>()
             )
 
+            val wanted = itemNames.map { it.withoutNamespace() }.toSet()
+
             definition.definitions
-                .filter { itemNames.contains(it.itemName.withoutNamespace()) }
+                .filter { wanted.contains(it.itemName.withoutNamespace()) }
                 .forEach { itemDefinition ->
                     renderItemDefinition(
                         definition = itemDefinition,
@@ -100,9 +101,7 @@ class PrismDefinitionPanelBuilder {
      *
      * @param definition Item definition to render.
      * @param visited Set of container definitions currently being processed, used to detect circular references.
-     * @throws UnsupportedDataTypeException If the property data type is not supported.
      */
-    @Throws(UnsupportedDataTypeException::class)
     private fun Panel.renderItemDefinition(
         definition: ItemDefinition<*>,
         visited: MutableSet<PrismContainerDefinition<*>>
@@ -135,7 +134,6 @@ class PrismDefinitionPanelBuilder {
         }
     }
 
-    @Throws(UnsupportedDataTypeException::class)
     private fun Panel.renderContainerDefinition(
         definition: PrismContainerDefinition<*>,
         visited: MutableSet<PrismContainerDefinition<*>>
@@ -156,7 +154,6 @@ class PrismDefinitionPanelBuilder {
         }
     }
 
-    @Throws(UnsupportedDataTypeException::class)
     private fun renderPropertyDefinition(
         row: Row,
         propertyDefinition: PrismPropertyDefinition<*>

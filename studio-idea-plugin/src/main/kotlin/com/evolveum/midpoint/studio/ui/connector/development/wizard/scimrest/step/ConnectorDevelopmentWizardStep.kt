@@ -122,10 +122,15 @@ abstract class ConnectorDevelopmentWizardStep(
         @NotNull connDevConnectorType: ConnectorDevelopmentType
     ): ConnectorDevelopmentType {
         try {
-            return client.upsert(connDevConnectorType.asPrismObject(), null)
+            // the step commits on the EDT, prism calls there must see the project context
+            return StudioPrismContextService.runSupplierWithProject(client.project) {
+                client.upsert(connDevConnectorType.asPrismObject(), null)
+            }
         } catch (ex: ClientException) {
+            log.error("Couldn't update connector development object", ex)
             throw CommitStepException(ex.result?.message ?: ex.message)
         } catch (ex: Exception) {
+            log.error("Couldn't update connector development object", ex)
             throw CommitStepException("Couldn't update connector development object. \n Error: " + ex.message)
         }
     }

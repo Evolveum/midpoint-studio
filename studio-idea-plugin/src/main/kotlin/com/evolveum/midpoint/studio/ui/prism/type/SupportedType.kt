@@ -24,7 +24,6 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.util.Date
-import javax.activation.UnsupportedDataTypeException
 
 object SupportedType {
 
@@ -142,8 +141,12 @@ object SupportedType {
 
         companion object {
             fun getConnectorConfiguration(clazz: Class<*>): ConnectorConfiguration {
-                return entries.firstOrNull { it.clazz == clazz }
-                    ?: throw UnsupportedDataTypeException("Unsupported type: $clazz") as Throwable
+                if (clazz.isEnum) {
+                    return ENUM
+                }
+
+                return entries.firstOrNull { it != ENUM && it != OBJECT && it.clazz == clazz }
+                    ?: OBJECT
             }
         }
     }

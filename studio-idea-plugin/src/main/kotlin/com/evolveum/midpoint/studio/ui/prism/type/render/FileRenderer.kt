@@ -18,11 +18,13 @@ class FileRenderer: PrismPropertyDefinitionRenderer<File> {
         propertyDefinition: PrismPropertyDefinition<*>,
         value: File?
     ) {
-        val itemName = propertyDefinition.itemName
-
-        row.label(itemName.localPart)
+        row.label(propertyDefinition.displayName)
             .align(AlignX.FILL)
 
-        TODO("Not yet implemented")
+        row.textField()
+            .align(AlignX.FILL)
+            .apply {
+                component.text = value?.toString() ?: ""
+            }
     }
 }

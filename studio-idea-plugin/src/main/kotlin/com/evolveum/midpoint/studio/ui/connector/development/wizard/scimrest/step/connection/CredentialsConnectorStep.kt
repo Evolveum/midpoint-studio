@@ -92,9 +92,21 @@ class CredentialsConnectorStep(
     override fun _init() {
         super._init()
 
-        continueFrom()
+        if (!existConnDev()) return
 
-        ConnectorDevelopmentWizardUtil.getTestingResource(client, dataModel.connectorDevelopment)
+        try {
+            continueFrom()
+        } catch (e: Exception) {
+            statusPanel.status = StatusPanel.Status.ERROR
+            replaceContent(
+                getAlertComponent(
+                    statusPanel,
+                    statusPanel.status?.name ?: "Error",
+                    getExceptionMessage(e)
+                )
+            )
+            return
+        }
 
         credentialDynamicallyPanel.add(panel {
             row {
@@ -107,11 +119,6 @@ class CredentialsConnectorStep(
 
     override fun _commit(finishChosen: Boolean) {
         super._commit(finishChosen)
-
-//        apiKey.requireNotBlank("API key")
-//        tokenValue.requireNotBlank("token value")
-
-        dataModel.connectorDevelopment.application
 
         try {
             val resource = getObjectByOid(
@@ -227,8 +234,6 @@ class CredentialsConnectorStep(
             val configConnector = ConnectorDevelopmentWizardUtil.findConnectorConfigurationPropertiesDefinition(
                 connectorObject
             )
-
-            val prismDefinitionPanelBuilder = PrismDefinitionPanelBuilder()
 
             if (configConnector != null) {
                 credentialDynamicallyPanel.removeAll()

@@ -7,6 +7,7 @@
 package com.evolveum.midpoint.studio.ui.prism.type.render
 
 import com.evolveum.midpoint.prism.PrismPropertyDefinition
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Row
 import java.time.LocalDateTime
 
@@ -17,6 +18,13 @@ class DateTimeRenderer: PrismPropertyDefinitionRenderer<LocalDateTime> {
         propertyDefinition: PrismPropertyDefinition<*>,
         value: LocalDateTime?
     ) {
-        TODO("Not yet implemented")
+        row.label(propertyDefinition.displayName)
+            .align(AlignX.FILL)
+
+        row.textField()
+            .align(AlignX.FILL)
+            .apply {
+                component.text = value?.toString() ?: ""
+            }
     }
 }
