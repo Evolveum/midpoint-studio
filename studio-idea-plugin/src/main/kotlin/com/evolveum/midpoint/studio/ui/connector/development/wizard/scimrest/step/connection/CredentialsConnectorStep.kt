@@ -6,18 +6,19 @@
 
 package com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection
 
-import com.evolveum.midpoint.prism.PrismObject
-import com.evolveum.midpoint.prism.PrismPropertyDefinition
-import com.evolveum.midpoint.prism.path.ItemPath
+import com.evolveum.midpoint.prism.Containerable
+import com.evolveum.midpoint.prism.path.ItemName
 import com.evolveum.midpoint.schema.constants.SchemaConstants
 import com.evolveum.midpoint.schema.util.ConnectorTypeUtil
 import com.evolveum.midpoint.smart.api.conndev.SupportedAuthorization
 import com.evolveum.midpoint.studio.impl.MidPointClient
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
+import com.evolveum.midpoint.studio.ui.prism.PrismDefinitionPanel
 import com.evolveum.midpoint.studio.ui.prism.PrismDefinitionPanelBuilder
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*
 import com.intellij.ide.wizard.CommitStepException
@@ -26,13 +27,11 @@ import com.intellij.ui.components.*
 import com.intellij.ui.dsl.builder.*
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
-import org.jetbrains.annotations.NotNull
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Font
 import java.awt.event.ItemEvent
 import javax.swing.*
-import javax.xml.namespace.QName
 
 class CredentialsConnectorStep(
     wizardContext : ConnectorDevelopmentWizard,
@@ -44,6 +43,9 @@ class CredentialsConnectorStep(
     private val globalRadioBtnGroup = ButtonGroup()
     private val credentialDynamicallyPanel = JPanel(BorderLayout())
     private val prismDefinitionPanelBuilder = PrismDefinitionPanelBuilder()
+
+    private var selectedAuthInfo: ConnDevAuthInfoType? = null
+    private var credentialsPanel: PrismDefinitionPanel? = null
 
     override val dialogPanel: DialogPanel by lazy {
 
@@ -108,6 +110,8 @@ class CredentialsConnectorStep(
             return
         }
 
+        originalConnectorDevelopmentType = dataModel.connectorDevelopment.clone()
+
         credentialDynamicallyPanel.add(panel {
             row {
                 text("""
@@ -120,25 +124,76 @@ class CredentialsConnectorStep(
     override fun _commit(finishChosen: Boolean) {
         super._commit(finishChosen)
 
+        val authInfo = selectedAuthInfo
+            ?: throw CommitStepException("Select an authentication method for testing.")
+
+        val values = credentialsPanel?.values().orEmpty()
+
         try {
-            val resource = getObjectByOid(
-                dataModel.connectorDevelopment.testing.testingResource.oid,
-                ResourceType::class.java
-            )
-
-            setConfigurationProperties(resource, "basic")
-
-            if (state == Badge.State.IN_PROGRESS ||
-                state == Badge.State.EDITED
-            ) {
-                dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
-                updateConnectorDevelopment()
-                state = Badge.State.COMPLETE
+            StudioPrismContextService.runWithProject(client.project) {
+                saveTestingCredentials(authInfo, values)
             }
-
-        } catch (e : Exception) {
-            throw CommitStepException(e.message)
+        } catch (e: Exception) {
+            log.error("Couldn't save testing credentials", e)
+            throw CommitStepException("Couldn't save testing credentials. \n Error: " + e.message)
         }
+
+        if (state == Badge.State.IN_PROGRESS ||
+            state == Badge.State.EDITED
+        ) {
+            dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
+            updateConnectorDevelopment()
+            state = Badge.State.COMPLETE
+        }
+    }
+
+    /**
+     * Writes the entered values into the connector configuration of the testing resource, drops the credentials
+     * of the other authentication methods and saves the resource.
+     */
+    private fun saveTestingCredentials(authInfo: ConnDevAuthInfoType, values: Map<ItemName, Any?>) {
+        val connectorDevelopment = dataModel.connectorDevelopment
+        val resource = ConnectorDevelopmentWizardUtil.getTestingResource(client, connectorDevelopment)
+        val connector = ConnectorDevelopmentWizardUtil.getConnectorType(client, connectorDevelopment)
+
+        val configurationDefinition = ConnectorTypeUtil.parseConnectorSchema(connector)
+            .connectorConfigurationContainerDefinition
+
+        // the resource was fetched without the connector schema, the definition makes the raw values typed
+        val configuration = resource.asPrismObject()
+            .findOrCreateContainer<ConnectorConfigurationType>(ResourceType.F_CONNECTOR_CONFIGURATION)
+        configuration.applyDefinition(configurationDefinition)
+
+        val properties = configuration.value
+            .findOrCreateContainer<Containerable>(SchemaConstants.ICF_CONFIGURATION_PROPERTIES_NAME)
+            .value
+
+        val integrationType = connectorDevelopment.application.integrationType
+
+        val needed = SupportedAuthorization.attributesFor(integrationType, authInfo.type)
+            .map { it.localPart }
+            .toSet()
+
+        val stale = SupportedAuthorization.entries
+            .filter { it != SupportedAuthorization.NONE }
+            .flatMap { it.attributesFor(integrationType) }
+            .map { it.localPart }
+            .toSet() - needed
+
+        properties.items
+            .filter { it.elementName.localPart in stale }
+            .toList()
+            .forEach { properties.remove(it) }
+
+        values.forEach { (name, value) ->
+            if (value == null) {
+                properties.findProperty<Any>(name)?.let { properties.remove(it) }
+            } else {
+                properties.findOrCreateProperty<Any>(name).setRealValue(value)
+            }
+        }
+
+        client.upsert(resource.asPrismObject(), null)
     }
 
     private fun createAuthMethodListPanel(listAuthInfoType: List<ConnDevAuthInfoType?>): JPanel = panel {
@@ -197,6 +252,7 @@ class CredentialsConnectorStep(
             updateState(isSelected)
 
             if (isSelected) {
+                selectedAuthInfo = authInfo
                 updateCredentialDynamicallyPanel(authInfo)
                 canGoNext = true
             } else {
@@ -235,15 +291,19 @@ class CredentialsConnectorStep(
                 connectorObject
             )
 
+            credentialsPanel = null
+            credentialDynamicallyPanel.removeAll()
+
             if (configConnector != null) {
-                credentialDynamicallyPanel.removeAll()
-                credentialDynamicallyPanel.add(prismDefinitionPanelBuilder.build(
-                    itemNames,
-                    configConnector
-                ))
-                credentialDynamicallyPanel.repaint()
-                credentialDynamicallyPanel.revalidate()
+                val rendered = prismDefinitionPanelBuilder.build(itemNames, configConnector)
+                credentialsPanel = rendered
+                credentialDynamicallyPanel.add(rendered.panel)
+            } else {
+                credentialDynamicallyPanel.add(JBLabel("The connector has no configuration schema yet."))
             }
+
+            credentialDynamicallyPanel.repaint()
+            credentialDynamicallyPanel.revalidate()
         } catch (e: Exception) {
             statusPanel.status = StatusPanel.Status.ERROR
             replaceContent(
@@ -254,40 +314,5 @@ class CredentialsConnectorStep(
                )
             )
         }
-    }
-
-    private fun setConfigurationProperties(
-        @NotNull resource: PrismObject<ResourceType>,
-        @NotNull property: String
-    ) {
-
-        val connector = getObjectByOid(
-            dataModel.connectorDevelopment.connector.connectorRef.oid,
-            ConnectorType::class.java
-        )
-
-        val connectorSchema = ConnectorTypeUtil.parseConnectorSchema(
-            connector.asObjectable()
-        )
-
-        val itemDefinition = connectorSchema.findItemDefinitionByElementName(
-            QName("connectorConfiguration")
-        )
-
-        val propertyDefinition = itemDefinition.findItemDefinition(
-            ItemPath.create(
-                SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME,
-                property
-            ),
-            PrismPropertyDefinition::class.java
-        )
-
-        val resourceConfigurationProperties = resource.findOrCreateProperty<PrismPropertyDefinition<*>>(
-            ItemPath.create(
-                ResourceType.F_CONNECTOR_CONFIGURATION,
-                SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME,
-                propertyDefinition
-            )
-        )
     }
 }

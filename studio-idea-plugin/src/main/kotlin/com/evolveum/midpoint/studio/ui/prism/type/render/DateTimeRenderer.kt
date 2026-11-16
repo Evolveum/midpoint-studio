@@ -17,14 +17,16 @@ class DateTimeRenderer: PrismPropertyDefinitionRenderer<LocalDateTime> {
         row: Row,
         propertyDefinition: PrismPropertyDefinition<*>,
         value: LocalDateTime?
-    ) {
+    ): () -> LocalDateTime? {
         row.label(propertyDefinition.displayName)
             .align(AlignX.FILL)
 
-        row.textField()
+        val field = row.textField()
             .align(AlignX.FILL)
-            .apply {
-                component.text = value?.toString() ?: ""
-            }
+            .component
+
+        field.text = value?.toString() ?: ""
+
+        return { field.text.trim().takeIf { it.isNotEmpty() }?.let { LocalDateTime.parse(it) } }
     }
 }

@@ -17,14 +17,16 @@ class PolyStringRenderer: PrismPropertyDefinitionRenderer<PolyStringType> {
         row: Row,
         propertyDefinition: PrismPropertyDefinition<*>,
         value: PolyStringType?
-    ) {
+    ): () -> PolyStringType? {
         row.label(propertyDefinition.displayName)
             .align(AlignX.FILL)
 
-        row.textField()
+        val field = row.textField()
             .align(AlignX.FILL)
-            .apply {
-                component.text = value?.orig ?: ""
-            }
+            .component
+
+        field.text = value?.orig ?: ""
+
+        return { field.text.takeIf { it.isNotBlank() }?.let { PolyStringType(it) } }
     }
 }

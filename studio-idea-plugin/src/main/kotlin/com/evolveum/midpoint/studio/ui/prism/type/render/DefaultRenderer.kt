@@ -10,20 +10,25 @@ import com.evolveum.midpoint.prism.PrismPropertyDefinition
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.Row
 
+/**
+ * Fallback for types without a dedicated renderer, the entered text is returned as is.
+ */
 class DefaultRenderer: PrismPropertyDefinitionRenderer<Any> {
 
     override fun render(
         row: Row,
         propertyDefinition: PrismPropertyDefinition<*>,
         value: Any?
-    ) {
+    ): () -> Any? {
         row.label(propertyDefinition.displayName)
             .align(AlignX.FILL)
 
-        row.textField()
+        val field = row.textField()
             .align(AlignX.FILL)
-            .apply {
-                component.text = value?.toString() ?: ""
-            }
+            .component
+
+        field.text = value?.toString() ?: ""
+
+        return { field.text.takeIf { it.isNotBlank() } }
     }
 }

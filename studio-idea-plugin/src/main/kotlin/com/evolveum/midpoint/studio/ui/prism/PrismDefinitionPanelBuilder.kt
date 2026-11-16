@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.PrismPropertyDefinition
 import com.evolveum.midpoint.prism.PrismReferenceDefinition
 import com.evolveum.midpoint.prism.path.ItemName
 import com.evolveum.midpoint.studio.ui.prism.type.SupportedType
+import com.evolveum.midpoint.studio.ui.prism.type.render.PrismPropertyDefinitionRenderer
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.Align
@@ -53,7 +54,8 @@ class PrismDefinitionPanelBuilder {
 
             renderItemDefinition(
                 definition = definition,
-                visited = visited
+                visited = visited,
+                suppliers = mutableMapOf()
             )
         }
     }
@@ -68,14 +70,16 @@ class PrismDefinitionPanelBuilder {
      * @param itemNames Names of the item definitions to include in the panel.
      * Namespace information is ignored when comparing names.
      * @param definition Root container definition whose direct child definitions are filtered and rendered.
-     * @return The generated dialog panel containing the matching definitions.
+     * @return The generated panel with access to the entered values.
      */
     fun build(
         itemNames: List<ItemName>,
         definition: PrismContainerDefinition<*>
-    ): DialogPanel {
+    ): PrismDefinitionPanel {
 
-        return panel {
+        val suppliers = mutableMapOf<ItemName, () -> Any?>()
+
+        val dialogPanel = panel {
             val visited = Collections.newSetFromMap(
                 IdentityHashMap<PrismContainerDefinition<*>, Boolean>()
             )
@@ -87,10 +91,13 @@ class PrismDefinitionPanelBuilder {
                 .forEach { itemDefinition ->
                     renderItemDefinition(
                         definition = itemDefinition,
-                        visited = visited
+                        visited = visited,
+                        suppliers = suppliers
                     )
                 }
         }
+
+        return PrismDefinitionPanel(dialogPanel, suppliers)
     }
 
     /**
@@ -101,22 +108,24 @@ class PrismDefinitionPanelBuilder {
      *
      * @param definition Item definition to render.
      * @param visited Set of container definitions currently being processed, used to detect circular references.
+     * @param suppliers Collects a value supplier for every rendered property, keyed by its item name.
      */
     private fun Panel.renderItemDefinition(
         definition: ItemDefinition<*>,
-        visited: MutableSet<PrismContainerDefinition<*>>
+        visited: MutableSet<PrismContainerDefinition<*>>,
+        suppliers: MutableMap<ItemName, () -> Any?>
     ) {
         when (definition) {
 
             is PrismPropertyDefinition<*> -> {
                 row {
-                    renderPropertyDefinition(this, definition)
+                    suppliers[definition.itemName] = renderPropertyDefinition(this, definition)
                 }
             }
 
             is PrismContainerDefinition<*> -> {
                 group(definition.displayName) {
-                    renderContainerDefinition(definition, visited)
+                    renderContainerDefinition(definition, visited, suppliers)
                 }
             }
 
@@ -136,7 +145,8 @@ class PrismDefinitionPanelBuilder {
 
     private fun Panel.renderContainerDefinition(
         definition: PrismContainerDefinition<*>,
-        visited: MutableSet<PrismContainerDefinition<*>>
+        visited: MutableSet<PrismContainerDefinition<*>>,
+        suppliers: MutableMap<ItemName, () -> Any?>
     ) {
         if (!visited.add(definition)) {
             row {
@@ -147,7 +157,7 @@ class PrismDefinitionPanelBuilder {
 
         try {
             definition.definitions.forEach { child ->
-                renderItemDefinition(child, visited)
+                renderItemDefinition(child, visited, suppliers)
             }
         } finally {
             visited.remove(definition)
@@ -157,13 +167,15 @@ class PrismDefinitionPanelBuilder {
     private fun renderPropertyDefinition(
         row: Row,
         propertyDefinition: PrismPropertyDefinition<*>
-    ) {
+    ): () -> Any? {
         val connectorConfigurationType = SupportedType.ConnectorConfiguration.getConnectorConfiguration(
             propertyDefinition.typeClass
         )
-        val renderer = connectorConfigurationType.renderer()
 
-        renderer.render(
+        @Suppress("UNCHECKED_CAST")
+        val renderer = connectorConfigurationType.renderer() as PrismPropertyDefinitionRenderer<Any>
+
+        return renderer.render(
             row,
             propertyDefinition,
             null

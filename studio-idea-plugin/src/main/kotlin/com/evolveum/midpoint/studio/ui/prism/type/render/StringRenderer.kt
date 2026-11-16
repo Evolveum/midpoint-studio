@@ -16,14 +16,16 @@ class StringRenderer: PrismPropertyDefinitionRenderer<String> {
         row: Row,
         propertyDefinition: PrismPropertyDefinition<*>,
         value: String?
-    ) {
+    ): () -> String? {
         row.label(propertyDefinition.displayName)
             .align(AlignX.FILL)
 
-        row.textField()
+        val field = row.textField()
             .align(AlignX.FILL)
-            .apply {
-                component.text = value ?: ""
-            }
+            .component
+
+        field.text = value ?: ""
+
+        return { field.text.takeIf { it.isNotBlank() } }
     }
 }

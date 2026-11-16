@@ -17,13 +17,19 @@ class ProtectedStringRenderer: PrismPropertyDefinitionRenderer<ProtectedStringTy
         row: Row,
         propertyDefinition: PrismPropertyDefinition<*>,
         value: ProtectedStringType?
-    ) {
+    ): () -> ProtectedStringType? {
         row.label(propertyDefinition.displayName)
 
-        row.passwordField()
+        val field = row.passwordField()
             .align(AlignX.FILL)
-            .apply {
-                component.text = value?.clearValue ?: ""
-            }
+            .component
+
+        field.text = value?.clearValue ?: ""
+
+        return {
+            String(field.password)
+                .takeIf { it.isNotEmpty() }
+                ?.let { ProtectedStringType().apply { clearValue = it } }
+        }
     }
 }

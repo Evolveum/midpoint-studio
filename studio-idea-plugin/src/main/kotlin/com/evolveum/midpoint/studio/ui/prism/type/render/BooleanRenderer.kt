@@ -16,11 +16,13 @@ class BooleanRenderer: PrismPropertyDefinitionRenderer<Boolean> {
         row: Row,
         propertyDefinition: PrismPropertyDefinition<*>,
         value: Boolean?
-    ) {
-        row.checkBox(propertyDefinition.displayName)
+    ): () -> Boolean? {
+        val checkBox = row.checkBox(propertyDefinition.displayName)
             .align(AlignX.FILL)
-            .apply {
-                component.isSelected = value == true
-            }
+            .component
+
+        checkBox.isSelected = value == true
+
+        return { checkBox.isSelected }
     }
 }
