@@ -102,8 +102,17 @@ abstract class ConnectorDevelopmentWizard(
         val currentStep =
             wizardStepsList[currentStep]
 
-        nextButton?.text =
-            currentStep.nextButtonText
+        val text = currentStep.nextButtonText
+
+        // AbstractWizard sets "Next" with mnemonic N on every update, custom labels must not inherit it
+        // (it shows up as an underlined n or a "(N)" suffix). Null label means the step has its own button.
+        nextButton?.apply {
+            isVisible = text != null
+            if (text != null) {
+                this.text = text
+                mnemonic = 0
+            }
+        }
     }
 
     override fun getNextButton(): JButton? {

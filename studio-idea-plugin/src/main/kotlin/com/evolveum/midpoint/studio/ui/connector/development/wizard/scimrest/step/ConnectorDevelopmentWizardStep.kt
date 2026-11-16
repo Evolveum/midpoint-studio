@@ -57,7 +57,10 @@ abstract class ConnectorDevelopmentWizardStep(
     protected val dataModel = wizardContext.dataModel
     protected var originalConnectorDevelopmentType: ConnectorDevelopmentType? = null
 
-    open val nextButtonText: String
+    /**
+     * Label of the wizard Next button, null hides it (the step provides its own button).
+     */
+    open val nextButtonText: String?
         get() = "Next"
 
     var state = initialState

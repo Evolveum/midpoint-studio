@@ -18,6 +18,7 @@ import com.evolveum.midpoint.studio.util.LanguageUtils
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBOptionButton
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.BottomGap
@@ -26,6 +27,8 @@ import com.intellij.util.concurrency.EdtExecutorService
 import com.intellij.util.ui.JBFont
 import org.jetbrains.plugins.groovy.GroovyLanguage
 import org.jetbrains.yaml.YAMLLanguage
+import java.awt.event.ActionEvent
+import javax.swing.AbstractAction
 import javax.swing.JPanel
 
 
@@ -35,6 +38,25 @@ class AuthScriptsConnectorStep(
     state : Badge.State,
     isHeader : Boolean
 ) : ConnectorDevelopmentWizardStep(wizardContext, client, state, isHeader) {
+
+    private var scriptEditor: SmartEditorComponent? = null
+
+    private val confirmAction = object : AbstractAction("Yes, this script is correct") {
+        override fun actionPerformed(e: ActionEvent) = wizardContext.proceedToNextStep()
+    }
+
+    private val discardSuggestedAction = object : AbstractAction("Discard suggested script") {
+        override fun actionPerformed(e: ActionEvent) = discardSuggestedScript()
+    }
+
+    private val regenerateAction = object : AbstractAction("Regenerate") {
+        override fun actionPerformed(e: ActionEvent) = submitOperation(retry = true)
+    }
+
+    // midPoint 4.11.0 REST has no operation to delete a deployed artifact, enable once the client has it
+    private val discardScriptAction = object : AbstractAction("Discard script") {
+        override fun actionPerformed(e: ActionEvent) {}
+    }.apply { isEnabled = false }
 
     override val dialogPanel: DialogPanel by lazy {
         createDialogPanel(
@@ -46,12 +68,13 @@ class AuthScriptsConnectorStep(
         super._init()
 
         if (!wizardContext.isLeavingStepByPreviousTouch) {
-            submitOperation()
+            submitOperation(retry = false)
         }
     }
 
-    override val nextButtonText: String
-        get() = "Yes, this script is correct"
+    // the step has its own split button with the secondary actions, the wizard Next button is hidden
+    override val nextButtonText: String?
+        get() = null
 
     override fun _commit(finishChosen: Boolean) {
 
@@ -68,8 +91,12 @@ class AuthScriptsConnectorStep(
 
     fun createPanel(content: String): JPanel = panel {
         val smartEditorComponent = SmartEditorComponent(client.project)
+        scriptEditor = smartEditorComponent
 
         smartEditorComponent.isViewer = false
+
+        // generated content is only a suggestion until the step is confirmed, same as in the web GUI
+        discardSuggestedAction.isEnabled = content.isNotBlank()
 
         row {
             cell(JBLabel("Authentication script validation").apply {
@@ -108,18 +135,29 @@ class AuthScriptsConnectorStep(
         }
 
         row {
-            comboBox(
-                listOf(
-                    "Discard suggested script",
-                    "Regenerated",
-                    "Discard script"
+            cell(
+                JBOptionButton(
+                    confirmAction,
+                    arrayOf(discardSuggestedAction, regenerateAction, discardScriptAction)
                 )
-            ).applyToComponent { selectedItem = null }
-            .align(AlignX.RIGHT)
+            ).align(AlignX.RIGHT)
         }
     }
 
-    private fun submitOperation() {
+    /**
+     * Drops the generated suggestion: shows the deployed script if its content is known, otherwise clears the editor.
+     */
+    private fun discardSuggestedScript() {
+        val deployed = dataModel.connectorDevelopment.connector?.authenticationScript
+            ?.takeIf { it.isDisabled != true }
+            ?.content
+            .orEmpty()
+
+        scriptEditor?.text = deployed
+        discardSuggestedAction.isEnabled = false
+    }
+
+    private fun submitOperation(retry: Boolean) {
 
         replaceContent(
             getLoadingComponent(
@@ -137,7 +175,7 @@ class AuthScriptsConnectorStep(
                     RPCOperation.RPC_GENERATE_AUTHENTICATION_SCRIPT,
                     mapOf(
                         "oid" to dataModel.connectorDevelopment.oid,
-                        "retry" to false
+                        "retry" to retry
                     ),
                     null
                 )
