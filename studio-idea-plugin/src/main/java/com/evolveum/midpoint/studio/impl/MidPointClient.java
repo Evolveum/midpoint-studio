@@ -374,7 +374,10 @@ public class MidPointClient {
     public <O extends ObjectType> UploadResponse upload(PrismObject<O> obj, List<String> options) throws SchemaException, IOException, AuthenticationException {
         UploadResponse response = new UploadResponse();
 
-        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML);
+        // export mode adds xsi:type to items of runtime schemas (connector configuration), otherwise the server
+        // keeps them as raw values and fails to process them, e.g. in the projector
+        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML)
+                .options(SerializationOptions.createSerializeForExport());
 
         String content = serializer.serialize(obj.getValue(), obj.getElementName().asSingleName());
         MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(obj.getCompileTimeClass()), false);
@@ -390,7 +393,10 @@ public class MidPointClient {
     }
 
     public <O extends ObjectType> O upsert(PrismObject<O> obj, List<String> options) throws AuthenticationException, IOException, SchemaException {
-        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML);
+        // export mode adds xsi:type to items of runtime schemas (connector configuration), otherwise the server
+        // keeps them as raw values and fails to process them, e.g. in the projector
+        PrismSerializer<String> serializer = getPrismContext().serializerFor(PrismContext.LANG_XML)
+                .options(SerializationOptions.createSerializeForExport());
 
         String content = serializer.serialize(obj.getValue(), obj.getElementName().asSingleName());
         MidPointObject object = new MidPointObject(content, ObjectTypes.getObjectType(Objects.requireNonNull(obj.getCompileTimeClass())), false);

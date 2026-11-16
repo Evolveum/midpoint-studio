@@ -6,10 +6,7 @@
 
 package com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection
 
-import com.evolveum.midpoint.prism.Containerable
 import com.evolveum.midpoint.prism.path.ItemName
-import com.evolveum.midpoint.schema.constants.SchemaConstants
-import com.evolveum.midpoint.schema.util.ConnectorTypeUtil
 import com.evolveum.midpoint.smart.api.conndev.SupportedAuthorization
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService
@@ -148,26 +145,11 @@ class CredentialsConnectorStep(
     }
 
     /**
-     * Writes the entered values into the connector configuration of the testing resource, drops the credentials
-     * of the other authentication methods and saves the resource.
+     * Writes the entered values into the connector configuration of the testing resource and drops the credentials
+     * of the other authentication methods.
      */
     private fun saveTestingCredentials(authInfo: ConnDevAuthInfoType, values: Map<ItemName, Any?>) {
         val connectorDevelopment = dataModel.connectorDevelopment
-        val resource = ConnectorDevelopmentWizardUtil.getTestingResource(client, connectorDevelopment)
-        val connector = ConnectorDevelopmentWizardUtil.getConnectorType(client, connectorDevelopment)
-
-        val configurationDefinition = ConnectorTypeUtil.parseConnectorSchema(connector)
-            .connectorConfigurationContainerDefinition
-
-        // the resource was fetched without the connector schema, the definition makes the raw values typed
-        val configuration = resource.asPrismObject()
-            .findOrCreateContainer<ConnectorConfigurationType>(ResourceType.F_CONNECTOR_CONFIGURATION)
-        configuration.applyDefinition(configurationDefinition)
-
-        val properties = configuration.value
-            .findOrCreateContainer<Containerable>(SchemaConstants.ICF_CONFIGURATION_PROPERTIES_NAME)
-            .value
-
         val integrationType = connectorDevelopment.application.integrationType
 
         val needed = SupportedAuthorization.attributesFor(integrationType, authInfo.type)
@@ -180,20 +162,12 @@ class CredentialsConnectorStep(
             .map { it.localPart }
             .toSet() - needed
 
-        properties.items
-            .filter { it.elementName.localPart in stale }
-            .toList()
-            .forEach { properties.remove(it) }
-
-        values.forEach { (name, value) ->
-            if (value == null) {
-                properties.findProperty<Any>(name)?.let { properties.remove(it) }
-            } else {
-                properties.findOrCreateProperty<Any>(name).setRealValue(value)
-            }
-        }
-
-        client.upsert(resource.asPrismObject(), null)
+        ConnectorDevelopmentWizardUtil.updateTestingResourceConfiguration(
+            client,
+            connectorDevelopment,
+            values.mapKeys { it.key.localPart },
+            stale
+        )
     }
 
     private fun createAuthMethodListPanel(listAuthInfoType: List<ConnDevAuthInfoType?>): JPanel = panel {
