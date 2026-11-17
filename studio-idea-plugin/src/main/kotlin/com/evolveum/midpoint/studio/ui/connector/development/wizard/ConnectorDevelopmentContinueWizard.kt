@@ -14,7 +14,7 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopment
 class ConnectorDevelopmentContinueWizard(
     private val client: MidPointClient,
     connectorDevelopmentType: ConnectorDevelopmentType
-): ConnectorDevelopmentWizard(client.project) {
+) : ConnectorDevelopmentWizard(client.project) {
 
     override val dataModel =
         ConnectorDevelopmentDataModel(
@@ -35,18 +35,14 @@ class ConnectorDevelopmentContinueWizard(
 
         val strategy = ConnectorDevelopmentWizardUtil.wizardStrategyFor(dataModel.connectorDevelopment)
 
-        wizardStepsList.addCategory("Connection")
+        val connection = wizardStepsList.addCategory("Connection")
+        strategy.connectionSteps(client, this, dataModel).forEach(connection::addStep)
 
-        sequenceOf(
-            strategy.connectionSteps(client, this,dataModel),
-//            strategy.initObjectClassSteps(dataModel),
-//            strategy.searchAllObjectClassSteps(dataModel),
-//            strategy.searchByIdObjectClassSteps(dataModel),
-//            strategy.searchFilterObjectClassSteps(dataModel),
-//            strategy.createObjectClassSteps(dataModel),
-//            strategy.updateObjectClassSteps(dataModel),
-//            strategy.deleteObjectClassSteps(dataModel)
-        ).flatten().forEach(wizardStepsList::addStep)
+        val objectClass = wizardStepsList.addCategory("Object class")
+        strategy.initObjectClassSteps(client, this, dataModel).forEach(objectClass::addStep)
+
+        // TODO per-operation step lists of the strategy (search all, search by id, search filter, create, update,
+        //  delete) wait for server endpoints that save and validate generated scripts
     }
 
     override fun doOKAction() {

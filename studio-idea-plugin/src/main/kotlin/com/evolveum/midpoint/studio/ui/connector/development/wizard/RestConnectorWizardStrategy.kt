@@ -23,8 +23,6 @@ import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.ste
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.create.CreateScriptConnectorStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.delete.DeleteEndpointsConnectorStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.delete.DeleteScriptConnectorStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.schema.SchemaScriptConnectorStep
-import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.schema.ShowSchemaConnectorStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchAllEndpointsConnectorStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchAllObjectsConnectorStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.search.SearchAllScriptConnectorStep
@@ -134,77 +132,9 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
             )
         )
 
-        objectClassSteps.add(
-            SchemaScriptConnectorStep(
-                wizardContext,
-                client,
-                Badge.State.NONE,
-                false
-            )
-        )
-
-        objectClassSteps.add(
-            ShowSchemaConnectorStep(
-                wizardContext,
-                client,
-                Badge.State.NONE,
-                false
-            )
-        )
-
-        objectClassSteps.add(
-            SearchAllEndpointsConnectorStep(
-                wizardContext,
-                client,
-                Badge.State.NONE,
-                false
-            )
-        )
-
-        objectClassSteps.add(
-            SearchAllScriptConnectorStep(
-                wizardContext,
-                client,
-                Badge.State.NONE,
-                false
-            )
-        )
-
-        objectClassSteps.add(
-            SearchAllObjectsConnectorStep(
-                wizardContext,
-                client,
-                Badge.State.NONE,
-                false
-            )
-        )
-
-        objectClassSteps.add(
-            SearchByIdEndpointsConnectorStep(
-                wizardContext,
-                client,
-                Badge.State.NONE,
-                false
-            )
-        )
-
-        objectClassSteps.add(
-            SearchByIdScriptConnectorStep(
-                wizardContext,
-                client,
-                Badge.State.NONE,
-                false
-            )
-        )
-
-        objectClassSteps.add(
-            SearchByIdObjectConnectorStep(
-                wizardContext,
-                client,
-                Badge.State.NONE,
-                false
-            )
-        )
+        // TODO the web GUI continues with SchemaScript, ShowSchema, SearchAllEndpoints, SearchAllScript,
+        //  SearchAllObjects, SearchByIdEndpoints, SearchByIdScript and SearchByIdObject; the script steps need
+        //  server endpoints that save and validate generated scripts, missing in midPoint 4.11.0
 
         return objectClassSteps
     }
