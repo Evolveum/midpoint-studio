@@ -115,11 +115,12 @@ class DiscoverDocumentationStep(
                     }
                 })
 
-                add(JButton("Upload File").apply {
-                    addActionListener {
-                        // TODO: impl action
-                    }
-                })
+                // TODO upload of a documentation file: midPoint 4.11.0 has no REST operation for it, the GUI calls
+                //  ConnectorDevelopmentService.saveDocumentationFile directly. Needs a server endpoint first.
+//                add(JButton("Upload File").apply {
+//                    addActionListener {
+//                    }
+//                })
             }
 
             cell(actionsWrapper).align(AlignX.RIGHT)
