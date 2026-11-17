@@ -11,6 +11,7 @@ import com.evolveum.midpoint.studio.client.RPCOperation
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorWizardStrategy
 import com.evolveum.midpoint.studio.ui.connector.development.component.AlertPanel
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
@@ -57,7 +58,7 @@ class BaseUrlSpecificationStep(
         contentPanel?.apply()
 
         val baseUrl = dataModel.connectorDevelopment.application.baseApiEndpoint
-        baseUrl.requireNotBlank("REST Base Address")
+        baseUrl.requireNotBlank(strategy().connectionUrlLabel())
 
         if (state == Badge.State.IN_PROGRESS ||
             state == Badge.State.EDITED
@@ -77,10 +78,7 @@ class BaseUrlSpecificationStep(
      * object, the GUI stores it in both places as well.
      */
     private fun saveBaseUrlToTestingResource(baseUrl: String) {
-        val property = ConnectorDevelopmentWizardUtil
-            .wizardStrategyFor(dataModel.connectorDevelopment)
-            .connectionUrlFieldName()
-            .localPart
+        val property = strategy().connectionUrlFieldName().localPart
 
         try {
             StudioPrismContextService.runWithProject(client.project) {
@@ -122,7 +120,7 @@ class BaseUrlSpecificationStep(
             }.bottomGap(BottomGap.MEDIUM)
         }
 
-        row("REST Base Address *") {
+        row(strategy().connectionUrlLabel() + " *") {
             textField()
                 .align(AlignX.FILL)
                 .bindText(
@@ -134,6 +132,9 @@ class BaseUrlSpecificationStep(
                 )
         }
     }
+
+    private fun strategy(): ConnectorWizardStrategy =
+        ConnectorDevelopmentWizardUtil.wizardStrategyFor(dataModel.connectorDevelopment)
 
     private fun submitOperation() {
 

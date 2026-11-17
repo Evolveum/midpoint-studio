@@ -35,4 +35,7 @@ interface ConnectorWizardStrategy {
 
     /** Config property holding the connection base URL for this connector type. */
     fun connectionUrlFieldName(): ItemName
+
+    /** Label of the connection base URL field for this connector type. */
+    fun connectionUrlLabel(): String
 }

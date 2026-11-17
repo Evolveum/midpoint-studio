@@ -414,4 +414,8 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
     override fun connectionUrlFieldName(): ItemName {
         return BaseUrlSpecificationStep.BASE_ADDRESS_ITEM_NAME
     }
+
+    override fun connectionUrlLabel(): String {
+        return "REST Base Address"
+    }
 }

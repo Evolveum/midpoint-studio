@@ -14,4 +14,8 @@ class ScimConnectorWizardStrategy: RestConnectorWizardStrategy() {
     override fun connectionUrlFieldName(): ItemName {
         return BaseUrlSpecificationStep.SCIM_BASE_URL_ITEM_NAME
     }
+
+    override fun connectionUrlLabel(): String {
+        return "SCIM Base URL"
+    }
 }

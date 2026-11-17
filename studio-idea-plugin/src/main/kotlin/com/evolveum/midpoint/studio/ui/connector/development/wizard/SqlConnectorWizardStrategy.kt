@@ -322,4 +322,8 @@ class SqlConnectorWizardStrategy: ConnectorWizardStrategy {
     override fun connectionUrlFieldName(): ItemName {
         throw UnsupportedOperationException(NOT_APPLICABLE_TO_SQL)
     }
+
+    override fun connectionUrlLabel(): String {
+        throw UnsupportedOperationException(NOT_APPLICABLE_TO_SQL)
+    }
 }
