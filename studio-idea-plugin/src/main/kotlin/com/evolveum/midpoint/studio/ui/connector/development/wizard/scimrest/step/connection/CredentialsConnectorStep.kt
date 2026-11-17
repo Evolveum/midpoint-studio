@@ -109,6 +109,12 @@ class CredentialsConnectorStep(
 
         originalConnectorDevelopmentType = dataModel.connectorDevelopment.clone()
 
+        // the step is initialized on every visit, the rendered fields of a selected method stay as they are
+        if (credentialsPanel != null) {
+            return
+        }
+
+        credentialDynamicallyPanel.removeAll()
         credentialDynamicallyPanel.add(panel {
             row {
                 text("""
@@ -116,6 +122,8 @@ class CredentialsConnectorStep(
                 """.trimIndent()).align(AlignX.FILL)
             }
         })
+        credentialDynamicallyPanel.revalidate()
+        credentialDynamicallyPanel.repaint()
     }
 
     override fun _commit(finishChosen: Boolean) {

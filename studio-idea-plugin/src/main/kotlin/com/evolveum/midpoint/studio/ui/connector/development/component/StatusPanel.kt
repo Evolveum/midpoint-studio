@@ -16,6 +16,7 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.CardLayout
 import java.awt.Color
+import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.Font
 import javax.swing.JComponent
@@ -64,22 +65,34 @@ class StatusPanel {
         textLabel.setForeground(color)
         panel.add(textLabel)
 
-        val subtextJTextPanel = JTextPane()
-        subtextJTextPanel.isEditable = false
-        subtextJTextPanel.setOpaque(false)
-        subtextJTextPanel.setFocusable(false)
-        subtextJTextPanel.text = description
-        subtextJTextPanel.setForeground(UIUtil.getContextHelpForeground())
-        subtextJTextPanel.setBorder(EmptyBorder(JBUI.insets(0, 10)))
+        panel.add(createDescriptionPane(description))
 
-        val doc = subtextJTextPanel.styledDocument
+        return panel
+    }
+
+    /**
+     * Centered, read-only description that wraps. A text pane reports the width of its longest line as preferred
+     * width, so the preferred size is computed for a bounded width, otherwise long messages get cut off.
+     */
+    private fun createDescriptionPane(description: String?): JTextPane {
+        val pane = JTextPane()
+        pane.isEditable = false
+        pane.setOpaque(false)
+        pane.setFocusable(false)
+        pane.text = description
+        pane.setForeground(UIUtil.getContextHelpForeground())
+        pane.setBorder(EmptyBorder(JBUI.insets(0, 10)))
+
+        val doc = pane.styledDocument
         val centerAttribute = SimpleAttributeSet()
         StyleConstants.setAlignment(centerAttribute, StyleConstants.ALIGN_CENTER)
         doc.setParagraphAttributes(0, doc.length, centerAttribute, false)
 
-        panel.add(subtextJTextPanel)
+        val width = JBUI.scale(DESCRIPTION_MAX_WIDTH)
+        pane.setSize(width, Short.MAX_VALUE.toInt())
+        pane.preferredSize = Dimension(width, pane.preferredSize.height)
 
-        return panel
+        return pane
     }
 
     fun showLoadingComponent(title: String, description: String?, elapsed: Long): JComponent {
@@ -98,24 +111,16 @@ class StatusPanel {
         textLabel.setForeground(JBColor(Color(70, 130, 180), Color(70, 130, 180)))
         panel.add(textLabel)
 
-        val subtextJTextPanel = JTextPane()
-        subtextJTextPanel.isEditable = false
-        subtextJTextPanel.setOpaque(false)
-        subtextJTextPanel.setFocusable(false)
-        subtextJTextPanel.text = description
-        subtextJTextPanel.setForeground(UIUtil.getContextHelpForeground())
-        subtextJTextPanel.setBorder(EmptyBorder(JBUI.insets(0, 10)))
-        panel.add(subtextJTextPanel)
-
-        val doc = subtextJTextPanel.styledDocument
-        val centerAttribute = SimpleAttributeSet()
-        StyleConstants.setAlignment(centerAttribute, StyleConstants.ALIGN_CENTER)
-        doc.setParagraphAttributes(0, doc.length, centerAttribute, false)
+        panel.add(createDescriptionPane(description))
 
         elapsedLabel = ElapsedTimerLabel(elapsed)
         elapsedLabel!!.start()
         panel.add(elapsedLabel)
 
         return panel
+    }
+
+    companion object {
+        private const val DESCRIPTION_MAX_WIDTH = 760
     }
 }

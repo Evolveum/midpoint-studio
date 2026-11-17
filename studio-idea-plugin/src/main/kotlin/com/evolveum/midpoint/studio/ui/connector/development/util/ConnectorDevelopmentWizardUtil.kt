@@ -162,14 +162,16 @@ object ConnectorDevelopmentWizardUtil {
     fun getTestingResource(
         client: MidPointClient,
         connectorDevelopment: ConnectorDevelopmentType
-    ): ResourceType =
-        client.parseObject(
-            client.get(
-                ResourceType::class.java,
-                connectorDevelopment.testing?.testingResource?.oid,
-                SearchOptions()
-            ).content
-        )?.asObjectable() as ResourceType
+    ): ResourceType {
+        val oid = connectorDevelopment.testing?.testingResource?.oid
+            ?: throw IllegalStateException(
+                "The connector development has no testing resource yet, the connector was not created on the server.")
+
+        val resource = client.get(ResourceType::class.java, oid, SearchOptions())
+            ?: throw IllegalStateException("Testing resource $oid does not exist on the server.")
+
+        return client.parseObject(resource.content).asObjectable() as ResourceType
+    }
 
     /**
      * Retrieves the connector type associated with the specified connector development.
@@ -186,14 +188,16 @@ object ConnectorDevelopmentWizardUtil {
     fun getConnectorType(
         client: MidPointClient,
         connectorDevelopment: ConnectorDevelopmentType
-    ): ConnectorType =
-        client.parseObject(
-            client.get(
-                ConnectorType::class.java,
-                connectorDevelopment.connector?.connectorRef?.oid,
-                SearchOptions()
-            )?.content
-        ).asObjectable() as ConnectorType
+    ): ConnectorType {
+        val oid = connectorDevelopment.connector?.connectorRef?.oid
+            ?: throw IllegalStateException(
+                "The connector development has no connector yet, the connector was not created on the server.")
+
+        val connector = client.get(ConnectorType::class.java, oid, SearchOptions())
+            ?: throw IllegalStateException("Connector $oid does not exist on the server.")
+
+        return client.parseObject(connector.content).asObjectable() as ConnectorType
+    }
 
     /**
      * Finds the definition of the connector configuration properties container.
