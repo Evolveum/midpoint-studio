@@ -14,6 +14,8 @@ import com.intellij.ide.highlighter.HighlighterFactory;
 import com.intellij.lang.Language;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.editor.ex.EditorEx;
@@ -63,6 +65,13 @@ public class SmartEditorComponent extends LanguageTextField {
     protected @NotNull EditorEx createEditor() {
         EditorEx editor = super.createEditor();
 
+        // EditorTextField paints the UI text field background but keeps foreground and caret row from the
+        // editor scheme, which clashes when the UI theme and the editor scheme differ. This is a code editor,
+        // so it follows the editor scheme completely, the same as the main editor does.
+        EditorColorsScheme scheme = EditorColorsManager.getInstance().getGlobalScheme();
+        editor.setColorsScheme(editor.createBoundColorSchemeDelegate(scheme));
+        editor.setBackgroundColor(scheme.getDefaultBackground());
+
         editor.setHorizontalScrollbarVisible(true);
         editor.setVerticalScrollbarVisible(true);
         editor.getSettings().setLineNumbersShown(true);
@@ -77,8 +86,9 @@ public class SmartEditorComponent extends LanguageTextField {
 
         if (currentLanguage != null) {
             editor.setHighlighter(HighlighterFactory.createHighlighter(
-                    project,
-                    Objects.requireNonNull(currentLanguage.getAssociatedFileType())
+                    Objects.requireNonNull(currentLanguage.getAssociatedFileType()),
+                    scheme,
+                    project
             ));
         }
 
