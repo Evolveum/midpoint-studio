@@ -59,6 +59,12 @@ public class MidPointConfiguration implements Serializable {
 
     private boolean askToValidateEnvironmentCredentials;
 
+    /**
+     * Set when user chose "Don't show again" on the smart suggestion balloon shown after
+     * opening a resource file.
+     */
+    private boolean hideSmartSuggestionNotification;
+
     private boolean ignoreMissingKeys;
 
     @OptionTag(converter = ObjectTypesListConverter.class)
@@ -108,6 +114,14 @@ public class MidPointConfiguration implements Serializable {
 
     public void setAskToValidateEnvironmentCredentials(boolean askToValidateEnvironmentCredentials) {
         this.askToValidateEnvironmentCredentials = askToValidateEnvironmentCredentials;
+    }
+
+    public boolean isHideSmartSuggestionNotification() {
+        return hideSmartSuggestionNotification;
+    }
+
+    public void setHideSmartSuggestionNotification(boolean hideSmartSuggestionNotification) {
+        this.hideSmartSuggestionNotification = hideSmartSuggestionNotification;
     }
 
     public String getProjectId() {
@@ -292,6 +306,7 @@ public class MidPointConfiguration implements Serializable {
         other.printRestCommunicationToConsole = printRestCommunicationToConsole;
         other.askToAddMidpointFacet = askToAddMidpointFacet;
         other.askToValidateEnvironmentCredentials = askToValidateEnvironmentCredentials;
+        other.hideSmartSuggestionNotification = hideSmartSuggestionNotification;
         other.downloadTypesExclude = downloadTypesExclude != null ? new ArrayList<>(downloadTypesExclude) : null;
         other.downloadTypesInclude = downloadTypesInclude != null ? new ArrayList<>(downloadTypesInclude) : null;
         other.typesToDownloadLimit = typesToDownloadLimit;
@@ -321,6 +336,7 @@ public class MidPointConfiguration implements Serializable {
         return printRestCommunicationToConsole == that.printRestCommunicationToConsole
                 && askToAddMidpointFacet == that.askToAddMidpointFacet
                 && askToValidateEnvironmentCredentials == that.askToValidateEnvironmentCredentials
+                && hideSmartSuggestionNotification == that.hideSmartSuggestionNotification
                 && ignoreMissingKeys == that.ignoreMissingKeys
                 && typesToDownloadLimit == that.typesToDownloadLimit
                 && restResponseTimeout == that.restResponseTimeout
@@ -347,7 +363,8 @@ public class MidPointConfiguration implements Serializable {
     public int hashCode() {
         return Objects.hash(
                 projectId, dowloadFilePattern, generatedFilePattern, printRestCommunicationToConsole, docGeneratorOptions,
-                askToAddMidpointFacet, askToValidateEnvironmentCredentials, ignoreMissingKeys, downloadTypesInclude,
+                askToAddMidpointFacet, askToValidateEnvironmentCredentials, hideSmartSuggestionNotification,
+                ignoreMissingKeys, downloadTypesInclude,
                 downloadTypesExclude, typesToDownloadLimit, restResponseTimeout, downloadFilePattern, midpointVersion,
                 updateOnUpload, cacheTTL, logPollInterval, logInitialTailSize, logMaxChunkSize, logBufferEntries,
                 logCaptureMaxFileSize, logCaptureMaxFiles, logEntryStartPattern);
