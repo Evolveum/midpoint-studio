@@ -52,7 +52,7 @@ class SqlConnectorWizardStrategy: ConnectorWizardStrategy {
         )
 
         connection.add(
-            ResourceTestConnectorStep(
+            SqlConnectionParametersConnectorStep(
                 wizardContext,
                 client,
                 Badge.State.NONE,
@@ -61,7 +61,7 @@ class SqlConnectorWizardStrategy: ConnectorWizardStrategy {
         )
 
         connection.add(
-            SqlConnectionParametersConnectorStep(
+            ResourceTestConnectorStep(
                 wizardContext,
                 client,
                 Badge.State.NONE,

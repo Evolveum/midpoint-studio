@@ -120,7 +120,7 @@ class ResourceTestConnectorStep(
             }.resizableRow()
 
             row {
-                text("Go back to adjust the endpoint, the credentials or the authentication script, or try again.")
+                text("Go back to adjust the connection settings, or try again.")
                     .align(AlignX.FILL)
             }
 

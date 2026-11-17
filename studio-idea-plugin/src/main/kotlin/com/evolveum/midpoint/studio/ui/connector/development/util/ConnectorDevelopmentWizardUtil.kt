@@ -8,7 +8,9 @@ package com.evolveum.midpoint.studio.ui.connector.development.util
 
 import com.evolveum.midpoint.prism.Containerable
 import com.evolveum.midpoint.prism.PrismContainerDefinition
+import com.evolveum.midpoint.prism.PrismContainerValue
 import com.evolveum.midpoint.prism.PrismContext
+import com.evolveum.midpoint.prism.PrismProperty
 import com.evolveum.midpoint.schema.constants.SchemaConstants
 import com.evolveum.midpoint.schema.processor.ConnectorSchema
 import com.evolveum.midpoint.schema.util.ConnectorTypeUtil
@@ -234,20 +236,7 @@ object ConnectorDevelopmentWizardUtil {
         values: Map<String, Any?>,
         remove: Collection<String> = emptyList()
     ): ResourceType {
-        val resource = getTestingResource(client, connectorDevelopment)
-        val connector = getConnectorType(client, connectorDevelopment)
-
-        val configurationDefinition = ConnectorTypeUtil.parseConnectorSchema(connector)
-            .connectorConfigurationContainerDefinition
-
-        // the resource was fetched without the connector schema, the definition makes the raw values typed
-        val configuration = resource.asPrismObject()
-            .findOrCreateContainer<ConnectorConfigurationType>(ResourceType.F_CONNECTOR_CONFIGURATION)
-        configuration.applyDefinition(configurationDefinition)
-
-        val properties = configuration.value
-            .findOrCreateContainer<Containerable>(SchemaConstants.ICF_CONFIGURATION_PROPERTIES_NAME)
-            .value
+        val (resource, properties) = loadTestingResourceConfiguration(client, connectorDevelopment)
 
         val definitions = properties.definition?.definitions
             ?.associateBy { it.itemName.localPart }
@@ -273,6 +262,49 @@ object ConnectorDevelopmentWizardUtil {
         }
 
         return client.upsert(resource.asPrismObject(), null)
+    }
+
+    /**
+     * Reads the connector configuration properties of the testing resource, keyed by local name. Only properties
+     * with a value are returned.
+     */
+    @JvmStatic
+    @Throws(IOException::class, SchemaException::class, AuthenticationException::class)
+    fun readTestingResourceConfiguration(
+        client: MidPointClient,
+        connectorDevelopment: ConnectorDevelopmentType
+    ): Map<String, Any?> {
+        val (_, properties) = loadTestingResourceConfiguration(client, connectorDevelopment)
+
+        return properties.items
+            .filterIsInstance<PrismProperty<*>>()
+            .filter { it.realValue != null }
+            .associate { it.elementName.localPart to it.realValue }
+    }
+
+    /**
+     * Loads the testing resource and its connector configuration properties with the connector schema applied,
+     * the resource alone is fetched without it and its values stay raw.
+     */
+    private fun loadTestingResourceConfiguration(
+        client: MidPointClient,
+        connectorDevelopment: ConnectorDevelopmentType
+    ): Pair<ResourceType, PrismContainerValue<Containerable>> {
+        val resource = getTestingResource(client, connectorDevelopment)
+        val connector = getConnectorType(client, connectorDevelopment)
+
+        val configurationDefinition = ConnectorTypeUtil.parseConnectorSchema(connector)
+            .connectorConfigurationContainerDefinition
+
+        val configuration = resource.asPrismObject()
+            .findOrCreateContainer<ConnectorConfigurationType>(ResourceType.F_CONNECTOR_CONFIGURATION)
+        configuration.applyDefinition(configurationDefinition)
+
+        val properties = configuration.value
+            .findOrCreateContainer<Containerable>(SchemaConstants.ICF_CONFIGURATION_PROPERTIES_NAME)
+            .value
+
+        return resource to properties
     }
 
     private const val DEVELOPMENT_MODE_PROPERTY = "developmentMode"

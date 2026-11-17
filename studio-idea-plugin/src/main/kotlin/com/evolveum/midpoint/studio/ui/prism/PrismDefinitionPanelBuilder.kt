@@ -55,7 +55,8 @@ class PrismDefinitionPanelBuilder {
             renderItemDefinition(
                 definition = definition,
                 visited = visited,
-                suppliers = mutableMapOf()
+                suppliers = mutableMapOf(),
+                values = emptyMap()
             )
         }
     }
@@ -70,11 +71,13 @@ class PrismDefinitionPanelBuilder {
      * @param itemNames Names of the item definitions to include in the panel.
      * Namespace information is ignored when comparing names.
      * @param definition Root container definition whose direct child definitions are filtered and rendered.
+     * @param values Initial field values keyed by the local name of the property.
      * @return The generated panel with access to the entered values.
      */
     fun build(
         itemNames: List<ItemName>,
-        definition: PrismContainerDefinition<*>
+        definition: PrismContainerDefinition<*>,
+        values: Map<String, Any?> = emptyMap()
     ): PrismDefinitionPanel {
 
         val suppliers = mutableMapOf<ItemName, () -> Any?>()
@@ -92,7 +95,8 @@ class PrismDefinitionPanelBuilder {
                     renderItemDefinition(
                         definition = itemDefinition,
                         visited = visited,
-                        suppliers = suppliers
+                        suppliers = suppliers,
+                        values = values
                     )
                 }
         }
@@ -109,23 +113,26 @@ class PrismDefinitionPanelBuilder {
      * @param definition Item definition to render.
      * @param visited Set of container definitions currently being processed, used to detect circular references.
      * @param suppliers Collects a value supplier for every rendered property, keyed by its item name.
+     * @param values Initial field values keyed by the local name of the property.
      */
     private fun Panel.renderItemDefinition(
         definition: ItemDefinition<*>,
         visited: MutableSet<PrismContainerDefinition<*>>,
-        suppliers: MutableMap<ItemName, () -> Any?>
+        suppliers: MutableMap<ItemName, () -> Any?>,
+        values: Map<String, Any?>
     ) {
         when (definition) {
 
             is PrismPropertyDefinition<*> -> {
                 row {
-                    suppliers[definition.itemName] = renderPropertyDefinition(this, definition)
+                    suppliers[definition.itemName] =
+                        renderPropertyDefinition(this, definition, values[definition.itemName.localPart])
                 }
             }
 
             is PrismContainerDefinition<*> -> {
                 group(definition.displayName) {
-                    renderContainerDefinition(definition, visited, suppliers)
+                    renderContainerDefinition(definition, visited, suppliers, values)
                 }
             }
 
@@ -146,7 +153,8 @@ class PrismDefinitionPanelBuilder {
     private fun Panel.renderContainerDefinition(
         definition: PrismContainerDefinition<*>,
         visited: MutableSet<PrismContainerDefinition<*>>,
-        suppliers: MutableMap<ItemName, () -> Any?>
+        suppliers: MutableMap<ItemName, () -> Any?>,
+        values: Map<String, Any?>
     ) {
         if (!visited.add(definition)) {
             row {
@@ -157,7 +165,7 @@ class PrismDefinitionPanelBuilder {
 
         try {
             definition.definitions.forEach { child ->
-                renderItemDefinition(child, visited, suppliers)
+                renderItemDefinition(child, visited, suppliers, values)
             }
         } finally {
             visited.remove(definition)
@@ -166,7 +174,8 @@ class PrismDefinitionPanelBuilder {
 
     private fun renderPropertyDefinition(
         row: Row,
-        propertyDefinition: PrismPropertyDefinition<*>
+        propertyDefinition: PrismPropertyDefinition<*>,
+        value: Any?
     ): () -> Any? {
         val connectorConfigurationType = SupportedType.ConnectorConfiguration.getConnectorConfiguration(
             propertyDefinition.typeClass
@@ -178,7 +187,7 @@ class PrismDefinitionPanelBuilder {
         return renderer.render(
             row,
             propertyDefinition,
-            null
+            value
         )
     }
 
