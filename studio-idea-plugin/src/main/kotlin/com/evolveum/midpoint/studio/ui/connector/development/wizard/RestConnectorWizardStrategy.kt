@@ -16,6 +16,8 @@ import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.ste
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.AuthScriptsConnectorStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.BaseUrlSpecificationStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.CredentialsConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.ResourceTestConnectorStep
+import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection.TestConnectionStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.ObjectClassSelectConnectorStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.create.CreateEndpointsConnectorStep
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.objectclass.create.CreateScriptConnectorStep
@@ -87,6 +89,24 @@ open class RestConnectorWizardStrategy: ConnectorWizardStrategy {
 
         connectionSteps.add(
             CredentialsConnectorStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        connectionSteps.add(
+            TestConnectionStep(
+                wizardContext,
+                client,
+                Badge.State.NONE,
+                false
+            )
+        )
+
+        connectionSteps.add(
+            ResourceTestConnectorStep(
                 wizardContext,
                 client,
                 Badge.State.NONE,

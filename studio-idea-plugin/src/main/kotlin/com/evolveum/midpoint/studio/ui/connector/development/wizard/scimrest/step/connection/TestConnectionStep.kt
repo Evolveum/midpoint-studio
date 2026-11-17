@@ -6,18 +6,16 @@
 
 package com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.connection
 
-import com.evolveum.midpoint.prism.PrismObject
-import com.evolveum.midpoint.prism.path.ItemName
 import com.evolveum.midpoint.studio.client.RPCOperation
 import com.evolveum.midpoint.studio.impl.MidPointClient
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
+import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
-import com.evolveum.midpoint.util.exception.SchemaException
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevHttpEndpointType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
-import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType
 import com.intellij.ide.wizard.CommitStepException
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.components.JBLabel
@@ -31,16 +29,16 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.concurrency.EdtExecutorService
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
-import org.jetbrains.annotations.NotNull
 import java.awt.BorderLayout
-import java.awt.Container
 import java.awt.Dimension
 import java.awt.Font
-import java.awt.event.FocusAdapter
-import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
 import javax.swing.*
 
+/**
+ * Endpoint for the connection test: suggested endpoints discovered by the server or a URL entered manually.
+ * The chosen URL is stored on the testing resource, the test itself runs in [ResourceTestConnectorStep].
+ */
 class TestConnectionStep(
     wizardContext : ConnectorDevelopmentWizard,
     client : MidPointClient,
@@ -50,7 +48,14 @@ class TestConnectionStep(
 
     private val globalRadioBtnGroup = ButtonGroup()
     private val endpointsListPanel = JPanel(BorderLayout())
-    private var restUriEndpoint: String? = null
+
+    private var selectedEndpoint: String? = null
+    private var manualSelected = false
+    private val manualUrlField = JBTextField().apply {
+        font = font.deriveFont(Font.PLAIN, JBUI.scaleFontSize(13f).toFloat())
+        alignmentX = JPanel.LEFT_ALIGNMENT
+        maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height)
+    }
 
     override val nextButtonText: String
         get() = "Test Connection"
@@ -82,34 +87,35 @@ class TestConnectionStep(
     override fun _init() {
         super._init()
 
-        if (!wizardContext.isLeavingStepByPreviousTouch && dataModel.occurredChanges) {
+        if (!existConnDev()) return
+
+        val suggested = dataModel.connectorDevelopment.testing?.suggestedEndpoint.orEmpty()
+
+        if (suggested.isNotEmpty() || wizardContext.isLeavingStepByPreviousTouch) {
+            showEndpoints(suggested)
+        } else {
             submitOperationDiscoverConnectivityEndpoint()
         }
     }
 
     override fun _commit(finishChosen: Boolean) {
+        val url = (if (manualSelected) manualUrlField.text else selectedEndpoint)?.trim()
+        url.requireNotBlank("Endpoint URL")
 
-        if (!wizardContext.isLeavingStepByPreviousTouch && dataModel.occurredChanges) {
-
-            dataModel.connectorDevelopment.testing?.testingResource?.oid.requireNotBlank(
-                "Resource oid"
-            )
-
-            try {
-                restUriEndpoint.requireNotBlank(" rest URI endpoint ")
-
-                val resource = getObjectByOid(
-                    dataModel.connectorDevelopment.testing.testingResource.oid,
-                    ResourceType::class.java
+        try {
+            StudioPrismContextService.runWithProject(client.project) {
+                ConnectorDevelopmentWizardUtil.updateTestingResourceConfiguration(
+                    client,
+                    dataModel.connectorDevelopment,
+                    mapOf(REST_TEST_ENDPOINT_PROPERTY to url)
                 )
-
-                upsertConnectorDevelopmentType(dataModel.connectorDevelopment)
-
-                submitOperation()
-            } catch (e: Exception) {
-                throw CommitStepException(e.message)
             }
+        } catch (e: Exception) {
+            log.error("Couldn't save the test endpoint", e)
+            throw CommitStepException("Couldn't save the test endpoint. \n Error: " + e.message)
         }
+
+        state = Badge.State.COMPLETE
 
         super._commit(finishChosen)
     }
@@ -148,15 +154,14 @@ class TestConnectionStep(
                 statusPanel.elapsedLabel?.stop()
 
                 if (statusInfo.status == OperationResultStatusType.SUCCESS) {
+                    // the server stores the suggestions on the connector development object
+                    continueFrom()
+
                     dynamicPanel.removeAll()
                     dynamicPanel.revalidate()
                     dynamicPanel.repaint()
 
-                    endpointsListPanel.add(createEndpointsListPanelPanel(
-                        dataModel.connectorDevelopment.testing.suggestedEndpoint
-                    ))
-
-                    canGoNext = true
+                    showEndpoints(dataModel.connectorDevelopment.testing?.suggestedEndpoint.orEmpty())
                 } else {
                     statusPanel.status = StatusPanel.Status.ERROR
                     replaceContent(
@@ -188,104 +193,30 @@ class TestConnectionStep(
         )
     }
 
-    private fun submitOperation() {
+    private fun showEndpoints(endpoints: List<ConnDevHttpEndpointType?>) {
+        endpointsListPanel.removeAll()
+        endpointsListPanel.add(createEndpointsListPanel(endpoints))
+        endpointsListPanel.revalidate()
+        endpointsListPanel.repaint()
 
-        replaceContent(
-            getLoadingComponent(
-                statusPanel,
-                "Discovering schema...",
-                """
-                Object classes and their attributes are extracted from the shadows and saved as processed documentation for connector code generation.
-                """.trimIndent()
-            )
-        )
-
-        submitOperation(
-            {
-                client.submitOperationConnGenerator(
-                    RPCOperation.RPC_REFRESH_SCHEMA,
-                    mapOf("oid" to dataModel.connectorDevelopment.oid),
-                    null
-                )
-            },
-            { token ->
-                client.getStatusInfoConnGenerator(
-                    RPCOperation.RPC_DISCOVER_CONNECTIVITY_ENDPOINT,
-                    token
-                )
-            },
-            client.project,
-            "Refresh Schema submit operation",
-            true
-        ).thenAcceptAsync(
-            { statusInfo ->
-                statusPanel.elapsedLabel?.stop()
-                if (statusInfo.status == OperationResultStatusType.SUCCESS) {
-                    canGoNext = true
-                } else {
-                    statusPanel.status = StatusPanel.Status.ERROR
-                    replaceContent(
-                        getAlertComponent(
-                            statusPanel,
-                            statusPanel.status?.name ?: "",
-                            statusInfo.message
-                        )
-                    )
-                }
-            },
-            EdtExecutorService.getInstance()
-        ).whenCompleteAsync(
-            { _, throwable ->
-                if (throwable != null) {
-                    statusPanel.status = StatusPanel.Status.ERROR
-                    replaceContent(
-                        getAlertComponent(
-                            statusPanel,
-                            statusPanel.status?.name ?: "",
-                            getExceptionMessage(throwable)
-                        )
-                    )
-
-                    statusPanel.elapsedLabel?.stop()
-                }
-            },
-            EdtExecutorService.getInstance()
-        )
+        canGoNext = true
     }
 
-    private fun createEndpointsListPanelPanel(listHttpEndpointType: List<ConnDevHttpEndpointType?>): JPanel = panel {
+    private fun createEndpointsListPanel(endpoints: List<ConnDevHttpEndpointType?>): JPanel = panel {
 
         row {
             val cardsContainer = JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.Y_AXIS)
                 isOpaque = false
 
-                var currentRestTextEndpoint: Nothing? = null
-                var hasMatch = false
+                val uris = endpoints.mapNotNull { it?.uri }
 
-                listHttpEndpointType.forEach { item ->
-                    if (item != null) {
-                        val isSelect = item.uri == currentRestTextEndpoint
-                        if (!hasMatch) hasMatch = isSelect
-
-                        add(createCardComponent(
-                            item.uri,
-                            isSelect,
-                            false
-                        ))
-                        add(Box.createRigidArea(Dimension(0, JBUI.scale(8))))
-                    }
+                uris.forEachIndexed { index, uri ->
+                    add(createCardComponent(uri, index == 0, false))
+                    add(Box.createRigidArea(Dimension(0, JBUI.scale(8))))
                 }
 
-                if (hasMatch) {
-                    currentRestTextEndpoint = null
-                }
-
-                add(createCardComponent(
-                    currentRestTextEndpoint,
-                    !hasMatch,
-                    true
-                ))
+                add(createCardComponent(null, uris.isEmpty(), true))
             }
 
             val scrollPane = JBScrollPane(cardsContainer).apply {
@@ -313,65 +244,30 @@ class TestConnectionStep(
         globalRadioBtnGroup.add(cardRadioButton)
 
         val cardPanel = JPanel(BorderLayout()).apply {
-            name = if (enterUrlManually) ENTER_URL_MANUALLY_CARD_ID else null
             border = getUnselectedBorder()
-            preferredSize = Dimension(Integer.MAX_VALUE, JBUI.scale(64))
-            maximumSize = Dimension(preferredSize.width, JBUI.scale(64))
+            preferredSize = Dimension(Integer.MAX_VALUE, JBUI.scale(if (enterUrlManually) 96 else 64))
+            maximumSize = Dimension(preferredSize.width, preferredSize.height)
             putClientProperty("RADIO_COMPONENT", cardRadioButton)
         }
 
         val verticalContainer = JPanel().apply {
-            name = if (enterUrlManually) ENTER_URL_MANUALLY_CARD_ID else null
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             isOpaque = false
         }
 
-        val updateState = { isSelected: Boolean ->
-            cardRadioButton.isSelected = isSelected
-            cardPanel.border = if (isSelected) getSelectedBorder() else getUnselectedBorder()
+        val updateState = { selected: Boolean ->
+            cardRadioButton.isSelected = selected
+            cardPanel.border = if (selected) getSelectedBorder() else getUnselectedBorder()
 
-            if (isSelected) {
-                if (enterUrlManually) {
-                    cardPanel.maximumSize = Dimension(
-                        cardPanel.preferredSize.width,
-                        cardPanel.preferredSize.height + JBUI.scale(24)
-                    )
-
-                    verticalContainer.add(JBTextField(endpoint).apply {
-                        name = ENTER_URL_MANUALLY_TEXT_FIELD_ID
-                        font = font.deriveFont(Font.BOLD, JBUI.scaleFontSize(13f).toFloat())
-                        alignmentX = JPanel.LEFT_ALIGNMENT
-
-                        addFocusListener(object : FocusAdapter() {
-                            override fun focusLost(e: FocusEvent?) {
-                                restUriEndpoint = text
-                            }
-                        })
-                    })
-                } else {
-
-                    val parent = cardPanel.parent
-
-                    if (parent != null) {
-                        parent.components.forEach {card ->
-                            if (card.name == ENTER_URL_MANUALLY_CARD_ID) {
-                                (card as Container).components.forEach {verticalContainer ->
-                                    (verticalContainer as Container).components.forEach { field ->
-                                        if (field.name == ENTER_URL_MANUALLY_TEXT_FIELD_ID) {
-                                            verticalContainer.remove(field)
-                                            card.maximumSize = Dimension(
-                                                card.preferredSize.width,
-                                                card.maximumSize.height - JBUI.scale(24)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    restUriEndpoint = endpoint
+            if (selected) {
+                manualSelected = enterUrlManually
+                if (!enterUrlManually) {
+                    selectedEndpoint = endpoint
                 }
+            }
+
+            if (enterUrlManually) {
+                manualUrlField.isEnabled = selected
             }
 
             cardPanel.revalidate()
@@ -379,8 +275,7 @@ class TestConnectionStep(
         }
 
         cardRadioButton.addItemListener { event ->
-            val isSelected = event.stateChange == ItemEvent.SELECTED
-            updateState(isSelected)
+            updateState(event.stateChange == ItemEvent.SELECTED)
         }
 
         cardPanel.add(JPanel().apply {
@@ -390,99 +285,26 @@ class TestConnectionStep(
             add(Box.createRigidArea(Dimension(JBUI.scale(12), 0)))
         }, BorderLayout.WEST)
 
+        verticalContainer.add(Box.createRigidArea(Dimension(0, JBUI.scale(12))))
+        verticalContainer.add(JBLabel(endpoint ?: ENTER_URL_MANUALLY_LABEL).apply {
+            font = font.deriveFont(Font.BOLD, JBUI.scaleFontSize(13f).toFloat())
+            alignmentX = JPanel.LEFT_ALIGNMENT
+        })
+
         if (enterUrlManually) {
-            verticalContainer.add(Box.createRigidArea(Dimension(JBUI.scale(0), 12)))
-            verticalContainer.add(JBLabel(ENTER_URL_MANUALLY_LABEL).apply {
-                font = font.deriveFont(Font.BOLD, JBUI.scaleFontSize(13f).toFloat())
-                alignmentX = JPanel.LEFT_ALIGNMENT
-                alignmentY = JPanel.CENTER_ALIGNMENT
-            })
-
-            if (isSelected) {
-                cardPanel.maximumSize = Dimension(
-                    cardPanel.preferredSize.width,
-                    cardPanel.preferredSize.height + JBUI.scale(24)
-                )
-
-                verticalContainer.add(JBTextField(endpoint).apply {
-                    name = ENTER_URL_MANUALLY_TEXT_FIELD_ID
-                    font = font.deriveFont(Font.PLAIN, JBUI.scaleFontSize(13f).toFloat())
-                    alignmentX = JPanel.LEFT_ALIGNMENT
-
-                    maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height)
-                })
-            }
-        } else {
-            endpoint?.let { endpointText ->
-                verticalContainer.add(Box.createRigidArea(Dimension(JBUI.scale(0), 12)))
-                verticalContainer.add(JBLabel(endpointText).apply {
-                    font = font.deriveFont(Font.BOLD, JBUI.scaleFontSize(13f).toFloat())
-                    alignmentX = JPanel.LEFT_ALIGNMENT
-                    alignmentY = JPanel.CENTER_ALIGNMENT
-                })
-            }
+            verticalContainer.add(Box.createRigidArea(Dimension(0, JBUI.scale(4))))
+            verticalContainer.add(manualUrlField)
         }
 
-        cardPanel.add(verticalContainer,BorderLayout.CENTER)
+        cardPanel.add(verticalContainer, BorderLayout.CENTER)
 
         updateState(isSelected)
 
         return cardPanel
     }
 
-    @Throws(SchemaException::class)
-    private fun setRestTestEndpoint(
-        @NotNull resource: PrismObject<ResourceType>,
-        url: String?
-    ) {
-//
-//        try {
-//            val container: PrismContainer<Containerable> = resource.findOrCreateContainer(
-//                ItemPath.create(
-//                    "connectorConfiguration",
-//                    SchemaConstants.ICF_CONFIGURATION_PROPERTIES_LOCAL_NAME
-//                )
-//            )
-//
-//            container.definition?.definitions?.forEach {
-//                log.info("Defined configuration property: ${it.itemName}")
-//            }
-//
-////            container.findOrCreateProperty<String>(
-////                ItemPath.create(PROPERTY_ITEM_NAME)
-////            ).realValue = url
-//        } catch (e: Exception) {
-//            log.error(e)
-//            throw e
-//        }
-    }
-
-    @Throws(SchemaException::class)
-    private fun updateResource(
-        @NotNull resource: PrismObject<ResourceType>
-    ): ResourceType? {
-        return client.upsert(resource, null)
-    }
-
-    private fun resourceTesting(@NotNull oid: String) {
-
-        replaceContent(
-            getLoadingComponent(
-                statusPanel,
-                "Testing Connection...",
-                """
-                Please wait while we're checking if the connector can reach the system and respond correctly.
-                """.trimIndent()
-            )
-        )
-
-        client.testResource(oid)
-    }
-
     companion object {
-        private const val ENTER_URL_MANUALLY_CARD_ID = "urlManuallyCard"
-        private const val ENTER_URL_MANUALLY_TEXT_FIELD_ID = "urlManuallyTextField"
         private const val ENTER_URL_MANUALLY_LABEL = "Enter URL manually"
-        private val PROPERTY_ITEM_NAME = ItemName.from("", "restTestEndpoint")
+        private const val REST_TEST_ENDPOINT_PROPERTY = "restTestEndpoint"
     }
 }

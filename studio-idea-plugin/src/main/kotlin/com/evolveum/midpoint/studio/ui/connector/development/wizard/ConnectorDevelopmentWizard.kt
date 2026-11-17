@@ -102,7 +102,10 @@ abstract class ConnectorDevelopmentWizard(
         val currentStep =
             wizardStepsList[currentStep]
 
-        val text = currentStep.nextButtonText
+        // the platform finishes the wizard on the last step, the default label must say so
+        val text = currentStep.nextButtonText?.let {
+            if (lastStep && it == ConnectorDevelopmentWizardStep.DEFAULT_NEXT_BUTTON_TEXT) "Finish" else it
+        }
 
         // AbstractWizard sets "Next" with mnemonic N on every update, custom labels must not inherit it
         // (it shows up as an underlined n or a "(N)" suffix). Null label means the step has its own button.

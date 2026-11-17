@@ -9,12 +9,15 @@ package com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.st
 import com.evolveum.midpoint.prism.path.ItemName
 import com.evolveum.midpoint.studio.client.RPCOperation
 import com.evolveum.midpoint.studio.impl.MidPointClient
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.component.AlertPanel
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
+import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
+import com.intellij.ide.wizard.CommitStepException
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.*
@@ -53,8 +56,8 @@ class BaseUrlSpecificationStep(
     override fun _commit(finishChosen: Boolean) {
         contentPanel?.apply()
 
-        dataModel.connectorDevelopment.application.baseApiEndpoint
-            .requireNotBlank("REST Base Address")
+        val baseUrl = dataModel.connectorDevelopment.application.baseApiEndpoint
+        baseUrl.requireNotBlank("REST Base Address")
 
         if (state == Badge.State.IN_PROGRESS ||
             state == Badge.State.EDITED
@@ -62,10 +65,35 @@ class BaseUrlSpecificationStep(
             dataModel.occurredChanges = hasChanges(originalConnectorDevelopmentType)
 
             updateConnectorDevelopment()
+            saveBaseUrlToTestingResource(baseUrl)
             state = Badge.State.COMPLETE
         }
 
         super._commit(finishChosen)
+    }
+
+    /**
+     * The connector reads the base URL from the testing resource configuration, not from the connector development
+     * object, the GUI stores it in both places as well.
+     */
+    private fun saveBaseUrlToTestingResource(baseUrl: String) {
+        val property = ConnectorDevelopmentWizardUtil
+            .wizardStrategyFor(dataModel.connectorDevelopment)
+            .connectionUrlFieldName()
+            .localPart
+
+        try {
+            StudioPrismContextService.runWithProject(client.project) {
+                ConnectorDevelopmentWizardUtil.updateTestingResourceConfiguration(
+                    client,
+                    dataModel.connectorDevelopment,
+                    mapOf(property to baseUrl)
+                )
+            }
+        } catch (e: Exception) {
+            log.error("Couldn't save the base URL to the testing resource", e)
+            throw CommitStepException("Couldn't save the base URL to the testing resource. \n Error: " + e.message)
+        }
     }
 
     private fun createPanel(): DialogPanel = panel {

@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.studio.ui.connector.development.util
 
+import com.evolveum.midpoint.prism.Containerable
 import com.evolveum.midpoint.prism.PrismContainerDefinition
 import com.evolveum.midpoint.prism.PrismContext
 import com.evolveum.midpoint.schema.constants.SchemaConstants
@@ -21,6 +22,7 @@ import com.evolveum.midpoint.studio.ui.connector.development.wizard.ScimConnecto
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.SqlConnectorWizardStrategy
 import com.evolveum.midpoint.util.exception.SchemaException
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevIntegrationType
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorConfigurationType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType
@@ -210,4 +212,64 @@ object ConnectorDevelopmentWizardUtil {
         ConnectorTypeUtil.parseConnectorSchemaIfPresent(connectorType)
             ?.connectorConfigurationContainerDefinition
             ?.findLocalItemDefinition(SchemaConstants.ICF_CONFIGURATION_PROPERTIES_NAME)
+
+    /**
+     * Updates connector configuration properties of the testing resource and saves it.
+     *
+     * Properties are addressed by local name, the namespace comes from the connector schema. A null value removes
+     * the property, names in [remove] are removed as well. Development mode is switched on every time, the server
+     * validates generated scripts only in that mode.
+     *
+     * @return The saved resource as returned by the server.
+     */
+    @JvmStatic
+    @Throws(IOException::class, SchemaException::class, AuthenticationException::class)
+    fun updateTestingResourceConfiguration(
+        client: MidPointClient,
+        connectorDevelopment: ConnectorDevelopmentType,
+        values: Map<String, Any?>,
+        remove: Collection<String> = emptyList()
+    ): ResourceType {
+        val resource = getTestingResource(client, connectorDevelopment)
+        val connector = getConnectorType(client, connectorDevelopment)
+
+        val configurationDefinition = ConnectorTypeUtil.parseConnectorSchema(connector)
+            .connectorConfigurationContainerDefinition
+
+        // the resource was fetched without the connector schema, the definition makes the raw values typed
+        val configuration = resource.asPrismObject()
+            .findOrCreateContainer<ConnectorConfigurationType>(ResourceType.F_CONNECTOR_CONFIGURATION)
+        configuration.applyDefinition(configurationDefinition)
+
+        val properties = configuration.value
+            .findOrCreateContainer<Containerable>(SchemaConstants.ICF_CONFIGURATION_PROPERTIES_NAME)
+            .value
+
+        val definitions = properties.definition?.definitions
+            ?.associateBy { it.itemName.localPart }
+            .orEmpty()
+
+        properties.items
+            .filter { it.elementName.localPart in remove }
+            .toList()
+            .forEach { properties.remove(it) }
+
+        val toSet = values.toMutableMap()
+        toSet[DEVELOPMENT_MODE_PROPERTY] = true
+
+        toSet.forEach { (name, value) ->
+            val definition = definitions[name]
+                ?: throw SchemaException("Connector configuration has no property $name")
+
+            if (value == null) {
+                properties.findProperty<Any>(definition.itemName)?.let { properties.remove(it) }
+            } else {
+                properties.findOrCreateProperty<Any>(definition.itemName).setRealValue(value)
+            }
+        }
+
+        return client.upsert(resource.asPrismObject(), null)
+    }
+
+    private const val DEVELOPMENT_MODE_PROPERTY = "developmentMode"
 }

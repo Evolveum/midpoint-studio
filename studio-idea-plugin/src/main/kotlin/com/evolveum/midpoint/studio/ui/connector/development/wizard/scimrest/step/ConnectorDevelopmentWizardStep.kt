@@ -61,7 +61,7 @@ abstract class ConnectorDevelopmentWizardStep(
      * Label of the wizard Next button, null hides it (the step provides its own button).
      */
     open val nextButtonText: String?
-        get() = "Next"
+        get() = DEFAULT_NEXT_BUTTON_TEXT
 
     var state = initialState
         set(value) {
@@ -403,5 +403,6 @@ abstract class ConnectorDevelopmentWizardStep(
 
     companion object {
         protected const val COMBO_BOX_ITEM_UNDEFINED = "Undefined"
+        const val DEFAULT_NEXT_BUTTON_TEXT = "Next"
     }
 }
