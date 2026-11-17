@@ -16,6 +16,7 @@ import com.evolveum.midpoint.studio.ui.connector.development.component.AlertPane
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
 import com.intellij.ide.wizard.CommitStepException
@@ -41,6 +42,9 @@ class BaseUrlSpecificationStep(
 
     // panel with the bound field lives inside dynamicPanel, so it has to be applied separately
     private var contentPanel: DialogPanel? = null
+
+    override fun isCompleted(resource: TestingResourceState?): Boolean =
+        resource?.has(strategy().connectionUrlFieldName().localPart) == true
 
     override fun _init() {
         super._init()
@@ -85,7 +89,8 @@ class BaseUrlSpecificationStep(
                 ConnectorDevelopmentWizardUtil.updateTestingResourceConfiguration(
                     client,
                     dataModel.connectorDevelopment,
-                    mapOf(property to baseUrl)
+                    mapOf(property to baseUrl),
+                    markDown = true
                 )
             }
         } catch (e: Exception) {

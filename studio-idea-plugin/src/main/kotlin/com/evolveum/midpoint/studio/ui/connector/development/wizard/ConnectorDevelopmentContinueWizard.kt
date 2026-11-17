@@ -9,6 +9,7 @@ package com.evolveum.midpoint.studio.ui.connector.development.wizard
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.development.ConnectorDevelopmentDataModel
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType
 
 class ConnectorDevelopmentContinueWizard(
@@ -26,8 +27,20 @@ class ConnectorDevelopmentContinueWizard(
         setSize(1300, 900)
         buildSteps()
         registerWizardSteps()
+        resumeAtFirstIncompleteStep(readTestingResourceState())
         init()
     }
+
+    /**
+     * Null when the testing resource does not exist yet or cannot be read, the wizard then starts at the first step.
+     */
+    private fun readTestingResourceState(): TestingResourceState? =
+        try {
+            ConnectorDevelopmentWizardUtil.readTestingResourceState(client, dataModel.connectorDevelopment)
+        } catch (e: Exception) {
+            log.warn("Couldn't read the testing resource, the wizard starts at the first step", e)
+            null
+        }
 
     override fun buildSteps() {
 

@@ -14,6 +14,7 @@ import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDev
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.studio.ui.prism.PrismDefinitionPanel
 import com.evolveum.midpoint.studio.ui.prism.PrismDefinitionPanelBuilder
@@ -85,6 +86,24 @@ class CredentialsConnectorStep(
             row {
                 cell(credentialDynamicallyPanel).align(Align.FILL)
             }
+        }
+    }
+
+    /**
+     * Every credential property of some selected authentication method has a value on the testing resource, the
+     * web GUI rule. A method without properties (none) counts as well.
+     */
+    override fun isCompleted(resource: TestingResourceState?): Boolean {
+        if (resource == null) return false
+        if (resource.isUp) return true
+
+        val connectorDevelopment = dataModel.connectorDevelopment
+        val integrationType = connectorDevelopment.connector?.integrationType
+            ?: connectorDevelopment.application?.integrationType
+            ?: return false
+
+        return connectorDevelopment.connector?.auth.orEmpty().any { auth ->
+            resource.hasAll(SupportedAuthorization.attributesFor(integrationType, auth.type).map { it.localPart })
         }
     }
 

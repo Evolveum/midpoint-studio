@@ -13,6 +13,7 @@ import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDev
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevHttpEndpointType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationResultStatusType
@@ -83,6 +84,9 @@ class TestConnectionStep(
             }
         }
     }
+
+    override fun isCompleted(resource: TestingResourceState?): Boolean =
+        resource?.has(REST_TEST_ENDPOINT_PROPERTY) == true
 
     override fun _init() {
         super._init()

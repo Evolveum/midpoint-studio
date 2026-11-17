@@ -23,11 +23,13 @@ import com.evolveum.midpoint.studio.ui.connector.development.wizard.RestConnecto
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ScimConnectorWizardStrategy
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.SqlConnectorWizardStrategy
 import com.evolveum.midpoint.util.exception.SchemaException
+import com.evolveum.midpoint.xml.ns._public.common.common_3.AvailabilityStatusType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevIntegrationType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorConfigurationType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorDevelopmentType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnectorType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ObjectReferenceType
+import com.evolveum.midpoint.xml.ns._public.common.common_3.OperationalStateType
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ResourceType
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType
 import com.intellij.openapi.application.ApplicationManager
@@ -224,7 +226,8 @@ object ConnectorDevelopmentWizardUtil {
      *
      * Properties are addressed by local name, the namespace comes from the connector schema. A null value removes
      * the property, names in [remove] are removed as well. Development mode is switched on every time, the server
-     * validates generated scripts only in that mode.
+     * validates generated scripts only in that mode. [markDown] resets the availability status, so a changed
+     * connection has to be tested again, the web GUI does the same when the URL or the SQL parameters change.
      *
      * @return The saved resource as returned by the server.
      */
@@ -234,9 +237,16 @@ object ConnectorDevelopmentWizardUtil {
         client: MidPointClient,
         connectorDevelopment: ConnectorDevelopmentType,
         values: Map<String, Any?>,
-        remove: Collection<String> = emptyList()
+        remove: Collection<String> = emptyList(),
+        markDown: Boolean = false
     ): ResourceType {
         val (resource, properties) = loadTestingResourceConfiguration(client, connectorDevelopment)
+
+        if (markDown) {
+            val operationalState = resource.operationalState
+                ?: OperationalStateType().also { resource.operationalState = it }
+            operationalState.lastAvailabilityStatus = AvailabilityStatusType.DOWN
+        }
 
         val definitions = properties.definition?.definitions
             ?.associateBy { it.itemName.localPart }
@@ -265,21 +275,23 @@ object ConnectorDevelopmentWizardUtil {
     }
 
     /**
-     * Reads the connector configuration properties of the testing resource, keyed by local name. Only properties
-     * with a value are returned.
+     * Reads the connector configuration properties of the testing resource, keyed by local name,
+     * together with the last known availability status. Only properties with a value are returned.
      */
     @JvmStatic
     @Throws(IOException::class, SchemaException::class, AuthenticationException::class)
-    fun readTestingResourceConfiguration(
+    fun readTestingResourceState(
         client: MidPointClient,
         connectorDevelopment: ConnectorDevelopmentType
-    ): Map<String, Any?> {
-        val (_, properties) = loadTestingResourceConfiguration(client, connectorDevelopment)
+    ): TestingResourceState {
+        val (resource, properties) = loadTestingResourceConfiguration(client, connectorDevelopment)
 
-        return properties.items
+        val configuration = properties.items
             .filterIsInstance<PrismProperty<*>>()
             .filter { it.realValue != null }
             .associate { it.elementName.localPart to it.realValue }
+
+        return TestingResourceState(configuration, resource.operationalState?.lastAvailabilityStatus)
     }
 
     /**

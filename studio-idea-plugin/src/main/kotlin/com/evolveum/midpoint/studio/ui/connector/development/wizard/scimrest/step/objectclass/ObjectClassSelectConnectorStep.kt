@@ -10,6 +10,7 @@ import com.evolveum.midpoint.studio.client.RPCOperation
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevObjectClassInfoType
@@ -85,6 +86,8 @@ class ObjectClassSelectConnectorStep(
             }
         }
     }
+
+    override fun isCompleted(resource: TestingResourceState?): Boolean = configuredObjectClasses().isNotEmpty()
 
     override fun _init() {
         super._init()

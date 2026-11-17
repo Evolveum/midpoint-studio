@@ -10,6 +10,7 @@ import com.evolveum.midpoint.smart.api.conndev.SupportedAuthorization
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.xml.ns._public.common.common_3.ConnDevAuthInfoType
 import com.intellij.ide.wizard.CommitStepException
@@ -67,6 +68,9 @@ class AuthMethodSupportStep(
             }
         }
     }
+
+    override fun isCompleted(resource: TestingResourceState?): Boolean =
+        !dataModel.connectorDevelopment.connector?.auth.isNullOrEmpty()
 
     override fun _init() {
         super._init()

@@ -12,6 +12,7 @@ import com.evolveum.midpoint.studio.ui.connector.development.ConnectorDevelopmen
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.navigation.NavigationItem
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.navigation.NavigationNode
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.navigation.NavigationTree
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.util.exception.SchemaException
 import com.intellij.ide.wizard.AbstractWizard
@@ -136,6 +137,28 @@ abstract class ConnectorDevelopmentWizard(
             .forEach { step ->
                 addStep(step)
             }
+    }
+
+    /**
+     * Opens the wizard at the first step whose work is not saved yet, earlier steps are shown as complete. When
+     * everything is done the last step is shown. Call after the steps are registered and before init().
+     */
+    protected fun resumeAtFirstIncompleteStep(resource: TestingResourceState?) {
+        val steps = wizardSteps()
+        if (steps.isEmpty()) return
+
+        val firstIncomplete = steps.indexOfFirst { !it.isCompleted(resource) }
+        val start = if (firstIncomplete < 0) steps.lastIndex else firstIncomplete
+
+        steps.forEachIndexed { index, step ->
+            step.state = when {
+                index < start -> Badge.State.COMPLETE
+                index == start -> Badge.State.IN_PROGRESS
+                else -> Badge.State.NONE
+            }
+        }
+
+        myCurrentStep = start
     }
 
     /**

@@ -11,6 +11,7 @@ import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.studio.ui.converter.LanguageSelectorPanel
 import com.evolveum.midpoint.studio.ui.editor.SmartEditorComponent
@@ -63,6 +64,15 @@ class AuthScriptsConnectorStep(
             "Authentication script validation"
         ) { }
     }
+
+    /**
+     * Studio cannot save the script yet (no server endpoint), so a working connection counts as done here, same as
+     * a deployed script does in the web GUI.
+     *
+     * TODO improve when server api is in place
+     */
+    override fun isCompleted(resource: TestingResourceState?): Boolean =
+        resource?.isUp == true || dataModel.connectorDevelopment.connector?.authenticationScript != null
 
     override fun _init() {
         super._init()

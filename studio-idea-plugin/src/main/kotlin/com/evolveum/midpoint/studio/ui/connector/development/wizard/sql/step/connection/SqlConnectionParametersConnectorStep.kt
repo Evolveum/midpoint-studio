@@ -12,6 +12,7 @@ import com.evolveum.midpoint.studio.impl.StudioPrismContextService
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.step.ConnectorDevelopmentWizardStep
 import com.evolveum.midpoint.studio.ui.prism.PrismDefinitionPanel
@@ -61,6 +62,9 @@ class SqlConnectionParametersConnectorStep(
         }
     }
 
+    override fun isCompleted(resource: TestingResourceState?): Boolean =
+        resource?.hasAll(REQUIRED.keys) == true
+
     override fun _init() {
         super._init()
 
@@ -79,10 +83,10 @@ class SqlConnectionParametersConnectorStep(
             val definition = ConnectorDevelopmentWizardUtil.findConnectorConfigurationPropertiesDefinition(connector)
                 ?: throw IllegalStateException("The connector has no configuration schema yet.")
 
-            savedValues = ConnectorDevelopmentWizardUtil.readTestingResourceConfiguration(
+            savedValues = ConnectorDevelopmentWizardUtil.readTestingResourceState(
                 client,
                 dataModel.connectorDevelopment
-            )
+            ).configuration
 
             val rendered = builder.build(FIELDS, definition, savedValues)
             parametersPanel = rendered
@@ -121,7 +125,8 @@ class SqlConnectionParametersConnectorStep(
                 ConnectorDevelopmentWizardUtil.updateTestingResourceConfiguration(
                     client,
                     dataModel.connectorDevelopment,
-                    values
+                    values,
+                    markDown = true
                 )
             }
         } catch (e: Exception) {

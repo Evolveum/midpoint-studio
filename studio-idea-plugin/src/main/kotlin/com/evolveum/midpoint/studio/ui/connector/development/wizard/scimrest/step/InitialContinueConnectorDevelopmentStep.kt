@@ -9,6 +9,7 @@ package com.evolveum.midpoint.studio.ui.connector.development.wizard.scimrest.st
 import com.evolveum.midpoint.studio.impl.MidPointClient
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.AlignX
@@ -39,6 +40,10 @@ class InitialContinueConnectorDevelopmentStep(
             }
         }
     }
+
+    /** An intro only, done as soon as the connector exists on the server. */
+    override fun isCompleted(resource: TestingResourceState?): Boolean =
+        dataModel.connectorDevelopment.connector?.connectorRef?.oid != null
 
     override fun _init() {
         super._init()

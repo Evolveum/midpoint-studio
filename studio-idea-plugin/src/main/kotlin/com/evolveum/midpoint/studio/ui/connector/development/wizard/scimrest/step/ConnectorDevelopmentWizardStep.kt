@@ -15,6 +15,7 @@ import com.evolveum.midpoint.studio.impl.SearchOptions
 import com.evolveum.midpoint.studio.ui.connector.development.wizard.ConnectorDevelopmentWizard
 import com.evolveum.midpoint.studio.ui.connector.development.component.Badge
 import com.evolveum.midpoint.studio.ui.connector.development.component.StatusPanel
+import com.evolveum.midpoint.studio.ui.connector.development.util.TestingResourceState
 import com.evolveum.midpoint.studio.ui.connector.development.util.ConnectorDevelopmentWizardUtil
 import com.evolveum.midpoint.util.exception.SchemaException
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*
@@ -68,6 +69,13 @@ abstract class ConnectorDevelopmentWizardStep(
             field = value
             wizardContext.updateNavigationMenuByLiveStates()
         }
+
+    /**
+     * Whether the work of this step is already saved on the server, decided from the connector development object
+     * and the testing resource the same way the web GUI does it. Used to resume the wizard at the first unfinished
+     * step. [resource] is null when the testing resource does not exist yet.
+     */
+    open fun isCompleted(resource: TestingResourceState?): Boolean = false
 
     var canGoNext = false
         set(value) {
