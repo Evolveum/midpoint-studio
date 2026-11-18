@@ -93,4 +93,56 @@ public class PsiToXmlConverterTest extends StudioPlatformTestCase {
         assertNotNull(name);
         assertEquals("givenName-familyName-to-cn", name.getStringValue());
     }
+
+    public void testShallowConvertOfPrefixedNestedTagDeclaresNamespace() throws Exception {
+        XmlTag text = prefixedRoleFile().getRootTag()
+                .findFirstSubTag("assignment")
+                .findFirstSubTag("targetRef")
+                .findFirstSubTag("filter")
+                .findFirstSubTag("q:text");
+        assertNotNull(text);
+
+        String fragment = new PsiToXmlConverter().convert(text, false);
+
+        PrismContext prismContext = StudioPrismContextService.getPrismContext(myFixture.getProject());
+        RootXNode root = prismContext.parserFor(fragment)
+                .language("xml")
+                .context(prismContext.createParsingContextForCompatibilityMode())
+                .parseToXNode();
+
+        assertEquals(new QName("http://prism.evolveum.com/xml/ns/public/query-3", "text"), root.getRootElementName());
+    }
+
+    public void testShallowConvertOfUnprefixedNestedTagAddsNoNamespace() {
+        XmlTag assignment = prefixedRoleFile().getRootTag().findFirstSubTag("assignment");
+        assertNotNull(assignment);
+
+        assertEquals("<assignment></assignment>", new PsiToXmlConverter().convert(assignment, false));
+    }
+
+    public void testDeepConvertDeclaresEachNamespaceOnce() {
+        String xml = new PsiToXmlConverter().convert(prefixedRoleFile().getRootTag(), true);
+
+        assertEquals(1, countOf(xml, "xmlns:q="));
+        assertEquals(1, countOf(xml, "xmlns="));
+    }
+
+    private XmlFile prefixedRoleFile() {
+        return (XmlFile) myFixture.configureByText("prefixed.xml", """
+                <role xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+                      xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3">
+                    <assignment>
+                        <targetRef>
+                            <filter>
+                                <q:text>name = "x"</q:text>
+                            </filter>
+                        </targetRef>
+                    </assignment>
+                </role>
+                """);
+    }
+
+    private static int countOf(String text, String needle) {
+        return text.split(java.util.regex.Pattern.quote(needle), -1).length - 1;
+    }
 }

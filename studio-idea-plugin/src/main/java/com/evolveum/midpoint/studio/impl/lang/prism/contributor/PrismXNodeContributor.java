@@ -9,19 +9,24 @@ import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiConverter;
 import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiToXmlConverter;
 import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiToYamlConverter;
 import com.evolveum.midpoint.studio.lang.CompletionContributorBase;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.json.JsonLanguage;
+import com.intellij.json.psi.JsonFile;
 import com.intellij.lang.Language;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLLanguage;
+import org.jetbrains.yaml.psi.YAMLFile;
 
 import javax.xml.namespace.QName;
 import java.util.*;
@@ -101,6 +106,38 @@ public class PrismXNodeContributor extends CompletionContributorBase {
                         throw new IllegalArgumentException("Unsupported element type of language: " + language);
                     }
                 });
+    }
+
+    @Override
+    public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
+        if (!appliesTo(parameters.getOriginalFile())) {
+            return;
+        }
+
+        super.fillCompletionVariants(parameters, result);
+    }
+
+    /**
+     * Registered for every XML, JSON and YAML file. Only midPoint object files (known root namespace)
+     * have prism definitions, a file without a root element is still a candidate for one.
+     */
+    static boolean appliesTo(PsiFile file) {
+        return MidPointUtils.isMidpointFile(file) || hasNoRoot(file);
+    }
+
+    private static boolean hasNoRoot(PsiFile file) {
+        if (file instanceof XmlFile xmlFile) {
+            // empty document still gets a root tag element from the parser, with an empty name
+            XmlTag root = xmlFile.getRootTag();
+            return root == null || root.getName().isEmpty();
+        }
+        if (file instanceof JsonFile jsonFile) {
+            return jsonFile.getTopLevelValue() == null;
+        }
+        if (file instanceof YAMLFile yamlFile) {
+            return yamlFile.getDocuments().isEmpty() || yamlFile.getDocuments().get(0).getTopLevelValue() == null;
+        }
+        return false;
     }
 
     private List<SuggestPair> generateSuggestion(PrismContext prismContext, ItemDefinition<?> itemDefinition) {

@@ -16,6 +16,8 @@
 - MID-11199 Fixed issue when trying to upload whole directory containing objects.
 - Plugin (IDE) freezes when prism context is loading.
 - New project wizard failed with NPE when IDE did not register bundled file templates, pom.xml and .gitignore are now created from bundled resources in that case
+- NPE exception for null environment send to midpoint client
+- MID-13483 Code completion in XML failed with "prefix is not bound" when the caret was under a namespace-prefixed element (e.g. q:text in filter)
 
 ## [4.10.0]
 ### Added
