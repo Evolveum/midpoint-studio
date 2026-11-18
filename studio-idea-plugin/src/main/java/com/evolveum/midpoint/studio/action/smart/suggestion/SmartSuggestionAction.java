@@ -10,11 +10,14 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
 import com.evolveum.midpoint.studio.action.task.UploadFullProcessingTask;
 import com.evolveum.midpoint.studio.client.AuthenticationException;
-import com.evolveum.midpoint.studio.impl.*;
+import com.evolveum.midpoint.studio.impl.Environment;
+import com.evolveum.midpoint.studio.impl.EnvironmentService;
+import com.evolveum.midpoint.studio.impl.MidPointClient;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.SmartSuggestionObject;
+import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionDataModel;
 import com.evolveum.midpoint.studio.ui.smart.suggestion.component.wizard.GenerateSuggestionWizard;
-import com.evolveum.midpoint.studio.ui.smart.suggestion.component.table.model.SmartSuggestionTableModel;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultTreeTable;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
@@ -22,7 +25,10 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.*;
 import com.intellij.ide.util.treeView.TreeState;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -39,7 +45,6 @@ import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.util.concurrency.EdtExecutorService;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -49,9 +54,11 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.*;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public abstract class SmartSuggestionAction<T> extends AnAction {
 
@@ -323,21 +330,26 @@ public abstract class SmartSuggestionAction<T> extends AnAction {
                 }
         );
 
+        AiInfoType aiInfo;
         try {
-            dataModel.setAiInfo(client.getAiInfo());
-            generateSuggestionWizard.show();
+            aiInfo = client.getAiInfo();
         } catch (Exception e) {
-
-            log.error(e);
+            // 404 means older midPoint without smart integration or AI service without info,
+            // other failures mean environment is unreachable or misconfigured
+            log.warn("Couldn't get AI info from midPoint, AI suggestions are not available", e);
 
             MidPointUtils.publishNotification(
                     project,
                     "midpointSmartSuggestion",
                     TITLE,
-                    e.getMessage(),
-                    NotificationType.ERROR
+                    "AI suggestions are not available for selected environment. " + e.getMessage(),
+                    NotificationType.WARNING
             );
+            return;
         }
+
+        dataModel.setAiInfo(aiInfo);
+        generateSuggestionWizard.show();
     }
 
     private CompletableFuture<List<SmartSuggestionObject<T>>> generateSuggestions(
