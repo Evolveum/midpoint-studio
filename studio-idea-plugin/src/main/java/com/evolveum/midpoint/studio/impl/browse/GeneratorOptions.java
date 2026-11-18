@@ -11,7 +11,7 @@ public class GeneratorOptions {
     private boolean createSuspended;
     private boolean raw;
     private boolean dryRun;
-    private boolean useActivities;
+    private boolean useActivities = true;
 
     private boolean batchByOids;
     private boolean batchUsingOriginalQuery;

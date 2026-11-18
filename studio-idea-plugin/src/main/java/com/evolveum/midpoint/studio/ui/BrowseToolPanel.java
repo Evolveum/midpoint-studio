@@ -25,7 +25,6 @@ import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryHints;
 import com.evolveum.midpoint.studio.lang.axiomquery.AxiomQueryLanguage;
 import com.evolveum.midpoint.studio.ui.browse.ObjectsTreeTable;
 import com.evolveum.midpoint.studio.ui.browse.ObjectsTreeTableModel;
-import com.evolveum.midpoint.studio.util.MavenUtils;
 import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.evolveum.midpoint.studio.util.RunnableUtils;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -116,8 +115,6 @@ public class BrowseToolPanel extends SimpleToolWindowPanel {
         super(false, true);
 
         this.project = project;
-        boolean useActivities = MavenUtils.isMidpointVersionGreaterThan(project, "4.4");
-        this.processResultsOptions.getOptions().setUseActivities(useActivities);
 
         initLayout();
     }
