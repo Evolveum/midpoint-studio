@@ -1,10 +1,10 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
 import com.evolveum.midpoint.schema.traces.OpNode;
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.ui.trace.mainTree.OpTreePanel;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.intellij.ui.components.JBPanelWithEmptyText;
 import com.intellij.ui.components.panels.Wrapper;
 
@@ -15,7 +15,7 @@ import javax.swing.*;
  * node tree in the editor component, an unreadable file ends with an error message in the
  * editor component instead of an empty tree.
  */
-public class TraceViewEditorTest extends BasePlatformTestCase {
+public class TraceViewEditorTest extends StudioPlatformTestCase {
 
     private static final String OPERATION = "com.example.TestOperation.run";
 

@@ -1,15 +1,10 @@
 package com.evolveum.midpoint.studio.impl.lang.prism.validator;
 
 import com.evolveum.concepts.ValidationLog;
-import com.evolveum.midpoint.studio.impl.MidPointFacetType;
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
-import com.intellij.facet.FacetType;
-import com.intellij.facet.FacetTypeRegistry;
-import com.intellij.facet.impl.FacetUtil;
-import com.intellij.openapi.application.WriteAction;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -22,7 +17,7 @@ import java.util.List;
  * Each test gets its own light project (fresh descriptor instance), so "service not created"
  * is a meaningful assertion regardless of test order.
  */
-public class PrismExternalAnnotatorTest extends BasePlatformTestCase {
+public class PrismExternalAnnotatorTest extends StudioPlatformTestCase {
 
     private static final String POM_XML = """
             <?xml version="1.0" encoding="UTF-8"?>
@@ -93,10 +88,4 @@ public class PrismExternalAnnotatorTest extends BasePlatformTestCase {
 
     private PrismExternalAnnotator.PrismAnnotationInfo collectInformation(PsiFile file) {
         return new PrismExternalAnnotator().collectInformation(file, myFixture.getEditor(), false);
-    }
-
-    private void addMidPointFacet() {
-        FacetType<?, ?> facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-        WriteAction.run(() -> FacetUtil.addFacet(getModule(), facetType, MidPointFacetType.FACET_NAME));
-    }
-}
+    }}

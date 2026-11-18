@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.ui.trace.mainTree;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.ui.trace.TraceViewEditor;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.intellij.ui.components.panels.Wrapper;
 
 /**
@@ -11,7 +11,7 @@ import com.intellij.ui.components.panels.Wrapper;
  * operation node a visible row (the implementation expands in bulk, so the number of rows is
  * the only observable), collapse all leaves only the root operation.
  */
-public class OpTreePanelTest extends BasePlatformTestCase {
+public class OpTreePanelTest extends StudioPlatformTestCase {
 
     private static final String NESTED_TRACE = """
             <tracingOutput xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3">

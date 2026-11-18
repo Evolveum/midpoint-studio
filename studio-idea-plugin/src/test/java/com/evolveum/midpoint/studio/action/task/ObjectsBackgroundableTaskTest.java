@@ -1,12 +1,12 @@
 package com.evolveum.midpoint.studio.action.task;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.action.transfer.ProcessObjectResult;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +26,7 @@ import java.util.List;
  * <p>Fix: wrap the {@code getData} call in {@code ApplicationManager.getApplication()
  * .runReadAction()} inside {@code processFiles}.
  */
-public class ObjectsBackgroundableTaskTest extends BasePlatformTestCase {
+public class ObjectsBackgroundableTaskTest extends StudioPlatformTestCase {
 
     private static final String MIDPOINT_NS = "http://midpoint.evolveum.com/xml/ns/public/common/common-3";
 

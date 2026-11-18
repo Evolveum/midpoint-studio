@@ -7,6 +7,7 @@ import java.lang.reflect.Proxy;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
 
@@ -27,9 +28,13 @@ public class DefaultPrismContextTest {
 
     @Test
     public void testGetIfReadyDoesNotWaitAndGetDoes() throws Exception {
+        CountDownLatch started = new CountDownLatch(1);
         CountDownLatch release = new CountDownLatch(1);
+        AtomicReference<Thread> builderThread = new AtomicReference<>();
         PrismContext context = inert();
         DefaultPrismContext holder = new DefaultPrismContext(() -> {
+            builderThread.set(Thread.currentThread());
+            started.countDown();
             try {
                 assertTrue("builder released", release.await(10, TimeUnit.SECONDS));
             } catch (InterruptedException ex) {
@@ -41,6 +46,9 @@ public class DefaultPrismContextTest {
         assertNull("nothing built before start", holder.getIfReady());
 
         holder.ensureStarted();
+        assertTrue("builder started", started.await(10, TimeUnit.SECONDS));
+        // a headless Application left behind by platform tests must not make the build synchronous
+        assertNotSame("builder ran on the caller's thread", Thread.currentThread(), builderThread.get());
         assertNull("still building", holder.getIfReady());
 
         release.countDown();

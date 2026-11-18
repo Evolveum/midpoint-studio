@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.impl.cache;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.client.MidPointObject;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.UserType;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Covers that a cache read never loads on the caller's thread.
  */
-public class ObjectCacheTest extends BasePlatformTestCase {
+public class ObjectCacheTest extends StudioPlatformTestCase {
 
     private static final String OID = "00000000-0000-0000-0000-000000000001";
 

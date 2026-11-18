@@ -1,17 +1,17 @@
 package com.evolveum.midpoint.studio.lang.mel;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.lang.mel.antlr.MELLexer;
 import com.evolveum.midpoint.studio.lang.mel.impl.MelLexerAdaptor;
 import com.evolveum.midpoint.studio.lang.mel.impl.MelTokenTypes;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.antlr.intellij.adaptor.lexer.TokenIElementType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MelLexerTest extends BasePlatformTestCase {
+public class MelLexerTest extends StudioPlatformTestCase {
 
     // ── helpers ───────────────────────────────────────────────────────────────────
 

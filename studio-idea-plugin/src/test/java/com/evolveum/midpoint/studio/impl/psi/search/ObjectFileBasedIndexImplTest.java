@@ -1,16 +1,11 @@
 package com.evolveum.midpoint.studio.impl.psi.search;
 
 import com.evolveum.midpoint.schema.constants.ObjectTypes;
-import com.evolveum.midpoint.studio.impl.MidPointFacetType;
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
-import com.intellij.facet.FacetType;
-import com.intellij.facet.FacetTypeRegistry;
-import com.intellij.facet.impl.FacetUtil;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.application.WriteAction;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.LightVirtualFile;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.intellij.util.indexing.FileContent;
 import com.intellij.util.indexing.FileContentImpl;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +20,7 @@ import java.util.Map;
  * Each test gets its own light project (fresh descriptor instance), so "service not created"
  * is a meaningful assertion regardless of test order.
  */
-public class ObjectFileBasedIndexImplTest extends BasePlatformTestCase {
+public class ObjectFileBasedIndexImplTest extends StudioPlatformTestCase {
 
     private static final String POM_XML = """
             <?xml version="1.0" encoding="UTF-8"?>
@@ -79,11 +74,6 @@ public class ObjectFileBasedIndexImplTest extends BasePlatformTestCase {
         assertNotNull(result.get("00000000-0000-0000-0000-000000000002"));
         assertNotNull("project with facet should use the project prism context",
                 getProject().getServiceIfCreated(StudioPrismContextService.class));
-    }
-
-    private void addMidPointFacet() {
-        FacetType<?, ?> facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-        WriteAction.run(() -> FacetUtil.addFacet(getModule(), facetType, MidPointFacetType.FACET_NAME));
     }
 
     private Map<String, OidNameValue> index(String fileName, String text) {

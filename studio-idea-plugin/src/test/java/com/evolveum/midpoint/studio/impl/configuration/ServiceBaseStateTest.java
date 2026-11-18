@@ -1,12 +1,12 @@
 package com.evolveum.midpoint.studio.impl.configuration;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.EnvironmentServiceImpl;
 import com.evolveum.midpoint.studio.impl.EnvironmentSettings;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * Each test gets its own light project (fresh descriptor instance), so the services are
  * created fresh in every test.
  */
-public class ServiceBaseStateTest extends BasePlatformTestCase {
+public class ServiceBaseStateTest extends StudioPlatformTestCase {
 
     private final LightProjectDescriptor descriptor = new LightProjectDescriptor();
 

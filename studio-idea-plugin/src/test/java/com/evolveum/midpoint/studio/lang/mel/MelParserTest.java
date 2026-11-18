@@ -1,13 +1,13 @@
 package com.evolveum.midpoint.studio.lang.mel;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.lang.mel.impl.MelFileType;
 import com.intellij.psi.PsiErrorElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.intellij.util.PsiErrorElementUtil;
 
-public class MelParserTest extends BasePlatformTestCase {
+public class MelParserTest extends StudioPlatformTestCase {
 
     // ── helpers ───────────────────────────────────────────────────────────────────
 

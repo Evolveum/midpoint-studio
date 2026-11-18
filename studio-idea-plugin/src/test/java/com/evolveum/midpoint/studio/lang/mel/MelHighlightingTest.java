@@ -1,14 +1,14 @@
 package com.evolveum.midpoint.studio.lang.mel;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.lang.mel.antlr.MELLexer;
 import com.evolveum.midpoint.studio.lang.mel.impl.MelFileType;
 import com.evolveum.midpoint.studio.lang.mel.impl.MelSyntaxHighlighter;
 import com.evolveum.midpoint.studio.lang.mel.impl.MelTokenTypes;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.antlr.intellij.adaptor.lexer.TokenIElementType;
 
-public class MelHighlightingTest extends BasePlatformTestCase {
+public class MelHighlightingTest extends StudioPlatformTestCase {
 
     // ── helpers ───────────────────────────────────────────────────────────────────
 

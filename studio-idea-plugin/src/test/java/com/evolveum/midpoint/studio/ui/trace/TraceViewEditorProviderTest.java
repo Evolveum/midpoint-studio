@@ -1,13 +1,9 @@
 package com.evolveum.midpoint.studio.ui.trace;
 
-import com.evolveum.midpoint.studio.impl.MidPointFacetType;
-import com.intellij.facet.FacetType;
-import com.intellij.facet.FacetTypeRegistry;
-import com.intellij.facet.impl.FacetUtil;
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
@@ -24,7 +20,7 @@ import java.util.zip.ZipOutputStream;
  * Each test gets its own light project (fresh descriptor instance) because some tests add
  * the facet to the module.
  */
-public class TraceViewEditorProviderTest extends BasePlatformTestCase {
+public class TraceViewEditorProviderTest extends StudioPlatformTestCase {
 
     private static final String TRACE_XML = """
             <tracingOutput xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3">
@@ -104,10 +100,4 @@ public class TraceViewEditorProviderTest extends BasePlatformTestCase {
             zip.closeEntry();
         }
         return bytes.toByteArray();
-    }
-
-    private void addMidPointFacet() {
-        FacetType<?, ?> facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-        WriteAction.run(() -> FacetUtil.addFacet(getModule(), facetType, MidPointFacetType.FACET_NAME));
-    }
-}
+    }}

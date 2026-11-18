@@ -1,17 +1,17 @@
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.PsiTestUtils;
 import com.intellij.json.JsonLanguage;
 import com.intellij.lang.Language;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.psi.PsiFile;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.jetbrains.yaml.YAMLLanguage;
 
 /**
  * Tests for MidPointUtils.
  */
-public class MidPointUtilsTest extends BasePlatformTestCase {
+public class MidPointUtilsTest extends StudioPlatformTestCase {
 
     private static final String COMMON_NS = "http://midpoint.evolveum.com/xml/ns/public/common/common-3";
 

@@ -1,17 +1,12 @@
 package com.evolveum.midpoint.studio.ui.smart.suggestion.listener;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.evolveum.midpoint.studio.impl.EnvironmentService;
 import com.evolveum.midpoint.studio.impl.EnvironmentSettings;
-import com.evolveum.midpoint.studio.impl.MidPointFacetType;
 import com.evolveum.midpoint.studio.impl.configuration.MidPointService;
-import com.intellij.facet.FacetType;
-import com.intellij.facet.FacetTypeRegistry;
-import com.intellij.facet.impl.FacetUtil;
-import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -20,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * Each test gets its own light project because some tests add the facet to the module.
  */
-public class EditorFileOpenListenerTest extends BasePlatformTestCase {
+public class EditorFileOpenListenerTest extends StudioPlatformTestCase {
 
     private static final String RESOURCE_XML = """
             <resource xmlns="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
@@ -86,11 +81,6 @@ public class EditorFileOpenListenerTest extends BasePlatformTestCase {
 
     private VirtualFile addTextFile(String path, String text) {
         return myFixture.addFileToProject(path, text).getVirtualFile();
-    }
-
-    private void addMidPointFacet() {
-        FacetType<?, ?> facetType = FacetTypeRegistry.getInstance().findFacetType(MidPointFacetType.FACET_TYPE_ID);
-        WriteAction.run(() -> FacetUtil.addFacet(getModule(), facetType, MidPointFacetType.FACET_NAME));
     }
 
     private void clearSelectedEnvironment() {

@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.studio.impl.ide;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 import java.util.Properties;
 
@@ -9,7 +9,7 @@ import java.util.Properties;
  * Checks that file templates used by new project wizard resolve both through IDE
  * registry and directly from bundled resources.
  */
-public class MidPointFileTemplatesTest extends BasePlatformTestCase {
+public class MidPointFileTemplatesTest extends StudioPlatformTestCase {
 
     public void testTemplatesRegisteredInIde() {
         FileTemplateManager manager = FileTemplateManager.getInstance(getProject());

@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.progress.ProcessCanceledException;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 import java.lang.reflect.Proxy;
 
@@ -12,7 +12,7 @@ import java.lang.reflect.Proxy;
  * access answers with the default context and schedules one background build, concurrent first
  * accesses schedule it once, and the environment cache reload event rebuilds it.
  */
-public class StudioPrismContextServiceReloadTest extends BasePlatformTestCase {
+public class StudioPrismContextServiceReloadTest extends StudioPlatformTestCase {
 
     public void testFirstAccessReturnsDefaultContextAndBuildsProjectContextInBackground() throws Exception {
         StudioPrismContextService service = new StudioPrismContextService(getProject());

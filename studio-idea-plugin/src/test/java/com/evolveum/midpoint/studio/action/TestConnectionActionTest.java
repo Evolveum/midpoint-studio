@@ -1,11 +1,11 @@
 package com.evolveum.midpoint.studio.action;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.client.TestConnectionResult;
 import com.evolveum.midpoint.studio.impl.Environment;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.List;
  * must be published before the (slow) environment cache reload, and the reload must run only
  * for a successful test.
  */
-public class TestConnectionActionTest extends BasePlatformTestCase {
+public class TestConnectionActionTest extends StudioPlatformTestCase {
 
     private final List<String> events = new ArrayList<>();
 

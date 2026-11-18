@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.impl.lang.converter;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.xnode.*;
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiToJsonConverter;
 import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiConverter;
@@ -11,14 +12,13 @@ import com.evolveum.midpoint.xml.ns._public.common.common_3.MappingType;
 import com.intellij.json.psi.JsonFile;
 import com.intellij.json.psi.JsonObject;
 import com.intellij.psi.PsiFile;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 import javax.xml.namespace.QName;
 
 /**
  * Created by Dominik.
  */
-public class PsiToJsonConverterTest extends BasePlatformTestCase {
+public class PsiToJsonConverterTest extends StudioPlatformTestCase {
     PsiFile psiFile;
     PrismContext prismContext;
     ParsingContext parsingCtx;

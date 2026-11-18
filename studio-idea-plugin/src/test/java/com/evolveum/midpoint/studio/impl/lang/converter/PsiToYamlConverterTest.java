@@ -3,18 +3,18 @@ package com.evolveum.midpoint.studio.impl.lang.converter;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.xnode.*;
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiConverter;
 import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiToYamlConverter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.yaml.psi.*;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 /**
  * Created by Dominik.
  */
-public class PsiToYamlConverterTest extends BasePlatformTestCase {
+public class PsiToYamlConverterTest extends StudioPlatformTestCase {
     PsiFile psiFile;
     PrismContext prismContext;
     ParsingContext parsingCtx;

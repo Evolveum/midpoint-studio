@@ -1,9 +1,9 @@
 package com.evolveum.midpoint.studio.impl;
 
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismService;
 import com.intellij.openapi.project.Project;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 
 /**
  * Covers nesting of run*WithProject wrappers with a real project. A nested wrapper (or a prism
@@ -15,7 +15,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase;
  * zero extension schemas. The assertions are on routing (project context vs. default context)
  * and on the fallback counter, not on the context content.
  */
-public class StudioPrismContextServiceNestingTest extends BasePlatformTestCase {
+public class StudioPrismContextServiceNestingTest extends StudioPlatformTestCase {
 
     @Override
     protected void setUp() throws Exception {

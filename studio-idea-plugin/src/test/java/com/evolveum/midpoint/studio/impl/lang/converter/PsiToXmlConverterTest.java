@@ -5,11 +5,11 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeFactoryImpl;
 import com.evolveum.midpoint.prism.xnode.*;
+import com.evolveum.midpoint.studio.StudioPlatformTestCase;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiConverter;
 import com.evolveum.midpoint.studio.impl.lang.prism.converter.PsiToXmlConverter;
 import com.intellij.psi.xml.*;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import com.intellij.psi.PsiFile;
 
 import javax.xml.namespace.QName;
@@ -17,7 +17,7 @@ import javax.xml.namespace.QName;
 /**
  * Created by Dominik.
  */
-public class PsiToXmlConverterTest extends BasePlatformTestCase {
+public class PsiToXmlConverterTest extends StudioPlatformTestCase {
 
     private XNodeFactory xNodeFactory;
     private MapXNode mapping;
