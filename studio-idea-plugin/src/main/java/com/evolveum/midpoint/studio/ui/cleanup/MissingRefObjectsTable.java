@@ -32,6 +32,9 @@ public class MissingRefObjectsTable extends DefaultTreeTable<List<MissingRefObje
         setDragEnabled(false);
         setRootVisible(false);
 
+        // action column has fixed width, reference column takes the rest
+        setAutoResizeMode(AUTO_RESIZE_ALL_COLUMNS);
+
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         setupPopupMenu();
