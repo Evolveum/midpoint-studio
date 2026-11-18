@@ -119,7 +119,7 @@ class ConnectorIdentificationStep(
             row("Integration Type *") {
                 comboBox(
                     listOf(null) + ConnDevIntegrationType.entries,
-                    textListCellRenderer(COMBO_BOX_ITEM_UNDEFINED) { "${it.name} - ${it.description()}" }
+                    textListCellRenderer { if (it == null) COMBO_BOX_ITEM_UNDEFINED else "${it.name} - ${it.description()}" }
                 ).bindItem(
                     {
                         dataModel.connectorDevelopment.application
@@ -134,7 +134,7 @@ class ConnectorIdentificationStep(
             row("Intent") {
                 comboBox(
                     listOf(null) + ConnDevConnectorIntentType.entries,
-                    textListCellRenderer(COMBO_BOX_ITEM_UNDEFINED) { "${it.name} - ${it.description()}" }
+                    textListCellRenderer { if (it == null) COMBO_BOX_ITEM_UNDEFINED else "${it.name} - ${it.description()}" }
                 ).bindItem(
                     {
                         dataModel.connectorDevelopment.connector?.intent

@@ -90,7 +90,7 @@ open class ApplicationIdentificationStep(
             row("Integration Type *") {
                 comboBox(
                     listOf(null) + ConnDevIntegrationType.entries,
-                    textListCellRenderer(COMBO_BOX_ITEM_UNDEFINED) { "${it.name} - ${it.description()}" }
+                    textListCellRenderer { if (it == null) COMBO_BOX_ITEM_UNDEFINED else "${it.name} - ${it.description()}" }
                 ).bindItem(
                     {
                         dataModel.connectorDevelopment.application
@@ -105,7 +105,7 @@ open class ApplicationIdentificationStep(
             row("Deployment type") {
                 comboBox(
                     listOf(null) + ConnDevDeploymentType.entries,
-                    textListCellRenderer(COMBO_BOX_ITEM_UNDEFINED) { it.value().replaceFirstChar { char -> char.titlecase() } }
+                    textListCellRenderer { if (it == null) COMBO_BOX_ITEM_UNDEFINED else it.value().replaceFirstChar { char -> char.titlecase() } }
                 ).bindItem(
                     {
                         dataModel.connectorDevelopment.application
