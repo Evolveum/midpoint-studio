@@ -158,7 +158,13 @@ public class EnvironmentCacheManager {
      * @param testConnection If true, connection to the environment will be tested before reload.
      */
     public void reload(boolean forceClear, boolean testConnection) {
-        String title = "Reloading " + (environment != null ? environment.getName() : "environment");
+        if (environment == null) {
+            // nothing to load, only the clear is left and that is cheap
+            reloadInternal(forceClear, testConnection);
+            return;
+        }
+
+        String title = "Reloading " + environment.getName();
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, title, true) {
 
@@ -186,6 +192,14 @@ public class EnvironmentCacheManager {
             for (Cache cache : caches.values()) {
                 cache.clear();
             }
+        }
+
+        if (environment == null) {
+            // caches and the connection test need a server, MidPointClient refuses a null environment
+            LOG.info("No environment selected, skipping cache reload");
+            restartHighlightInEditors();
+
+            return;
         }
 
         if (testConnection) {

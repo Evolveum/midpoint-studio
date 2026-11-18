@@ -23,8 +23,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * duplicated. Nothing waits on the caller's thread, the caller keeps what it has until the run
  * lands.
  *
- * Runs on the application pool, as a background task with progress when a title is given, or on
- * a plain daemon thread when there is no Application (plain unit tests).
+ * Runs on the application pool, as a background task with progress when a title is given and the
+ * application is not headless, or on a plain daemon thread when there is no Application (plain
+ * unit tests).
  */
 public final class BackgroundReload {
 
@@ -154,7 +155,9 @@ public final class BackgroundReload {
             return task;
         }
 
-        if (progressTitle == null) {
+        // a headless or unit test Application runs Task.Backgroundable on the caller's thread,
+        // which would make request() block, so the pool is used there even with a title
+        if (progressTitle == null || application.isHeadlessEnvironment() || application.isUnitTestMode()) {
             return AppExecutorUtil.getAppExecutorService().submit(runnable);
         }
 

@@ -1063,7 +1063,7 @@ public static LookupElement buildOidLookupElement(String name, String oid, QName
         ApplicationManager.getApplication().invokeLater(() -> {
             EnvironmentService service = project.getService(EnvironmentService.class);
             refreshFunction.accept(service.getSelected());
-        });
+        }, project.getDisposed());
     }
 
     private static class TransformerErrorListener implements ErrorListener {
