@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.ui.cleanup;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRef;
 import com.evolveum.midpoint.studio.impl.configuration.MissingRefAction;
 import com.evolveum.midpoint.studio.ui.treetable.DefaultColumnInfo;
+import com.evolveum.midpoint.studio.ui.treetable.Style;
 import com.evolveum.midpoint.studio.util.StudioLocalization;
 import com.intellij.openapi.ui.ComboBoxTableRenderer;
 import com.intellij.openapi.util.NlsContexts;
@@ -28,6 +29,37 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
         setPreferredWidth(150);
         setMinWidth(150);
         setMaxWidth(150);
+
+        style(userObject -> styleFor(actionOf(userObject)));
+    }
+
+    private static Color colorFor(MissingRefAction action) {
+        if (action == MissingRefAction.IGNORE) {
+            return JBColor.RED.darker();
+        }
+
+        if (action == MissingRefAction.DOWNLOAD) {
+            return JBColor.GREEN.darker();
+        }
+
+        return null;
+    }
+
+    private static Style styleFor(MissingRefAction action) {
+        Color color = colorFor(action);
+        return color != null ? Style.foreground(color) : null;
+    }
+
+    private static MissingRefAction actionOf(Object userObject) {
+        if (userObject instanceof MissingRefNode refNode) {
+            return refNode.getAction() != null ? refNode.getAction() : MissingRefAction.UNDEFINED;
+        }
+
+        if (userObject instanceof MissingRef ref) {
+            return ref.getAction() != null ? ref.getAction() : MissingRefAction.UNDEFINED;
+        }
+
+        return MissingRefAction.UNDEFINED;
     }
 
     @Override
@@ -53,17 +85,7 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
 
     @Override
     public @Nullable MissingRefAction valueOf(MutableTreeNode node) {
-        Object object = getUserObject(node);
-
-        if (object instanceof MissingRefNode refNode) {
-            return refNode.getAction() != null ? refNode.getAction() : MissingRefAction.UNDEFINED;
-        }
-
-        if (object instanceof MissingRef ref) {
-            return ref.getAction() != null ? ref.getAction() : MissingRefAction.UNDEFINED;
-        }
-
-        return MissingRefAction.UNDEFINED;
+        return actionOf(getUserObject(node));
     }
 
     @Override
@@ -99,14 +121,11 @@ public class MissingRefActionColumn extends DefaultColumnInfo<Object, MissingRef
         protected void customizeComponent(MissingRefAction value, JTable table, boolean isSelected) {
             super.customizeComponent(value, table, isSelected);
 
-            Color def = getForeground();
-
-            if (value == MissingRefAction.IGNORE) {
-                setForeground(JBColor.RED.darker());
-            } else if (value == MissingRefAction.DOWNLOAD) {
-                setForeground(JBColor.GREEN.darker());
-            } else {
-                setForeground(def);
+            // keeps the editor component colored while the combo box is open,
+            // rendering goes through the style provider in DefaultTreeTable.prepareRenderer
+            Color color = colorFor(value);
+            if (color != null) {
+                setForeground(color);
             }
         }
     }
