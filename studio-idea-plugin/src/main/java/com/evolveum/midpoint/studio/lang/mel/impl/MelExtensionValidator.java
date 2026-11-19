@@ -16,18 +16,10 @@ import java.util.Set;
 
 public class MelExtensionValidator extends MELBaseVisitor<Void> {
 
-    static final MelExtensionRegistry REGISTRY = MelExtensionRegistry.create();
-
-    // MEL variables - namespace identifiers are derived from the registry so that a new
+    // Expression variables provided by the MEL evaluator. Extension namespaces are known
+    // identifiers too, see knownIdentifiers(); they come from the registry so that a new
     // namespace in midPoint automatically allows its bare use as a receiver.
-    // focus/projection/now/nil are expression variables provided by the MEL evaluator.
-    static final Set<String> KNOWN_IDENTIFIERS;
-
-    static {
-        var ids = new java.util.HashSet<>(Set.of("focus", "projection", "now", "nil"));
-        ids.addAll(REGISTRY.namespaces());
-        KNOWN_IDENTIFIERS = Collections.unmodifiableSet(ids);
-    }
+    static final Set<String> VARIABLES = Set.of("focus", "projection", "now", "nil");
 
     // Callable names that are real in MEL but not introspectable from CEL function
     // declarations (e.g. polystring virtual fields used with call syntax). Coverage of the
@@ -39,6 +31,26 @@ public class MelExtensionValidator extends MELBaseVisitor<Void> {
 
     private final List<ValidationMessage> messages = new ArrayList<>();
 
+    private final MelExtensionRegistry registry;
+
+    public MelExtensionValidator() {
+        this(MelExtensionRegistry.get());
+    }
+
+    MelExtensionValidator(MelExtensionRegistry registry) {
+        this.registry = registry;
+    }
+
+    /**
+     * Bare identifiers accepted without a declaration: evaluator variables and extension
+     * namespaces of the given registry.
+     */
+    static Set<String> knownIdentifiers(MelExtensionRegistry registry) {
+        var ids = new java.util.LinkedHashSet<>(VARIABLES);
+        ids.addAll(registry.namespaces());
+        return Collections.unmodifiableSet(ids);
+    }
+
     public List<ValidationMessage> analyze(ParseTree tree) {
         visit(tree);
 
@@ -48,7 +60,7 @@ public class MelExtensionValidator extends MELBaseVisitor<Void> {
     @Override
     public Void visitIdent(IdentContext ctx) {
         String name = ctx.id.getText();
-        if (!KNOWN_IDENTIFIERS.contains(name)) {
+        if (!VARIABLES.contains(name) && !registry.isNamespace(name)) {
             messages.add(warning(ctx.id, "Unknown identifier '" + name + "'"));
         }
         return visitChildren(ctx);
@@ -69,7 +81,7 @@ public class MelExtensionValidator extends MELBaseVisitor<Void> {
         String namespace = getNamespaceReceiver(ctx);
         if (namespace != null) {
             // Namespace call: validate function name against the registry
-            if (!REGISTRY.isValidNamespaceCall(namespace, name)) {
+            if (!registry.isValidNamespaceCall(namespace, name)) {
                 messages.add(error(ctx.id,
                         "Unknown function '" + name + "' on extension '" + namespace + "'"));
             }
@@ -82,9 +94,9 @@ public class MelExtensionValidator extends MELBaseVisitor<Void> {
     }
 
     private boolean isKnownGlobal(String name) {
-        return REGISTRY.isValidGlobalCall(name)
-                || REGISTRY.isStandardFunction(name)
-                || REGISTRY.isMacro(name)
+        return registry.isValidGlobalCall(name)
+                || registry.isStandardFunction(name)
+                || registry.isMacro(name)
                 || EXTRA_GLOBAL_FUNCTIONS.contains(name);
     }
 
@@ -92,9 +104,9 @@ public class MelExtensionValidator extends MELBaseVisitor<Void> {
         // Standard CEL function names are accepted for member calls too: the public CEL API
         // does not expose member/global per standard overload, and a false accept only costs
         // a missing diagnostic, while a false reject flags valid code.
-        return REGISTRY.isValidMemberCall(name)
-                || REGISTRY.isStandardFunction(name)
-                || REGISTRY.isMacro(name)
+        return registry.isValidMemberCall(name)
+                || registry.isStandardFunction(name)
+                || registry.isMacro(name)
                 || EXTRA_MEMBER_FUNCTIONS.contains(name);
     }
 
@@ -106,7 +118,7 @@ public class MelExtensionValidator extends MELBaseVisitor<Void> {
         if (ctx.member() instanceof PrimaryExprContext primaryExpr
                 && primaryExpr.primary() instanceof IdentContext identCtx) {
             String id = identCtx.id.getText();
-            return REGISTRY.isNamespace(id) ? id : null;
+            return registry.isNamespace(id) ? id : null;
         }
         return null;
     }

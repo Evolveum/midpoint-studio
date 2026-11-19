@@ -18,6 +18,7 @@
 - New project wizard failed with NPE when IDE did not register bundled file templates, pom.xml and .gitignore are now created from bundled resources in that case
 - NPE exception for null environment send to midpoint client
 - MID-13483 Code completion in XML failed with "prefix is not bound" when the caret was under a namespace-prefixed element (e.g. q:text in filter)
+- MEL completion and validation stopped working for the whole IDE session
 
 ## [4.10.0]
 ### Added

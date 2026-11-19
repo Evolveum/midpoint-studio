@@ -79,6 +79,10 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         public PrismContext prismContext() {
             ContextKey key = PRISM_SERVICE_PROJECT.get();
 
+            if (key != null && key.noPrismContext) {
+                return null;
+            }
+
             if (key == null || key.project == null) {
                 if (key == null || !key.useDefaultPrismContext) {
                     reportDefaultContextFallback();
@@ -437,6 +441,29 @@ public final class StudioPrismContextService implements ProjectManagerListener {
         }
     }
 
+    /**
+     * Runs the supplier with PrismContext.get() answering null, as it does outside Studio. For
+     * code that only touches prism incidentally (MEL introspection constructs midPoint CEL
+     * libraries whose constructors store PrismContext.get()) and must not wait for, or fail
+     * on, the default prism context build.
+     */
+    public static <T> T runWithoutPrismContext(@NotNull Supplier<T> supplier) {
+        ContextKey previousKey = bindKey(ContextKey.withoutPrismContext());
+        try {
+            return supplier.get();
+        } finally {
+            restoreKey(previousKey);
+        }
+    }
+
+    /**
+     * Whether the current thread runs inside {@link #runWithoutPrismContext}.
+     */
+    public static boolean isPrismContextSuppressed() {
+        ContextKey key = PRISM_SERVICE_PROJECT.get();
+        return key != null && key.noPrismContext;
+    }
+
     public static <T> T runCallableWithDefaultContext(@NotNull Callable<T> callable) throws Exception {
         ContextKey previousKey = bindKey(new ContextKey());
         try {
@@ -507,14 +534,18 @@ public final class StudioPrismContextService implements ProjectManagerListener {
     /**
      * Key for prism context service thread local.
      */
-    private record ContextKey(Project project, boolean useDefaultPrismContext) {
+    private record ContextKey(Project project, boolean useDefaultPrismContext, boolean noPrismContext) {
 
         public ContextKey(@NotNull Project project) {
-            this(project, false);
+            this(project, false, false);
         }
 
         public ContextKey() {
-            this(null, true);
+            this(null, true, false);
+        }
+
+        static ContextKey withoutPrismContext() {
+            return new ContextKey(null, false, true);
         }
     }
 }

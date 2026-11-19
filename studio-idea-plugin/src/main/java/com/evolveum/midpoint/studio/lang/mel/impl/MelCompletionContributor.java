@@ -4,6 +4,7 @@ import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.editor.EditorModificationUtil;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,15 +16,13 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  * - namespace functions after "namespace."
  * - member functions after "expr."
  */
-public class MelCompletionContributor extends CompletionContributor {
+public class MelCompletionContributor extends CompletionContributor implements DumbAware {
 
     public MelCompletionContributor() {
         extend(CompletionType.BASIC, psiElement(), new MelCompletionProvider());
     }
 
     private static class MelCompletionProvider extends CompletionProvider<CompletionParameters> {
-
-        private static final MelExtensionRegistry REGISTRY = MelExtensionValidator.REGISTRY;
 
         private static final InsertHandler<LookupElement> PARENS_INSERT = (ctx, item) -> {
             EditorModificationUtil.insertStringAtCaret(ctx.getEditor(), "()", false, 1);
@@ -34,6 +33,8 @@ public class MelCompletionContributor extends CompletionContributor {
                                       @NotNull ProcessingContext context,
                                       @NotNull CompletionResultSet result) {
 
+            MelExtensionRegistry registry = MelExtensionRegistry.get();
+
             String prefix = result.getPrefixMatcher().getPrefix();
             int offset = parameters.getOffset();
             String fullText = parameters.getOriginalFile().getText();
@@ -43,19 +44,19 @@ public class MelCompletionContributor extends CompletionContributor {
                 String beforeDot = textBeforePrefix.substring(0, textBeforePrefix.length() - 1).stripTrailing();
                 String receiver = MelUtils.extractLastIdentifier(beforeDot);
 
-                if (REGISTRY.isNamespace(receiver)) {
-                    addNamespaceFunctions(receiver, result);
+                if (registry.isNamespace(receiver)) {
+                    addNamespaceFunctions(registry, receiver, result);
                 } else {
-                    addMemberFunctions(result);
+                    addMemberFunctions(registry, result);
                 }
             } else {
-                addIdentifiers(result);
-                addGlobalFunctions(result);
+                addIdentifiers(registry, result);
+                addGlobalFunctions(registry, result);
             }
         }
 
-        private void addNamespaceFunctions(String namespace, CompletionResultSet result) {
-            for (var fn : REGISTRY.functionsForNamespace(namespace)) {
+        private void addNamespaceFunctions(MelExtensionRegistry registry, String namespace, CompletionResultSet result) {
+            for (var fn : registry.functionsForNamespace(namespace)) {
                 result.addElement(
                         LookupElementBuilder.create(fn.name())
                                 .withTailText(formatParams(fn, false) + tailDescription(fn), true)
@@ -64,8 +65,8 @@ public class MelCompletionContributor extends CompletionContributor {
             }
         }
 
-        private void addMemberFunctions(CompletionResultSet result) {
-            for (var fn : REGISTRY.memberFunctions()) {
+        private void addMemberFunctions(MelExtensionRegistry registry, CompletionResultSet result) {
+            for (var fn : registry.memberFunctions()) {
                 result.addElement(
                         LookupElementBuilder.create(fn.name())
                                 .withTailText(formatParams(fn, true) + tailDescription(fn), true)
@@ -77,7 +78,7 @@ public class MelCompletionContributor extends CompletionContributor {
                         LookupElementBuilder.create(name)
                                 .withInsertHandler(PARENS_INSERT));
             }
-            for (String name : REGISTRY.macroNames()) {
+            for (String name : registry.macroNames()) {
                 if (!name.equals("has")) { // has(...) is global-only
                     result.addElement(
                             LookupElementBuilder.create(name)
@@ -87,26 +88,26 @@ public class MelCompletionContributor extends CompletionContributor {
             }
         }
 
-        private void addIdentifiers(CompletionResultSet result) {
-            for (String name : MelExtensionValidator.KNOWN_IDENTIFIERS) {
+        private void addIdentifiers(MelExtensionRegistry registry, CompletionResultSet result) {
+            for (String name : MelExtensionValidator.knownIdentifiers(registry)) {
                 var builder = LookupElementBuilder.create(name);
-                if (REGISTRY.isNamespace(name)) {
+                if (registry.isNamespace(name)) {
                     builder = builder.withTypeText("namespace");
                 }
                 result.addElement(builder);
             }
         }
 
-        private void addGlobalFunctions(CompletionResultSet result) {
-            for (var fn : REGISTRY.globalFunctions()) {
+        private void addGlobalFunctions(MelExtensionRegistry registry, CompletionResultSet result) {
+            for (var fn : registry.globalFunctions()) {
                 result.addElement(
                         LookupElementBuilder.create(fn.name())
                                 .withTailText(formatParams(fn, false) + tailDescription(fn), true)
                                 .withTypeText(fn.returnType())
                                 .withInsertHandler(PARENS_INSERT));
             }
-            for (String name : REGISTRY.standardFunctionNames()) {
-                if (REGISTRY.isValidGlobalCall(name)) {
+            for (String name : registry.standardFunctionNames()) {
+                if (registry.isValidGlobalCall(name)) {
                     continue; // already offered above with a signature (e.g. string, size, matches)
                 }
                 result.addElement(

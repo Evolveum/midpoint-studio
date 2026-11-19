@@ -18,8 +18,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MelDocumentationProvider extends AbstractDocumentationProvider {
 
-    private static final MelExtensionRegistry REGISTRY = MelExtensionValidator.REGISTRY;
-
     @Override
     public PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file,
                                                     @Nullable PsiElement contextElement, int targetOffset) {
@@ -110,15 +108,16 @@ public class MelDocumentationProvider extends AbstractDocumentationProvider {
         String beforeDot = before.substring(0, before.length() - 1).stripTrailing();
         String receiver = MelUtils.extractLastIdentifier(beforeDot);
 
-        if (REGISTRY.isNamespace(receiver)) {
-            for (var fn : REGISTRY.functionsForNamespace(receiver)) {
+        MelExtensionRegistry registry = MelExtensionRegistry.get();
+        if (registry.isNamespace(receiver)) {
+            for (var fn : registry.functionsForNamespace(receiver)) {
                 if (fn.name().equals(name)) return fn;
             }
             return null;
         }
 
         // Not a namespace call - check bare member functions (e.g. value.isBlank())
-        var fn = REGISTRY.bareFunction(name);
+        var fn = registry.bareFunction(name);
         if (fn != null && fn.memberCallable()) {
             return fn;
         }

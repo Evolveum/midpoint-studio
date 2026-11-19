@@ -9,6 +9,9 @@ import org.junit.Test;
 import java.lang.reflect.Proxy;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
 /**
@@ -54,6 +57,18 @@ public class StudioPrismContextServiceTest {
         PrismService.get().prismContext();
 
         assertEquals(1, StudioPrismContextService.getDefaultContextFallbackCount());
+    }
+
+    @Test
+    public void testNoPrismContextWhileSuppressed() {
+        PrismContext context = StudioPrismContextService.runWithoutPrismContext(() -> {
+            assertTrue(StudioPrismContextService.isPrismContextSuppressed());
+            return PrismService.get().prismContext();
+        });
+
+        assertNull(context);
+        assertFalse(StudioPrismContextService.isPrismContextSuppressed());
+        assertEquals(0, StudioPrismContextService.getDefaultContextFallbackCount());
     }
 
     @Test

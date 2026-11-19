@@ -1,6 +1,7 @@
 package com.evolveum.midpoint.studio.lang.mel.impl;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.*;
@@ -21,14 +22,40 @@ public class MelExtensionRegistry {
     private final Set<String> macroFunctions;
     private final Set<String> standardFunctions;
 
+    private static volatile MelExtensionRegistry instance;
+
+    /**
+     * Shared registry, built on first use by whichever annotator or completion thread gets
+     * there first. Not a static initializer on purpose: a cancellation during introspection
+     * must propagate and leave the next caller free to retry, while a failed class
+     * initializer would disable MEL support until restart. Concurrent first calls may
+     * introspect twice, the results are equal.
+     */
+    static MelExtensionRegistry get() {
+        MelExtensionRegistry registry = instance;
+        if (registry == null) {
+            registry = create();
+            instance = registry;
+        }
+        return registry;
+    }
+
+    @VisibleForTesting
+    static void reset() {
+        instance = null;
+    }
+
     /**
      * Registry backed by live introspection. Introspection instantiates midPoint extension
      * libraries with null services; if that contract breaks upstream, degrades to an empty
-     * registry and logs the cause so it can be found in idea.log.
+     * registry and logs the cause so it can be found in idea.log. A cancellation is not a
+     * failure and is rethrown.
      */
     static MelExtensionRegistry create() {
         try {
             return new MelExtensionRegistry(MelCelIntrospector.introspect());
+        } catch (ProcessCanceledException e) {
+            throw e;
         } catch (Throwable t) {
             LOG.warn("MEL extension introspection failed, registry is empty and all MEL extension"
                     + " functions will be reported as unknown: " + t, t);

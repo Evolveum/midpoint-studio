@@ -3,6 +3,7 @@ package com.evolveum.midpoint.studio.lang.mel.impl;
 import com.evolveum.midpoint.model.common.expression.script.mel.extension.MidPointCelExtensionManager;
 import com.evolveum.midpoint.model.common.expression.script.mel.value.PolyStringCelValue;
 import com.evolveum.midpoint.schema.expression.ScriptLanguageExpressionProfile;
+import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
 import dev.cel.checker.CelStandardDeclarations;
 import dev.cel.common.CelFunctionDecl;
 import dev.cel.common.CelOverloadDecl;
@@ -138,8 +139,11 @@ class MelCelIntrospector {
     }
 
     private static Iterable<? extends CelExtensionLibrary.FeatureSet> loadFeatureSets() {
-        MidPointCelExtensionManager manager = new MidPointCelExtensionManager(
-                null, null, null, null, null);
+        // CelMidPointExtensions stores PrismContext.get() in its constructor. Through the Studio
+        // PrismService override that call waits for the default prism context and is cancelled
+        // under progress; introspection only needs declarations, so prism is suppressed here.
+        MidPointCelExtensionManager manager = StudioPrismContextService.runWithoutPrismContext(
+                () -> new MidPointCelExtensionManager(null, null, null, null, null));
 
         // Insertion order kept so that overload order is stable across runs when two
         // libraries declare the same function name (HashSet order varies per JVM).
