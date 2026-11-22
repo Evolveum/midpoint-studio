@@ -8,6 +8,7 @@
 
 package com.evolveum.midpoint.studio.util;
 
+import com.evolveum.midpoint.prism.PrismContext;
 import com.intellij.json.JsonLanguage;
 import com.intellij.json.psi.JsonFile;
 import com.intellij.json.psi.JsonObject;
@@ -19,6 +20,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.YAMLLanguage;
 
 public class LanguageUtils {
@@ -42,6 +44,25 @@ public class LanguageUtils {
         }
 
         return PlainTextLanguage.INSTANCE;
+    }
+
+    /**
+     * Prism data language (PrismContext.LANG_*) for an IntelliJ language, null when prism can't handle it.
+     */
+    @Nullable public static String toPrismLanguage(@Nullable Language language) {
+        if (language == null) {
+            return null;
+        }
+
+        if (language.isKindOf(XMLLanguage.INSTANCE)) {
+            return PrismContext.LANG_XML;
+        } else if (language.isKindOf(JsonLanguage.INSTANCE)) {
+            return PrismContext.LANG_JSON;
+        } else if (language.isKindOf(YAMLLanguage.INSTANCE)) {
+            return PrismContext.LANG_YAML;
+        }
+
+        return null;
     }
 
     public static String stripLeadingNoise(String text) {

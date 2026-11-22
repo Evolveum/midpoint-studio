@@ -2,16 +2,19 @@ package com.evolveum.midpoint.studio.action;
 
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
+import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.studio.impl.StudioPrismContextService;
+import com.evolveum.midpoint.studio.ui.converter.ConverterPanel;
+import com.evolveum.midpoint.studio.util.LanguageUtils;
+import com.evolveum.midpoint.studio.util.MidPointUtils;
 import com.intellij.json.JsonLanguage;
+import com.intellij.lang.Language;
 import com.intellij.lang.xml.XMLLanguage;
-import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -40,26 +43,28 @@ public class ConvertAction extends AnAction {
         Project project = e.getProject();
         VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
 
-        if (id != null) {
-            switch (id) {
-                case "MidPoint.Action.Converter.ConvertToXml":
-                    convert(project, file, XMLLanguage.INSTANCE.getID());
-                    break;
-
-                case "MidPoint.Action.Converter.ConvertToJson":
-                    convert(project, file, JsonLanguage.INSTANCE.getID());
-                    break;
-
-                case "MidPoint.Action.Converter.ConvertToYaml":
-                    convert(project, file, YAMLLanguage.INSTANCE.getID());
-                    break;
-
-                default:
-                    log.error("Unknown action: {}", id);
-            }
-        } else {
-            log.error("Action ID is null (action not registered?)");
+        if (project == null || file == null) {
+            return;
         }
+
+        if (id == null) {
+            log.error("Action ID is null (action not registered?)");
+            return;
+        }
+
+        Language targetLanguage = switch (id) {
+            case "MidPoint.Action.Converter.ConvertToXml" -> XMLLanguage.INSTANCE;
+            case "MidPoint.Action.Converter.ConvertToJson" -> JsonLanguage.INSTANCE;
+            case "MidPoint.Action.Converter.ConvertToYaml" -> YAMLLanguage.INSTANCE;
+            default -> null;
+        };
+
+        if (targetLanguage == null) {
+            log.error("Unknown action: " + id);
+            return;
+        }
+
+        convert(project, file, targetLanguage);
     }
 
     @Override
@@ -82,26 +87,40 @@ public class ConvertAction extends AnAction {
         e.getPresentation().setEnabledAndVisible(enabled);
     }
 
-    private void convert(Project project, VirtualFile file, String targetLang) {
+    private void convert(@NotNull Project project, @NotNull VirtualFile file, @NotNull Language targetLanguage) {
+        String targetLang = LanguageUtils.toPrismLanguage(targetLanguage);
+        if (targetLang == null) {
+            notifyError(project, "Unsupported target language: " + targetLanguage.getID());
+            return;
+        }
+
+        String sourceLang = file.getFileType() instanceof LanguageFileType fileType
+                ? LanguageUtils.toPrismLanguage(fileType.getLanguage()) : null;
+        if (sourceLang == null) {
+            notifyError(project, "File " + file.getName() + " is not recognized as XML, JSON or YAML.");
+            return;
+        }
+
         try {
+            String code = VfsUtilCore.loadText(file);
+            if (code.isBlank()) {
+                notifyError(project, "File " + file.getName() + " is empty.");
+                return;
+            }
+
             PrismContext prismContext = StudioPrismContextService.getPrismContext(project);
             ParsingContext parsingCtx = prismContext.createParsingContextForCompatibilityMode();
 
-            String code = VfsUtilCore.loadText(file);
-
-            if (code.isEmpty()) {
-                throw new Exception("Body input is empty.");
-            }
-
-            RootXNodeImpl root = (RootXNodeImpl) prismContext.parserFor(code)
-                    .language(file.getFileType().getName().toLowerCase())
+            RootXNode root = prismContext.parserFor(code)
+                    .language(sourceLang)
                     .context(parsingCtx)
                     .parseToXNode();
 
             String convertedCode = prismContext.serializerFor(targetLang).serialize(root);
-            createFile(project, file.getParent(), file.getNameWithoutExtension() + "." + targetLang.toLowerCase(), convertedCode);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            createFile(project, file.getParent(), file.getNameWithoutExtension() + "." + targetLang, convertedCode);
+        } catch (Exception ex) {
+            log.warn("Couldn't convert " + file.getName() + " to " + targetLang, ex);
+            notifyError(project, "Couldn't convert " + file.getName() + ": " + ex.getMessage());
         }
     }
 
@@ -117,14 +136,12 @@ public class ConvertAction extends AnAction {
                 }
             });
         } else {
-            Notification notification = new Notification(
-                    "midpointConverter",
-                    "Midpoint converter",
-                    "File " + fileName + " already exists.",
-                    NotificationType.ERROR
-            );
-            Notifications.Bus.notify(notification, project);
+            notifyError(project, "File " + fileName + " already exists.");
         }
     }
 
+    private void notifyError(Project project, String message) {
+        MidPointUtils.publishNotification(
+                project, ConverterPanel.NOTIFICATION_KEY, "MidPoint converter", message, NotificationType.ERROR);
+    }
 }

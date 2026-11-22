@@ -373,6 +373,7 @@
 
         <notificationGroup id="midpointSmartSuggestion" displayType="BALLOON" />
         <notificationGroup id="midpointConnectorGenerator" displayType="BALLOON"/>
+        <notificationGroup id="midpointConverter" displayType="BALLOON"/>
 
         <lang.foldingBuilder language="XML" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
         <lang.foldingBuilder language="JSON" implementationClass="com.evolveum.midpoint.studio.ui.MidpointConfigurationFoldingBuilder"/>
